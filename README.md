@@ -30,3 +30,18 @@ Each thingspeak channel provides a read and write API key. These keys will be se
 **WIFI:** The logger defaults to AP mode with the ssid 'Setup'. Connect to 192.168.4.1/wifi to setup the access point to connect to. You'll be given a list of APs in range to connect to. Select the AP, enter the password, then click submit to connect. The AP will be stored and the logger will connect automatically on next boot.
 
 Press the button on GPIO0 to go back to AP mode if you need to change the AP to connect to. (It might not respond if it's busy uploading, keep trying...)
+
+# Parts required to build one
+
+Most of the parts can be bought as modules, it's usually cheaper that way.
+
+Approximate prices found on aliexpress
+- ESP-07 or ESP-13 module with breakout adapter board ($3.00)
+- MAX3232 module ($0.50) - it's just a max3232 with 5 capacitors on a tiny little board
+- DC-DC buck module ($1.00) - 12v down to 5v
+- AMS1117-3.3V ($1.00) - Or any 3.3V regulator
+- USB-TTL serial module ($1.50) - Make sure it has RTS and DTR outputs
+- RJ45 socket with LEDs ($0.50) - The leds are for status etc.
+- Tact switch ($0.00) - I'm sure you have an old button lying around.
+
+Total cost: $7.50
