@@ -19,10 +19,10 @@ GPIO: LEDs on GPIO 15 and 16 provide status.
 POWER: Inverter has +12V on pin 4 or 7 depending on the model. I used a cheapo DC-DC converter module to bring this down to ~5V, then a 1117-3.3V linear regulator to provide 3.3V. It draws about half a watt while the WiFi is connected.
 
 LOGGING: The voltages, currents etc are uploaded to thingspeak.com. 4 different channels are used, you'll have to create an account and make the channels:
-Battery: Write only
-Load: Write only
-Charger: Write only
-Settings: Read/Write
+- Battery: Write only
+- Load: Write only
+- Charger: Write only
+- Settings: Read/Write
 
 Each thingspeak channel provides a read and write API key. These keys will be set on the logger using a served webpage (it's not implemented yet)
 
