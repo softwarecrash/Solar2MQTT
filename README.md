@@ -4,7 +4,8 @@ ESP8266 based WiFi interface for Voltronic Axpert MppSolar PIP inverters
 ! Note that this project is incomplete, it works, but only barely at the moment !
 
 # Overview
-Based around an ESP8266 WiFi microcontroller
+Based around an ESP8266 WiFi microcontroller.
+Software is built using [Arduino for ESP8266](https://github.com/esp8266/Arduino). It's the simplest way to get the toolchain.
 
 UART0: Used for programming and debugging
 
