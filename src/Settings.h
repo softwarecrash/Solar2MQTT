@@ -1,3 +1,5 @@
+//Settings: Stores persistant settings, loads and saves to EEPROM
+
 #include <arduino.h>
 #include <EEPROM.h>
 
@@ -14,7 +16,24 @@ class Settings
     String _loadApiKey = "";
     String _readConfigApiKey = "";
     String _writeConfigApiKey = "";
-  
+    short  _updateRateSec = 30;
+
+    short readShort(int offset)
+    {
+      byte b1 = EEPROM.read(offset + 0);
+      byte b2 = EEPROM.read(offset + 1);
+      return ((short)b1 << 8) | b2;
+    }
+
+    void writeShort(short value, int offset)
+    {
+      byte b1 = (byte)((value >> 8) & 0xFF); 
+      byte b2 = (byte)((value >> 0) & 0xFF);
+      
+      EEPROM.write(offset + 0, b1);
+      EEPROM.write(offset + 1, b2);
+    }
+    
     void readString(String& s, int maxLen, int offset)
     {
       int i;
@@ -76,6 +95,7 @@ Serial.println(s);
         readString(_loadApiKey, 0x20, 0xA0);
         readString(_readConfigApiKey, 0x20, 0xC0);
         readString(_writeConfigApiKey, 0x20, 0xE0);
+        _updateRateSec = readShort(0x100);
       }
       
       EEPROM.end();
@@ -97,6 +117,7 @@ Serial.println(s);
       writeString(_loadApiKey, 0x20, 0xA0);
       writeString(_readConfigApiKey, 0x20, 0xC0);
       writeString(_writeConfigApiKey, 0x20, 0xE0);
+      writeShort(_updateRateSec, 0x100);
 
       EEPROM.commit();
 

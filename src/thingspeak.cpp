@@ -1,5 +1,12 @@
+//Handles talking to Thingspeak API
+#include "inverter.h"
+#include <ESP8266WiFi.h>
+#include "settings.h"
+
+extern WiFiClient client;
+extern Settings _settings;
+
 #define THINGSPEAK_IP IPAddress(184,106,153,149)
-#define THINGSPEAK_HOLDOFF_MILLIS 16000
 #define THINGSPEAK_ROLLOVER_MILLIS (24 * 3600 * 1000) //1 day
 
 char udpPacketBuffer[1000];
@@ -15,6 +22,7 @@ unsigned long getMillisSinceLastThingspeakUpdate()
   return (millis() - thingspeakLastUpdated) & 0x7FFFFFFF;
 }
 
+//Periodically send an update to the thingspeak API
 void serviceThingspeak()
 {
   if (isClientConnected)
@@ -45,10 +53,10 @@ void serviceThingspeak()
 bool updateThingspeak(const char* apiKey, const char* params)
 {
   //Check holdoff time
-  if (getMillisSinceLastThingspeakUpdate() < THINGSPEAK_HOLDOFF_MILLIS)
+  if (getMillisSinceLastThingspeakUpdate() < _settings._updateRateSec)
   {
     //Serial.println("Wait a bit before sending!");
-    //return false;
+    return false;
   }
     
   client.stop();
@@ -93,4 +101,55 @@ void updateThingspeakTest1(double temperature, double pressure)
   updateThingspeak("PRH5FVNM8819MIBL", params.c_str());
   
 }
+
+void updateThingspeakChargeApi(QpigsMessage& qpigs, String& statusText)
+{
+  String params = "";
+  params += "f1=";
+  params += String(qpigs.battV);
+  params += "&f2=";
+  params += String(qpigs.battChargeA);
+  params += "&f3=";
+  params += String(qpigs.solarV);
+  params += "&f4=";
+  params += String(qpigs.solarA);
+  params += "&f5=";
+  params += String(qpigs.chargingStatus);
+  params += "&status=";
+  params += statusText;
+}
+
+void updateThingspeakBatteryApi(QpigsMessage& qpigs, String& statusText)
+{
+  String params = "";
+  params += "f1=";
+  params += String(qpigs.battV);
+  params += "&f2=";
+  params += String(qpigs.battChargeA);
+  params += "&f3=";
+  params += String(qpigs.battDischargeA); //Avg in future
+  params += "&f4=";
+  params += String(qpigs.battDischargeA); //Max in future
+  params += "&status=";
+  params += statusText;
+}
+
+void updateThingspeakLoadApi(QpigsMessage& qpigs, String& statusText)
+{
+  String params = "";
+  params += "f1=";
+  params += String(qpigs.acOutV);
+  params += "&f2=";
+  params += String(qpigs.acOutHz);
+  params += "&f3=";
+  params += String(qpigs.acOutW); 
+  params += "&f4=";
+  params += String(qpigs.acOutVa);
+  params += "&f5=";
+  params += String(qpigs.heatSinkDegC);
+  params += "&status=";
+  params += statusText;
+}
+
+
 

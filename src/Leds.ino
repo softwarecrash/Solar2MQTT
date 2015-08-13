@@ -1,3 +1,4 @@
+//Handles flashing LEDs
 
 void initLeds()
 {

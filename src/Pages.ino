@@ -1,3 +1,28 @@
+//Pages: Holds pages to serve via HTTP
+
+String getNextToken(String& s, int& offset)
+{
+  char c;
+  String result = "";
+  
+  do
+  {
+    c = s[offset];
+    ++offset;  
+
+    if ((c != 0) && (c != '&') && (c != '?') && (c != ' ') && (c != '\r') && (c != '\n'))
+    {
+      result += c;
+    }
+    else
+    {
+      return result;
+    }
+
+  } while(offset < s.length());
+
+  return result;
+}
 
 void appendHttp200(String& s)
 {
@@ -19,6 +44,7 @@ void serve404(WiFiClient& client)
   
 }
 
+//Wifi setup, requests AP list via AJAX
 void serveWifiSetupPage(WiFiClient& client)
 {
   String s = "";
@@ -42,6 +68,7 @@ void serveWifiSetupPage(WiFiClient& client)
   
 }
 
+//AJAX reply with list of APs
 void serveWifiApList(WiFiClient& client)
 {
   String s = "";
@@ -68,6 +95,7 @@ void serveWifiApList(WiFiClient& client)
 
 }
 
+//Apply AP settings
 void serveWifiSetAp(WiFiClient& client, String req)
 {
   String s = "";
@@ -121,4 +149,107 @@ void serveWifiSetAp(WiFiClient& client, String req)
   delay(1);
   
 }
+
+
+
+//Thingspeak API keys
+void serveThingspeakSetupPage(WiFiClient& client)
+{
+  String s = "";
+  appendHttp200(s);
+
+  //This thing was automatically generated from html source
+  s += F("<H1>Thingspeak Setup</H1></html>\r\n\r\n");
+
+  s += F("<form action=settskeys>");
+  s += F("<table>");
+  s += F("<tr><td><b>Channel</b></td><td><b>Write Key</b></td><td><b>Read Key</b></td></tr>");
+  s += F("<tr><td>Settings</td><td><input type=text name=w width=20 value='");
+  s += _settings._writeConfigApiKey;
+  s += F("'></td><td><input type=text name=r width=20 value='");
+  s += _settings._readConfigApiKey;
+  s += F("'></td></tr>");
+  
+  s += F("<tr><td>Battery</td><td><input type=text name=b width=20 value='");
+  s += _settings._batteryApiKey;
+  s += F("'></td></tr>");
+  
+  s += F("<tr><td>Charger</td><td><input type=text name=c width=20 value='");
+  s += _settings._chargerApiKey;
+  s += F("'></td></tr>");
+  
+  s += F("<tr><td>Load</td><td><input type=text name=l width=20 value='");
+  s += _settings._loadApiKey;
+  s += F("'></td></tr>");
+
+  s += F("<tr><td><br></td></tr>");
+  
+  s += F("<tr><td>Update rate</td><td><input type=text name=p width=5 value='");
+  s += String(_settings._updateRateSec);
+  s += F("'></td><td>seconds</td></tr>");
+
+  s += F("<tr><td></td><td></td><td><input type=submit value='    Save Settings   '></td></tr>");
+  s += F("</table></form>");
+  s += F("</html>\r\n\r\n");
+  client.print(s);
+  delay(1);
+  
+}
+
+bool setStringIfStartsWith(String& s, String startswith, String& set)
+{
+  /*Serial.print("  checking if ");
+  Serial.print(s);
+  Serial.print(" startswith ");
+  Serial.println(startswith);*/
+
+  if (s.startsWith(startswith))
+  {
+    set = s.substring(startswith.length());
+    Serial.print("match >");
+    Serial.print(startswith);
+    Serial.print("< = >");
+    Serial.print(set);
+    Serial.println("<");
+
+    return true;
+  }
+  return false;
+}
+
+//Apply thingspeak settings
+void serveSetThingspeakKeys(WiFiClient& client, String req)
+{
+  String s = "";
+  appendHttp200(s);
+
+  Serial.println("Setting Thingspeak keys");
+  Serial.println(req);
+
+  int offset = 0;
+  String token = getNextToken(req, offset);
+
+  while (token.length())
+  {    
+    setStringIfStartsWith(token, "w=", _settings._writeConfigApiKey);
+    setStringIfStartsWith(token, "r=", _settings._readConfigApiKey);
+    setStringIfStartsWith(token, "b=", _settings._batteryApiKey);
+    setStringIfStartsWith(token, "c=", _settings._chargerApiKey);
+    setStringIfStartsWith(token, "l=", _settings._loadApiKey);
+    if (setStringIfStartsWith(token, "p=", s))
+      _settings._updateRateSec = (short)s.toInt();
+         
+    token = getNextToken(req, offset);
+  }
+
+  _settings.save();
+
+  s = F("Saved");
+  s += F("</html>");
+
+  client.print(s);
+  delay(1);
+  
+}
+
 

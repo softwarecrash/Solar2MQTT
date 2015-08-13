@@ -1,6 +1,5 @@
 //TODO:
-// Set wifi ap and password from form
-// Set thingspeak keys from form
+// Use keys from settings for upload
 
 #include <Wire.h>
 #include <ESP8266WiFi.h>
@@ -9,11 +8,13 @@
 #include <ip_addr.h>
 #include <espconn.h>
 #include <EEPROM.h>
+#include <EspSoftSerialRx.h>
 
-#include "defines.h"
-#include "EspSoftSerialRx.h"
+#include "main.h"
 #include "TickCounter.h"
 #include "Settings.h"
+#include "inverter.h"
+#include "thingspeak.h"
   
 Settings _settings;
 TickCounter _tickCounter;
@@ -40,7 +41,9 @@ EspSoftSerialRx SerialRx;
 const int RED_LED_PIN = 14; // red LED
 const int GRN_LED_PIN = 13; // green LED
 const int RED_BTN_PIN = 0; // red btn
-const int GRN_BTN_PIN = 15;//12; // green btn
+const int GRN_BTN_PIN = 15; //12; // green btn
+
+
 
 #define LED_MODE_SOLID_BOTH 0xFF
 #define LED_MODE_SOLID_RED 0xAA
@@ -53,7 +56,6 @@ const int GRN_BTN_PIN = 15;//12; // green btn
 byte ledMode = 0;
 byte ledState = 0;
 byte ledCounter = 0;
-
 
 //--------------------------------- Wifi State
 #define CLIENT_NOTCONNECTED 0
@@ -133,7 +135,15 @@ void loop()
   Serial.println(req);
   client.flush();
 
-  if (req.indexOf("/wifi") != -1)
+  if (req.indexOf("/thingspeak") != -1)
+  {
+    serveThingspeakSetupPage(client);    
+  }
+  else if (req.indexOf("/settskeys") != -1)
+  {
+    serveSetThingspeakKeys(client, req);    
+  }
+  else if (req.indexOf("/wifi") != -1)
   {
     serveWifiSetupPage(client);    
   }

@@ -1,4 +1,3 @@
-#include "defines.h"
 
 //Tick count that takes longer to roll over
 class TickCounter

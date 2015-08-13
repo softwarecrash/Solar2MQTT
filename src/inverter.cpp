@@ -1,36 +1,16 @@
 #define INT16U unsigned int
 #define INT8U byte
 
-struct QpigsMessage
-{
-  unsigned long rxTimeSec;
-  float gridV;
-  float gridHz;
-  float acOutV;
-  float acOutHz;
-  short acOutVa;
-  short acOutW;
-  byte acOutPercent;
-  short busV;
-  float battV;
-  float battChargeA;
-  float battPercent;
-  float reservedP;
-  float solarA;
-  float solarV;
-  float reservedS;
-  float reservedT;
-  bool reservedU7;
-  bool reservedU6;
-  bool isSccFirmwareUpdated;
-  bool isLoadOn; 
-  bool reservedU3;
-  byte chargingStatus;
-  byte reservedY;
-  byte reservedZ;
-  long reservedAA;
-  short reservedBB;
-}; 
+#include "Arduino.h"
+#include <EspSoftSerialRx.h>
+
+#include "main.h"
+#include "inverter.h"
+#include "TickCounter.h"
+#include "thingspeak.h"
+
+extern TickCounter _tickCounter;
+extern EspSoftSerialRx SerialRx;
 
 String battApiKey = "ZQZVTOCAQTYW2EB9";
 String chargerApiKey = "LI18WECZ0GDYCC9R";
@@ -159,16 +139,16 @@ void onPIGS()
   qpigsMessage.battV = getNextFloat(commandBuffer, index);
   qpigsMessage.battChargeA = getNextFloat(commandBuffer, index);
   qpigsMessage.battPercent = getNextFloat(commandBuffer, index);
-  qpigsMessage.reservedP = getNextFloat(commandBuffer, index);
+  qpigsMessage.heatSinkDegC = getNextFloat(commandBuffer, index);
   qpigsMessage.solarA = getNextFloat(commandBuffer, index);
   qpigsMessage.solarV = getNextFloat(commandBuffer, index);
-  qpigsMessage.reservedS = getNextFloat(commandBuffer, index);
-  qpigsMessage.reservedT = getNextFloat(commandBuffer, index);
-  qpigsMessage.reservedU7 = getNextBit(commandBuffer, index);
-  qpigsMessage.reservedU6 = getNextBit(commandBuffer, index);
+  qpigsMessage.sccBattV = getNextFloat(commandBuffer, index);
+  qpigsMessage.battDischargeA = getNextFloat(commandBuffer, index);
+  qpigsMessage.addSbuPriorityVersion = getNextBit(commandBuffer, index);
+  qpigsMessage.isConfigChanged = getNextBit(commandBuffer, index);
   qpigsMessage.isSccFirmwareUpdated = getNextBit(commandBuffer, index);
   qpigsMessage.isLoadOn = getNextBit(commandBuffer, index);             
-  qpigsMessage.reservedU3 = getNextBit(commandBuffer, index);
+  qpigsMessage.battVoltageToSteadyWhileCharging = getNextBit(commandBuffer, index);
   qpigsMessage.chargingStatus = (byte)getNextLong(commandBuffer, index);
   qpigsMessage.reservedY = (byte)getNextLong(commandBuffer, index);
   qpigsMessage.reservedZ = (byte)getNextLong(commandBuffer, index);
