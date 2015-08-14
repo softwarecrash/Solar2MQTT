@@ -6,19 +6,19 @@
 
 #include "main.h"
 #include "inverter.h"
-#include "TickCounter.h"
+#include "tickCounter.h"
 #include "thingspeak.h"
+#include "settings.h"
 
 extern TickCounter _tickCounter;
 extern EspSoftSerialRx SerialRx;
+extern Settings _settings;
 
-String battApiKey = "ZQZVTOCAQTYW2EB9";
-String chargerApiKey = "LI18WECZ0GDYCC9R";
-String loadApiKey = "GAHO2S5KRMZOZUXK";
+String _commandBuffer;
+String _lastRequestedCommand = "";
+QpigsMessage _qpigsMessage = {0};
+QmodMessage _qmodMessage = {0};
 
-String commandBuffer;
-String lastRequestedCommand = "";
-QpigsMessage qpigsMessage = {0};
 
 //Found here: http://forums.aeva.asn.au/pip4048ms-inverter_topic4332_post53760.html#53760
 unsigned short cal_crc_half(byte* pin, byte len)
@@ -119,69 +119,77 @@ bool getNextBit(String& command, int& index)
   return false;
 }
 
-//Parse the response to QPIGS general status message
+//Parse the response to QPIGS general status message, CRC has already been confirmed
 void onPIGS()
 {
   Serial.print("'");
-  Serial.print(commandBuffer);
+  Serial.print(_commandBuffer);
   Serial.print("'");
 
   int index = 1; //after the starting '('
-  qpigsMessage.rxTimeSec = _tickCounter.getSeconds();
-  qpigsMessage.gridV = getNextFloat(commandBuffer, index);
-  qpigsMessage.gridHz = getNextFloat(commandBuffer, index);
-  qpigsMessage.acOutV = getNextFloat(commandBuffer, index);
-  qpigsMessage.acOutHz = getNextFloat(commandBuffer, index);
-  qpigsMessage.acOutVa = (short)getNextLong(commandBuffer, index);
-  qpigsMessage.acOutW = (short)getNextLong(commandBuffer, index);
-  qpigsMessage.acOutPercent = (byte)getNextLong(commandBuffer, index);
-  qpigsMessage.busV = (short)getNextLong(commandBuffer, index);
-  qpigsMessage.battV = getNextFloat(commandBuffer, index);
-  qpigsMessage.battChargeA = getNextFloat(commandBuffer, index);
-  qpigsMessage.battPercent = getNextFloat(commandBuffer, index);
-  qpigsMessage.heatSinkDegC = getNextFloat(commandBuffer, index);
-  qpigsMessage.solarA = getNextFloat(commandBuffer, index);
-  qpigsMessage.solarV = getNextFloat(commandBuffer, index);
-  qpigsMessage.sccBattV = getNextFloat(commandBuffer, index);
-  qpigsMessage.battDischargeA = getNextFloat(commandBuffer, index);
-  qpigsMessage.addSbuPriorityVersion = getNextBit(commandBuffer, index);
-  qpigsMessage.isConfigChanged = getNextBit(commandBuffer, index);
-  qpigsMessage.isSccFirmwareUpdated = getNextBit(commandBuffer, index);
-  qpigsMessage.isLoadOn = getNextBit(commandBuffer, index);             
-  qpigsMessage.battVoltageToSteadyWhileCharging = getNextBit(commandBuffer, index);
-  qpigsMessage.chargingStatus = (byte)getNextLong(commandBuffer, index);
-  qpigsMessage.reservedY = (byte)getNextLong(commandBuffer, index);
-  qpigsMessage.reservedZ = (byte)getNextLong(commandBuffer, index);
-  qpigsMessage.reservedAA = getNextLong(commandBuffer, index);
-  qpigsMessage.reservedBB = (short)getNextLong(commandBuffer, index);
+  _qpigsMessage.rxTimeSec = _tickCounter.getSeconds();
+  _qpigsMessage.gridV = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.gridHz = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.acOutV = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.acOutHz = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.acOutVa = (short)getNextLong(_commandBuffer, index);
+  _qpigsMessage.acOutW = (short)getNextLong(_commandBuffer, index);
+  _qpigsMessage.acOutPercent = (byte)getNextLong(_commandBuffer, index);
+  _qpigsMessage.busV = (short)getNextLong(_commandBuffer, index);
+  _qpigsMessage.battV = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.battChargeA = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.battPercent = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.heatSinkDegC = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.solarA = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.solarV = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.sccBattV = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.battDischargeA = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.addSbuPriorityVersion = getNextBit(_commandBuffer, index);
+  _qpigsMessage.isConfigChanged = getNextBit(_commandBuffer, index);
+  _qpigsMessage.isSccFirmwareUpdated = getNextBit(_commandBuffer, index);
+  _qpigsMessage.isLoadOn = getNextBit(_commandBuffer, index);             
+  _qpigsMessage.battVoltageToSteadyWhileCharging = getNextBit(_commandBuffer, index);
+  _qpigsMessage.chargingStatus = (byte)getNextLong(_commandBuffer, index);
+  _qpigsMessage.reservedY = (byte)getNextLong(_commandBuffer, index);
+  _qpigsMessage.reservedZ = (byte)getNextLong(_commandBuffer, index);
+  _qpigsMessage.reservedAA = getNextLong(_commandBuffer, index);
+  _qpigsMessage.reservedBB = (short)getNextLong(_commandBuffer, index);
 
   String msg = "";
   msg += "field1=";
-  msg += String(qpigsMessage.battV);
+  msg += String(_qpigsMessage.battV);
   msg += "&field2=";
-  msg += String(qpigsMessage.battChargeA);
+  msg += String(_qpigsMessage.battChargeA);
   msg += "&field3=";
-  msg += String(qpigsMessage.solarV);
+  msg += String(_qpigsMessage.solarV);
   msg += "&field4=";
-  msg += String(qpigsMessage.solarA);
+  msg += String(_qpigsMessage.solarA);
   
-  updateThingspeak(chargerApiKey.c_str(), msg.c_str());
+  updateThingspeak(_settings._chargerApiKey.c_str(), msg.c_str());
   
-  Serial.println(qpigsMessage.rxTimeSec);
-  Serial.println(qpigsMessage.gridV);
-  Serial.println(qpigsMessage.gridHz);
-  Serial.println(qpigsMessage.acOutV);
-  
+  Serial.println(_qpigsMessage.rxTimeSec);
+  Serial.println(_qpigsMessage.gridV);
+  Serial.println(_qpigsMessage.gridHz);
+  Serial.println(_qpigsMessage.acOutV);
+}
+
+//Parse the response to QMOD general status message, CRC has already been confirmed
+void onMOD()
+{
+  Serial.print("'");
+  Serial.print(_commandBuffer);
+  Serial.print("'");
+
   
 }
 
 void onInverterCommand()
 {
-  if ((commandBuffer.length() > 3) && (commandBuffer[0] == '('))
+  if ((_commandBuffer.length() > 3) && (_commandBuffer[0] == '('))
   {
-    unsigned short calculatedCrc = cal_crc_half((byte*)commandBuffer.c_str(), commandBuffer.length() - 2);
-    unsigned short recievedCrc = ((unsigned short)commandBuffer[commandBuffer.length()-2] << 8) | 
-                                                  commandBuffer[commandBuffer.length()-1];
+    unsigned short calculatedCrc = cal_crc_half((byte*)_commandBuffer.c_str(), _commandBuffer.length() - 2);
+    unsigned short recievedCrc = ((unsigned short)_commandBuffer[_commandBuffer.length()-2] << 8) | 
+                                                  _commandBuffer[_commandBuffer.length()-1];
 
     Serial.print(" Calc: ");
     Serial.print(calculatedCrc, HEX);
@@ -190,7 +198,9 @@ void onInverterCommand()
     
     if (calculatedCrc == recievedCrc)
     {
-      if (lastRequestedCommand == "QPIGS") onPIGS();
+      if (_lastRequestedCommand == "QPIGS") onPIGS();
+      if (_lastRequestedCommand == "QMOD") onMOD();
+      
     }
   }
 }
@@ -203,13 +213,13 @@ void serviceInverter()
   {
     if ((c != 0) && (c != '\r') && (c != '\n'))
     {
-      if (commandBuffer.length() < 255)
-        commandBuffer += (char)c;
+      if (_commandBuffer.length() < 255)
+        _commandBuffer += (char)c;
     }
     else if ((c == '\r') || (c == '\n'))
     {
       onInverterCommand();
-      commandBuffer = "";
+      _commandBuffer = "";
     }
   }   
 }
@@ -220,7 +230,7 @@ void requestInverterCommand(String command)
   
   unsigned short crc = cal_crc_half((byte*)command.c_str(), command.length());
 
-  lastRequestedCommand = command;
+  _lastRequestedCommand = command;
   
   Serial1.print(command);
   Serial1.print((char)((crc >> 8) & 0xFF));

@@ -1,3 +1,5 @@
+#ifndef TICKCOUNTER_H
+#define TICKCOUNTER_H
 
 //Tick count that takes longer to roll over
 class TickCounter
@@ -56,3 +58,4 @@ class PollDelay
     }
 };
 
+#endif

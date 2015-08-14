@@ -37,4 +37,44 @@ struct QpigsMessage
   short reservedBB;
 }; 
 
+struct QmodMessage
+{
+  char mode;
+};
+
+struct QpiwsMessage
+{
+  bool reserved0;
+  bool inverterFault;
+  bool busOver;
+  bool busUnder;
+  bool busSoftFail;
+  bool lineFail;
+  bool opvShort;
+  bool overTemperature;
+  bool fanLocked;
+  bool batteryVoltageHigh;
+  bool batteryLowAlarm;
+  bool reserved13;
+  bool batteryUnderShutdown;
+  bool reserved15;
+  bool overload;
+  bool eepromFault;
+  bool inverterOverCurrent;
+  bool inverterSoftFail;
+  bool selfTestFail;
+  bool opDcVoltageOver;
+  bool batOpen;
+  bool currentSensorFail;
+  bool batteryShort;
+  bool powerLimit;
+  bool pvVoltageHigh;
+  bool mpptOverloadFault;
+  bool mpptOverloadWarning;
+  bool batteryTooLowToCharge;
+  bool reserved30;
+  bool reserved31;
+  
+};
+
 #endif
