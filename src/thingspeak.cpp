@@ -2,9 +2,17 @@
 #include "inverter.h"
 #include <ESP8266WiFi.h>
 #include "settings.h"
+#include "thingspeak.h"
 
 extern WiFiClient client;
 extern Settings _settings;
+extern bool _allMessagesUpdated;
+extern QpiMessage _qpiMessage;
+extern QpigsMessage _qpigsMessage;
+extern QmodMessage _qmodMessage;
+extern QpiwsMessage _qpiwsMessage;
+extern QflagMessage _qflagMessage;
+extern QidMessage _qidMessage;
 
 #define THINGSPEAK_IP IPAddress(184,106,153,149)
 #define THINGSPEAK_ROLLOVER_MILLIS (24 * 3600 * 1000) //1 day
@@ -48,9 +56,14 @@ void serviceThingspeak()
     if (getMillisSinceLastThingspeakUpdate() > THINGSPEAK_ROLLOVER_MILLIS)
       thingspeakLastUpdated = 0;
   }
+
+  if (_allMessagesUpdated)
+  {
+    updateThingspeakChargeApi();
+  }
 }
 
-bool updateThingspeak(const char* apiKey, const char* params)
+bool updateThingspeak(const char* apiKey, String& params)
 {
   //Check holdoff time
   if (getMillisSinceLastThingspeakUpdate() < _settings._updateRateSec)
@@ -74,9 +87,25 @@ bool updateThingspeak(const char* apiKey, const char* params)
   
   isClientConnected = true;
   
-  String getStr = "GET /update?key=";
+  String getStr = F("POST /update HTTP/1.1\r\n");
+  
+  getStr += F("Host: api.thingspeak.com\r\n");
+  
+  getStr += F("Connection: close\r\n");
+  
+  getStr += F("X-THINGSPEAKAPIKEY: ");
   getStr += apiKey;
-  getStr += "&";
+  getStr += F("\r\n");
+  
+  getStr += F("Content-Type: application/x-www-form-urlencoded\r\n");
+  
+  getStr += F("Content-Length: ");
+  int len = params.length();
+  getStr += String(len);
+  getStr += F("\r\n");
+  
+  getStr += F("\r\n");
+  
   getStr += params;
 
   client.println(getStr);
@@ -90,33 +119,34 @@ bool updateThingspeak(const char* apiKey, const char* params)
   return true;
 }
 
-void updateThingspeakTest1(double temperature, double pressure)
-{
-  String params = "";
-  params += "field1=";
-  params += String(temperature);
-  params += "&field2=";
-  params += String(pressure);
-  
-  updateThingspeak("PRH5FVNM8819MIBL", params.c_str());
-  
-}
+const char statusStr[] PROGMEM = "status=";
+const char field1Str[] PROGMEM = "&field1=";
+const char field2Str[] PROGMEM = "&field2=";
+const char field3Str[] PROGMEM = "&field3=";
+const char field4Str[] PROGMEM = "&field4=";
+const char field5Str[] PROGMEM = "&field5=";
+const char field6Str[] PROGMEM = "&field6=";
+const char field7Str[] PROGMEM = "&field7=";
+const char field8Str[] PROGMEM = "&field8=";
 
-void updateThingspeakChargeApi(QpigsMessage& qpigs, String& statusText)
+void updateThingspeakChargeApi()
 {
   String params = "";
-  params += "f1=";
-  params += String(qpigs.battV);
-  params += "&f2=";
-  params += String(qpigs.battChargeA);
-  params += "&f3=";
-  params += String(qpigs.solarV);
-  params += "&f4=";
-  params += String(qpigs.solarA);
-  params += "&f5=";
-  params += String(qpigs.chargingStatus);
-  params += "&status=";
-  params += statusText;
+
+  params += statusStr;
+  params += "Test Status";
+  params += field1Str;
+  params += String(_qpigsMessage.battV);
+  params += field2Str; 
+  params += String(_qpigsMessage.battChargeA);
+  params += field3Str;
+  params += String(_qpigsMessage.solarV);
+  params += field4Str;
+  params += String(_qpigsMessage.solarA);
+  params += field5Str;
+  params += String(_qpigsMessage.chargingStatus);
+  
+  updateThingspeak(_settings._chargerApiKey.c_str(), params);
 }
 
 void updateThingspeakBatteryApi(QpigsMessage& qpigs, String& statusText)

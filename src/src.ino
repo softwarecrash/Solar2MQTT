@@ -4,7 +4,6 @@
 #include <Wire.h>
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
-#include <FileSystem.h>
 #include <ip_addr.h>
 #include <espconn.h>
 #include <EEPROM.h>
@@ -18,7 +17,6 @@
   
 Settings _settings;
 TickCounter _tickCounter;
-PollDelay _inverterDelay(_tickCounter);
 
 //////////////////////
 // WiFi Definitions //
@@ -84,6 +82,8 @@ void setup()
   
 }
 
+extern bool _allMessagesUpdated;
+
 //----------------------------------------------------------------------
 void loop() 
 {
@@ -96,25 +96,27 @@ void loop()
     requestApMode = WIFI_AP;
     //requestInverterCommand("QPIGS");
   }
- 
-  if (_inverterDelay.compare(16000) > 0)
-  {
-    _inverterDelay.reset();
-    requestInverterCommand("QPIGS");
-  }
 
   // Make sure wifi is in the right mode
   serviceWifiMode();  
 
-  serviceThingspeak();
-
+  // Do the blinkenlights
   serviceLeds();
 
-  //serviceSoftSerialRx();
+  // Get any extra leftover chars from soft serial receiver
   SerialRx.service();
 
+  // Comms with inverter
   serviceInverter();
-  
+
+  // Send updates to thingspeak api
+  serviceThingspeak();
+
+  if (_allMessagesUpdated)
+  {
+    delay(15000);
+    _allMessagesUpdated = false;
+  }
   
   //If we're connected to an AP then send updates
   if ((currentApMode == WIFI_STA) && (clientConnectionState == CLIENT_CONNECTED))
@@ -183,7 +185,7 @@ void initHardware()
 
   //setupLcd();
   
-  Serial.begin(9600);
+  Serial.begin(115200);
   delay(10);
 
   //Second uart uses hardware transmitter TX1 and software interrupt receiver

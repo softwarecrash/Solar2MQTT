@@ -3,8 +3,17 @@
 
 #include <Arduino.h>
 
+#define INVERTER_COMMAND_TIMEOUT_MS 10000
+#define INVERTER_COMMAND_DELAY_MS 100
+
+//Send and receive periodic inverter commands
 void serviceInverter();
-void requestInverterCommand(String command);
+
+struct QpiMessage
+{
+  byte protocolId;
+};
+
 
 struct QpigsMessage
 {
@@ -74,7 +83,25 @@ struct QpiwsMessage
   bool batteryTooLowToCharge;
   bool reserved30;
   bool reserved31;
-  
 };
+
+struct QflagMessage
+{
+  bool disableBuzzer;
+  bool enableOverloadBypass;
+  bool enablePowerSaving;
+  bool enableLcdEscape;
+  bool enableOverloadRestart;
+  bool enableOvertempRestart;
+  bool enableBacklight;
+  bool enablePrimarySourceInterruptedAlarm;
+  bool enableFaultCodeRecording;
+};
+
+struct QidMessage
+{
+  char id[16];
+};
+
 
 #endif
