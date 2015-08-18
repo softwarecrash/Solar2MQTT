@@ -66,12 +66,7 @@ void serviceWifiMode()
   }  
 
   if (clientConnectionState == CLIENT_CONNECTING)
-  {
-    if (!counter)
-    {
-      Serial.print("!");
-    }
-    
+  {    
     if (WiFi.status() == WL_CONNECTED)
     {
       clientConnectionState = CLIENT_CONNECTED;

@@ -3,8 +3,8 @@
 
 #include <Arduino.h>
 
-#define INVERTER_COMMAND_TIMEOUT_MS 10000
-#define INVERTER_COMMAND_DELAY_MS 100
+#define INVERTER_COMMAND_TIMEOUT_MS 20000
+#define INVERTER_COMMAND_DELAY_MS 500
 
 //Send and receive periodic inverter commands
 void serviceInverter();
@@ -102,6 +102,5 @@ struct QidMessage
 {
   char id[16];
 };
-
 
 #endif

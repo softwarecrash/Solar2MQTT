@@ -372,7 +372,7 @@ void serviceInverter()
     Serial1.print(_nextCommandNeeded);
     Serial1.print((char)((crc >> 8) & 0xFF));
     Serial1.print((char)((crc >> 0) & 0xFF));
-    Serial1.print("\r\n");
+    Serial1.print("\r");
   }
     
   while (SerialRx.read(c))

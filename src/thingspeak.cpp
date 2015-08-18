@@ -3,6 +3,14 @@
 #include <ESP8266WiFi.h>
 #include "settings.h"
 #include "thingspeak.h"
+#include "tickcounter.h"
+
+#ifndef FPSTR
+#define FPSTR(pstr_pointer) (reinterpret_cast<const __FlashStringHelper *>(pstr_pointer))
+#endif
+
+#define THINGSPEAK_IP IPAddress(184,106,153,149)
+#define THINGSPEAK_ROLLOVER_MILLIS (24 * 3600 * 1000) //1 day
 
 extern WiFiClient client;
 extern Settings _settings;
@@ -13,22 +21,11 @@ extern QmodMessage _qmodMessage;
 extern QpiwsMessage _qpiwsMessage;
 extern QflagMessage _qflagMessage;
 extern QidMessage _qidMessage;
+extern TickCounter _tickCounter;
 
-#define THINGSPEAK_IP IPAddress(184,106,153,149)
-#define THINGSPEAK_ROLLOVER_MILLIS (24 * 3600 * 1000) //1 day
-
+PollDelay _thingspeakLastUpdated(_tickCounter);
 char udpPacketBuffer[1000];
-unsigned long thingspeakLastUpdated = 0;
-
 bool isClientConnected = false;
-
-unsigned long getMillisSinceLastThingspeakUpdate()
-{
-  if (thingspeakLastUpdated == 0)
-    return 0xFFFFFFFF;
-  
-  return (millis() - thingspeakLastUpdated) & 0x7FFFFFFF;
-}
 
 //Periodically send an update to the thingspeak API
 void serviceThingspeak()
@@ -50,28 +47,30 @@ void serviceThingspeak()
     }
   }
 
-  //Reset the thingspeakLastUpdated counter after a day so that rollover won't be a problem
-  if (thingspeakLastUpdated != 0)
+  //Check holdoff time
+  if (_thingspeakLastUpdated.compare(_settings._updateRateSec * 1000) < 0)
   {
-    if (getMillisSinceLastThingspeakUpdate() > THINGSPEAK_ROLLOVER_MILLIS)
-      thingspeakLastUpdated = 0;
+    return;
   }
 
+  //Check if the previous batch of messages was received
   if (_allMessagesUpdated)
-  {
+  { 
     updateThingspeakChargeApi();
+    updateThingspeakBatteryApi();
+    updateThingspeakLoadApi();
   }
 }
 
+//POST an update to thingspeak
 bool updateThingspeak(const char* apiKey, String& params)
 {
-  //Check holdoff time
-  if (getMillisSinceLastThingspeakUpdate() < _settings._updateRateSec)
-  {
-    //Serial.println("Wait a bit before sending!");
+  if (apiKey == 0)
     return false;
-  }
-    
+
+  if (apiKey[0] == 0)
+    return false;
+   
   client.stop();
 
   Serial.println("Connecting");
@@ -111,11 +110,13 @@ bool updateThingspeak(const char* apiKey, String& params)
   client.println(getStr);
   client.println();
 
+  Serial.println("Sent");
+  
+
   Serial.println(getStr);
 
-  thingspeakLastUpdated = millis();
-  if (thingspeakLastUpdated == 0) thingspeakLastUpdated = 1;
-
+  _thingspeakLastUpdated.reset();
+  
   return true;
 }
 
@@ -129,56 +130,134 @@ const char field6Str[] PROGMEM = "&field6=";
 const char field7Str[] PROGMEM = "&field7=";
 const char field8Str[] PROGMEM = "&field8=";
 
+String getWarningsText()
+{
+  String msg;
+
+  /*
+      reserved0                  0
+      inverterFault              1
+      busOver                    2
+      busUnder                   3
+      busSoftFail                4
+      lineFail                   5
+      opvShort                   6
+      overTemperature            7
+      fanLocked                  8
+      batteryVoltageHigh         9
+      batteryLowAlarm            A
+      reserved13                 B 
+      batteryUnderShutdown       C
+      reserved15                 D 
+      overload                   E
+      eepromFault                F
+      inverterOverCurrent        G
+      inverterSoftFail           H
+      selfTestFail               I
+      opDcVoltageOver            J
+      batOpen                    K
+      currentSensorFail          L
+      batteryShort               M
+      powerLimit                 N
+      pvVoltageHigh              O
+      mpptOverloadFault          P
+      mpptOverloadWarning        Q
+      batteryTooLowToCharge      R
+      reserved30                 S
+      reserved31                 T
+   */
+
+  byte* p = (byte*)&_qpiwsMessage;
+  for (int i=0; i<32; i++)
+    if (p[i] == true)
+      msg += (char)((i < 10) ? ('0' + i) : ('A' - 10 + i));
+
+  return msg;
+}
+
 void updateThingspeakChargeApi()
 {
-  String params = "";
-
-  params += statusStr;
-  params += "Test Status";
-  params += field1Str;
-  params += String(_qpigsMessage.battV);
-  params += field2Str; 
-  params += String(_qpigsMessage.battChargeA);
-  params += field3Str;
-  params += String(_qpigsMessage.solarV);
-  params += field4Str;
-  params += String(_qpigsMessage.solarA);
-  params += field5Str;
-  params += String(_qpigsMessage.chargingStatus);
+  String params;
+  String msg;
   
+  //msg += "PI=";
+  //msg += String(_qpiMessage.protocolId);
+  msg += "mode=";
+  msg += _qmodMessage.mode;
+  msg += ",warn=";
+  msg += getWarningsText();
+  
+  params += FPSTR(statusStr);
+  params += msg;
+  params += FPSTR(field1Str);
+  params += String(_qpigsMessage.battV);
+  params += FPSTR(field2Str); 
+  params += String(_qpigsMessage.battChargeA);
+  params += FPSTR(field3Str);
+  params += String(_qpigsMessage.solarV);
+  params += FPSTR(field4Str);
+  params += String(_qpigsMessage.solarA);
+  params += FPSTR(field5Str);
+  params += String(_qpigsMessage.chargingStatus);
+ 
   updateThingspeak(_settings._chargerApiKey.c_str(), params);
 }
 
-void updateThingspeakBatteryApi(QpigsMessage& qpigs, String& statusText)
+void updateThingspeakBatteryApi()
 {
-  String params = "";
-  params += "f1=";
-  params += String(qpigs.battV);
-  params += "&f2=";
-  params += String(qpigs.battChargeA);
-  params += "&f3=";
-  params += String(qpigs.battDischargeA); //Avg in future
-  params += "&f4=";
-  params += String(qpigs.battDischargeA); //Max in future
-  params += "&status=";
-  params += statusText;
+  String params;
+  String msg;
+  
+  //msg += "PI=";
+  //msg += String(_qpiMessage.protocolId);
+  msg += "mode=";
+  msg += _qmodMessage.mode;
+  msg += ",warn=";
+  msg += getWarningsText();
+  
+  params += FPSTR(statusStr);
+  params += msg;
+  params += FPSTR(field1Str);
+  params += String(_qpigsMessage.battV);
+  params += FPSTR(field2Str); 
+  params += String(_qpigsMessage.battChargeA);
+  params += FPSTR(field3Str);
+  params += String(_qpigsMessage.battDischargeA);
+  params += FPSTR(field4Str);
+  params += String(_qpigsMessage.battDischargeA);
+ 
+  updateThingspeak(_settings._batteryApiKey.c_str(), params);
+    
 }
 
-void updateThingspeakLoadApi(QpigsMessage& qpigs, String& statusText)
+void updateThingspeakLoadApi()
 {
-  String params = "";
-  params += "f1=";
-  params += String(qpigs.acOutV);
-  params += "&f2=";
-  params += String(qpigs.acOutHz);
-  params += "&f3=";
-  params += String(qpigs.acOutW); 
-  params += "&f4=";
-  params += String(qpigs.acOutVa);
-  params += "&f5=";
-  params += String(qpigs.heatSinkDegC);
-  params += "&status=";
-  params += statusText;
+  String params;
+  String msg;
+  
+  //msg += "PI=";
+  //msg += String(_qpiMessage.protocolId);
+  msg += "mode=";
+  msg += _qmodMessage.mode;
+  msg += ",warn=";
+  msg += getWarningsText();
+  
+  params += FPSTR(statusStr);
+  params += msg;
+  params += FPSTR(field1Str);
+  params += String(_qpigsMessage.acOutV);
+  params += FPSTR(field2Str); 
+  params += String(_qpigsMessage.acOutHz);
+  params += FPSTR(field3Str);
+  params += String(_qpigsMessage.acOutW);
+  params += FPSTR(field4Str);
+  params += String(_qpigsMessage.acOutVa);
+  params += FPSTR(field4Str);
+  params += String(_qpigsMessage.heatSinkDegC);
+ 
+  updateThingspeak(_settings._loadApiKey.c_str(), params);
+    
+  
 }
 
 

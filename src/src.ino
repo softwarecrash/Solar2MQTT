@@ -14,34 +14,18 @@
 #include "Settings.h"
 #include "inverter.h"
 #include "thingspeak.h"
-  
-Settings _settings;
-TickCounter _tickCounter;
 
-//////////////////////
-// WiFi Definitions //
-//////////////////////
-struct espconn connection;
 const char ApSsid[] = "Setup";
 
 /////////////////////
 // Pin Definitions //
 /////////////////////
-
-
-
 const int SOFTSERIAL_TX = 2;
 const int SOFTSERIAL_RX = 12;
-EspSoftSerialRx SerialRx;
-
-//--------------------------------- LEDs
-
-const int RED_LED_PIN = 14; // red LED
-const int GRN_LED_PIN = 13; // green LED
-const int RED_BTN_PIN = 0; // red btn
-const int GRN_BTN_PIN = 15; //12; // green btn
-
-
+const int RED_LED_PIN = 14;   // red LED
+const int GRN_LED_PIN = 13;   // green LED
+const int RED_BTN_PIN = 0;    // red btn
+const int GRN_BTN_PIN = 15;   //12; // green btn
 
 #define LED_MODE_SOLID_BOTH 0xFF
 #define LED_MODE_SOLID_RED 0xAA
@@ -68,9 +52,10 @@ bool clientReconnect = false;
 
 //--------------------------------- IP connection
 WiFiServer server(80);
-byte counter = 0;
-
 WiFiClient client;
+Settings _settings;
+TickCounter _tickCounter;
+EspSoftSerialRx SerialRx;
 
 //----------------------------------------------------------------------
 void setup() 
@@ -88,8 +73,6 @@ extern bool _allMessagesUpdated;
 void loop() 
 {
   delay(50);
-  if (!counter) counter = 100;
-  --counter;
 
   if (digitalRead(RED_BTN_PIN) == 0)
   {
@@ -162,19 +145,13 @@ void loop()
     serve404(client);
   }
   client.flush();
-
-  //drawLcd();
-
-  delay(1);
-  
-  // The client will actually be disconnected 
-  // when the function returns and 'client' object is detroyed
 }
 
 
 
 void initHardware()
 {
+ 
   delay(100);
   Wire.begin(4, 5);
   
@@ -194,6 +171,21 @@ void initHardware()
   Serial1.begin(2400);
   SerialRx.begin(2400, SOFTSERIAL_RX);
 
-  
+/*
+char c;
+  while (1)
+  {
+    if (SerialRx.read((byte&)c))
+      Serial.write(c);
+
+    if (Serial.available())
+    {
+      c = Serial.read();
+      Serial1.write(c);
+    }
+    delay(1);
+    SerialRx.service();
+  }
+  */
 }
 

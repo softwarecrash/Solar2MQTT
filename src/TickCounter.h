@@ -51,7 +51,8 @@ class PollDelay
     {
       _startMillis = _tickCounter->getMillis();
     }
-  
+
+    //Call this once every 26 seconds or it'll roll over
     int compare(unsigned int millisSinceStart)
     {
       return (int)( _tickCounter->getMillis() - (_startMillis + millisSinceStart) );

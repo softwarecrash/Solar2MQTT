@@ -5,5 +5,7 @@ bool updateThingspeak(const char* apiKey, String& params);
 void serviceThingspeak();
 
 void updateThingspeakChargeApi();
+void updateThingspeakBatteryApi();
+void updateThingspeakLoadApi();
 
 #endif
