@@ -1,6 +1,7 @@
 #include "Arduino.h"
-#include <EspSoftSerialRx.h>
 
+
+#include "EspSoftSerialRx.h" //Copied from: https://github.com/scottwday/EspSoftSerial
 #include "main.h"
 #include "inverter.h"
 #include "tickCounter.h"
@@ -393,5 +394,3 @@ void serviceInverter()
     }
   }   
 }
-
-

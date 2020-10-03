@@ -4,11 +4,12 @@
 #include <Wire.h>
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
-#include <ip_addr.h>
+//#include <ip_addr.h>
 #include <espconn.h>
 #include <EEPROM.h>
-#include <EspSoftSerialRx.h>
 
+
+#include "EspSoftSerialRx.h" //Copied from: https://github.com/scottwday/EspSoftSerial
 #include "main.h"
 #include "TickCounter.h"
 #include "Settings.h"
@@ -188,4 +189,3 @@ char c;
   }
   */
 }
-
