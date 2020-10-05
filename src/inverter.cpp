@@ -5,12 +5,16 @@
 #include "main.h"
 #include "inverter.h"
 #include "tickCounter.h"
-#include "thingspeak.h"
+//#include "thingspeak.h"
 #include "settings.h"
 
 extern TickCounter _tickCounter;
 extern EspSoftSerialRx SerialRx;
 extern Settings _settings;
+extern byte inverterType; 
+extern byte MPI;
+extern byte PCM60x;
+extern byte PIP;
 
 String _commandBuffer;
 String _lastRequestedCommand = "-"; //Set to not empty to force a timeout on startup
@@ -19,12 +23,22 @@ String _nextCommandNeeded = "";
 bool _allMessagesUpdated = false;
 PollDelay _lastReceivedAt(_tickCounter);
 
+
+// PCM and PIP inverters use below
 QpiMessage _qpiMessage = {0};
 QpigsMessage _qpigsMessage = {0};
 QmodMessage _qmodMessage = {0};
 QpiwsMessage _qpiwsMessage = {0};
 QflagMessage _qflagMessage = {0};
 QidMessage _qidMessage = {0};
+
+
+//MPI Inverters use below
+P003GSMessage _P003GSMessage = {0};
+P003PSMessage _P003PSMessage = {0};
+P006FPADJMessage _P006FPADJMessage = {0};
+
+
 
 //Found here: http://forums.aeva.asn.au/pip4048ms-inverter_topic4332_post53760.html#53760
 #define INT16U unsigned int
@@ -69,6 +83,8 @@ unsigned short cal_crc_half(byte* pin, byte len)
   crc += bCRCLow;
   return(crc);
 }
+
+
 
 //Parses out the next number in the command string, starting at index
 //updates index as it goes
@@ -127,45 +143,116 @@ bool getNextBit(String& command, int& index)
   return false;
 }
 
+bool onP003PS()
+{
+  //P003PS -- '81'^D07700139,00122,,,,,,0502,0973,0385,01860,0593,1040,0399,02032,031,1,1,1,1,2,1}⸮'
+  Serial.print("P003PS -- '");
+  Serial.print(_commandBuffer.length());
+  Serial.print("'");
+  Serial.print(_commandBuffer);
+  Serial.println("'");
+  
+  if (_commandBuffer.length() < 81)
+    return false;
+  int index = 5; //after the starting 'commands'
+  _P003PSMessage.rxTimeSec = _tickCounter.getSeconds();
+  _P003PSMessage.solarWatt1 = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003PSMessage.solarWatt2 = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003PSMessage.batteryWatt = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003PSMessage.acin2_r = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003PSMessage.acin2_s = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003PSMessage.acin2_t = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003PSMessage.acin2_total = (float)getNextFloat(_commandBuffer, index)/10;
+
+  _P003PSMessage.w_r = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003PSMessage.w_s = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003PSMessage.w_t = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003PSMessage.w_total = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003PSMessage.va_r = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003PSMessage.va_s = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003PSMessage.va_t = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003PSMessage.va_total = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003PSMessage.ac_output_procent = (short)getNextFloat(_commandBuffer, index);
+ 
+       
+
+  return true;
+
+}
+
+bool onP006FPADJ()
+{
+  //P006FPADJ -- '34'^D0301,0000,1,0099,1,0109,1,0112⸮7'
+  Serial.print("P006FPADJ -- '");
+  Serial.print(_commandBuffer.length());
+  Serial.print("'");
+  Serial.print(_commandBuffer);
+  Serial.println("'");
+  
+  if (_commandBuffer.length() < 34)
+    return false;
+  int index = 5; //after the starting 'commands'
+  return true;
+}
+
+bool onP003GS()
+{
+  //P003GS -- '114'^D1103462,3468,0040,0035,0503,071,+00000,2369,2367,2350,5000,0000,0000,0000,2371,2365,2352,5000,,,,025,028,000,0b'
+  Serial.print("P003GS -- '");
+  Serial.print(_commandBuffer.length());
+  Serial.print("'");
+  Serial.print(_commandBuffer);
+  Serial.println("'");
+  
+  if (_commandBuffer.length() < 114)
+    return false;
+//P003GS -- '114'^D1103464,3454,0032,0026,0503,071,+00000,2395,2401,2374,5000,0000,0000,0000,2397,2399,2374,5000,,,,025,029,000,0⸮ '
+  int index = 5; //after the starting 'commands'
+  _P003GSMessage.rxTimeSec = _tickCounter.getSeconds();
+  _P003GSMessage.solarInputV1 = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.solarInputV2 = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.solarInputA1 = (float)getNextFloat(_commandBuffer, index)/100;
+  _P003GSMessage.solarInputA2 = (float)getNextFloat(_commandBuffer, index)/100;
+  _P003GSMessage.battV = getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.battCapacity = getNextFloat(_commandBuffer, index);
+  _P003GSMessage.battA = getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.acInputVoltageR = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.acInputVoltageS = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.acInputVoltageT = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.acInputFrequency = (float)getNextFloat(_commandBuffer, index)/100;
+  _P003GSMessage.acInputCurrentR = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.acInputCurrentS = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.acInputCurrentT = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.acOutputVoltageR = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.acOutputVoltageS = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.acOutputVoltageT = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.acOutputFrequency = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.acOutputCurrentR = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.acOutputCurrentS = (float)getNextFloat(_commandBuffer, index)/10;
+  _P003GSMessage.acOutputCurrentT = (float)getNextFloat(_commandBuffer, index)/10;
+  return true;  
+}
+
+
+
 //Parse the response to QPIGS general status message, CRC has already been confirmed
 bool onPIGS()
 {
   Serial.print("QPIGS '");
   Serial.print(_commandBuffer);
   Serial.print("'");
-
-  if (_commandBuffer.length() < 109)
+  if (_commandBuffer.length() < 67)
     return false;
 
   int index = 1; //after the starting '('
   _qpigsMessage.rxTimeSec = _tickCounter.getSeconds();
-  _qpigsMessage.gridV = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.gridHz = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.acOutV = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.acOutHz = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.acOutVa = (short)getNextLong(_commandBuffer, index);
-  _qpigsMessage.acOutW = (short)getNextLong(_commandBuffer, index);
-  _qpigsMessage.acOutPercent = (byte)getNextLong(_commandBuffer, index);
-  _qpigsMessage.busV = (short)getNextLong(_commandBuffer, index);
+  _qpigsMessage.solarV = (short)getNextFloat(_commandBuffer, index);
   _qpigsMessage.battV = getNextFloat(_commandBuffer, index);
   _qpigsMessage.battChargeA = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.battPercent = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.heatSinkDegC = getNextFloat(_commandBuffer, index);
   _qpigsMessage.solarA = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.solarV = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.sccBattV = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.battDischargeA = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.addSbuPriorityVersion = getNextBit(_commandBuffer, index);
-  _qpigsMessage.isConfigChanged = getNextBit(_commandBuffer, index);
-  _qpigsMessage.isSccFirmwareUpdated = getNextBit(_commandBuffer, index);
-  _qpigsMessage.isLoadOn = getNextBit(_commandBuffer, index);             
-  _qpigsMessage.battVoltageToSteadyWhileCharging = getNextBit(_commandBuffer, index);
-  _qpigsMessage.chargingStatus = (byte)getNextLong(_commandBuffer, index);
-  _qpigsMessage.reservedY = (byte)getNextLong(_commandBuffer, index);
-  _qpigsMessage.reservedZ = (byte)getNextLong(_commandBuffer, index);
-  _qpigsMessage.reservedAA = getNextLong(_commandBuffer, index);
-  _qpigsMessage.reservedBB = (short)getNextLong(_commandBuffer, index);
-
+  _qpigsMessage.solar2A = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.wattage = getNextFloat(_commandBuffer, index);
+  
   return true;
 }
 
@@ -290,30 +377,52 @@ bool onPI()
 //Called once a line has been received from the inverter (on CR)
 void onInverterCommand()
 {
-  if ((_commandBuffer.length() > 3) && (_commandBuffer[0] == '('))
+  if ((_commandBuffer.length() > 3) )
   {
+    //&& (_commandBuffer[0] == '(')
     unsigned short calculatedCrc = cal_crc_half((byte*)_commandBuffer.c_str(), _commandBuffer.length() - 2);
     unsigned short recievedCrc = ((unsigned short)_commandBuffer[_commandBuffer.length()-2] << 8) | 
                                                   _commandBuffer[_commandBuffer.length()-1];
-
-    Serial.print(" Calc: ");
-    Serial.print(calculatedCrc, HEX);
-    Serial.print(" Rx: ");
-    Serial.println(recievedCrc, HEX);
-
+    if (!inverterType) {
+      Serial.print(" Calc: ");
+      Serial.print(calculatedCrc, HEX);
+      Serial.print(" Rx: ");
+      Serial.println(recievedCrc, HEX);
+    }
     //If CRC is okay, parse message and set next message to be requested
     if (calculatedCrc == recievedCrc)
     {
-      if (_lastRequestedCommand == "QPI") 
+//MPI
+        if (_lastRequestedCommand == "P003GS") 
+        {
+          if (onP003GS()) _allMessagesUpdated = false;
+          _nextCommandNeeded = "P003PS";
+        }
+        if (_lastRequestedCommand == "P003PS") 
+        {
+          if (onP003PS()) _allMessagesUpdated = false;
+          _nextCommandNeeded = "P006FPADJ";
+        }
+  
+        if (_lastRequestedCommand == "P006FPADJ") 
+        {
+          if (onP006FPADJ()) _allMessagesUpdated = true;
+          _nextCommandNeeded = "";
+        }
+
+      // Below for PCM
+
+      if (_lastRequestedCommand == "QPIGS" && !inverterType) 
       {
-        onPI();
-        _nextCommandNeeded = "QPIGS";
+        if (onPIGS()) {
+          _allMessagesUpdated = true;
+        }
+        _nextCommandNeeded = "";
       }
-      if (_lastRequestedCommand == "QPIGS") 
-      {
-        onPIGS();
-        _nextCommandNeeded = "QMOD";
-      }
+
+      
+//Below for PIP
+      
       if (_lastRequestedCommand == "QMOD") 
       {
         onMOD();
@@ -361,18 +470,19 @@ void serviceInverter()
   if ((_lastRequestedCommand == "") && (_lastReceivedAt.compare(INVERTER_COMMAND_DELAY_MS) > 0) && (!_allMessagesUpdated))
   {
     if (_nextCommandNeeded == "")
-      _nextCommandNeeded = "QPI";
+      if (inverterType)  _nextCommandNeeded = "P003GS"; //IF MPI we start with that order
+      else _nextCommandNeeded = "QPIGS";  //if PIP 
   
     unsigned short crc = cal_crc_half((byte*)_nextCommandNeeded.c_str(), _nextCommandNeeded.length());
   
     _lastRequestedCommand = _nextCommandNeeded;
     _lastRequestedAt.reset();
-
-    Serial.println(_nextCommandNeeded);
-  
+    //Serial.print("Next command: ");
+    //Serial.print(_nextCommandNeeded);
+    if (inverterType) Serial1.print("^");  //If MPI then prechar is needed
     Serial1.print(_nextCommandNeeded);
-    Serial1.print((char)((crc >> 8) & 0xFF));
-    Serial1.print((char)((crc >> 0) & 0xFF));
+    if (!inverterType) Serial1.print((char)((crc >> 8) & 0xFF)); //ONLY CRC fo PCM/PIP
+    if (!inverterType) Serial1.print((char)((crc >> 0) & 0xFF)); //ONLY CRC fo PCM/PIP
     Serial1.print("\r");
   }
     

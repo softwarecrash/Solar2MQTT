@@ -1,3 +1,4 @@
+
 //TODO:
 // Use keys from settings for upload
 
@@ -7,14 +8,15 @@
 //#include <ip_addr.h>
 #include <espconn.h>
 #include <EEPROM.h>
-
+#include <PubSubClient.h>
+#include "uptime_formatter.h"
 
 #include "EspSoftSerialRx.h" //Copied from: https://github.com/scottwday/EspSoftSerial
 #include "main.h"
 #include "TickCounter.h"
 #include "Settings.h"
 #include "inverter.h"
-#include "thingspeak.h"
+//#include "thingspeak.h"
 
 const char ApSsid[] = "Setup";
 
@@ -58,14 +60,44 @@ Settings _settings;
 TickCounter _tickCounter;
 EspSoftSerialRx SerialRx;
 
+extern QpigsMessage _qpigsMessage;
+extern P003GSMessage _P003GSMessage;
+extern P003PSMessage _P003PSMessage;
+extern P006FPADJMessage _P006FPADJMessage;
+
+//---------------------- MQTT SHould be moved to setup
+const char* mqttServer = "mqtt.romer.se";
+const int mqttPort = 1883;
+const char* mqttUser = "mqtt";
+const char* mqttPassword = "mqtt";
+PubSubClient mqttclient(client);
+
+// Interface types that can be used. 
+const byte MPI = 1;
+const byte PCM60x = 0;
+const byte PIP = 2;
+
+#define dev "mpi"
+byte inverterType = MPI;  // 0 for pip and 1 for MPI
+
+
+#define topic "solar/" dev
+  
 //----------------------------------------------------------------------
 void setup() 
 {
   initHardware();
   _settings.load();
   serviceWifiMode();
+
   server.begin();
+  delay(100);
   
+  mqttclient.setServer(mqttServer, mqttPort);
+    if (mqttclient.connect((String("ESP-" +ESP.getChipId())).c_str(), mqttUser, mqttPassword )) {
+      Serial.println("connected to MQTT SERVER");
+    } else
+      Serial.println("Couldnt connect MQTT right now. Will try later");
 }
 
 extern bool _allMessagesUpdated;
@@ -78,14 +110,13 @@ void loop()
   if (digitalRead(RED_BTN_PIN) == 0)
   {
     requestApMode = WIFI_AP;
-    //requestInverterCommand("QPIGS");
   }
 
   // Make sure wifi is in the right mode
   serviceWifiMode();  
 
   // Do the blinkenlights
-  serviceLeds();
+  //serviceLeds();
 
   // Get any extra leftover chars from soft serial receiver
   SerialRx.service();
@@ -93,29 +124,19 @@ void loop()
   // Comms with inverter
   serviceInverter();
 
-  // Send updates to thingspeak api
-  serviceThingspeak();
-
   if (_allMessagesUpdated)
   {
-    delay(15000);
+    sendtoMQTT();  // Lets send all data when messages are done
     _allMessagesUpdated = false;
+    delay(3000);
   }
   
-  //If we're connected to an AP then send updates
-  if ((currentApMode == WIFI_STA) && (clientConnectionState == CLIENT_CONNECTED))
-  {
-//    if (getMillisSinceLastThingspeakUpdate() > 30000)
-//      updateThingspeakTest1(temperatureDegC, pressureMb); 
-  }
-  
-  
-  // Check if a client has connected
+  // Check if a client towards port 80 has connected
   WiFiClient client = server.available();
   if (!client) {
     return;
   }
-
+  
   // Read the first line of the request
   String req = client.readStringUntil('\r');
   Serial.println(req);
@@ -148,8 +169,6 @@ void loop()
   client.flush();
 }
 
-
-
 void initHardware()
 {
  
@@ -172,20 +191,63 @@ void initHardware()
   Serial1.begin(2400);
   SerialRx.begin(2400, SOFTSERIAL_RX);
 
-/*
-char c;
-  while (1)
-  {
-    if (SerialRx.read((byte&)c))
-      Serial.write(c);
+}
 
-    if (Serial.available())
-    {
-      c = Serial.read();
-      Serial1.write(c);
-    }
-    delay(1);
-    SerialRx.service();
+bool sendtoMQTT() {
+  if (!mqttclient.connected()) {
+    if (mqttclient.connect((String("ESP-" +ESP.getChipId())).c_str(), mqttUser, mqttPassword )) {
+        Serial.println("Reconnected to MQTT SERVER");
+        mqttclient.publish((String("stat/") + String(dev) + String("/info")).c_str(), "Im alive!");
+      } else return false; // Exit if we couldnt connect to MQTT brooker
+  } 
+  
+  if (inverterType == PCM60x) { //PCM
+     mqttclient.publish((String(topic) + String("/battv")).c_str(), String(_qpigsMessage.battV).c_str());
+     mqttclient.publish((String(topic) + String("/solarv")).c_str(), String(_qpigsMessage.solarV).c_str());
+     mqttclient.publish((String(topic) + String("/batta")).c_str(), String(_qpigsMessage.battChargeA).c_str());
+     mqttclient.publish((String(topic) + String("/wattage")).c_str(), String(_qpigsMessage.wattage).c_str());
+     mqttclient.publish((String(topic) + String("/solara")).c_str(), String(_qpigsMessage.solarA).c_str());
   }
-  */
+  if (inverterType == MPI) { //IF MPI
+    mqttclient.publish((String(topic) + String("/solar1w")).c_str(), String(_P003GSMessage.solarInputV1*_P003GSMessage.solarInputA1).c_str());
+    mqttclient.publish((String(topic) + String("/solar2w")).c_str(), String(_P003GSMessage.solarInputV2*_P003GSMessage.solarInputA2).c_str());
+    mqttclient.publish((String(topic) + String("/solarInputV1")).c_str(), String(_P003GSMessage.solarInputV1).c_str());
+    mqttclient.publish((String(topic) + String("/solarInputV2")).c_str(), String(_P003GSMessage.solarInputV2).c_str());
+    mqttclient.publish((String(topic) + String("/solarInputA1")).c_str(), String(_P003GSMessage.solarInputA1).c_str());
+    mqttclient.publish((String(topic) + String("/solarInputA2")).c_str(), String(_P003GSMessage.solarInputA2).c_str()); 
+    mqttclient.publish((String(topic) + String("/battV")).c_str(), String(_P003GSMessage.battV).c_str());
+    mqttclient.publish((String(topic) + String("/battA")).c_str(), String(_P003GSMessage.battA).c_str());
+
+    mqttclient.publish((String(topic) + String("/acInputVoltageR")).c_str(), String(_P003GSMessage.acInputVoltageR).c_str());   
+    mqttclient.publish((String(topic) + String("/acInputVoltageS")).c_str(), String(_P003GSMessage.acInputVoltageS).c_str());
+    mqttclient.publish((String(topic) + String("/acInputVoltageT")).c_str(), String(_P003GSMessage.acInputVoltageT).c_str());
+
+    mqttclient.publish((String(topic) + String("/acInputCurrentR")).c_str(), String(_P003GSMessage.acInputCurrentR).c_str());   
+    mqttclient.publish((String(topic) + String("/acInputCurrentS")).c_str(), String(_P003GSMessage.acInputCurrentS).c_str());
+    mqttclient.publish((String(topic) + String("/acInputCurrentT")).c_str(), String(_P003GSMessage.acInputCurrentT).c_str());
+
+    mqttclient.publish((String(topic) + String("/acOutputCurrentR")).c_str(), String(_P003GSMessage.acOutputCurrentR).c_str());   
+    mqttclient.publish((String(topic) + String("/acOutputCurrentS")).c_str(), String(_P003GSMessage.acOutputCurrentS).c_str());
+    mqttclient.publish((String(topic) + String("/acOutputCurrentT")).c_str(), String(_P003GSMessage.acOutputCurrentT).c_str());
+
+    mqttclient.publish((String(topic) + String("/acWattageR")).c_str(), String(_P003PSMessage.w_r).c_str());
+    mqttclient.publish((String(topic) + String("/acWattageS")).c_str(), String(_P003PSMessage.w_s).c_str());
+    mqttclient.publish((String(topic) + String("/acWattageT")).c_str(), String(_P003PSMessage.w_t).c_str());
+    mqttclient.publish((String(topic) + String("/acWattageTotal")).c_str(), String(_P003PSMessage.w_total).c_str());
+    mqttclient.publish((String(topic) + String("/ac_output_procent")).c_str(), String(_P003PSMessage.ac_output_procent).c_str());
+
+    mqttclient.publish((String(topic) + String("/feedingGridDirectionR")).c_str(), String(_P006FPADJMessage.feedingGridDirectionR).c_str());
+    mqttclient.publish((String(topic) + String("/calibrationWattR")).c_str(), String(_P006FPADJMessage.calibrationWattR).c_str());
+    mqttclient.publish((String(topic) + String("/feedingGridDirectionS")).c_str(), String(_P006FPADJMessage.feedingGridDirectionS).c_str());
+    mqttclient.publish((String(topic) + String("/calibrationWattS")).c_str(), String(_P006FPADJMessage.calibrationWattS).c_str());
+    mqttclient.publish((String(topic) + String("/feedingGridDirectionT")).c_str(), String(_P006FPADJMessage.feedingGridDirectionT).c_str());
+    mqttclient.publish((String(topic) + String("/calibrationWattT")).c_str(), String(_P006FPADJMessage.calibrationWattT).c_str());
+  
+  }
+
+
+  mqttclient.publish((String("stat/") + String(dev) + String("/uptime")).c_str(), String(uptime_formatter::getUptime()).c_str());
+  Serial.print("Data sent to MQTT SERver");
+  Serial.println(" - up: " + uptime_formatter::getUptime());
+  return true;
 }

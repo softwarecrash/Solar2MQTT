@@ -70,10 +70,10 @@ void EspSoftSerialRx::begin(const unsigned long baud, const byte rxPin)
 
 //These shim the interrupt call into a class instance
 // It's inefficient but it shields the cruft from the user
-void EspSoftSerialRx::onRxPinChange0() { _instances[0]->onRxPinChange(); }
-void EspSoftSerialRx::onRxPinChange1() { _instances[1]->onRxPinChange(); }
-void EspSoftSerialRx::onRxPinChange2() { _instances[2]->onRxPinChange(); }
-void EspSoftSerialRx::onRxPinChange3() { _instances[3]->onRxPinChange(); }
+void ICACHE_RAM_ATTR EspSoftSerialRx::onRxPinChange0() { _instances[0]->onRxPinChange(); }
+void ICACHE_RAM_ATTR EspSoftSerialRx::onRxPinChange1() { _instances[1]->onRxPinChange(); }
+void ICACHE_RAM_ATTR EspSoftSerialRx::onRxPinChange2() { _instances[2]->onRxPinChange(); }
+void ICACHE_RAM_ATTR EspSoftSerialRx::onRxPinChange3() { _instances[3]->onRxPinChange(); }
 
 void EspSoftSerialRx::service()
 {
