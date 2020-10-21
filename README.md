@@ -1,7 +1,10 @@
 # InverterOfThings Logger
 ESP8266 based WiFi interface for Voltronic Axpert MppSolar PIP inverters
 
+
 **Note that this project is incomplete, It doesn't do anything useful yet!**
+
+**Note2 that all below info is from the forked project and in short this will be updated when all is refactored and perhaps working....**
 
 # Overview
 Based around an ESP8266 WiFi microcontroller.
