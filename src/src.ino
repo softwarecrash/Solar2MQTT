@@ -1,46 +1,30 @@
 
 //TODO:
-// Use keys from settings for upload
+// Fix WIFI
+// Fix setting of inverter type
+// Add set via mqtt?
+
 
 #include <Wire.h>
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
-//#include <ip_addr.h>
 #include <espconn.h>
 #include <EEPROM.h>
 #include <PubSubClient.h>
 #include "uptime_formatter.h"
 
-#include "EspSoftSerialRx.h" //Copied from: https://github.com/scottwday/EspSoftSerial
+
 #include "main.h"
 #include "TickCounter.h"
 #include "Settings.h"
 #include "inverter.h"
-//#include "thingspeak.h"
+
 
 const char ApSsid[] = "Setup";
 
 /////////////////////
 // Pin Definitions //
 /////////////////////
-const int SOFTSERIAL_TX = 2;
-const int SOFTSERIAL_RX = 12;
-const int RED_LED_PIN = 14;   // red LED
-const int GRN_LED_PIN = 13;   // green LED
-const int RED_BTN_PIN = 0;    // red btn
-const int GRN_BTN_PIN = 15;   //12; // green btn
-
-#define LED_MODE_SOLID_BOTH 0xFF
-#define LED_MODE_SOLID_RED 0xAA
-#define LED_MODE_SOLID_GRN 0x55
-#define LED_MODE_SLOW_RED 0xA0;
-#define LED_MODE_SLOW_GRN 0x50;
-#define LED_MODE_FAST_RED 0x44;
-#define LED_MODE_FAST_GRN 0x11;
-#define LED_DELAY 4
-byte ledMode = 0;
-byte ledState = 0;
-byte ledCounter = 0;
 
 //--------------------------------- Wifi State
 #define CLIENT_NOTCONNECTED 0
@@ -58,7 +42,7 @@ WiFiServer server(80);
 WiFiClient client;
 Settings _settings;
 TickCounter _tickCounter;
-EspSoftSerialRx SerialRx;
+int WIFI_COUNT = 0;
 
 extern QpigsMessage _qpigsMessage;
 extern P003GSMessage _P003GSMessage;
@@ -74,62 +58,50 @@ PubSubClient mqttclient(client);
 
 // Interface types that can be used. 
 const byte MPI = 1;
-const byte PCM60x = 0;
+const byte PCM = 0;
 const byte PIP = 2;
 
-#define dev "mpi"
-byte inverterType = MPI;  // 0 for pip and 1 for MPI
+#define dev "pcm2"
+byte inverterType = PCM;  // 0 for pip and 1 for MPI
 
 
 #define topic "solar/" dev
+
+unsigned long mqtttimer = 0;
   
 //----------------------------------------------------------------------
 void setup() 
 {
   initHardware();
   _settings.load();
-  serviceWifiMode();
-
+  //serviceWifiMode();
+  setup_wifi();
+  
   server.begin();
   delay(100);
   
   mqttclient.setServer(mqttServer, mqttPort);
     if (mqttclient.connect((String("ESP-" +ESP.getChipId())).c_str(), mqttUser, mqttPassword )) {
-      Serial.println("connected to MQTT SERVER");
+      Serial1.println("connected to MQTT SERVER");
     } else
-      Serial.println("Couldnt connect MQTT right now. Will try later");
+      Serial1.println("Couldnt connect MQTT right now. Will try later");
 }
 
 extern bool _allMessagesUpdated;
 
 //----------------------------------------------------------------------
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
 void loop() 
 {
   delay(50);
-
-  if (digitalRead(RED_BTN_PIN) == 0)
-  {
-    requestApMode = WIFI_AP;
-  }
-
+   // requestApMode = WIFI_AP;  // Left in case of need. This setups the ap mode to read
   // Make sure wifi is in the right mode
-  serviceWifiMode();  
-
-  // Do the blinkenlights
-  //serviceLeds();
-
-  // Get any extra leftover chars from soft serial receiver
-  SerialRx.service();
+  //serviceWifiMode();  
 
   // Comms with inverter
   serviceInverter();
-
-  if (_allMessagesUpdated)
-  {
-    sendtoMQTT();  // Lets send all data when messages are done
-    _allMessagesUpdated = false;
-    delay(3000);
-  }
+  sendtoMQTT();
   
   // Check if a client towards port 80 has connected
   WiFiClient client = server.available();
@@ -139,18 +111,10 @@ void loop()
   
   // Read the first line of the request
   String req = client.readStringUntil('\r');
-  Serial.println(req);
+  Serial1.println(req);
   client.flush();
 
-  if (req.indexOf("/thingspeak") != -1)
-  {
-    serveThingspeakSetupPage(client);    
-  }
-  else if (req.indexOf("/settskeys") != -1)
-  {
-    serveSetThingspeakKeys(client, req);    
-  }
-  else if (req.indexOf("/wifi") != -1)
+  if (req.indexOf("/wifi") != -1)
   {
     serveWifiSetupPage(client);    
   }
@@ -175,33 +139,62 @@ void initHardware()
   delay(100);
   Wire.begin(4, 5);
   
-  pinMode(RED_BTN_PIN, INPUT_PULLUP);
-  pinMode(GRN_BTN_PIN, INPUT_PULLUP);
-
-  initLeds();
-
-  //setupLcd();
-  
-  Serial.begin(115200);
-  delay(10);
-
-  //Second uart uses hardware transmitter TX1 and software interrupt receiver
-  pinMode(SOFTSERIAL_TX, OUTPUT);
-  digitalWrite(SOFTSERIAL_TX, HIGH);
-  Serial1.begin(2400);
-  SerialRx.begin(2400, SOFTSERIAL_RX);
+  Serial1.begin(115200); // Debugging towards UART1
+  Serial.begin(2400); // Using UART0 for comm with inverter. IE cant be connected during flashing
 
 }
 
+int WifiGetRssiAsQuality(int rssi)  // THis part borrowed from Tasmota code
+{
+  int quality = 0;
+
+  if (rssi <= -100) {
+    quality = 0;
+  } else if (rssi >= -50) {
+    quality = 100;
+  } else {
+    quality = 2 * (rssi + 100);
+  }
+  return quality;
+}
+
+
 bool sendtoMQTT() {
+
+    if (millis() < (mqtttimer + 4000)) { 
+    return false;
+  }
+  mqtttimer = millis();
+  
+  Serial1.print("Wifi status: ");
+  Serial1.println(WiFi.status());
+  if (WiFi.status() == 1) {
+    Serial1.println("Lets disconnect WIFI to test");
+    WiFi.disconnect();
+    delay(300);
+    setup_wifi();
+  }
+    
   if (!mqttclient.connected()) {
     if (mqttclient.connect((String("ESP-" +ESP.getChipId())).c_str(), mqttUser, mqttPassword )) {
-        Serial.println("Reconnected to MQTT SERVER");
+        Serial1.println("Reconnected to MQTT SERVER");
         mqttclient.publish((String("stat/") + String(dev) + String("/info")).c_str(), "Im alive!");
-      } else return false; // Exit if we couldnt connect to MQTT brooker
+      } else {
+        Serial1.println("CANT CONNECT TO MQTT");
+        return false; // Exit if we couldnt connect to MQTT brooker
+      }
   } 
+    mqttclient.publish((String("stat/") + String(dev) + String("/uptime")).c_str(), String(uptime_formatter::getUptime()).c_str());
+    mqttclient.publish((String("stat/") + String(dev) + String("/wifi")).c_str(),   (String("{ \"FreeRam\": ") + String(ESP.getFreeHeap()) + String(", \"rssi\": ") + String(WiFi.RSSI()) + String(", \"dbm\": ") + String(WifiGetRssiAsQuality(WiFi.RSSI())) + String("}")).c_str());  
+    Serial1.print("Data sent to MQTT SERver");
+    Serial1.println(" - up: " + uptime_formatter::getUptime());
+
   
-  if (inverterType == PCM60x) { //PCM
+  if (!_allMessagesUpdated) return false;
+  
+  _allMessagesUpdated = false; // Lets reset messages and process them
+  
+  if (inverterType == PCM) { //PCM
      mqttclient.publish((String(topic) + String("/battv")).c_str(), String(_qpigsMessage.battV).c_str());
      mqttclient.publish((String(topic) + String("/solarv")).c_str(), String(_qpigsMessage.solarV).c_str());
      mqttclient.publish((String(topic) + String("/batta")).c_str(), String(_qpigsMessage.battChargeA).c_str());
@@ -246,8 +239,40 @@ bool sendtoMQTT() {
   }
 
 
-  mqttclient.publish((String("stat/") + String(dev) + String("/uptime")).c_str(), String(uptime_formatter::getUptime()).c_str());
-  Serial.print("Data sent to MQTT SERver");
-  Serial.println(" - up: " + uptime_formatter::getUptime());
+
   return true;
+}
+
+
+//** ALL BELOW IS TEMP TO SEE IF WIFI SHIT IS CRAP
+
+void setup_wifi() {
+  delay(10);
+  Serial1.println("");
+  Serial1.print("Connecting to ");
+  Serial1.print(_settings._wifiSsid);
+  //WiFi.hostname(_settings._wifiPass);
+
+  //WiFi.begin(_settings._wifiSsid.c_str(), _settings._wifiPass.c_str());
+  WiFi.begin("Esperyd", "Esperyd4");
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial1.print(WiFi.status());
+    yield();
+    delay(1500);
+    Serial1.print(".");
+    if (WiFi.status() == 1) {
+      Serial1.println("Lets disconnect WIFI to test");
+      WiFi.disconnect();
+      WiFi.mode(WIFI_STA);
+        ETS_UART_INTR_DISABLE();
+  wifi_station_disconnect();
+  ETS_UART_INTR_ENABLE();
+      delay(15000);
+      //ESP.restart();
+      WiFi.begin(_settings._wifiSsid.c_str(), _settings._wifiPass.c_str());
+    }
+  }
+  Serial1.println("OK");
+  Serial1.print("   IP address: ");
+  Serial1.println(WiFi.localIP());
 }

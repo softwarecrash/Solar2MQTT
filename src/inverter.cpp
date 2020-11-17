@@ -1,15 +1,13 @@
 #include "Arduino.h"
 
 
-#include "EspSoftSerialRx.h" //Copied from: https://github.com/scottwday/EspSoftSerial
 #include "main.h"
 #include "inverter.h"
 #include "tickCounter.h"
-//#include "thingspeak.h"
+
 #include "settings.h"
 
 extern TickCounter _tickCounter;
-extern EspSoftSerialRx SerialRx;
 extern Settings _settings;
 extern byte inverterType; 
 extern byte MPI;
@@ -96,7 +94,7 @@ float getNextFloat(String& command, int& index)
     char c = command[index];
     ++index;
 
-    if ((c == '.') || ((c >= '0') && (c <= '9')))
+    if ((c == '.') || (c == '+') || (c == '-') || ((c >= '0') && (c <= '9'))) 
     {
       term += c;
     }
@@ -146,11 +144,11 @@ bool getNextBit(String& command, int& index)
 bool onP003PS()
 {
   //P003PS -- '81'^D07700139,00122,,,,,,0502,0973,0385,01860,0593,1040,0399,02032,031,1,1,1,1,2,1}⸮'
-  Serial.print("P003PS -- '");
-  Serial.print(_commandBuffer.length());
-  Serial.print("'");
-  Serial.print(_commandBuffer);
-  Serial.println("'");
+  Serial1.print("P003PS -- '");
+  Serial1.print(_commandBuffer.length());
+  Serial1.print("'");
+  Serial1.print(_commandBuffer);
+  Serial1.println("'");
   
   if (_commandBuffer.length() < 81)
     return false;
@@ -183,26 +181,35 @@ bool onP003PS()
 bool onP006FPADJ()
 {
   //P006FPADJ -- '34'^D0301,0000,1,0099,1,0109,1,0112⸮7'
-  Serial.print("P006FPADJ -- '");
-  Serial.print(_commandBuffer.length());
-  Serial.print("'");
-  Serial.print(_commandBuffer);
-  Serial.println("'");
+  Serial1.print("P006FPADJ -- '");
+  Serial1.print(_commandBuffer.length());
+  Serial1.print("'");
+  Serial1.print(_commandBuffer);
+  Serial1.println("'");
   
   if (_commandBuffer.length() < 34)
     return false;
   int index = 5; //after the starting 'commands'
+  _P006FPADJMessage.dir = (float)getNextFloat(_commandBuffer, index);
+  _P006FPADJMessage.watt = (float)getNextFloat(_commandBuffer, index);
+  _P006FPADJMessage.feedingGridDirectionR = (float)getNextFloat(_commandBuffer, index);
+  _P006FPADJMessage.calibrationWattR = (float)getNextFloat(_commandBuffer, index);
+  _P006FPADJMessage.feedingGridDirectionS = (float)getNextFloat(_commandBuffer, index);
+  _P006FPADJMessage.calibrationWattS = (float)getNextFloat(_commandBuffer, index);
+  _P006FPADJMessage.feedingGridDirectionT = (float)getNextFloat(_commandBuffer, index);
+  _P006FPADJMessage.calibrationWattT = (float)getNextFloat(_commandBuffer, index);
+  
   return true;
 }
 
 bool onP003GS()
 {
   //P003GS -- '114'^D1103462,3468,0040,0035,0503,071,+00000,2369,2367,2350,5000,0000,0000,0000,2371,2365,2352,5000,,,,025,028,000,0b'
-  Serial.print("P003GS -- '");
-  Serial.print(_commandBuffer.length());
-  Serial.print("'");
-  Serial.print(_commandBuffer);
-  Serial.println("'");
+  Serial1.print("P003GS -- '");
+  Serial1.print(_commandBuffer.length());
+  Serial1.print("'");
+  Serial1.print(_commandBuffer);
+  Serial1.println("'");
   
   if (_commandBuffer.length() < 114)
     return false;
@@ -238,9 +245,9 @@ bool onP003GS()
 //Parse the response to QPIGS general status message, CRC has already been confirmed
 bool onPIGS()
 {
-  Serial.print("QPIGS '");
-  Serial.print(_commandBuffer);
-  Serial.print("'");
+  Serial1.print("QPIGS '");
+  Serial1.print(_commandBuffer);
+  Serial1.println("'");
   if (_commandBuffer.length() < 67)
     return false;
 
@@ -259,9 +266,9 @@ bool onPIGS()
 //Parse the response to QMOD general status message, CRC has already been confirmed
 bool onMOD()
 {
-  Serial.print("QMOD '");
-  Serial.print(_commandBuffer);
-  Serial.print("'");
+  Serial1.print("QMOD '");
+  Serial1.print(_commandBuffer);
+  Serial1.print("'");
 
   if (_commandBuffer.length() < 2)
     return false;
@@ -274,9 +281,9 @@ bool onMOD()
 //Parse the response to QMOD general status message, CRC has already been confirmed
 bool onPIWS()
 {
-  Serial.print("QPIWS '");
-  Serial.print(_commandBuffer);
-  Serial.print("'");
+  Serial1.print("QPIWS '");
+  Serial1.print(_commandBuffer);
+  Serial1.print("'");
 
   if (_commandBuffer.length() < 32)
     return false;
@@ -320,9 +327,9 @@ bool onPIWS()
 //Parse the response to QFLAG flags message, CRC has already been confirmed
 bool onFLAG()
 {
-  Serial.print("QFLAG '");
-  Serial.print(_commandBuffer);
-  Serial.print("'");
+  Serial1.print("QFLAG '");
+  Serial1.print(_commandBuffer);
+  Serial1.print("'");
 
   if (_commandBuffer.length() < 10)
     return false;
@@ -344,9 +351,9 @@ bool onFLAG()
 //Parse the response to QID device id message, CRC has already been confirmed
 bool onID()
 {
-  Serial.print("QID '");
-  Serial.print(_commandBuffer);
-  Serial.print("'");
+  Serial1.print("QID '");
+  Serial1.print(_commandBuffer);
+  Serial1.print("'");
 
   if (_commandBuffer.length() < 15)
     return false;
@@ -360,9 +367,9 @@ bool onID()
 //Parse the response to QPI protocol info message, CRC has already been confirmed
 bool onPI()
 {
-  Serial.print("QPI '");
-  Serial.print(_commandBuffer);
-  Serial.print("'");
+  Serial1.print("QPI '");
+  Serial1.print(_commandBuffer);
+  Serial1.print("'");
 
   if (_commandBuffer.length() < 5)
     return false;
@@ -384,10 +391,10 @@ void onInverterCommand()
     unsigned short recievedCrc = ((unsigned short)_commandBuffer[_commandBuffer.length()-2] << 8) | 
                                                   _commandBuffer[_commandBuffer.length()-1];
     if (!inverterType) {
-      Serial.print(" Calc: ");
-      Serial.print(calculatedCrc, HEX);
-      Serial.print(" Rx: ");
-      Serial.println(recievedCrc, HEX);
+      Serial1.print(" Calc: ");
+      Serial1.print(calculatedCrc, HEX);
+      Serial1.print(" Rx: ");
+      Serial1.println(recievedCrc, HEX);
     }
     //If CRC is okay, parse message and set next message to be requested
     if (calculatedCrc == recievedCrc)
@@ -395,19 +402,20 @@ void onInverterCommand()
 //MPI
         if (_lastRequestedCommand == "P003GS") 
         {
-          if (onP003GS()) _allMessagesUpdated = false;
+          onP003GS();
           _nextCommandNeeded = "P003PS";
         }
         if (_lastRequestedCommand == "P003PS") 
         {
-          if (onP003PS()) _allMessagesUpdated = false;
+          onP003PS();
           _nextCommandNeeded = "P006FPADJ";
         }
   
         if (_lastRequestedCommand == "P006FPADJ") 
         {
-          if (onP006FPADJ()) _allMessagesUpdated = true;
+          if (onP006FPADJ()) Serial1.println("OK");
           _nextCommandNeeded = "";
+          _allMessagesUpdated = true;
         }
 
       // Below for PCM
@@ -477,17 +485,20 @@ void serviceInverter()
   
     _lastRequestedCommand = _nextCommandNeeded;
     _lastRequestedAt.reset();
-    //Serial.print("Next command: ");
-    //Serial.print(_nextCommandNeeded);
+    Serial1.print("Sending command: ");
+    Serial1.println(_nextCommandNeeded);
+    if (inverterType) Serial.print("^");  //If MPI then prechar is needed
     if (inverterType) Serial1.print("^");  //If MPI then prechar is needed
-    Serial1.print(_nextCommandNeeded);
-    if (!inverterType) Serial1.print((char)((crc >> 8) & 0xFF)); //ONLY CRC fo PCM/PIP
-    if (!inverterType) Serial1.print((char)((crc >> 0) & 0xFF)); //ONLY CRC fo PCM/PIP
-    Serial1.print("\r");
+    Serial.print(_nextCommandNeeded);
+    if (!inverterType) Serial.print((char)((crc >> 8) & 0xFF)); //ONLY CRC fo PCM/PIP
+    if (!inverterType) Serial.print((char)((crc >> 0) & 0xFF)); //ONLY CRC fo PCM/PIP
+    Serial.print("\r");
+
   }
-    
-  while (SerialRx.read(c))
+  
+  while (Serial.available() > 0)
   {
+    c = Serial.read();
     //Only accept incoming characters if we've requested something
     if (_lastRequestedCommand != "")
     {
@@ -502,5 +513,6 @@ void serviceInverter()
         _commandBuffer = "";
       }
     }
+    yield();
   }   
 }

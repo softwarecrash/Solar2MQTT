@@ -12,6 +12,7 @@ void setupWifiAp()
 void setupWifiStation()
 {
   WiFi.disconnect();
+  delay(20);
   if (_settings._wifiSsid.length() == 0)
   {
     Serial.println("No client SSID set, switching to AP");
@@ -38,7 +39,6 @@ void serviceWifiMode()
     delay(10);
     clientReconnect = false;
     currentApMode = CLIENT_NOTCONNECTED;
-    ledMode = LED_MODE_SOLID_BOTH;
   }
   
   if (currentApMode != requestApMode)
@@ -46,34 +46,35 @@ void serviceWifiMode()
     if (requestApMode == WIFI_AP)
     {
       Serial.println("Access Point Mode");
-      digitalWrite(RED_LED_PIN, HIGH);
-      digitalWrite(GRN_LED_PIN, LOW);
       setupWifiAp();             
       currentApMode = WIFI_AP;
-      ledMode = LED_MODE_SOLID_RED; 
     }
 
     if (requestApMode == WIFI_STA)
     {
       Serial.println("Station Mode");
-      digitalWrite(RED_LED_PIN, LOW);
-      digitalWrite(GRN_LED_PIN, HIGH);
       setupWifiStation();             
       currentApMode = WIFI_STA;
       clientConnectionState = CLIENT_CONNECTING;
-      ledMode = LED_MODE_FAST_GRN;    
     }
   }  
 
   if (clientConnectionState == CLIENT_CONNECTING)
   {    
+    Serial.print("connect ");
+    Serial.println(WIFI_COUNT);
+    WIFI_COUNT++;
+    if (WIFI_COUNT > 200) { 
+      ESP.restart();
+      WIFI_COUNT=0;
+    }
     if (WiFi.status() == WL_CONNECTED)
     {
+      Serial.println("connect 2");
       clientConnectionState = CLIENT_CONNECTED;
-      ledMode = LED_MODE_SOLID_GRN;
       Serial.print("IP address: ");
       Serial.println(WiFi.localIP());
+      WIFI_COUNT = 0;
     }
   }
-
 }
