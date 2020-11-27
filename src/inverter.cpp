@@ -13,6 +13,8 @@ extern byte inverterType;
 extern byte MPI;
 extern byte PCM60x;
 extern byte PIP;
+extern int Led_Red;
+extern int Led_Green;
 
 String _commandBuffer;
 String _lastRequestedCommand = "-"; //Set to not empty to force a timeout on startup
@@ -400,6 +402,7 @@ void onInverterCommand()
     if (calculatedCrc == recievedCrc)
     {
 //MPI
+        digitalWrite(Led_Red, LOW);  //If we got a valid command show that on the led
         if (_lastRequestedCommand == "P003GS") 
         {
           onP003GS();
@@ -422,6 +425,7 @@ void onInverterCommand()
 
       if (_lastRequestedCommand == "QPIGS" && !inverterType) 
       {
+        digitalWrite(Led_Red, LOW); //IF we got a valid command show that on the red led
         if (onPIGS()) {
           _allMessagesUpdated = true;
         }
@@ -468,6 +472,7 @@ void serviceInverter()
   //Check time since last requested command
   if (_lastRequestedAt.compare(INVERTER_COMMAND_TIMEOUT_MS) > 0)
   {
+    digitalWrite(Led_Red, HIGH); //If we timeout and didnt get any response we need to shut the red led
     _commandBuffer = "";
     _lastRequestedCommand = "";
     _nextCommandNeeded = "";

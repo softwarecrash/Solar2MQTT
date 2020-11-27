@@ -2,11 +2,6 @@
 ESP8266 based WiFi interface for Voltronic Axpert MppSolar PIP inverters
 
 
-<<<<<<< HEAD
-=======
-**Note that this project is incomplete, It doesn't do anything useful yet!**
->>>>>>> 702afff83189c712e4e2f9bc6e9e8d7c9560a22b
-
 **Note2 that all below info is from the forked project and in short this will be updated when all is refactored and perhaps working....**
 
 # Overview
@@ -20,27 +15,24 @@ Software is built using [Arduino for ESP8266](https://github.com/esp8266/Arduino
 **UART1:** Used for debugging only. Just connect another serie adaptor to TX.
 
 
-**I2C:** Kept open for optional accessories
+**GPIO:** NOT IN USE Button on GPIO0, changes wifi mode, also used for programming when DTR pin isn't available.
 
-**GPIO:** Button on GPIO0, changes wifi mode, also used for programming when DTR pin isn't available.
 
-**GPIO:** N/A
+**POWER:** Using a DC/DC or USB power currently. My gear dont have any power on the serial port
 
-**POWER:** Inverter has +12V on pin 4 or 7 depending on the model. I used a cheapo DC-DC converter module to bring this down to ~5V, then a 1117-3.3V linear regulator to provide 3.3V. It draws about half a watt while the WiFi is connected.
+**WIFI:** The system defaults to AP mode on first setup. Surf to "SetSol" AP and then surf to http://192.168.4.1/ On this page configure WIFI and MQTT. Then you need to reboot the device either by the reboot botton or hard reboot. No changes are applied properly before reboot
 
-**WIFI:** EDIT THIS... ITS NOT COMPLETE ---- The logger defaults to AP mode with the ssid 'Setup'. Connect to 192.168.4.1/wifi to setup the access point to connect to. You'll be given a list of APs in range to connect to. Select the AP, enter the password, then click submit to connect. The AP will be stored and the logger will connect automatically on next boot.
 
 # Parts required to build one
 
 Most of the parts can be bought as modules, it's usually cheaper that way.
 
-Approximate prices found on aliexpress
-- ESP-07 or ESP-13 module with breakout adapter board ($3.00)
-- MAX3232 module ($0.50) - it's just a max3232 with 5 capacitors on a tiny little board
-- DC-DC buck module ($1.00) - 12v down to 5v
-- AMS1117-3.3V ($1.00) - Or any 3.3V regulator
-- USB-TTL serial module ($1.50) - Make sure it has RTS and DTR outputs
-- RJ45 socket with LEDs ($0.50) - The leds are for status etc.
-- Tact switch ($0.00) - I'm sure you have an old button lying around.
+Approximate prices found on Ebay
+- ESP8266 - Wemos D1 Mini - https://ebay.to/3660Nsy - ($2.66)
+- MAX3232 module ($0.70) - it's just a max3232 with 5 capacitors on a tiny little board  - https://ebay.to/3la4G45
+- DC-DC buck module ($1.50) - 12-80v down to 5v https://ebay.to/3lbf3V7
+- LEDs ($0.50) - The leds are for status etc
 
-Total cost: $7.50
+Total cost: $5
+
+Links above are affiliated and give me a tiny commission if used. 

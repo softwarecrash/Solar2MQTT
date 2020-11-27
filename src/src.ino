@@ -1,8 +1,21 @@
 
+*************************************************************************************
+* ALl credits for some bits from https://github.com/scottwday/InverterOfThings
+* And i have trashed alot of his code, rewritten some. So thanks to him and credits to him. 
+*
+* Changes done by Daniel aka Daromer aka DIY Tech & Repairs 2020
+* https://github.com/daromer2/InverterOfThings
+* https://www.youtube.com/channel/UCI6ASwT150rendNc5ytYYrQ?
+*************************************************************************************
+
+
 //TODO:
-// Fix WIFI
-// Fix setting of inverter type
-// Add set via mqtt?
+// Clean up webpages
+// Fix update timer?
+// Rewrite send to MQTT part so it sends json perhaps?
+
+// Add some code so we can set stuff on the inverters.
+// MPI should have the feedToGridCorrection so it can be set via mqtt
 
 
 #include <Wire.h>
@@ -19,12 +32,7 @@
 #include "Settings.h"
 #include "inverter.h"
 
-
-const char ApSsid[] = "Setup";
-
-/////////////////////
-// Pin Definitions //
-/////////////////////
+const char ApSsid[] = "SetSolar";
 
 //--------------------------------- Wifi State
 #define CLIENT_NOTCONNECTED 0
@@ -49,45 +57,55 @@ extern P003GSMessage _P003GSMessage;
 extern P003PSMessage _P003PSMessage;
 extern P006FPADJMessage _P006FPADJMessage;
 
-//---------------------- MQTT SHould be moved to setup
-const char* mqttServer = "mqtt.romer.se";
-const int mqttPort = 1883;
-const char* mqttUser = "mqtt";
-const char* mqttPassword = "mqtt";
+//---------------------- MQTT
 PubSubClient mqttclient(client);
 
 // Interface types that can be used. 
 const byte MPI = 1;
 const byte PCM = 0;
 const byte PIP = 2;
-
-#define dev "pcm2"
-byte inverterType = PCM;  // 0 for pip and 1 for MPI
-
-
-#define topic "solar/" dev
+byte inverterType = MPI; //And defaults in case...
+String topic = "solar/";  //Default first part of topic. We will add device ID in setup
 
 unsigned long mqtttimer = 0;
+extern bool _allMessagesUpdated;
+
+//---------- LEDS  
+int Led_Red = 4;  //D2
+int Led_Green = 5;  //D1
+
   
 //----------------------------------------------------------------------
 void setup() 
 {
   initHardware();
   _settings.load();
-  //serviceWifiMode();
-  setup_wifi();
+  serviceWifiMode();
+  //setup_wifi();
   
   server.begin();
   delay(100);
+
+  if (_settings._deviceType.c_str() == "MPI") {
+    inverterType = 1; }
+  else if (_settings._deviceType.c_str() == "PIP"){
+    inverterType = 2; } 
+  else {
+     inverterType = 0; 
+  }
+  //dev = _settings._deviceName.c_str();
+  topic = topic + String(_settings._deviceName.c_str());
   
-  mqttclient.setServer(mqttServer, mqttPort);
-    if (mqttclient.connect((String("ESP-" +ESP.getChipId())).c_str(), mqttUser, mqttPassword )) {
-      Serial1.println("connected to MQTT SERVER");
-    } else
-      Serial1.println("Couldnt connect MQTT right now. Will try later");
+  mqttclient.setServer(_settings._mqttServer.c_str(), _settings._mqttPort);
+  
+  pinMode(Led_Red, OUTPUT); 
+  pinMode(Led_Green, OUTPUT); 
+  digitalWrite(Led_Red, HIGH); 
+  digitalWrite(Led_Green, LOW); 
 }
 
-extern bool _allMessagesUpdated;
+
+
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
@@ -114,21 +132,22 @@ void loop()
   Serial1.println(req);
   client.flush();
 
-  if (req.indexOf("/wifi") != -1)
-  {
+  if (req.indexOf("/wifi") != -1) {
     serveWifiSetupPage(client);    
-  }
-  else if (req.indexOf("/aplist") != -1)
-  {
+  } else if (req.indexOf("/aplist") != -1) {
     serveWifiApList(client);
-  }
-  else if (req.indexOf("/setap") != -1)
-  {
+  } else if (req.indexOf("/setap") != -1) {
     serveWifiSetAp(client, req);
-  }
-  else
-  {
-    serve404(client);
+  } else if (req.indexOf("/mqtt") != -1) {
+    serveMqtt(client, req);
+  } else if (req.indexOf("/setmqtt") != -1) {
+    serveSetMqtt(client, req);
+  } else if (req.indexOf("/reboot") != -1) {
+    delay(100);
+    ESP.restart();
+  } else {
+    servePage(client, req);
+    //serve404(client);
   }
   client.flush();
 }
@@ -161,33 +180,39 @@ int WifiGetRssiAsQuality(int rssi)  // THis part borrowed from Tasmota code
 
 bool sendtoMQTT() {
 
-    if (millis() < (mqtttimer + 4000)) { 
+    if (millis() < (mqtttimer + 3000)) { 
     return false;
   }
   mqtttimer = millis();
   
   Serial1.print("Wifi status: ");
   Serial1.println(WiFi.status());
-  if (WiFi.status() == 1) {
+  /*if (WiFi.status() == 1) {
     Serial1.println("Lets disconnect WIFI to test");
     WiFi.disconnect();
     delay(300);
     setup_wifi();
-  }
+  }*/
     
   if (!mqttclient.connected()) {
-    if (mqttclient.connect((String("ESP-" +ESP.getChipId())).c_str(), mqttUser, mqttPassword )) {
+    if (mqttclient.connect((String("ESP-" +ESP.getChipId())).c_str(), _settings._mqttUser.c_str(), _settings._mqttPassword.c_str() )) {
         Serial1.println("Reconnected to MQTT SERVER");
-        mqttclient.publish((String("stat/") + String(dev) + String("/info")).c_str(), "Im alive!");
+        mqttclient.publish((topic + String("/Info")).c_str(), ("Im alive! Running with device: " + _settings._deviceType).c_str());
+         
       } else {
         Serial1.println("CANT CONNECT TO MQTT");
+        digitalWrite(Led_Green, LOW); 
+        delay(1000);
         return false; // Exit if we couldnt connect to MQTT brooker
       }
   } 
-    mqttclient.publish((String("stat/") + String(dev) + String("/uptime")).c_str(), String(uptime_formatter::getUptime()).c_str());
-    mqttclient.publish((String("stat/") + String(dev) + String("/wifi")).c_str(),   (String("{ \"FreeRam\": ") + String(ESP.getFreeHeap()) + String(", \"rssi\": ") + String(WiFi.RSSI()) + String(", \"dbm\": ") + String(WifiGetRssiAsQuality(WiFi.RSSI())) + String("}")).c_str());  
+    //mqttclient.publish("solar/testar11111/test", (String("Uppe igen") + topic).c_str());
+    mqttclient.publish((topic + String("/uptime")).c_str(), String(uptime_formatter::getUptime()).c_str());
+    mqttclient.publish((topic + String("/wifi")).c_str()  , (String("{ \"FreeRam\": ") + String(ESP.getFreeHeap()) + String(", \"rssi\": ") + String(WiFi.RSSI()) + String(", \"dbm\": ") + String(WifiGetRssiAsQuality(WiFi.RSSI())) + String("}")).c_str());  
     Serial1.print("Data sent to MQTT SERver");
     Serial1.println(" - up: " + uptime_formatter::getUptime());
+    digitalWrite(Led_Green, HIGH);
+    
 
   
   if (!_allMessagesUpdated) return false;
@@ -238,41 +263,5 @@ bool sendtoMQTT() {
   
   }
 
-
-
   return true;
-}
-
-
-//** ALL BELOW IS TEMP TO SEE IF WIFI SHIT IS CRAP
-
-void setup_wifi() {
-  delay(10);
-  Serial1.println("");
-  Serial1.print("Connecting to ");
-  Serial1.print(_settings._wifiSsid);
-  //WiFi.hostname(_settings._wifiPass);
-
-  //WiFi.begin(_settings._wifiSsid.c_str(), _settings._wifiPass.c_str());
-  WiFi.begin("Esperyd", "Esperyd4");
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial1.print(WiFi.status());
-    yield();
-    delay(1500);
-    Serial1.print(".");
-    if (WiFi.status() == 1) {
-      Serial1.println("Lets disconnect WIFI to test");
-      WiFi.disconnect();
-      WiFi.mode(WIFI_STA);
-        ETS_UART_INTR_DISABLE();
-  wifi_station_disconnect();
-  ETS_UART_INTR_ENABLE();
-      delay(15000);
-      //ESP.restart();
-      WiFi.begin(_settings._wifiSsid.c_str(), _settings._wifiPass.c_str());
-    }
-  }
-  Serial1.println("OK");
-  Serial1.print("   IP address: ");
-  Serial1.println(WiFi.localIP());
 }

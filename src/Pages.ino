@@ -101,27 +101,27 @@ void serveWifiSetAp(WiFiClient& client, String req)
   String s = "";
   appendHttp200(s);
 
-  Serial.println("Setting AP");
-  Serial.println(req);
+  Serial1.println("Setting AP");
+  Serial1.println(req);
 
   //"/setap?ssid=myssid&pass=mypass
   int index0 = req.indexOf("?ssid=", 3);
   if (index0 > 0)
   {
-    Serial.println(index0);
+    Serial1.println(index0);
     int index1 = req.indexOf("&pass=", index0);
     if (index1 > 0)
     {
-      Serial.println(index1);
+      Serial1.println(index1);
       int index2 = req.indexOf(" HTTP/", index1);
       if (index2 == -1)
         index2 = req.length();
       String ssid = req.substring(index0+6, index1);
       String pass = req.substring(index1+6, index2);
 
-      Serial.println(index2);
-      Serial.println(ssid);
-      Serial.println(pass);
+      Serial1.println(index2);
+      Serial1.println(ssid);
+      Serial1.println(pass);
       
       _settings._wifiSsid = ssid;
       _settings._wifiPass = pass;
@@ -132,11 +132,14 @@ void serveWifiSetAp(WiFiClient& client, String req)
       s += ":";
       s += pass;
       s += F("<br>Switching to client mode, this connection has now closed. Hopefully you'll find me again on ");
+      s += F("<br><br><a href=\"/\">Back</a><br>");
       s += ssid;     
 
-      Serial.println(s);
+      Serial1.println(s);
       requestApMode = WIFI_STA;
       clientReconnect = true;
+      delay(1);
+      //ESP.restart();
     }
   }
 
@@ -152,40 +155,41 @@ void serveWifiSetAp(WiFiClient& client, String req)
 
 
 
-//Thingspeak API keys
-void serveThingspeakSetupPage(WiFiClient& client)
+//MQTT and device name
+void serveMqtt(WiFiClient& client, String req)
 {
   String s = "";
   appendHttp200(s);
 
   //This thing was automatically generated from html source
-  s += F("<H1>Thingspeak Setup</H1></html>\r\n\r\n");
+  s += F("<H1>MQTT server & device name</H1></html>\r\n\r\n");
 
-  s += F("<form action=settskeys>");
+  s += F("<form action=setmqtt>");
   s += F("<table>");
-  s += F("<tr><td><b>Channel</b></td><td><b>Write Key</b></td><td><b>Read Key</b></td></tr>");
-  s += F("<tr><td>Settings</td><td><input type=text name=w width=20 value='");
-  s += _settings._writeConfigApiKey;
+  s += F("<tr><td><b>Setting</b></td><td><b>Value Key</b></td></tr>");
+  s += F("<tr><td>Mqtt Server</td><td><input type=text name=w width=20 value='");
+  s += _settings._mqttServer;
   s += F("'></td><td><input type=text name=r width=20 value='");
-  s += _settings._readConfigApiKey;
+  s += _settings._mqttPort;
+  s += F("'></td></tr>");
+  s += F("<tr><td>Mqtt User/pass</td><td><input type=text name=u width=20 value='");
+  s += _settings._mqttUser;
+  s += F("'></td><td><input type=text name=p width=20 value='");
+  s += _settings._mqttPassword;
   s += F("'></td></tr>");
   
-  s += F("<tr><td>Battery</td><td><input type=text name=b width=20 value='");
-  s += _settings._batteryApiKey;
+  s += F("<tr><td>Device type (MPI, PCM, PIP)</td><td><input type=text name=t width=20 value='");
+  s += _settings._deviceType;
   s += F("'></td></tr>");
   
-  s += F("<tr><td>Charger</td><td><input type=text name=c width=20 value='");
-  s += _settings._chargerApiKey;
+  s += F("<tr><td>Device Name</td><td><input type=text name=n width=20 value='");
+  s += _settings._deviceName;
   s += F("'></td></tr>");
   
-  s += F("<tr><td>Load</td><td><input type=text name=l width=20 value='");
-  s += _settings._loadApiKey;
-  s += F("'></td></tr>");
-
   s += F("<tr><td><br></td></tr>");
   
-  s += F("<tr><td>Update rate</td><td><input type=text name=p width=5 value='");
-  s += String(_settings._updateRateSec);
+  s += F("<tr><td>Update rate</td><td><input type=text name=i width=5 value='");
+  s += String(_settings._mqttPort);
   s += F("'></td><td>seconds</td></tr>");
 
   s += F("<tr><td></td><td></td><td><input type=submit value='    Save Settings   '></td></tr>");
@@ -198,58 +202,94 @@ void serveThingspeakSetupPage(WiFiClient& client)
 
 bool setStringIfStartsWith(String& s, String startswith, String& set)
 {
-  /*Serial.print("  checking if ");
-  Serial.print(s);
-  Serial.print(" startswith ");
-  Serial.println(startswith);*/
+  /*Serial1.print("  checking if ");
+  Serial1.print(s);
+  Serial1.print(" startswith ");
+  Serial1.println(startswith);*/
 
   if (s.startsWith(startswith))
   {
     set = s.substring(startswith.length());
-    Serial.print("match >");
-    Serial.print(startswith);
-    Serial.print("< = >");
-    Serial.print(set);
-    Serial.println("<");
+    Serial1.print("match >");
+    Serial1.print(startswith);
+    Serial1.print("< = >");
+    Serial1.print(set);
+    Serial1.println("<");
 
     return true;
   }
   return false;
 }
 
-//Apply thingspeak settings
-void serveSetThingspeakKeys(WiFiClient& client, String req)
+//Apply mqtt settings
+void serveSetMqtt(WiFiClient& client, String req)
 {
   String s = "";
-  appendHttp200(s);
 
-  Serial.println("Setting Thingspeak keys");
-  Serial.println(req);
+  Serial1.println("Setting MQTT & Device keys");
+  Serial1.println(req);
 
   int offset = 0;
   String token = getNextToken(req, offset);
 
   while (token.length())
   {    
-    setStringIfStartsWith(token, "w=", _settings._writeConfigApiKey);
-    setStringIfStartsWith(token, "r=", _settings._readConfigApiKey);
-    setStringIfStartsWith(token, "b=", _settings._batteryApiKey);
-    setStringIfStartsWith(token, "c=", _settings._chargerApiKey);
-    setStringIfStartsWith(token, "l=", _settings._loadApiKey);
-    if (setStringIfStartsWith(token, "p=", s))
-      _settings._updateRateSec = (short)s.toInt();
+    setStringIfStartsWith(token, "w=", _settings._mqttServer);
+    //setStringIfStartsWith(token, "r=", _settings._mqttPort);
+    setStringIfStartsWith(token, "t=", _settings._deviceType);
+    setStringIfStartsWith(token, "n=", _settings._deviceName);
+    setStringIfStartsWith(token, "u=", _settings._mqttUser);
+    setStringIfStartsWith(token, "p=", _settings._mqttPassword);
+    if (setStringIfStartsWith(token, "r=", s))
+      _settings._mqttPort = (short)s.toInt();
          
     token = getNextToken(req, offset);
   }
 
   _settings.save();
-
-  s = F("Saved");
-  s += F("</html>");
+  
+  s = "";
+  appendHttp200(s);
+  s += F("Saved");
+  s += F("<br><br><a href=\"/\">Back</a><br>");
+  
+  s += F("");
 
   client.print(s);
   delay(1);
-  
+ 
 }
 
+void servePage(WiFiClient& client, String req)
+{
+  String s = "";
+  appendHttp200(s);
 
+    s += F("<H1>Solar2MQTT</H1></html>\r\n\r\n");
+    s += F("<a href=\"mqtt\">Configure MQTT</a><br>");
+    s += F("<a href=\"wifi\">Configure Wifi</a><br><br><br>");
+    s += F("<a href=\"reboot\">Reboot device</a><br>");
+    s += F("<br><br><br><br><br>By Daromer aka Diy Tech & Repairs 2020<br>");
+  
+  /*int offset = 0;
+  String token = getNextToken(req, offset);
+  while (token.length())
+  {    
+    setStringIfStartsWith(token, "w=", _settings._mqttServer);
+    setStringIfStartsWith(token, "r=", _settings._mqttPort);
+    setStringIfStartsWith(token, "t=", _settings._deviceType);
+    setStringIfStartsWith(token, "n=", _settings._deviceName);
+    setStringIfStartsWith(token, "u=", _settings._mqttUser);
+    setStringIfStartsWith(token, "p=", _settings._mqttPassword);
+    if (setStringIfStartsWith(token, "i=", s))
+      _settings._updateRateSec = (short)s.toInt();
+         
+    token = getNextToken(req, offset);
+  }*/
+
+  s += F("</html>\r\n\r\n");
+  s += F("");
+
+  client.print(s);
+  delay(1);
+}

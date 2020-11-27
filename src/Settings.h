@@ -11,12 +11,13 @@ class Settings
     String _wifiSsid = "";
     String _wifiPass = "";
   
-    String _batteryApiKey = "";
-    String _chargerApiKey = "";
-    String _loadApiKey = "";
-    String _readConfigApiKey = "";
-    String _writeConfigApiKey = "";
-    short  _updateRateSec = 30;
+    String _deviceType = "";
+    String _deviceName = "";
+    String _mqttServer = "";
+    //short _mqttPort = "1883";
+    String _mqttUser = "";
+    String _mqttPassword = "";
+    short  _mqttPort = 30;
 
     short readShort(int offset)
     {
@@ -90,12 +91,12 @@ Serial.println(s);
       {
         readString(_wifiSsid, 0x20, 0x20);
         readString(_wifiPass, 0x20, 0x40);
-        readString(_batteryApiKey, 0x20, 0x60);
-        readString(_chargerApiKey, 0x20, 0x80);
-        readString(_loadApiKey, 0x20, 0xA0);
-        readString(_readConfigApiKey, 0x20, 0xC0);
-        readString(_writeConfigApiKey, 0x20, 0xE0);
-        _updateRateSec = readShort(0x100);
+        readString(_deviceType, 0x20, 0x60);
+        readString(_deviceName, 0x20, 0x80);
+        readString(_mqttServer, 0x20, 0xA0);
+        readString(_mqttPassword, 0x20, 0xC0);
+        readString(_mqttUser, 0x20, 0xE0);
+        _mqttPort = readShort(0x100);
       }
       
       EEPROM.end();
@@ -112,12 +113,12 @@ Serial.println(s);
   
       writeString(_wifiSsid, 0x20, 0x20);
       writeString(_wifiPass, 0x20, 0x40);
-      writeString(_batteryApiKey, 0x20, 0x60);
-      writeString(_chargerApiKey, 0x20, 0x80);
-      writeString(_loadApiKey, 0x20, 0xA0);
-      writeString(_readConfigApiKey, 0x20, 0xC0);
-      writeString(_writeConfigApiKey, 0x20, 0xE0);
-      writeShort(_updateRateSec, 0x100);
+      writeString(_deviceType, 0x20, 0x60);
+      writeString(_deviceName, 0x20, 0x80);
+      writeString(_mqttServer, 0x20, 0xA0);
+      writeString(_mqttPassword, 0x20, 0xC0);
+      writeString(_mqttUser, 0x20, 0xE0);
+      writeShort(_mqttPort, 0x100);
 
       EEPROM.commit();
 
@@ -131,4 +132,3 @@ Serial.println(s);
       load(); 
     }
 };
-
