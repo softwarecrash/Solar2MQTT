@@ -1,12 +1,12 @@
 
-*************************************************************************************
-* ALl credits for some bits from https://github.com/scottwday/InverterOfThings
-* And i have trashed alot of his code, rewritten some. So thanks to him and credits to him. 
-*
-* Changes done by Daniel aka Daromer aka DIY Tech & Repairs 2020
-* https://github.com/daromer2/InverterOfThings
-* https://www.youtube.com/channel/UCI6ASwT150rendNc5ytYYrQ?
-*************************************************************************************
+/*************************************************************************************
+/* ALl credits for some bits from https://github.com/scottwday/InverterOfThings
+/* And i have trashed alot of his code, rewritten some. So thanks to him and credits to him. 
+/*
+/* Changes done by Daniel aka Daromer aka DIY Tech & Repairs 2020
+/* https://github.com/daromer2/InverterOfThings
+/* https://www.youtube.com/channel/UCI6ASwT150rendNc5ytYYrQ?
+/*************************************************************************************/
 
 
 //TODO:
@@ -115,7 +115,7 @@ void loop()
   delay(50);
    // requestApMode = WIFI_AP;  // Left in case of need. This setups the ap mode to read
   // Make sure wifi is in the right mode
-  //serviceWifiMode();  
+  serviceWifiMode();  
 
   // Comms with inverter
   serviceInverter();
@@ -187,17 +187,11 @@ bool sendtoMQTT() {
   
   Serial1.print("Wifi status: ");
   Serial1.println(WiFi.status());
-  /*if (WiFi.status() == 1) {
-    Serial1.println("Lets disconnect WIFI to test");
-    WiFi.disconnect();
-    delay(300);
-    setup_wifi();
-  }*/
     
   if (!mqttclient.connected()) {
     if (mqttclient.connect((String("ESP-" +ESP.getChipId())).c_str(), _settings._mqttUser.c_str(), _settings._mqttPassword.c_str() )) {
         Serial1.println("Reconnected to MQTT SERVER");
-        mqttclient.publish((topic + String("/Info")).c_str(), ("Im alive! Running with device: " + _settings._deviceType).c_str());
+        mqttclient.publish((topic + String("/Info")).c_str(), ("{\"Status\":\"Im alive!\", \"DeviceType\": \"" + _settings._deviceType + "\",\"IP \":\"" + WiFi.localIP().toString() + "\"}" ).c_str());
          
       } else {
         Serial1.println("CANT CONNECT TO MQTT");
@@ -206,8 +200,8 @@ bool sendtoMQTT() {
         return false; // Exit if we couldnt connect to MQTT brooker
       }
   } 
-    //mqttclient.publish("solar/testar11111/test", (String("Uppe igen") + topic).c_str());
-    mqttclient.publish((topic + String("/uptime")).c_str(), String(uptime_formatter::getUptime()).c_str());
+    
+    mqttclient.publish((topic + String("/uptime")).c_str(), String("{\"human\":\"" + String(uptime_formatter::getUptime()) + "\", \"seconds\":" + String(millis()/1000) + "}").c_str()    );
     mqttclient.publish((topic + String("/wifi")).c_str()  , (String("{ \"FreeRam\": ") + String(ESP.getFreeHeap()) + String(", \"rssi\": ") + String(WiFi.RSSI()) + String(", \"dbm\": ") + String(WifiGetRssiAsQuality(WiFi.RSSI())) + String("}")).c_str());  
     Serial1.print("Data sent to MQTT SERver");
     Serial1.println(" - up: " + uptime_formatter::getUptime());
