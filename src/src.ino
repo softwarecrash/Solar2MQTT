@@ -25,7 +25,7 @@
 #include <EEPROM.h>
 #include <PubSubClient.h>
 #include "uptime_formatter.h"
-
+#include <ArduinoJson.h>
 
 #include "main.h"
 #include "TickCounter.h"
@@ -66,6 +66,7 @@ const byte PCM = 0;
 const byte PIP = 2;
 byte inverterType = MPI; //And defaults in case...
 String topic = "solar/";  //Default first part of topic. We will add device ID in setup
+String st = "";
 
 unsigned long mqtttimer = 0;
 extern bool _allMessagesUpdated;
@@ -74,7 +75,7 @@ extern bool _allMessagesUpdated;
 int Led_Red = 4;  //D2
 int Led_Green = 5;  //D1
 
-  
+StaticJsonDocument<300> doc;  
 //----------------------------------------------------------------------
 void setup() 
 {
@@ -203,6 +204,9 @@ bool sendtoMQTT() {
     
     mqttclient.publish((topic + String("/uptime")).c_str(), String("{\"human\":\"" + String(uptime_formatter::getUptime()) + "\", \"seconds\":" + String(millis()/1000) + "}").c_str()    );
     mqttclient.publish((topic + String("/wifi")).c_str()  , (String("{ \"FreeRam\": ") + String(ESP.getFreeHeap()) + String(", \"rssi\": ") + String(WiFi.RSSI()) + String(", \"dbm\": ") + String(WifiGetRssiAsQuality(WiFi.RSSI())) + String("}")).c_str());  
+
+
+    
     Serial1.print("Data sent to MQTT SERver");
     Serial1.println(" - up: " + uptime_formatter::getUptime());
     digitalWrite(Led_Green, HIGH);
@@ -219,6 +223,18 @@ bool sendtoMQTT() {
      mqttclient.publish((String(topic) + String("/batta")).c_str(), String(_qpigsMessage.battChargeA).c_str());
      mqttclient.publish((String(topic) + String("/wattage")).c_str(), String(_qpigsMessage.wattage).c_str());
      mqttclient.publish((String(topic) + String("/solara")).c_str(), String(_qpigsMessage.solarA).c_str());
+
+    doc.clear();
+    doc["battv"] =  String(_qpigsMessage.battV).c_str();
+    doc["solarv"] = String(_qpigsMessage.solarV).c_str();
+    doc["batta"] =  String(_qpigsMessage.battChargeA).c_str();
+    doc["wattage"] =String(_qpigsMessage.wattage).c_str();
+    doc["solara"] = String(_qpigsMessage.solarA).c_str();
+    st = "";
+    serializeJson(doc,st);
+    mqttclient.publish((String(topic) + String("/status")).c_str(), st.c_str() );
+
+     
   }
   if (inverterType == MPI) { //IF MPI
     mqttclient.publish((String(topic) + String("/solar1w")).c_str(), String(_P003GSMessage.solarInputV1*_P003GSMessage.solarInputA1).c_str());
