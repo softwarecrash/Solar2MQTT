@@ -27,6 +27,10 @@
 #include "uptime_formatter.h"
 #include <ArduinoJson.h>
 
+#include <ESP8266mDNS.h>
+#include <ArduinoOTA.h>
+
+
 #include "main.h"
 #include "TickCounter.h"
 #include "Settings.h"
@@ -72,8 +76,8 @@ unsigned long mqtttimer = 0;
 extern bool _allMessagesUpdated;
 
 //---------- LEDS  
-int Led_Red = 4;  //D2
-int Led_Green = 5;  //D1
+int Led_Red = 5;  //D1
+int Led_Green = 4;  //D2
 
 StaticJsonDocument<300> doc;  
 //----------------------------------------------------------------------
@@ -82,14 +86,14 @@ void setup()
   initHardware();
   _settings.load();
   serviceWifiMode();
-  //setup_wifi();
+  delay(2500);
   
   server.begin();
   delay(100);
 
-  if (_settings._deviceType.c_str() == "MPI") {
+  if (String(_settings._deviceType) == "MPI") {
     inverterType = 1; }
-  else if (_settings._deviceType.c_str() == "PIP"){
+  else if (String(_settings._deviceType) == "PIP"){
     inverterType = 2; } 
   else {
      inverterType = 0; 
@@ -103,6 +107,34 @@ void setup()
   pinMode(Led_Green, OUTPUT); 
   digitalWrite(Led_Red, HIGH); 
   digitalWrite(Led_Green, LOW); 
+  
+  //if (_settings._deviceName.length() > 0)
+    //ArduinoOTA.setHostname(String("ESP-" + _settings._deviceName).c_str());
+  ArduinoOTA.onStart([]() {
+    String type;
+    if (ArduinoOTA.getCommand() == U_FLASH)
+      type = "sketch";
+    else // U_SPIFFS
+      type = "filesystem";
+
+    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+    Serial1.println("Start updating " + type);
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial1.println("\nEnd");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial1.printf("Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial1.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial1.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial1.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial1.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial1.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial1.println("End Failed");
+  });
+  ArduinoOTA.begin();
 }
 
 
@@ -113,14 +145,15 @@ void setup()
 //----------------------------------------------------------------------
 void loop() 
 {
-  delay(50);
-   // requestApMode = WIFI_AP;  // Left in case of need. This setups the ap mode to read
+  delay(5);
+  //requestApMode = WIFI_AP;  // Left in case of need. This setups the ap mode to read
   // Make sure wifi is in the right mode
-  serviceWifiMode();  
+  serviceWifiMode();
+  ArduinoOTA.handle();  //Handle any OTA requests   
 
   // Comms with inverter
-  serviceInverter();
-  sendtoMQTT();
+  serviceInverter();  // Check if we recieved data or should send data
+  sendtoMQTT();  // Update data to MQTT server if we should
   
   // Check if a client towards port 80 has connected
   WiFiClient client = server.available();
@@ -225,11 +258,11 @@ bool sendtoMQTT() {
      mqttclient.publish((String(topic) + String("/solara")).c_str(), String(_qpigsMessage.solarA).c_str());
 
     doc.clear();
-    doc["battv"] =  String(_qpigsMessage.battV).c_str();
-    doc["solarv"] = String(_qpigsMessage.solarV).c_str();
-    doc["batta"] =  String(_qpigsMessage.battChargeA).c_str();
-    doc["wattage"] =String(_qpigsMessage.wattage).c_str();
-    doc["solara"] = String(_qpigsMessage.solarA).c_str();
+    doc["battv"] =  _qpigsMessage.battV;
+    doc["solarv"] = _qpigsMessage.solarV;
+    doc["batta"] =  _qpigsMessage.battChargeA;
+    doc["wattage"] =_qpigsMessage.wattage;
+    doc["solara"] = _qpigsMessage.solarA;
     st = "";
     serializeJson(doc,st);
     mqttclient.publish((String(topic) + String("/status")).c_str(), st.c_str() );
@@ -270,7 +303,39 @@ bool sendtoMQTT() {
     mqttclient.publish((String(topic) + String("/calibrationWattS")).c_str(), String(_P006FPADJMessage.calibrationWattS).c_str());
     mqttclient.publish((String(topic) + String("/feedingGridDirectionT")).c_str(), String(_P006FPADJMessage.feedingGridDirectionT).c_str());
     mqttclient.publish((String(topic) + String("/calibrationWattT")).c_str(), String(_P006FPADJMessage.calibrationWattT).c_str());
-  
+    
+    doc.clear();
+    doc["solar1w"] =  _P003GSMessage.solarInputV1*_P003GSMessage.solarInputA1;
+    doc["solar2w"] =  _P003GSMessage.solarInputV2*_P003GSMessage.solarInputA2;
+    doc["solarInputV1"] =    _P003GSMessage.solarInputV1;
+    doc["solarInputV2"] =    _P003GSMessage.solarInputV2;
+    doc["solarInputA1"] =    _P003GSMessage.solarInputA1;
+    doc["solarInputA2"] =    _P003GSMessage.solarInputA2;
+    doc["battV"] = _P003GSMessage.battV;
+    doc["battA"] = _P003GSMessage.battA;
+    doc["acInputVoltageR"] = _P003GSMessage.acInputVoltageR;
+    doc["acInputVoltageS"] = _P003GSMessage.acInputVoltageS;
+    doc["acInputVoltageT"] = _P003GSMessage.acInputVoltageT;
+    doc["acInputCurrentR"] = _P003GSMessage.acInputCurrentR;
+    doc["acInputCurrentS"] = _P003GSMessage.acInputCurrentS;
+    doc["acInputCurrentT"] = _P003GSMessage.acInputCurrentT;
+    doc["acOutputCurrentR"] = _P003GSMessage.acOutputCurrentR;
+    doc["acOutputCurrentS"] = _P003GSMessage.acOutputCurrentS;
+    doc["acOutputCurrentT"] = _P003GSMessage.acOutputCurrentT;
+    doc["acWattageR"] = _P003PSMessage.w_r;
+    doc["acWattageS"] = _P003PSMessage.w_s;
+    doc["acWattageT"] = _P003PSMessage.w_t;
+    doc["acWattageTotal"] = _P003PSMessage.w_total;
+    doc["acOutputProcentage"] = _P003PSMessage.ac_output_procent;
+    doc["feedingGridDirectionR"] = _P006FPADJMessage.feedingGridDirectionR;
+    doc["feedingGridDirectionS"] = _P006FPADJMessage.feedingGridDirectionS;
+    doc["feedingGridDirectionT"] = _P006FPADJMessage.feedingGridDirectionT;
+    doc["calibrationWattR"] = _P006FPADJMessage.calibrationWattR;
+    doc["calibrationWattS"] = _P006FPADJMessage.calibrationWattS;
+    doc["calibrationWattT"] = _P006FPADJMessage.calibrationWattT;
+    st = "";
+    serializeJson(doc,st);
+    mqttclient.publish((String(topic) + String("/status")).c_str(), st.c_str() );
   }
 
   return true;

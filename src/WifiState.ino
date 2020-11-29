@@ -26,6 +26,8 @@ void setupWifiStation()
     Serial1.print(":");
     Serial1.println(_settings._wifiPass);
     WiFi.mode(WIFI_STA);
+    if (_settings._deviceName.length() > 0)
+      WiFi.hostname("ESP-" + _settings._deviceName);
     WiFi.begin(_settings._wifiSsid.c_str(), _settings._wifiPass.c_str());
   }
 }
@@ -64,6 +66,7 @@ void serviceWifiMode()
     Serial1.print("connect ");
     Serial1.println(WIFI_COUNT);
     WIFI_COUNT++;
+    delay(100); // Else it will restart way to quickly.
     if (WIFI_COUNT > 200) { 
       ESP.restart();
       WIFI_COUNT=0;

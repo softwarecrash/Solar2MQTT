@@ -264,11 +264,16 @@ void servePage(WiFiClient& client, String req)
 {
   String s = "";
   appendHttp200(s);
-
+String ip = WiFi.localIP().toString();
     s += F("<H1>Solar2MQTT</H1></html>\r\n\r\n");
     s += F("<a href=\"mqtt\">Configure MQTT</a><br>");
     s += F("<a href=\"wifi\">Configure Wifi</a><br><br><br>");
-    s += F("<a href=\"reboot\">Reboot device</a><br>");
+    //s += ("Devicename:"+ _settings._deviceName +"<br>");
+    //s += ("Type:"+ _settings._deviceType +"<br>");
+    //s += F("IP:"+ String(ip) +"<br>");
+    
+    s += F("<br><br><a href=\"reboot\">Reboot device</a><br>");
+    
     s += F("<br><br><br><br><br>By Daromer aka Diy Tech & Repairs 2020<br>");
   
   /*int offset = 0;
