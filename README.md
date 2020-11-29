@@ -10,6 +10,8 @@ Software is built using [Arduino for ESP8266](https://github.com/esp8266/Arduino
 
 **PROGRAMMING:** You need to program it before hooking it up to the TTL board! Im using HW Serial since its so buggy using Software Serial and Wifi reliable so its not even worth it.
 
+**Alternate PROGRAMMING:** I have now included a BIN file that you just can flash. Nice right?!?!
+
 **UART0:** Talks to the inverter at 2400 baud and for programming. DISCONNECT RX before programming
 
 **UART1:** Used for debugging only. Just connect another serie adaptor to TX.
