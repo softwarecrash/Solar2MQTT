@@ -194,7 +194,7 @@ void serveMqtt(WiFiClient& client, String req)
 
   s += F("<tr><td></td><td></td><td><input type=submit value='    Save Settings   '></td></tr>");
   s += F("</table></form>");
-  s += F("</html>\r\n\r\n");
+  s += F("</html>\r\n\r\n");  
   client.print(s);
   delay(1);
   

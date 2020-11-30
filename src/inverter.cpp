@@ -1,6 +1,4 @@
 #include "Arduino.h"
-
-
 #include "main.h"
 #include "inverter.h"
 #include "tickCounter.h"
@@ -16,11 +14,14 @@ extern byte PIP;
 extern int Led_Red;
 extern int Led_Green;
 
+String _setCommand;
 String _commandBuffer;
+String _otherBuffer ="";
 String _lastRequestedCommand = "-"; //Set to not empty to force a timeout on startup
 PollDelay _lastRequestedAt(_tickCounter);
 String _nextCommandNeeded = "";
 bool _allMessagesUpdated = false;
+bool _otherMessagesUpdated = false;
 PollDelay _lastReceivedAt(_tickCounter);
 
 
@@ -146,12 +147,9 @@ bool getNextBit(String& command, int& index)
 bool onP003PS()
 {
   //P003PS -- '81'^D07700139,00122,,,,,,0502,0973,0385,01860,0593,1040,0399,02032,031,1,1,1,1,2,1}⸮'
-  Serial1.print("P003PS -- '");
-  Serial1.print(_commandBuffer.length());
-  Serial1.print("'");
-  Serial1.print(_commandBuffer);
-  Serial1.println("'");
-  
+  Serial1.print("Processing data from: ");
+  Serial1.println(_lastRequestedCommand);
+ 
   if (_commandBuffer.length() < 81)
     return false;
   int index = 5; //after the starting 'commands'
@@ -173,21 +171,15 @@ bool onP003PS()
   _P003PSMessage.va_t = (float)getNextFloat(_commandBuffer, index)/10;
   _P003PSMessage.va_total = (float)getNextFloat(_commandBuffer, index)/10;
   _P003PSMessage.ac_output_procent = (short)getNextFloat(_commandBuffer, index);
- 
-       
 
   return true;
-
 }
 
 bool onP006FPADJ()
 {
   //P006FPADJ -- '34'^D0301,0000,1,0099,1,0109,1,0112⸮7'
-  Serial1.print("P006FPADJ -- '");
-  Serial1.print(_commandBuffer.length());
-  Serial1.print("'");
-  Serial1.print(_commandBuffer);
-  Serial1.println("'");
+  Serial1.print("Processing data from: ");
+  Serial1.println(_lastRequestedCommand);
   
   if (_commandBuffer.length() < 34)
     return false;
@@ -207,11 +199,8 @@ bool onP006FPADJ()
 bool onP003GS()
 {
   //P003GS -- '114'^D1103462,3468,0040,0035,0503,071,+00000,2369,2367,2350,5000,0000,0000,0000,2371,2365,2352,5000,,,,025,028,000,0b'
-  Serial1.print("P003GS -- '");
-  Serial1.print(_commandBuffer.length());
-  Serial1.print("'");
-  Serial1.print(_commandBuffer);
-  Serial1.println("'");
+  Serial1.print("Processing data from: ");
+  Serial1.println(_lastRequestedCommand);
   
   if (_commandBuffer.length() < 114)
     return false;
@@ -247,9 +236,9 @@ bool onP003GS()
 //Parse the response to QPIGS general status message, CRC has already been confirmed
 bool onPIGS()
 {
-  Serial1.print("QPIGS '");
-  Serial1.print(_commandBuffer);
-  Serial1.println("'");
+  Serial1.print("Processing data from: ");
+  Serial1.println(_lastRequestedCommand);
+  
   if (_commandBuffer.length() < 67)
     return false;
 
@@ -268,9 +257,9 @@ bool onPIGS()
 //Parse the response to QMOD general status message, CRC has already been confirmed
 bool onMOD()
 {
-  Serial1.print("QMOD '");
+  Serial1.print(F("QMOD '"));
   Serial1.print(_commandBuffer);
-  Serial1.print("'");
+  Serial1.print(F("'"));
 
   if (_commandBuffer.length() < 2)
     return false;
@@ -283,9 +272,8 @@ bool onMOD()
 //Parse the response to QMOD general status message, CRC has already been confirmed
 bool onPIWS()
 {
-  Serial1.print("QPIWS '");
-  Serial1.print(_commandBuffer);
-  Serial1.print("'");
+  Serial1.print("Processing data from: ");
+  Serial1.println(_lastRequestedCommand);
 
   if (_commandBuffer.length() < 32)
     return false;
@@ -329,9 +317,8 @@ bool onPIWS()
 //Parse the response to QFLAG flags message, CRC has already been confirmed
 bool onFLAG()
 {
-  Serial1.print("QFLAG '");
-  Serial1.print(_commandBuffer);
-  Serial1.print("'");
+  Serial1.print("Processing data from: ");
+  Serial1.println(_lastRequestedCommand);
 
   if (_commandBuffer.length() < 10)
     return false;
@@ -353,9 +340,8 @@ bool onFLAG()
 //Parse the response to QID device id message, CRC has already been confirmed
 bool onID()
 {
-  Serial1.print("QID '");
-  Serial1.print(_commandBuffer);
-  Serial1.print("'");
+  Serial1.print("Processing data from: ");
+  Serial1.println(_lastRequestedCommand);
 
   if (_commandBuffer.length() < 15)
     return false;
@@ -369,9 +355,9 @@ bool onID()
 //Parse the response to QPI protocol info message, CRC has already been confirmed
 bool onPI()
 {
-  Serial1.print("QPI '");
+  Serial1.print(F("QPI '"));
   Serial1.print(_commandBuffer);
-  Serial1.print("'");
+  Serial1.print(F("'"));
 
   if (_commandBuffer.length() < 5)
     return false;
@@ -383,6 +369,20 @@ bool onPI()
   return true;
 }
 
+//Parse Other commands or so called RAWS
+bool onOther()
+{
+  Serial1.print("Processing OTHER data from: ");
+  Serial1.println(_lastRequestedCommand);
+
+  if (_commandBuffer.length() < 4)
+    return false;  // If its below 4 the response is most likely false
+  _otherMessagesUpdated = true;
+  _otherBuffer = _commandBuffer;
+  return true;
+}
+
+
 //Called once a line has been received from the inverter (on CR)
 void onInverterCommand()
 {
@@ -393,37 +393,41 @@ void onInverterCommand()
     unsigned short recievedCrc = ((unsigned short)_commandBuffer[_commandBuffer.length()-2] << 8) | 
                                                   _commandBuffer[_commandBuffer.length()-1];
     if (!inverterType) {
-      Serial1.print(" Calc: ");
+      Serial1.print(F(" Calc: "));
       Serial1.print(calculatedCrc, HEX);
-      Serial1.print(" Rx: ");
+      Serial1.print(F(" Rx: "));
       Serial1.println(recievedCrc, HEX);
     }
+    Serial1.print(F("Command sent: "));
+    Serial1.print(_lastRequestedCommand);
+    Serial1.print(F(" Recieved data: "));
+    Serial1.println(_commandBuffer);
+    
     //If CRC is okay, parse message and set next message to be requested
     if (calculatedCrc == recievedCrc)
     {
-//MPI
+        //MPI
         digitalWrite(Led_Red, LOW);  //If we got a valid command show that on the led
         if (_lastRequestedCommand == "P003GS") 
         {
           onP003GS();
           _nextCommandNeeded = "P003PS";
         }
-        if (_lastRequestedCommand == "P003PS") 
+        else if (_lastRequestedCommand == "P003PS") 
         {
           onP003PS();
           _nextCommandNeeded = "P006FPADJ";
         }
   
-        if (_lastRequestedCommand == "P006FPADJ") 
+        else if (_lastRequestedCommand == "P006FPADJ") 
         {
-          if (onP006FPADJ()) Serial1.println("OK");
+          onP006FPADJ();
           _nextCommandNeeded = "";
           _allMessagesUpdated = true;
         }
 
       // Below for PCM
-
-      if (_lastRequestedCommand == "QPIGS" && !inverterType) 
+      else if (_lastRequestedCommand == "QPIGS" && !inverterType) 
       {
         digitalWrite(Led_Red, LOW); //IF we got a valid command show that on the red led
         if (onPIGS()) {
@@ -433,28 +437,31 @@ void onInverterCommand()
       }
 
       
-//Below for PIP
-      
-      if (_lastRequestedCommand == "QMOD") 
+    //Below for PIP
+      else if (_lastRequestedCommand == "QMOD") 
       {
         onMOD();
         _nextCommandNeeded = "QPIWS";
       }
-      if (_lastRequestedCommand == "QPIWS") 
+      else if (_lastRequestedCommand == "QPIWS") 
       {
         onPIWS();
         _nextCommandNeeded = "QFLAG";
       }
-      if (_lastRequestedCommand == "QFLAG") 
+      else if (_lastRequestedCommand == "QFLAG") 
       {
         onFLAG();
         _nextCommandNeeded = "QID";
       }
-      if (_lastRequestedCommand == "QID") 
+      else if (_lastRequestedCommand == "QID") 
       {
         onID();
         _nextCommandNeeded = "";
         _allMessagesUpdated = true;
+      }
+      // ***********  ALL OTHER **********
+      else {
+        onOther();
       }
     }
   }
@@ -468,7 +475,6 @@ void onInverterCommand()
 void serviceInverter()
 {
   byte c;
-
   //Check time since last requested command
   if (_lastRequestedAt.compare(INVERTER_COMMAND_TIMEOUT_MS) > 0)
   {
@@ -482,25 +488,30 @@ void serviceInverter()
   // Dont send until _allMessagesUpdated is false
   if ((_lastRequestedCommand == "") && (_lastReceivedAt.compare(INVERTER_COMMAND_DELAY_MS) > 0) && (!_allMessagesUpdated))
   {
-    if (_nextCommandNeeded == "")
+    if (_nextCommandNeeded == "") {
       if (inverterType)  _nextCommandNeeded = "P003GS"; //IF MPI we start with that order
-      else _nextCommandNeeded = "QPIGS";  //if PIP 
-  
+      else _nextCommandNeeded = "QPIGS";  //if PIP/PCM
+    }
+
+    if (_setCommand.length()) {  // Raw command incomming. Need to process it as next command
+      _nextCommandNeeded = _setCommand;
+    }
+    
     unsigned short crc = cal_crc_half((byte*)_nextCommandNeeded.c_str(), _nextCommandNeeded.length());
-  
+    
     _lastRequestedCommand = _nextCommandNeeded;
     _lastRequestedAt.reset();
-    Serial1.print("Sending command: ");
-    Serial1.println(_nextCommandNeeded);
-    if (inverterType) Serial.print("^");  //If MPI then prechar is needed
-    if (inverterType) Serial1.print("^");  //If MPI then prechar is needed
+    Serial1.print(F("Sent Command: "));
+    if (inverterType) { Serial.print("^"); Serial1.print("^");}  //If MPI then prechar is needed
     Serial.print(_nextCommandNeeded);
+    Serial1.println(_nextCommandNeeded);
     if (!inverterType) Serial.print((char)((crc >> 8) & 0xFF)); //ONLY CRC fo PCM/PIP
     if (!inverterType) Serial.print((char)((crc >> 0) & 0xFF)); //ONLY CRC fo PCM/PIP
     Serial.print("\r");
-
+   
+   if (_setCommand.length()) { _nextCommandNeeded = ""; _setCommand = ""; }  // If it was RAW command reset it.
   }
-  
+ 
   while (Serial.available() > 0)
   {
     c = Serial.read();
@@ -518,6 +529,5 @@ void serviceInverter()
         _commandBuffer = "";
       }
     }
-    yield();
   }   
 }

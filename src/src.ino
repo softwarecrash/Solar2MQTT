@@ -38,6 +38,7 @@
 
 const char ApSsid[] = "SetSolar";
 
+
 //--------------------------------- Wifi State
 #define CLIENT_NOTCONNECTED 0
 #define CLIENT_RECONNECT 1
@@ -60,6 +61,9 @@ extern QpigsMessage _qpigsMessage;
 extern P003GSMessage _P003GSMessage;
 extern P003PSMessage _P003PSMessage;
 extern P006FPADJMessage _P006FPADJMessage;
+extern String _nextCommandNeeded;
+extern String _setCommand;
+extern String _otherBuffer;
 
 //---------------------- MQTT
 PubSubClient mqttclient(client);
@@ -74,7 +78,7 @@ String st = "";
 
 unsigned long mqtttimer = 0;
 extern bool _allMessagesUpdated;
-
+extern bool _otherMessagesUpdated;
 //---------- LEDS  
 int Led_Red = 5;  //D1
 int Led_Green = 4;  //D2
@@ -83,33 +87,36 @@ StaticJsonDocument<300> doc;
 //----------------------------------------------------------------------
 void setup() 
 {
+ 
   initHardware();
   _settings.load();
   serviceWifiMode();
   delay(2500);
   
   server.begin();
-  delay(100);
+  delay(50);
 
   if (String(_settings._deviceType) == "MPI") {
-    inverterType = 1; }
+    inverterType = MPI; }
   else if (String(_settings._deviceType) == "PIP"){
-    inverterType = 2; } 
+    inverterType = PIP; } 
   else {
-     inverterType = 0; 
+     inverterType = PCM; 
   }
+  
   //dev = _settings._deviceName.c_str();
   topic = topic + String(_settings._deviceName.c_str());
   
   mqttclient.setServer(_settings._mqttServer.c_str(), _settings._mqttPort);
+  mqttclient.setCallback(callback);
   
   pinMode(Led_Red, OUTPUT); 
   pinMode(Led_Green, OUTPUT); 
   digitalWrite(Led_Red, HIGH); 
   digitalWrite(Led_Green, LOW); 
   
-  //if (_settings._deviceName.length() > 0)
-    //ArduinoOTA.setHostname(String("ESP-" + _settings._deviceName).c_str());
+  /*if (_settings._deviceName.length() > 0) 
+    ArduinoOTA.setHostname(String("ESP-" + _settings._deviceName).c_str());
   ArduinoOTA.onStart([]() {
     String type;
     if (ArduinoOTA.getCommand() == U_FLASH)
@@ -134,7 +141,7 @@ void setup()
     else if (error == OTA_RECEIVE_ERROR) Serial1.println("Receive Failed");
     else if (error == OTA_END_ERROR) Serial1.println("End Failed");
   });
-  ArduinoOTA.begin();
+  ArduinoOTA.begin();*/
 }
 
 
@@ -145,16 +152,25 @@ void setup()
 //----------------------------------------------------------------------
 void loop() 
 {
-  delay(5);
-  //requestApMode = WIFI_AP;  // Left in case of need. This setups the ap mode to read
+  delay(10);
+
   // Make sure wifi is in the right mode
   serviceWifiMode();
-  ArduinoOTA.handle();  //Handle any OTA requests   
+  if (WiFi.status() != WL_CONNECTED) //No use going to next step unless WIFI is up and running. 
+    return;
+  
+  //ArduinoOTA.handle();  //Handle any OTA requests   DISABLED DUE TO BUG
+
+  //If we have pending data to send send it first!
+  sendRaw();
 
   // Comms with inverter
   serviceInverter();  // Check if we recieved data or should send data
   sendtoMQTT();  // Update data to MQTT server if we should
-  
+ 
+    // Check if we have something to read from MQTT 
+  mqttclient.loop();
+
   // Check if a client towards port 80 has connected
   WiFiClient client = server.available();
   if (!client) {
@@ -177,6 +193,7 @@ void loop()
   } else if (req.indexOf("/setmqtt") != -1) {
     serveSetMqtt(client, req);
   } else if (req.indexOf("/reboot") != -1) {
+    serve404(client);
     delay(100);
     ESP.restart();
   } else {
@@ -213,24 +230,21 @@ int WifiGetRssiAsQuality(int rssi)  // THis part borrowed from Tasmota code
 
 
 bool sendtoMQTT() {
-
     if (millis() < (mqtttimer + 3000)) { 
     return false;
   }
   mqtttimer = millis();
-  
-  Serial1.print("Wifi status: ");
-  Serial1.println(WiFi.status());
-    
   if (!mqttclient.connected()) {
-    if (mqttclient.connect((String("ESP-" +ESP.getChipId())).c_str(), _settings._mqttUser.c_str(), _settings._mqttPassword.c_str() )) {
-        Serial1.println("Reconnected to MQTT SERVER");
+    if (mqttclient.connect((String("ESP-" +_settings._deviceName)).c_str(), _settings._mqttUser.c_str(), _settings._mqttPassword.c_str() )) {
+    
+        Serial1.println(F("Reconnected to MQTT SERVER"));
         mqttclient.publish((topic + String("/Info")).c_str(), ("{\"Status\":\"Im alive!\", \"DeviceType\": \"" + _settings._deviceType + "\",\"IP \":\"" + WiFi.localIP().toString() + "\"}" ).c_str());
-         
+        mqttclient.subscribe((topic + String("/code")).c_str());
+        mqttclient.subscribe((topic + String("/code")).c_str());
       } else {
-        Serial1.println("CANT CONNECT TO MQTT");
+        Serial1.println(F("CANT CONNECT TO MQTT"));
         digitalWrite(Led_Green, LOW); 
-        delay(1000);
+        //delay(50);
         return false; // Exit if we couldnt connect to MQTT brooker
       }
   } 
@@ -240,8 +254,9 @@ bool sendtoMQTT() {
 
 
     
-    Serial1.print("Data sent to MQTT SERver");
-    Serial1.println(" - up: " + uptime_formatter::getUptime());
+    Serial1.print(F("Data sent to MQTT SERver"));
+    Serial1.print(F(" - up: "));
+    Serial1.println(uptime_formatter::getUptime());
     digitalWrite(Led_Green, HIGH);
     
 
@@ -269,6 +284,16 @@ bool sendtoMQTT() {
 
      
   }
+    /*if (inverterType == PIP) { //PIP
+   
+    doc.clear();
+    doc["INFO"] =  "This one is not done...";
+    st = "";
+    serializeJson(doc,st);
+    mqttclient.publish((String(topic) + String("/status")).c_str(), st.c_str() );
+
+     
+  }*/
   if (inverterType == MPI) { //IF MPI
     mqttclient.publish((String(topic) + String("/solar1w")).c_str(), String(_P003GSMessage.solarInputV1*_P003GSMessage.solarInputA1).c_str());
     mqttclient.publish((String(topic) + String("/solar2w")).c_str(), String(_P003GSMessage.solarInputV2*_P003GSMessage.solarInputA2).c_str());
@@ -339,4 +364,36 @@ bool sendtoMQTT() {
   }
 
   return true;
+}
+
+
+// Check if we have pending raw messages to send to MQTT. Then send it. 
+void sendRaw() {
+  if (_otherMessagesUpdated) {
+    _otherMessagesUpdated = false;
+    Serial1.print("Sending other data to mqtt: ");
+    Serial1.println(_otherBuffer);
+    mqttclient.publish((String(topic) + String("/debug/recieved")).c_str(), String(_otherBuffer).c_str() );
+  }
+}
+/// TESTING MQTT SEND
+
+void callback(char* top, byte* payload, unsigned int length) {
+  Serial1.println(F("Callback done"));
+  if (strcmp(top,"pir1Status")==0){
+    // whatever you want for this topic
+  }
+ 
+  String st ="";
+  for (int i = 0; i < length; i++) {
+    st += String((char)payload[i]);
+  }
+  
+  mqttclient.publish((String(topic) + String("/debug/sent")).c_str(), String("top: " + topic + " data: " + st).c_str() );
+  Serial1.print(F("Current command: "));
+  Serial1.print(_nextCommandNeeded);
+  Serial1.print(F(" Setting next command to : "));
+  Serial1.println(st);
+  _setCommand = st;
+  // Add code to put the call into the queue but verify it firstly. Then send the result back to debug/new window?
 }

@@ -15,13 +15,13 @@ void setupWifiStation()
   delay(20);
   if (_settings._wifiSsid.length() == 0)
   {
-    Serial1.println("No client SSID set, switching to AP");
+    Serial1.println(F("No client SSID set, switching to AP"));
     WiFi.mode(WIFI_AP);
     WiFi.softAP(ApSsid);
   }
   else
   {
-    Serial1.print("Connecting to ");
+    Serial1.print(F("Connecting to "));
     Serial1.print(_settings._wifiSsid);
     Serial1.print(":");
     Serial1.println(_settings._wifiPass);
@@ -63,21 +63,20 @@ void serviceWifiMode()
 
   if (clientConnectionState == CLIENT_CONNECTING)
   {    
-    Serial1.print("connect ");
+    Serial1.print(F("c:"));
     Serial1.println(WIFI_COUNT);
     WIFI_COUNT++;
-    delay(100); // Else it will restart way to quickly.
-    if (WIFI_COUNT > 200) { 
-      ESP.restart();
+    delay(20); // Else it will restart way to quickly.
+    if (WIFI_COUNT > 500) { 
       WIFI_COUNT=0;
+      ESP.restart();
     }
     if (WiFi.status() == WL_CONNECTED)
     {
-      Serial1.println("connect 2");
       clientConnectionState = CLIENT_CONNECTED;
-      Serial1.print("IP address: ");
-      Serial1.println(WiFi.localIP());
       WIFI_COUNT = 0;
+      Serial1.print(F("IP address: "));
+      Serial1.println(WiFi.localIP());
     }
   }
 }
