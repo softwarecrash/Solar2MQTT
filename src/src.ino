@@ -156,21 +156,22 @@ void loop()
 
   // Make sure wifi is in the right mode
   serviceWifiMode();
-  if (WiFi.status() != WL_CONNECTED) //No use going to next step unless WIFI is up and running. 
-    return;
+  if (WiFi.status() == WL_CONNECTED) { //No use going to next step unless WIFI is up and running. 
+    
+    
+    //ArduinoOTA.handle();  //Handle any OTA requests   DISABLED DUE TO BUG
   
-  //ArduinoOTA.handle();  //Handle any OTA requests   DISABLED DUE TO BUG
-
-  //If we have pending data to send send it first!
-  sendRaw();
-
-  // Comms with inverter
-  serviceInverter();  // Check if we recieved data or should send data
-  sendtoMQTT();  // Update data to MQTT server if we should
- 
-    // Check if we have something to read from MQTT 
-  mqttclient.loop();
-
+    //If we have pending data to send send it first!
+    sendRaw();
+  
+    // Comms with inverter
+    serviceInverter();  // Check if we recieved data or should send data
+    sendtoMQTT();  // Update data to MQTT server if we should
+   
+      // Check if we have something to read from MQTT 
+    mqttclient.loop();
+    return;
+  }
   // Check if a client towards port 80 has connected
   WiFiClient client = server.available();
   if (!client) {
