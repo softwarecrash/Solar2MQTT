@@ -170,7 +170,6 @@ void loop()
    
       // Check if we have something to read from MQTT 
     mqttclient.loop();
-    return;
   }
   // Check if a client towards port 80 has connected
   WiFiClient client = server.available();
