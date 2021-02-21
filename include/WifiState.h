@@ -66,8 +66,8 @@ void serviceWifiMode()
     Serial1.print(F("c:"));
     Serial1.println(WIFI_COUNT);
     WIFI_COUNT++;
-    delay(20); // Else it will restart way to quickly.
-    if (WIFI_COUNT > 500) { 
+    delay(250); // wait 250msec
+    if (WIFI_COUNT > 720) { //702/4=250msec
       WIFI_COUNT=0;
       ESP.restart();
     }
