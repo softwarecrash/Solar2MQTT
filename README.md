@@ -2,8 +2,8 @@
 - Modified to work with platformio - not complete but compile withour error
 
 # Known Bugs:
-- first AP mode timeout too fast
-- SSID with spaces not working for setup mode
+- first AP mode timeout too fast, downt know why daromer2 wrote this - > workaround put your wifi settings in the code
+- SSID with spaces not working for setup mode -> workaround put your wifi settings in the code
 
 # InverterOfThings Logger (FORK->FORK and total rebuild)
 ESP8266 based WiFi interface for Voltronic Axpert MppSolar PIP inverters
