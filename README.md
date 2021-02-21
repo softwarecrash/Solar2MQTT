@@ -41,11 +41,9 @@ Software is built using [Arduino for ESP8266](https://github.com/esp8266/Arduino
 Most of the parts can be bought as modules, it's usually cheaper that way.
 
 Approximate prices found on Ebay
-- ESP8266 - Wemos D1 Mini - https://ebay.to/3660Nsy - ($2.66)
-- MAX3232 module ($0.70) - it's just a max3232 with 5 capacitors on a tiny little board  - https://ebay.to/3la4G45
-- DC-DC buck module ($1.50) - 12-80v down to 5v https://ebay.to/3lbf3V7
+- ESP8266 - Wemos D1 Mini ($2.66)
+- MAX3232 module ($0.70) - it's just a max3232 with 5 capacitors on a tiny little board
+- DC-DC buck module ($1.50) - 12-80v down to 5v
 - LEDs ($0.50) - The leds are for status etc
 
 Total cost: $5
-
-Links above are affiliated and give me a tiny commission if used. 
