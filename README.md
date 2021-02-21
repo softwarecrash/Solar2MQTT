@@ -1,3 +1,6 @@
+# Changes:
+- Modified to work with platformio - not complete
+
 # Known Bugs:
 - first AP mode timeout too fast
 - SSID with spaces not working for setup mode
