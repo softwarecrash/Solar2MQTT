@@ -1,3 +1,7 @@
+# Known Bugs:
+- first AP mode timeout too fast
+- SSID with spaces not working for setup mode
+
 # InverterOfThings Logger (FORK and total rebuild)
 ESP8266 based WiFi interface for Voltronic Axpert MppSolar PIP inverters
 
