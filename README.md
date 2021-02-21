@@ -9,8 +9,8 @@
 ESP8266 based WiFi interface for Voltronic Axpert MppSolar PIP inverters
 
 works with
-pip devices
-i solar
++pip devices
++i solar
 and many many others based on the chinese solar inverter with a rj45 jack and usb port, primary identified by the display
 
 
