@@ -1,5 +1,5 @@
 # Changes:
-- Modified to work with platformio - not complete
+- Modified to work with platformio - not complete but compile withour error
 
 # Known Bugs:
 - first AP mode timeout too fast
