@@ -2,7 +2,7 @@
 - Modified to work with platformio - not complete but compile without error
 
 # Known Bugs:
-- first AP mode timeout too fast, downt know why daromer2 wrote this - > workaround put your wifi settings in the code
+- first AP mode timeout too fast, fixed - need testing
 - SSID with spaces not working for setup mode -> workaround put your wifi settings in the code
 
 # InverterOfThings Logger (FORK->FORK and total rebuild)
