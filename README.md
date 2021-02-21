@@ -5,8 +5,13 @@
 - first AP mode timeout too fast
 - SSID with spaces not working for setup mode
 
-# InverterOfThings Logger (FORK and total rebuild)
+# InverterOfThings Logger (FORK->FORK and total rebuild)
 ESP8266 based WiFi interface for Voltronic Axpert MppSolar PIP inverters
+
+works with
+pip devices
+i solar
+and many many others based on the chinese solar inverter with a rj45 jack and usb port, primary identified by the display
 
 
 **Note2 that all below info is from the forked project and in short this will be updated when all is refactored and perhaps working....**
