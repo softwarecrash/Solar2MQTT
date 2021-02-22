@@ -9,16 +9,16 @@ class Settings
 
     bool _valid = false;
     //WIFI Settings
-    String _wifiSsid = "PC Hilfe Weimar";
-    String _wifiPass = "pchwpchw";
+    String _wifiSsid = "";
+    String _wifiPass = "";
   
   //MQTT Settings
     String _deviceType = "PCM"; //PIP | PCM | MPI
     String _deviceName = "I solar";
-    String _mqttServer = "192.168.178.40";
+    String _mqttServer = "";
     //short _mqttPort = "1883";
-    String _mqttUser = "mqttuser";
-    String _mqttPassword = "123mqt456MQT";
+    String _mqttUser = "";
+    String _mqttPassword = "";
     short  _mqttPort = 1883;
 
 
