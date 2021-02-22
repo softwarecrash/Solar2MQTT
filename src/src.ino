@@ -75,7 +75,7 @@ const byte MPI = 1;
 const byte PCM = 0;
 const byte PIP = 2;
 byte inverterType = MPI; //And defaults in case...
-String topic = "solar/";  //Default first part of topic. We will add device ID in setup
+String topic = "sonoff/";  //Default first part of topic. We will add device ID in setup
 String st = "";
 
 unsigned long mqtttimer = 0;
@@ -94,13 +94,7 @@ StaticJsonDocument<300> doc;
 void setup() 
 {
  
-  //initHardware();
-
-  delay(100);
-  Wire.begin(4, 5);
-  Serial1.begin(115200); // Debugging towards UART1
-  Serial.begin(2400); // Using UART0 for comm with inverter. IE cant be connected during flashing
-
+  initHardware();
   _settings.load();
   serviceWifiMode();
   delay(2500);
@@ -120,9 +114,7 @@ void setup()
   topic = topic + String(_settings._deviceName.c_str());
   
   mqttclient.setServer(_settings._mqttServer.c_str(), _settings._mqttPort);
-
-  //for test check if is callback set
-  if(callback) mqttclient.setCallback(callback);
+  mqttclient.setCallback(callback);
   
   pinMode(Led_Red, OUTPUT); 
   pinMode(Led_Green, OUTPUT); 
@@ -184,6 +176,7 @@ void loop()
    
       // Check if we have something to read from MQTT 
     mqttclient.loop();
+    return;
   }
   // Check if a client towards port 80 has connected
   WiFiClient client = server.available();
@@ -249,9 +242,20 @@ bool sendtoMQTT() {
   }
   mqtttimer = millis();
   if (!mqttclient.connected()) {
-    if (mqttclient.connect((String("ESP-" +_settings._deviceName)).c_str(), _settings._mqttUser.c_str(), _settings._mqttPassword.c_str() )) {
+    //delete the esp name string
+    if (mqttclient.connect((String(_settings._deviceName)).c_str(), _settings._mqttUser.c_str(), _settings._mqttPassword.c_str() )) {
     
         Serial1.println(F("Reconnected to MQTT SERVER"));
+
+
+       // mqttclient.publish((String(topic) + String("/tele/Current")).c_str(),"10"); //das geht schon mal mit sonoff adapter
+       // mqttclient.publish((String(topic) + String("/state/Watt")).c_str(),"10");//das nicht
+       // mqttclient.publish((String(topic) + String("/state/IP")).c_str(),(WiFi.localIP().toString().c_str()));
+
+
+
+
+
         mqttclient.publish((topic + String("/Info")).c_str(), ("{\"Status\":\"Im alive!\", \"DeviceType\": \"" + _settings._deviceType + "\",\"IP \":\"" + WiFi.localIP().toString() + "\"}" ).c_str());
         mqttclient.subscribe((topic + String("/code")).c_str());
         mqttclient.subscribe((topic + String("/code")).c_str());
@@ -411,3 +415,4 @@ void callback(char* top, byte* payload, unsigned int length) {
   _setCommand = st;
   // Add code to put the call into the queue but verify it firstly. Then send the result back to debug/new window?
 }
+

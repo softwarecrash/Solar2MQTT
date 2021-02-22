@@ -8,16 +8,19 @@ class Settings
   public:
 
     bool _valid = false;
-    String _wifiSsid = "";
-    String _wifiPass = "";
+    //WIFI Settings
+    String _wifiSsid = "PC Hilfe Weimar";
+    String _wifiPass = "pchwpchw";
   
-    String _deviceType = "";
-    String _deviceName = "";
-    String _mqttServer = "";
+  //MQTT Settings
+    String _deviceType = "1";
+    String _deviceName = "I solar";
+    String _mqttServer = "192.168.178.40";
     //short _mqttPort = "1883";
-    String _mqttUser = "";
-    String _mqttPassword = "";
-    short  _mqttPort = 30;
+    String _mqttUser = "mqttuser";
+    String _mqttPassword = "123mqt456MQT";
+    short  _mqttPort = 1883;
+
 
     short readShort(int offset)
     {
