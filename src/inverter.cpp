@@ -239,17 +239,28 @@ bool onPIGS()
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
   
-  if (_commandBuffer.length() < 67)
+  if (_commandBuffer.length() < 109)
     return false;
 
   int index = 1; //after the starting '('
+  //(000.0 00.0 230.0 50.0 0000 0000 000 353 25.55 000 095 0039 0000 000.0 00.00 00000 00010000 00 00 00000 010^
+  // 3. AC out V | 4. AC out Freq | 8. P battery voltage | 9. N battery voltage | 10. Batt Percentage |
   _qpigsMessage.rxTimeSec = _tickCounter.getSeconds();
-  _qpigsMessage.solarV = (short)getNextFloat(_commandBuffer, index);
-  _qpigsMessage.battV = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.battChargeA = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.solarA = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.solar2A = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.wattage = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.gridVolt =      getNextFloat(_commandBuffer, index);
+  _qpigsMessage.gridFreq =       getNextFloat(_commandBuffer, index);
+  _qpigsMessage.acOutVolt =      getNextFloat(_commandBuffer, index);    //3. output volt
+  _qpigsMessage.acOutFreq =   getNextFloat(_commandBuffer, index);    //4. output frequenz
+  _qpigsMessage.gridWatt = getNextFloat(_commandBuffer, index);         //5. grid watt
+  _qpigsMessage.acWatt =      getNextFloat(_commandBuffer, index);      //6. outputt watt
+  _qpigsMessage.acLoad =     getNextFloat(_commandBuffer, index);       //7. output load???????
+  _qpigsMessage.wattage =     getNextFloat(_commandBuffer, index);    //no matter what it is, eventual runntime?
+  _qpigsMessage.pBattV =      getNextFloat(_commandBuffer, index);     //8. Data
+  _qpigsMessage.nBattV =      getNextFloat(_commandBuffer, index);     //9. Data
+  _qpigsMessage.battPercent = getNextFloat(_commandBuffer, index);     //10. Data
+  _qpigsMessage.pv1InWatt = getNextFloat(_commandBuffer, index);       //11. System Temperature
+  _qpigsMessage.pv2InWatt = getNextFloat(_commandBuffer, index);       //12. Data
+  _qpigsMessage.pv1InVolt = getNextFloat(_commandBuffer, index);       //13. Data
+  _qpigsMessage.pv2InVolt = getNextFloat(_commandBuffer, index);       //14. Data
   
   return true;
 }
@@ -402,6 +413,7 @@ void onInverterCommand()
     Serial1.print(_lastRequestedCommand);
     Serial1.print(F(" Recieved data: "));
     Serial1.println(_commandBuffer);
+    //debug message to mqqt ??
     
     //If CRC is okay, parse message and set next message to be requested
     if (calculatedCrc == recievedCrc)

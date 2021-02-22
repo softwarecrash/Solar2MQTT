@@ -79,13 +79,28 @@ struct P003GSMessage
 struct QpigsMessage
 {
   unsigned long rxTimeSec;
-  //087.6 51.18 08.81 04.71 04.10 0450 +034 00.05 -030 0000 11000000O⸮'
+    //(000.0 00.0 230.0 50.0 0000 0000 000 353 25.55 000 095 0039 0000 000.0 00.00 00000 00010000 00 00 00000 010^
+  // 3. AC out V | 4. AC out Freq | 8. P battery voltage | 9. N battery voltage | 10. Batt Percentage |
   float solarV;
   float battV;
-  float battChargeA;
-  float solarA;
-  float solar2A;
+
+  float gridVolt; //1.
+  float gridFreq; //2.
+  float acOutVolt; //3.
+  float acOutFreq;//4.
+
+  float gridWatt;//5
+  float acWatt;//6
+  float acLoad;
   float wattage;
+  float pBattV;//8.
+  float nBattV;//9.
+  float battPercent;//10
+  float pv1InWatt; //11
+  float pv2InWatt; //12
+  float pv1InVolt; //13
+  float pv2InVolt; //14
+
 }; 
 
 struct QmodMessage

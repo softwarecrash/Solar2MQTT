@@ -36,6 +36,9 @@
 #include "Settings.h"
 #include "inverter.h"
 
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266HTTPUpdateServer.h>
 
 
 const char ApSsid[] = "SetSolar";
@@ -74,7 +77,7 @@ PubSubClient mqttclient(client);
 const byte MPI = 1;
 const byte PCM = 0;
 const byte PIP = 2;
-byte inverterType = MPI; //And defaults in case...
+byte inverterType = PCM; //And defaults in case...
 String topic = "sonoff/";  //Default first part of topic. We will add device ID in setup
 String st = "";
 
@@ -90,17 +93,36 @@ StaticJsonDocument<300> doc;
 
 #include "WifiState.h"
 #include "Pages.h"
+
+
+
+ESP8266WebServer httpServer(8080);
+ESP8266HTTPUpdateServer httpUpdater;
 //----------------------------------------------------------------------
 void setup() 
 {
- 
-  initHardware();
+
+  Wire.begin(4, 5);
+  Serial1.begin(115200); // Debugging towards UART1
+  Serial.begin(2400); // Using UART0 for comm with inverter. IE cant be connected during flashing
+
+
   _settings.load();
   serviceWifiMode();
   delay(2500);
   
   server.begin();
   delay(50);
+
+  MDNS.begin("esp");
+
+  httpUpdater.setup(&httpServer);
+  httpServer.begin();
+
+  MDNS.addService("http", "tcp", 8080);
+  Serial1.printf("HTTPUpdateServer ready! Open http://%s.local/update in your browser\n", "esp");
+
+
 
   if (String(_settings._deviceType) == "MPI") {
     inverterType = MPI; }
@@ -121,33 +143,6 @@ void setup()
   digitalWrite(Led_Red, HIGH); 
   digitalWrite(Led_Green, LOW); 
   
-  /*if (_settings._deviceName.length() > 0) 
-    ArduinoOTA.setHostname(String("ESP-" + _settings._deviceName).c_str());
-  ArduinoOTA.onStart([]() {
-    String type;
-    if (ArduinoOTA.getCommand() == U_FLASH)
-      type = "sketch";
-    else // U_SPIFFS
-      type = "filesystem";
-
-    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-    Serial1.println("Start updating " + type);
-  });
-  ArduinoOTA.onEnd([]() {
-    Serial1.println("\nEnd");
-  });
-  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    Serial1.printf("Progress: %u%%\r", (progress / (total / 100)));
-  });
-  ArduinoOTA.onError([](ota_error_t error) {
-    Serial1.printf("Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) Serial1.println("Auth Failed");
-    else if (error == OTA_BEGIN_ERROR) Serial1.println("Begin Failed");
-    else if (error == OTA_CONNECT_ERROR) Serial1.println("Connect Failed");
-    else if (error == OTA_RECEIVE_ERROR) Serial1.println("Receive Failed");
-    else if (error == OTA_END_ERROR) Serial1.println("End Failed");
-  });
-  ArduinoOTA.begin();*/
 }
 
 
@@ -165,6 +160,9 @@ void loop()
   if (WiFi.status() == WL_CONNECTED) { //No use going to next step unless WIFI is up and running. 
     
     
+  httpServer.handleClient();
+  MDNS.update();
+
     //ArduinoOTA.handle();  //Handle any OTA requests   DISABLED DUE TO BUG
   
     //If we have pending data to send send it first!
@@ -210,17 +208,6 @@ void loop()
   client.flush();
 }
 
-void initHardware()
-{
- 
-  delay(100);
-  Wire.begin(4, 5);
-  
-  Serial1.begin(115200); // Debugging towards UART1
-  Serial.begin(2400); // Using UART0 for comm with inverter. IE cant be connected during flashing
-
-}
-
 int WifiGetRssiAsQuality(int rssi)  // THis part borrowed from Tasmota code
 {
   int quality = 0;
@@ -256,7 +243,7 @@ bool sendtoMQTT() {
 
 
 
-        mqttclient.publish((topic + String("/Info")).c_str(), ("{\"Status\":\"Im alive!\", \"DeviceType\": \"" + _settings._deviceType + "\",\"IP \":\"" + WiFi.localIP().toString() + "\"}" ).c_str());
+        mqttclient.publish((topic + String("/Info")).c_str(), ("{\"Status\":\"!!!Im alive!\", \"DeviceType\": \"" + _settings._deviceType + "\",\"IP \":\"" + WiFi.localIP().toString() + "\"}" ).c_str());
         mqttclient.subscribe((topic + String("/code")).c_str());
         mqttclient.subscribe((topic + String("/code")).c_str());
       } else {
@@ -282,7 +269,7 @@ bool sendtoMQTT() {
   if (!_allMessagesUpdated) return false;
   
   _allMessagesUpdated = false; // Lets reset messages and process them
-  
+  /*
   if (inverterType == PCM) { //PCM
      mqttclient.publish((String(topic) + String("/battv")).c_str(), String(_qpigsMessage.battV).c_str());
      mqttclient.publish((String(topic) + String("/solarv")).c_str(), String(_qpigsMessage.solarV).c_str());
@@ -291,7 +278,7 @@ bool sendtoMQTT() {
      mqttclient.publish((String(topic) + String("/solara")).c_str(), String(_qpigsMessage.solarA).c_str());
 
     doc.clear();
-    doc["battv"] =  _qpigsMessage.battV;
+    doc["battvtest"] =  _qpigsMessage.battV;
     doc["solarv"] = _qpigsMessage.solarV;
     doc["batta"] =  _qpigsMessage.battChargeA;
     doc["wattage"] =_qpigsMessage.wattage;
@@ -301,17 +288,47 @@ bool sendtoMQTT() {
     mqttclient.publish((String(topic) + String("/status")).c_str(), st.c_str() );
 
      
-  }
-    /*if (inverterType == PIP) { //PIP
-   
+  }*/
+
+
+
+
+    if (inverterType == PCM) { //PIP changed to pcm
+     mqttclient.publish((String(topic) + String("/Grid Voltage")).c_str(), String(_qpigsMessage.gridVolt).c_str());
+     mqttclient.publish((String(topic) + String("/Grid Frequenz")).c_str(), String(_qpigsMessage.gridFreq).c_str());
+     mqttclient.publish((String(topic) + String("/Grid Watt")).c_str(), String(_qpigsMessage.gridWatt).c_str());
+
+     mqttclient.publish((String(topic) + String("/AC out Voltage")).c_str(), String(_qpigsMessage.acOutVolt).c_str());
+     mqttclient.publish((String(topic) + String("/AC out Frequenz")).c_str(), String(_qpigsMessage.acOutFreq).c_str());
+     mqttclient.publish((String(topic) + String("/AC out Watt")).c_str(), String(_qpigsMessage.acWatt).c_str());
+
+     mqttclient.publish((String(topic) + String("/Battery 1 Voltage")).c_str(), String(_qpigsMessage.pBattV).c_str());
+     mqttclient.publish((String(topic) + String("/Battery 2 Voltage")).c_str(), String(_qpigsMessage.nBattV).c_str()); 
+     mqttclient.publish((String(topic) + String("/Battery Percent")).c_str(), String(_qpigsMessage.battPercent).c_str());
+
+      mqttclient.publish((String(topic) + String("/PV 1 Watt")).c_str(), String(_qpigsMessage.pv1InWatt).c_str());
+      mqttclient.publish((String(topic) + String("/PV 1 Volt")).c_str(), String(_qpigsMessage.pv1InVolt).c_str());
+
+      mqttclient.publish((String(topic) + String("/PV 2 Watt")).c_str(), String(_qpigsMessage.pv2InWatt).c_str());
+      mqttclient.publish((String(topic) + String("/PV 2 Volt")).c_str(), String(_qpigsMessage.pv2InVolt).c_str());
+
+
+
+
     doc.clear();
-    doc["INFO"] =  "This one is not done...";
+    doc["pBattV"] =  _qpigsMessage.pBattV;
+    doc["battPercent"] = _qpigsMessage.battPercent;
     st = "";
     serializeJson(doc,st);
     mqttclient.publish((String(topic) + String("/status")).c_str(), st.c_str() );
 
      
-  }*/
+  }
+
+
+
+
+
   if (inverterType == MPI) { //IF MPI
     mqttclient.publish((String(topic) + String("/solar1w")).c_str(), String(_P003GSMessage.solarInputV1*_P003GSMessage.solarInputA1).c_str());
     mqttclient.publish((String(topic) + String("/solar2w")).c_str(), String(_P003GSMessage.solarInputV2*_P003GSMessage.solarInputA2).c_str());
