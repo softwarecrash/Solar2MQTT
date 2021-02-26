@@ -1,12 +1,10 @@
-#include "Arduino.h"
-#include "main.h"
 #include "inverter.h"
 #include "tickCounter.h"
 
 #include "settings.h"
 
 extern TickCounter _tickCounter;
-extern Settings _settings;
+//extern Settings _settings;
 extern byte inverterType; 
 extern byte MPI;
 extern byte PCM60x;
@@ -246,21 +244,32 @@ bool onPIGS()
   //(000.0 00.0 230.0 50.0 0000 0000 000 353 25.55 000 095 0039 0000 000.0 00.00 00000 00010000 00 00 00000 010^
   // 3. AC out V | 4. AC out Freq | 8. P battery voltage | 9. N battery voltage | 10. Batt Percentage |
   _qpigsMessage.rxTimeSec = _tickCounter.getSeconds();
-  _qpigsMessage.gridVolt =      getNextFloat(_commandBuffer, index);
-  _qpigsMessage.gridFreq =       getNextFloat(_commandBuffer, index);
-  _qpigsMessage.acOutVolt =      getNextFloat(_commandBuffer, index);    //3. output volt
-  _qpigsMessage.acOutFreq =   getNextFloat(_commandBuffer, index);    //4. output frequenz
-  _qpigsMessage.gridWatt = getNextFloat(_commandBuffer, index);         //5. grid watt
-  _qpigsMessage.acWatt =      getNextFloat(_commandBuffer, index);      //6. outputt watt
-  _qpigsMessage.acLoad =     getNextFloat(_commandBuffer, index);       //7. output load???????
-  _qpigsMessage.wattage =     getNextFloat(_commandBuffer, index);    //no matter what it is, eventual runntime?
-  _qpigsMessage.pBattV =      getNextFloat(_commandBuffer, index);     //8. Data
-  _qpigsMessage.nBattV =      getNextFloat(_commandBuffer, index);     //9. Data
-  _qpigsMessage.battPercent = getNextFloat(_commandBuffer, index);     //10. Data
-  _qpigsMessage.pv1InWatt = getNextFloat(_commandBuffer, index);       //11. System Temperature
-  _qpigsMessage.pv2InWatt = getNextFloat(_commandBuffer, index);       //12. Data
-  _qpigsMessage.pv1InVolt = getNextFloat(_commandBuffer, index);       //13. Data
-  _qpigsMessage.pv2InVolt = getNextFloat(_commandBuffer, index);       //14. Data
+  _qpigsMessage.gridV =       getNextFloat(_commandBuffer, index);
+  _qpigsMessage.gridHz =      getNextFloat(_commandBuffer, index);
+  _qpigsMessage.acOutV =      getNextFloat(_commandBuffer, index);
+  _qpigsMessage.acOutHz =     getNextFloat(_commandBuffer, index);
+  _qpigsMessage.acOutVa = (short)getNextLong(_commandBuffer, index);
+  _qpigsMessage.acOutW = (short)getNextLong(_commandBuffer, index);
+  _qpigsMessage.acOutPercent = (byte)getNextLong(_commandBuffer, index);
+  _qpigsMessage.busV = (short)getNextLong(_commandBuffer, index);
+  _qpigsMessage.battV = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.battChargeA = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.battPercent = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.heatSinkDegC = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.solarA = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.solarV = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.sccBattV = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.battDischargeA = getNextFloat(_commandBuffer, index);
+  _qpigsMessage.addSbuPriorityVersion = getNextBit(_commandBuffer, index);
+  _qpigsMessage.isConfigChanged = getNextBit(_commandBuffer, index);
+  _qpigsMessage.isSccFirmwareUpdated = getNextBit(_commandBuffer, index);
+  _qpigsMessage.isLoadOn = getNextBit(_commandBuffer, index);             
+  _qpigsMessage.battVoltageToSteadyWhileCharging = getNextBit(_commandBuffer, index);
+  _qpigsMessage.chargingStatus = (byte)getNextLong(_commandBuffer, index);
+  _qpigsMessage.reservedY = (byte)getNextLong(_commandBuffer, index);
+  _qpigsMessage.reservedZ = (byte)getNextLong(_commandBuffer, index);
+  _qpigsMessage.reservedAA = getNextLong(_commandBuffer, index);
+  _qpigsMessage.reservedBB = (short)getNextLong(_commandBuffer, index);
   
   return true;
 }
