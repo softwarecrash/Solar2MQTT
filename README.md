@@ -1,18 +1,12 @@
-#Rework:
+# Rework:
 - add WiFimanager for inital wifi seup
 - add web pages for display something
-
-# Changes:
-- Modified to work with platformio - not complete but compile without error
 
 # Known Bugs:
 - first AP mode timeout too fast, fixed - need testing
 - SSID with spaces not working for setup mode -> workaround put your wifi settings in the code
 
-# InverterOfThings Logger (FORK->FORK and total rebuild)
-ESP8266 based WiFi interface for Voltronic Axpert MppSolar PIP inverters
-
-works with
+**works with**
 - pip devices
 - i solar
 - and many many others based on the chinese solar inverter with a rj45 jack and usb port, primary identified by the display
