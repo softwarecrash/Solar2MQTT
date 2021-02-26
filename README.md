@@ -1,18 +1,20 @@
-# Rework:
-- add WiFimanager for inital wifi seup
-- add web pages for display something
+# What works:
+- WiFi Ap with setup
+- Web display Data for Inverters where support the QIPS Request
+- Web Update, Reset, Restart
 
-# Known Bugs:
-- first AP mode timeout too fast, fixed - need testing
-- SSID with spaces not working for setup mode -> workaround put your wifi settings in the code
+# ToDo:
+- add mqtt
+- store mqtt server settings in eprom
+- some other useless things
+- change webpages to dark theme
+- add other inverters
 
 **works with**
 - pip devices
 - i solar
 - and many many others based on the chinese solar inverter with a rj45 jack and usb port, primary identified by the display
 
-
-**Note2 that all below info is from the forked project and in short this will be updated when all is refactored and perhaps working....**
 
 # Overview
 Based around an ESP8266 WiFi microcontroller.
@@ -23,7 +25,7 @@ Software is built using [Arduino for ESP8266](https://github.com/esp8266/Arduino
 
 **UART0:** Talks to the inverter at 2400 baud and for programming. DISCONNECT RX before programming
 
-**UART1:** Used for debugging only. Just connect another serie adaptor to TX.
+**UART1:** Used for debugging only. Just connect another serial adaptor to TX with 9600 baud.
 
 
 **GPIO:** NOT IN USE Button on GPIO0, changes wifi mode, also used for programming when DTR pin isn't available.
