@@ -1,3 +1,7 @@
+#Rework:
+- add WiFimanager for inital wifi seup
+- add web pages for display something
+
 # Changes:
 - Modified to work with platformio - not complete but compile without error
 
