@@ -2,16 +2,17 @@
 - WiFi Ap with setup
 - Web display Data for Inverters where support the QIPS Request
 - Web Update, Reset, Restart
+- send MQTT DATA
 
 # ToDo:
-- add mqtt
+- add mqtt refresh rate option
 - store mqtt server settings in eprom
 - some other useless things
 - change webpages to dark theme
 - add other inverters
 
 **works with**
-- pip devices
+- pip / PCM devices
 - i solar
 - and many many others based on the chinese solar inverter with a rj45 jack and usb port, primary identified by the display
 
