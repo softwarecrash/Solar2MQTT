@@ -68,9 +68,10 @@ PubSubClient mqttclient(client);
 const byte MPI = 1;
 const byte PCM = 0;
 const byte PIP = 2;
-byte inverterType = PCM;  //And defaults in case...
-String topic ="/"; //Default first part of topic. We will add device ID in setup
+byte inverterType = PCM; //And defaults in case...
+String topic = "/";      //Default first part of topic. We will add device ID in setup
 String st = "";
+String ajaxStr = "";
 
 unsigned long mqtttimer = 0;
 extern bool _allMessagesUpdated;
@@ -80,7 +81,7 @@ int Led_Red = 5;   //D1
 int Led_Green = 4; //D2
 
 StaticJsonDocument<300> doc;
-
+StaticJsonDocument<300> ajaxJs;
 ESP8266WebServer server(80);
 
 WiFiManager wm; // global wm instance
@@ -90,10 +91,9 @@ void setup()
 {
   //callInverter.attach(10, serviceInverter); //call the inverter every 10 seconds
 
-
   Wire.begin(4, 5);
   Serial1.begin(9600); // Debugging towards UART1
-  Serial.begin(2400);    // Using UART0 for comm with inverter. IE cant be connected during flashing
+  Serial.begin(2400);  // Using UART0 for comm with inverter. IE cant be connected during flashing
 
   _settings.load();
   delay(2500);
@@ -161,7 +161,7 @@ void setup()
 
     server.on("/livedata", HTTP_GET, []() {
       server.sendHeader("Connection", "close");
-      server.sendHeader("Refresh", "5");
+      //server.sendHeader("Refresh", "30");
       server.send(200, "text/html", sendHTMLlive());
     });
 
@@ -185,6 +185,11 @@ void setup()
     server.on("/settings", HTTP_GET, []() {
       server.sendHeader("Connection", "close");
       server.send(200, "text/html", sendHTMLsettings());
+    });
+
+    //ajax part
+    server.on("/livedataAjax", HTTP_GET, []() {
+      ajaxJsUpdate();
     });
 
     //part for the web update
@@ -223,7 +228,7 @@ void setup()
     Serial1.println("Webserver Running...");
     Serial1.println("MQTT Settings:");
     Serial1.printf("Server: ");
-    Serial1.println(mqtt_server.getValue()); 
+    Serial1.println(mqtt_server.getValue());
     Serial1.printf("User: ");
     Serial1.println(mqtt_user.getValue());
     Serial1.printf("Password: ");
@@ -260,21 +265,52 @@ void loop()
   }
   // Check if a client towards port 80 has connected
   //WiFiClient client = server.client.;
- // if (!client)
- // {
- //   return;
- // }
+  // if (!client)
+  // {
+  //   return;
+  // }
 
   // Read the first line of the request
   //String req = client.readStringUntil('\r');
   //Serial1.println(req);
   //client.flush();
-
 }
 
+void ajaxJsUpdate()
+{ //update the json doc for the ajax request
+  ajaxJs.clear();
+  ajaxJs["gridV"] = _qpigsMessage.gridV;
+  ajaxJs["gridHz"] = _qpigsMessage.gridHz;
 
+  ajaxJs["acOutV"] = _qpigsMessage.acOutV;
+  ajaxJs["acOutHz"] = _qpigsMessage.acOutHz;
+  ajaxJs["acOutVa"] = _qpigsMessage.acOutVa;
+  ajaxJs["acOutW"] = _qpigsMessage.acOutW;
+  ajaxJs["acOutPercent"] = _qpigsMessage.acOutPercent;
 
-void processingdata(){
+  ajaxJs["busV"] = _qpigsMessage.busV;
+
+  ajaxJs["heatSinkDegC"] = _qpigsMessage.heatSinkDegC;
+
+  ajaxJs["battV"] = _qpigsMessage.battV;
+  ajaxJs["battPercent"] = _qpigsMessage.battPercent;
+  ajaxJs["battChargeA"] = _qpigsMessage.battChargeA;
+  ajaxJs["battDischargeA"] = _qpigsMessage.battDischargeA;
+  ajaxJs["sccBattV"] = _qpigsMessage.sccBattV;
+
+  ajaxJs["solarV"] = _qpigsMessage.solarV;
+  ajaxJs["solarA"] = _qpigsMessage.solarA;
+
+  ajaxStr = "";
+  serializeJson(ajaxJs, ajaxStr);
+  //server.sendHeader("Connection", "close");
+  server.send(200, "text/plane", ajaxStr); //Send ADC value only to client ajax request
+  Serial1.println("Ajax Request answer:");
+  Serial1.println(ajaxStr);
+}
+
+void processingdata()
+{
   if (WiFi.status() == WL_CONNECTED)
   { //No use going to next step unless WIFI is up and running.
 
@@ -283,7 +319,7 @@ void processingdata(){
     // Comms with inverter
     serviceInverter(); // Check if we recieved data or should send data
     sendtoMQTT();      // Update data to MQTT server if we should
-  _allMessagesUpdated = false;
+    _allMessagesUpdated = false;
     // Check if we have something to read from MQTT
     mqttclient.loop();
     return;
@@ -292,8 +328,6 @@ void processingdata(){
   Serial1.println(req);
   client.flush();
 }
-
-
 
 int WifiGetRssiAsQuality(int rssi) // THis part borrowed from Tasmota code
 {

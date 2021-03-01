@@ -243,8 +243,6 @@ bool onPIGS()
     return false;
 
   int index = 1; //after the starting '('
-  //(000.0 00.0 230.0 50.0 0000 0000 000 353 25.55 000 095 0039 0000 000.0 00.00 00000 00010000 00 00 00000 010^
-  // 3. AC out V | 4. AC out Freq | 8. P battery voltage | 9. N battery voltage | 10. Batt Percentage |
   _qpigsMessage.rxTimeSec = _tickCounter.getSeconds();
   _qpigsMessage.gridV =       getNextFloat(_commandBuffer, index);
   _qpigsMessage.gridHz =      getNextFloat(_commandBuffer, index);
@@ -513,7 +511,7 @@ void serviceInverter()
   {
     if (_nextCommandNeeded == "") {
       if (inverterType)  _nextCommandNeeded = "P003GS"; //IF MPI we start with that order
-      else _nextCommandNeeded = "QPIGS";  //if PIP/PCM
+      else _nextCommandNeeded = "QPIGS";  //if PIP/PCM QPIGS
     }
 
     if (_setCommand.length()) {  // Raw command incomming. Need to process it as next command
