@@ -4,10 +4,10 @@
 - Web Update, Reset, Restart
 - send MQTT DATA
 - Building using Platform.io
+- Live web pages with ajax
 
 # ToDo:
 - add mqtt refresh rate option
-- add ajax to live data webpage
 - store mqtt server settings in eprom
 - some other useless things
 - change webpages to dark theme
