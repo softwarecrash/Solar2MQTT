@@ -1,6 +1,6 @@
 # What works:
 - WiFi Ap with setup
-- Web display Data for Inverters where support the QIPS Request
+- Web display Data for Inverters where support the QPIGS Request
 - Web Update, Reset, Restart
 - send MQTT DATA
 - Building using Platform.io
