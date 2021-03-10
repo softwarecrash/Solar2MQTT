@@ -11,7 +11,7 @@ String HTMLhead(){
     ptrHead += "<title>Solar 2 MQTT</title>\n";
     ptrHead += "</head>\n";
     ptrHead += "<body>\n";
-    ptrHead += "<div class=\"container\">\n";
+    ptrHead += "<div class=\"container col-md-2 col-md-offset-5\">\n";
     return ptrHead;
 }
 
@@ -25,3 +25,4 @@ String HTMLfoot(){
     ptrFood += "</html>\n";
     return ptrFood;
 }
+

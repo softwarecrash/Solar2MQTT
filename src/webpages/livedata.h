@@ -2,74 +2,58 @@ String sendHTMLlive()
 {
   String ptr = HTMLhead();
 
-  ptr += "<h1>Solar Inverter Live Data</h1>\n";
+  ptr += "<h1>Solar Live Data</h1>\n";
 
   ptr += "<p>Solar In: ";
-  ptr += "<span id=\"solarV\">";
-  ptr += "</span>";
+  ptr += "<span id=\"solarV\">N/A</span>";
   ptr += "V | ";
-  ptr += "<span id=\"solarA\">";
-  ptr += "</span>";
+  ptr += "<span id=\"solarA\">N/A</span>";
   ptr += "A</p>\n";
 
   ptr += "<p>Grid In: ";
-  ptr += "<span id=\"gridV\">";
-  ptr += "</span>";
+  ptr += "<span id=\"gridV\">N/A</span>";
   ptr += "V | ";
-  ptr += "<span id=\"gridHz\">";
-  ptr += "</span>";
+  ptr += "<span id=\"gridHz\">N/A</span>";
   ptr += "Hz</p>\n";
 
   ptr += "<p>AC Out: ";
-  ptr += "<span id=\"acOutV\">";
-  ptr += "</span>";
+  ptr += "<span id=\"acOutV\">N/A</span>";
   ptr += "V | ";
-  ptr += "<span id=\"acOutHz\">";
-  ptr += "</span>";
+  ptr += "<span id=\"acOutHz\">N/A</span>";
   ptr += "Hz</p>\n";
 
   ptr += "<p>AC Load: ";
-  ptr += "<span id=\"acOutVa\">";
-  ptr += "</span>";
+  ptr += "<span id=\"acOutVa\">N/A</span>";
   ptr += "Va | ";
-  ptr += "<span id=\"acOutW\">";
-  ptr += "</span>";
+  ptr += "<span id=\"acOutW\">N/A</span>";
   ptr += "W | ";
-  ptr += "<span id=\"acOutPercent\">";
-  ptr += "</span>";
+  ptr += "<span id=\"acOutPercent\">N/A</span>";
   ptr += "%</p>\n";
 
   ptr += "<p>Bus : ";
-  ptr += "<span id=\"busV\">";
-  ptr += "</span>";
+  ptr += "<span id=\"busV\">N/A</span>";
   ptr += "V</p>\n";
 
   ptr += "<p>Temperature: ";
-  ptr += "<span id=\"heatSinkDegC\">";
-  ptr += "</span>";
+  ptr += "<span id=\"heatSinkDegC\">N/A</span>";
   ptr += "°C</p>\n";
 
   ptr += "<p>Battery: ";
-  ptr += "<span id=\"battV\">";
-  ptr += "</span>";
+  ptr += "<span id=\"battV\">N/A</span>";
   ptr += "V | ";
-  ptr += "<span id=\"battPercent\">";
-  ptr += "</span>";
+  ptr += "<span id=\"battPercent\">N/A</span>";
   ptr += "%</p>\n";
 
   ptr += "<p>SCC | In | Out: ";
-  ptr += "<span id=\"sccBattV\">";
-  ptr += "</span>";
+  ptr += "<span id=\"sccBattV\">N/A</span>";
   ptr += "V | ";
-  ptr += "<span id=\"battChargeA\">";
-  ptr += "</span>";
+  ptr += "<span id=\"battChargeA\">N/A</span>";
   ptr += "A | ";
-  ptr += "<span id=\"battDischargeA\">";
-  ptr += "</span>";
+  ptr += "<span id=\"battDischargeA\">N/A</span>";
   ptr += "A</p>\n";
 
   ptr += "<p>";
-  ptr += "<a class=\"btn btn-primary\" href=\"/\" role=\"button\">Main Page</a>\n";
+  ptr += "<a class=\"btn btn-primary btn-block\" href=\"/\" role=\"button\">Main Page</a>\n";
   ptr += "</p>";
 
   ptr += "<script>\n";
