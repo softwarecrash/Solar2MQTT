@@ -1,20 +1,12 @@
-
 /*************************************************************************************
 /* ALl credits for some bits from https://github.com/scottwday/InverterOfThings
 /* And i have trashed alot of his code, rewritten some. So thanks to him and credits to him. 
-/*
-/* Changes done by Daniel aka Daromer aka DIY Tech & Repairs 2020
-/* https://github.com/daromer2/InverterOfThings
-/* https://www.youtube.com/channel/UCI6ASwT150rendNc5ytYYrQ?
+/* Changes by softwarecrash
 /*************************************************************************************/
 
 //TODO:
-// Clean up webpages
-// Fix update timer?
-// Rewrite send to MQTT part so it sends json perhaps?
-
-// Add some code so we can set stuff on the inverters.
-// MPI should have the feedToGridCorrection so it can be set via mqtt
+//make webpages better
+// make eeprom work
 
 #include <Wire.h>
 #include <EEPROM.h>
@@ -24,17 +16,14 @@
 #include <ESP8266mDNS.h>
 #include "main.h"
 #include "TickCounter.h"
-#include "Settings.h"
 #include "inverter.h"
 #include <ESP8266WebServer.h>
+#include "Settings.h"
 
-#include <Ticker.h>
-Ticker callInverter;
-
-#include "webpages/HTMLcase.h"
-#include "webpages/main.h"
-#include "webpages/livedata.h"
-#include "webpages/settings.h"
+#include "webpages/HTMLcase.h"  //The HTML Konstructor
+#include "webpages/main.h"      //landing page with menu
+#include "webpages/livedata.h"  //live data page
+#include "webpages/settings.h"  //settings page
 
 //--------------------------------- Wifi State
 #define CLIENT_NOTCONNECTED 0
@@ -85,16 +74,12 @@ StaticJsonDocument<300> ajaxJs;
 ESP8266WebServer server(80);
 
 WiFiManager wm; // global wm instance
-
+bool shouldSaveConfig = false;
 //----------------------------------------------------------------------
 void setup()
 {
   //callInverter.attach(10, serviceInverter); //call the inverter every 10 seconds
-
-  Wire.begin(4, 5);
-  Serial1.begin(9600); // Debugging towards UART1
-  Serial.begin(2400);  // Using UART0 for comm with inverter. IE cant be connected during flashing
-
+  
   _settings.load();
   delay(2500);
 
@@ -139,6 +124,7 @@ void setup()
   topic = topic + String(_settings._deviceName.c_str());
 
   mqttclient.setServer(_settings._mqttServer.c_str(), _settings._mqttPort);
+
   mqttclient.setCallback(callback);
 
   pinMode(Led_Red, OUTPUT);
@@ -228,13 +214,17 @@ void setup()
     Serial1.println("Webserver Running...");
     Serial1.println("MQTT Settings:");
     Serial1.printf("Server: ");
-    Serial1.println(mqtt_server.getValue());
+    Serial1.println(_settings._mqttServer);
+
+    //_settings._mqttServer = mqtt_server.getValue();
+
     Serial1.printf("User: ");
     Serial1.println(mqtt_user.getValue());
     Serial1.printf("Password: ");
     Serial1.println(mqtt_pass.getValue());
     Serial1.printf("Topic: ");
     Serial1.println(mqtt_topic.getValue());
+
   }
 }
 
@@ -304,11 +294,11 @@ void ajaxJsUpdate()
   ajaxStr = "";
   serializeJson(ajaxJs, ajaxStr);
   //server.sendHeader("Connection", "close");
-  server.send(200, "text/plane", ajaxStr); //Send ADC value only to client ajax request
+  server.send(200, "text/plane", ajaxStr); //Send value only to client ajax request
   Serial1.println("Ajax Request answer:");
   Serial1.println(ajaxStr);
 }
-
+/*
 void processingdata()
 {
   if (WiFi.status() == WL_CONNECTED)
@@ -327,7 +317,7 @@ void processingdata()
   String req = client.readStringUntil('\r');
   Serial1.println(req);
   client.flush();
-}
+}*/
 
 int WifiGetRssiAsQuality(int rssi) // THis part borrowed from Tasmota code
 {
@@ -350,7 +340,7 @@ int WifiGetRssiAsQuality(int rssi) // THis part borrowed from Tasmota code
 
 bool sendtoMQTT()
 {
-  if (millis() < (mqtttimer + 3000))
+  if (millis() < (mqtttimer + (_settings._refreshMqtt*1000))) //its save for rollover?
   {
     return false;
   }

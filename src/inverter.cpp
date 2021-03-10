@@ -507,7 +507,7 @@ void serviceInverter()
 
   //Wait a bit after receiving the last command before requesting the next one
   // Dont send until _allMessagesUpdated is false
-  if ((_lastRequestedCommand == "") && (_lastReceivedAt.compare(INVERTER_COMMAND_DELAY_MS) > 0) && (!_allMessagesUpdated))
+  if ((_lastRequestedCommand == "") && (_lastReceivedAt.compare(INVERTER_COMMAND_DELAY_MS) > 0) &&(!_allMessagesUpdated))//-< if this the problem that not running?
   {
     if (_nextCommandNeeded == "") {
       if (inverterType)  _nextCommandNeeded = "P003GS"; //IF MPI we start with that order
