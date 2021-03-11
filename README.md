@@ -28,6 +28,7 @@ Based around an ESP8266 WiFi microcontroller.
 
 **PROGRAMMING:** You need to program it before hooking it up to the TTL board! Im using HW Serial since its so buggy using Software Serial and Wifi reliable so its not even worth it.
 
+**RESET:** with HTTP://<ESP-IP>/reset you can full reset the esp and bring it to the AP portal
 
 **UART0:** Talks to the inverter at 2400 baud and for programming. DISCONNECT RX before programming
 
