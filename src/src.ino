@@ -14,33 +14,33 @@
 #include <WiFiManager.h>
 #include <ArduinoJson.h>
 #include <ESP8266mDNS.h>
-#include "main.h"
 #include "TickCounter.h"
 #include "inverter.h"
 #include <ESP8266WebServer.h>
 #include "Settings.h"
 
-#include "webpages/HTMLcase.h"  //The HTML Konstructor
-#include "webpages/main.h"      //landing page with menu
-#include "webpages/livedata.h"  //live data page
-#include "webpages/settings.h"  //settings page
+#include "webpages/HTMLcase.h"     //The HTML Konstructor
+#include "webpages/main.h"         //landing page with menu
+#include "webpages/livedata.h"     //live data page
+#include "webpages/settings.h"     //settings page
+#include "webpages/mqttsettings.h" //mqtt settings page
 
 //--------------------------------- Wifi State
-#define CLIENT_NOTCONNECTED 0
-#define CLIENT_RECONNECT 1
-#define CLIENT_CONNECTING 2
-#define CLIENT_PRECONNECTED 3
-#define CLIENT_CONNECTED 4
-byte currentApMode = 0;
-byte requestApMode = WIFI_STA;
-byte clientConnectionState = CLIENT_NOTCONNECTED;
-bool clientReconnect = false;
+//#define CLIENT_NOTCONNECTED 0
+//#define CLIENT_RECONNECT 1
+//#define CLIENT_CONNECTING 2
+//#define CLIENT_PRECONNECTED 3
+//#define CLIENT_CONNECTED 4
+//byte currentApMode = 0;
+//byte requestApMode = WIFI_STA;
+//byte clientConnectionState = CLIENT_NOTCONNECTED;
+//bool clientReconnect = false;
 
 //--------------------------------- IP connection
 WiFiClient client;
 Settings _settings;
 TickCounter _tickCounter;
-int WIFI_COUNT = 0;
+//int WIFI_COUNT = 0;
 
 extern QpigsMessage _qpigsMessage;
 extern P003GSMessage _P003GSMessage;
@@ -73,39 +73,83 @@ StaticJsonDocument<300> doc;
 StaticJsonDocument<300> ajaxJs;
 ESP8266WebServer server(80);
 
-WiFiManager wm; // global wm instance
+//flag for saving data
 bool shouldSaveConfig = false;
+char mqtt_server[40];
 //----------------------------------------------------------------------
+void saveConfigCallback()
+{
+  Serial.println("Should save config");
+  shouldSaveConfig = true;
+}
+
 void setup()
 {
-  //callInverter.attach(10, serviceInverter); //call the inverter every 10 seconds
-  
   _settings.load();
-  delay(2500);
+
+  WiFiManager wm; // global wm instance
+  wm.setSaveConfigCallback(saveConfigCallback);
 
   Wire.begin(4, 5);
   Serial1.begin(9600); // Debugging towards UART1
   Serial.begin(2400);  // Using UART0 for comm with inverter. IE cant be connected during flashing
 
+  //for testing list the saved data on Serial 1
+  Serial1.println();
+  Serial1.printf("Device Name:\t");
+  Serial1.println(_settings._deviceName);
+  Serial1.printf("Mqtt Server:\t");
+  Serial1.println(_settings._mqttServer);
+  Serial1.printf("Mqtt Port:\t");
+  Serial1.println(_settings._mqttPort);
+  Serial1.printf("Mqtt User:\t");
+  Serial1.println(_settings._mqttUser);
+  Serial1.printf("Mqtt Passwort:\t");
+  Serial1.println(_settings._mqttPassword);
+  Serial1.printf("Mqtt Interval:\t");
+  Serial1.println(_settings._mqttRefresh);
+  Serial1.printf("Mqtt Topic:\t");
+  Serial1.println(_settings._mqttTopic);
+
+  //set the device name
   WiFi.hostname(_settings._deviceName);
-  WiFiManagerParameter mqtt_server("mqtt_server", "MQTT server", NULL, 40);
-  WiFiManagerParameter mqtt_user("mqtt_user", "MQTT User", NULL, 40);
-  WiFiManagerParameter mqtt_pass("mqtt_pass", "MQTT Password", NULL, 40);
-  WiFiManagerParameter mqtt_topic("mqtt_topic", "MQTT Topic", NULL, 20);
-  WiFiManagerParameter mqtt_port("mqtt_port", "MQTT Port", NULL, 5);
+  //create custom wifimanager fields
+  WiFiManagerParameter custom_mqtt_server ("mqtt_server", "MQTT server",        NULL, 40);
+  WiFiManagerParameter custom_mqtt_user   ("mqtt_user",   "MQTT User",          NULL, 40);
+  WiFiManagerParameter custom_mqtt_pass   ("mqtt_pass",   "MQTT Password",      NULL, 40);
+  WiFiManagerParameter custom_mqtt_topic  ("mqtt_topic",  "MQTT Topic",         NULL, 20);
+  WiFiManagerParameter custom_mqtt_port   ("mqtt_port",   "MQTT Port",          NULL, 5);
+  WiFiManagerParameter custom_mqtt_refresh("mqtt_refresh","MQTT Send Interval", NULL, 5);
+  WiFiManagerParameter custom_device_name ("device_name", "Device Name",        NULL, 40);
 
-  wm.addParameter(&mqtt_server);
-  wm.addParameter(&mqtt_user);
-  wm.addParameter(&mqtt_pass);
-  wm.addParameter(&mqtt_topic);
-  wm.addParameter(&mqtt_port);
-  bool res;
-  res = wm.autoConnect("Solar-AP");
+  wm.addParameter(&custom_mqtt_server);
+  wm.addParameter(&custom_mqtt_user);
+  wm.addParameter(&custom_mqtt_pass);
+  wm.addParameter(&custom_mqtt_topic);
+  wm.addParameter(&custom_mqtt_port);
+  wm.addParameter(&custom_mqtt_refresh);
+  wm.addParameter(&custom_device_name);
 
-  wm.setConnectTimeout(20);      // how long to try to connect for before continuing
-  wm.setConfigPortalTimeout(60); // auto close configportal after n seconds
-  // wm.setCaptivePortalEnable(false); // disable captive portal redirection
-  //wm.setAPClientCheck(true); // avoid timeout if client connected to softap
+  bool res = wm.autoConnect("Solar-AP");
+
+  wm.setConnectTimeout(20);       // how long to try to connect for before continuing
+  wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
+
+  //save settings if wifi setup is fire up
+  if (shouldSaveConfig)
+  {
+    _settings._mqttServer = custom_mqtt_server.getValue();
+    _settings._mqttUser = custom_mqtt_user.getValue();
+    _settings._mqttPassword = custom_mqtt_pass.getValue();
+    _settings._mqttPort = atoi(custom_mqtt_port.getValue());
+    _settings._deviceName = custom_device_name.getValue();
+    _settings._mqttTopic = custom_mqtt_topic.getValue();
+    _settings._mqttRefresh = atoi(custom_mqtt_refresh.getValue());
+    _settings.save();
+    delay(1500);
+    _settings.load();
+    ESP.restart();
+  }
 
   if (String(_settings._deviceType) == "MPI")
   {
@@ -121,7 +165,8 @@ void setup()
   }
 
   //dev = _settings._deviceName.c_str();
-  topic = topic + String(_settings._deviceName.c_str());
+  // topic = topic + String(_settings._deviceName.c_str());
+  topic = _settings._mqttTopic;
 
   mqttclient.setServer(_settings._mqttServer.c_str(), _settings._mqttPort);
 
@@ -131,7 +176,7 @@ void setup()
   pinMode(Led_Green, OUTPUT);
   digitalWrite(Led_Red, HIGH);
   digitalWrite(Led_Green, LOW);
-
+  //check is WiFi connected
   if (!res)
   {
     Serial1.println("Failed to connect or hit timeout");
@@ -173,6 +218,11 @@ void setup()
       server.send(200, "text/html", sendHTMLsettings());
     });
 
+    server.on("/mqttsettings", HTTP_GET, []() {
+      server.sendHeader("Connection", "close");
+      server.send(200, "text/html", sendHTMLmqttsettings());
+    });
+
     //ajax part
     server.on("/livedataAjax", HTTP_GET, []() {
       ajaxJsUpdate();
@@ -212,21 +262,9 @@ void setup()
     MDNS.addService("http", "tcp", 80);
 
     Serial1.println("Webserver Running...");
-    Serial1.println("MQTT Settings:");
-    Serial1.printf("Server: ");
-    Serial1.println(_settings._mqttServer);
-
-    //_settings._mqttServer = mqtt_server.getValue();
-
-    Serial1.printf("User: ");
-    Serial1.println(mqtt_user.getValue());
-    Serial1.printf("Password: ");
-    Serial1.println(mqtt_pass.getValue());
-    Serial1.printf("Topic: ");
-    Serial1.println(mqtt_topic.getValue());
-
   }
 }
+//end void setup
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
@@ -234,12 +272,12 @@ void setup()
 void loop()
 {
   delay(100);
-  server.handleClient();
+  //server.handleClient();
   // Make sure wifi is in the right mode
-  //serviceWifiMode();
   if (WiFi.status() == WL_CONNECTED)
   { //No use going to next step unless WIFI is up and running.
 
+    server.handleClient();
     //httpServer.handleClient();
     MDNS.update();
 
@@ -253,18 +291,12 @@ void loop()
     mqttclient.loop();
     //return;
   }
-  // Check if a client towards port 80 has connected
-  //WiFiClient client = server.client.;
-  // if (!client)
-  // {
-  //   return;
-  // }
-
   // Read the first line of the request
   //String req = client.readStringUntil('\r');
   //Serial1.println(req);
   //client.flush();
 }
+//End void loop
 
 void ajaxJsUpdate()
 { //update the json doc for the ajax request
@@ -298,26 +330,6 @@ void ajaxJsUpdate()
   Serial1.println("Ajax Request answer:");
   Serial1.println(ajaxStr);
 }
-/*
-void processingdata()
-{
-  if (WiFi.status() == WL_CONNECTED)
-  { //No use going to next step unless WIFI is up and running.
-
-    //If we have pending data to send send it first!
-    //sendRaw();
-    // Comms with inverter
-    serviceInverter(); // Check if we recieved data or should send data
-    sendtoMQTT();      // Update data to MQTT server if we should
-    _allMessagesUpdated = false;
-    // Check if we have something to read from MQTT
-    mqttclient.loop();
-    return;
-  }
-  String req = client.readStringUntil('\r');
-  Serial1.println(req);
-  client.flush();
-}*/
 
 int WifiGetRssiAsQuality(int rssi) // THis part borrowed from Tasmota code
 {
@@ -340,7 +352,7 @@ int WifiGetRssiAsQuality(int rssi) // THis part borrowed from Tasmota code
 
 bool sendtoMQTT()
 {
-  if (millis() < (mqtttimer + (_settings._refreshMqtt*1000))) //its save for rollover?
+  if (millis() < (mqtttimer + (_settings._mqttRefresh * 1000))) //its save for rollover?
   {
     return false;
   }
@@ -501,7 +513,6 @@ bool sendtoMQTT()
 
   return true;
 }
-
 // Check if we have pending raw messages to send to MQTT. Then send it.
 void sendRaw()
 {
@@ -514,7 +525,6 @@ void sendRaw()
   }
 }
 /// TESTING MQTT SEND
-
 void callback(char *top, byte *payload, unsigned int length)
 {
   Serial1.println(F("Callback done"));

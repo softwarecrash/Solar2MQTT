@@ -1,5 +1,4 @@
 #include "Arduino.h"
-#include "main.h"
 #include "inverter.h"
 #include "tickCounter.h"
 
