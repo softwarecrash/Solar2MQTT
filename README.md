@@ -35,7 +35,7 @@ Based around an ESP8266 WiFi microcontroller.
 **UART1:** Used for debugging only. Just connect another serial adaptor to D4 with 9600 baud.
 
 
-**POWER:** Using a DC/DC or USB power currently. My gear dont have any power on the serial port
+**POWER:** Using a 3.3V DC Buck Converter that can handle up to 20V or a DC/DC or USB power currently.
 
 **WIFI:** The system defaults to AP mode on first setup. Surf to "Solar-AP" AP and then surf to http://192.168.4.1/ On this page configure WIFI and MQTT. Then you need to reboot the device either by the reboot botton or hard reboot. No changes are applied properly before reboot
 
