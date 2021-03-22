@@ -4,10 +4,6 @@
 /* Changes by softwarecrash
 /*************************************************************************************/
 
-//TODO:
-//make webpages better
-// make eeprom work
-
 #include <Wire.h>
 #include <EEPROM.h>
 #include <PubSubClient.h>
@@ -25,22 +21,9 @@
 #include "webpages/settings.h"     //settings page
 #include "webpages/mqttsettings.h" //mqtt settings page
 
-//--------------------------------- Wifi State
-//#define CLIENT_NOTCONNECTED 0
-//#define CLIENT_RECONNECT 1
-//#define CLIENT_CONNECTING 2
-//#define CLIENT_PRECONNECTED 3
-//#define CLIENT_CONNECTED 4
-//byte currentApMode = 0;
-//byte requestApMode = WIFI_STA;
-//byte clientConnectionState = CLIENT_NOTCONNECTED;
-//bool clientReconnect = false;
-
-//--------------------------------- IP connection
 WiFiClient client;
 Settings _settings;
 TickCounter _tickCounter;
-//int WIFI_COUNT = 0;
 
 extern QpigsMessage _qpigsMessage;
 extern P003GSMessage _P003GSMessage;
@@ -50,7 +33,6 @@ extern String _nextCommandNeeded;
 extern String _setCommand;
 extern String _otherBuffer;
 
-//---------------------- MQTT
 PubSubClient mqttclient(client);
 
 // Interface types that can be used.
@@ -132,7 +114,7 @@ void setup()
 
   bool res = wm.autoConnect("Solar-AP");
 
-  wm.setConnectTimeout(20);       // how long to try to connect for before continuing
+  wm.setConnectTimeout(30);       // how long to try to connect for before continuing
   wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
 
   //save settings if wifi setup is fire up
@@ -192,7 +174,6 @@ void setup()
 
     server.on("/livedata", HTTP_GET, []() {
       server.sendHeader("Connection", "close");
-      //server.sendHeader("Refresh", "30");
       server.send(200, "text/html", sendHTMLlive());
     });
 
@@ -200,7 +181,6 @@ void setup()
       server.sendHeader("Connection", "close");
       server.sendHeader("Location", String("/"), true);
       server.send(302, "text/plain", "");
-      delay(2000);
       ESP.restart();
     });
 
@@ -208,7 +188,7 @@ void setup()
       server.sendHeader("Connection", "close");
       server.sendHeader("Location", String("/"), true);
       server.send(302, "text/plain", "");
-      delay(2000);
+      _settings.reset();
       ESP.eraseConfig();
       ESP.restart();
     });

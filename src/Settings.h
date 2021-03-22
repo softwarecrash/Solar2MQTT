@@ -125,6 +125,18 @@ public:
     EEPROM.end();
   }
 
+  void reset(){
+  _deviceName = "";
+  _mqttServer = "";
+  _mqttUser = "";
+  _mqttPassword = "";
+  _mqttTopic = "";
+  _mqttPort = 0;
+  _mqttRefresh = 0;
+  save();
+  delay(500);
+  }
+
   Settings()
   {
     load();
