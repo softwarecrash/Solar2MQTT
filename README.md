@@ -6,12 +6,7 @@
 - Building using Platform.io
 - Live web pages with ajax
 
-# Known Bug:
-- you must manualy add your mqtt server settings in the settings.h then compile and get to the AP and set up WiFi
-
 # ToDo:
-- add mqtt refresh rate option
-- store mqtt server settings in eprom
 - some other useless things
 - change webpages to dark theme
 - add other inverters
