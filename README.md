@@ -19,6 +19,8 @@
 - and many many others based on the chinese solar inverter with a rj45 jack and usb port, primary identified by the display
 
 ![grafik](https://user-images.githubusercontent.com/44615614/109850447-d05f4880-7c52-11eb-9f97-fcd9ce55c901.png)
+![grafik](https://user-images.githubusercontent.com/44615614/111987231-3c74f400-8b0f-11eb-92e2-89dbf4dafac2.png)
+
 
 
 # Overview
