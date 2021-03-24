@@ -36,9 +36,9 @@ extern String _otherBuffer;
 PubSubClient mqttclient(client);
 
 // Interface types that can be used.
-const byte MPI = 1;
+const byte MPI = 1; //not supported yet
 const byte PCM = 0;
-const byte PIP = 2;
+const byte PIP = 2; //not supported yet
 byte inverterType = PCM; //And defaults in case...
 String topic = "/";      //Default first part of topic. We will add device ID in setup
 String st = "";
@@ -68,7 +68,7 @@ void saveConfigCallback()
 void setup()
 {
   _settings.load();
-
+  delay(1000);
   WiFiManager wm; // global wm instance
   wm.setSaveConfigCallback(saveConfigCallback);
 
