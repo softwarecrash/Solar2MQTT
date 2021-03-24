@@ -19,7 +19,7 @@ String HTMLfoot(){
 
     String ptrFood = "";
     ptrFood += "<br/><br/>\n";
-    ptrFood += "By <a href=\"https://github.com/softwarecrash/\" target=\"_blank\">Softwarecrash</a>\n";
+    ptrFood += "Solar2MQTT V0.01 - Alpha By <a href=\"https://github.com/softwarecrash/\" target=\"_blank\">Softwarecrash</a>\n";
     ptrFood += "</div>\n";
     ptrFood += "</body>\n";
     ptrFood += "</html>\n";
