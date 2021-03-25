@@ -7,6 +7,8 @@
 - Live web pages with ajax
 
 # ToDo:
+- Find a way to automatic detect the inverter type and communication protocol
+- add a way to auto build data from diverse string answer
 - some other useless things
 - change webpages to dark theme
 - add other inverters
