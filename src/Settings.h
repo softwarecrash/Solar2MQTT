@@ -8,7 +8,7 @@ class Settings
 public:
   bool _valid = false;
   //MQTT Settings
-  String _deviceType = "PCM"; //PIP | PCM | MPI
+  String _deviceType = "PIP"; //PIP | PCM | MPI
   String _deviceName = "";    //name of the device
   String _mqttServer = "";    //host or ip from the mqtt server
   String _mqttUser = "";      //mqtt username to login

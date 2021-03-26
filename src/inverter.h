@@ -12,6 +12,7 @@ void serviceInverter();
 struct QpiMessage
 {
   byte protocolId;
+  //the inverter protocol id, is this the ident what the inverter answer?
 };
 
 struct P003PSMessage
@@ -160,6 +161,17 @@ struct QflagMessage
   bool enableBacklight;
   bool enablePrimarySourceInterruptedAlarm;
   bool enableFaultCodeRecording;
+};
+
+//for future use
+struct QpiriMessage
+{
+	
+};
+//for future use
+struct QmdMessage
+{
+	
 };
 
 struct QidMessage

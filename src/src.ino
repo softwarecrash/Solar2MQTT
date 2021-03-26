@@ -14,6 +14,7 @@
 #include "inverter.h"
 #include <ESP8266WebServer.h>
 #include "Settings.h"
+#include "weblog.h" //coming soon to view the serial1 log in the webpages
 
 #include "webpages/HTMLcase.h"     //The HTML Konstructor
 #include "webpages/main.h"         //landing page with menu
@@ -23,6 +24,7 @@
 
 WiFiClient client;
 Settings _settings;
+WebLog webLog;
 TickCounter _tickCounter;
 
 extern QpigsMessage _qpigsMessage;
@@ -36,10 +38,10 @@ extern String _otherBuffer;
 PubSubClient mqttclient(client);
 
 // Interface types that can be used.
-const byte MPI = 1; //not supported yet
-const byte PCM = 0;
-const byte PIP = 2; //not supported yet
-byte inverterType = PCM; //And defaults in case...
+const byte PCM = 0; //not sure it works
+const byte MPI = 1; //not sure it works
+const byte PIP = 2; 
+byte inverterType = PIP; //And defaults in case...
 String topic = "/";      //Default first part of topic. We will add device ID in setup
 String st = "";
 String ajaxStr = "";
@@ -370,29 +372,27 @@ bool sendtoMQTT()
     return false;
 
   _allMessagesUpdated = false; // Lets reset messages and process them
-                               /*
+                               
   if (inverterType == PCM) { //PCM
      mqttclient.publish((String(topic) + String("/battv")).c_str(), String(_qpigsMessage.battV).c_str());
      mqttclient.publish((String(topic) + String("/solarv")).c_str(), String(_qpigsMessage.solarV).c_str());
      mqttclient.publish((String(topic) + String("/batta")).c_str(), String(_qpigsMessage.battChargeA).c_str());
-     mqttclient.publish((String(topic) + String("/wattage")).c_str(), String(_qpigsMessage.wattage).c_str());
+     mqttclient.publish((String(topic) + String("/wattage")).c_str(), String(_qpigsMessage.acOutW).c_str());
      mqttclient.publish((String(topic) + String("/solara")).c_str(), String(_qpigsMessage.solarA).c_str());
 
     doc.clear();
     doc["battvtest"] =  _qpigsMessage.battV;
     doc["solarv"] = _qpigsMessage.solarV;
     doc["batta"] =  _qpigsMessage.battChargeA;
-    doc["wattage"] =_qpigsMessage.wattage;
+    doc["wattage"] =_qpigsMessage.acOutW;
     doc["solara"] = _qpigsMessage.solarA;
     st = "";
     serializeJson(doc,st);
     mqttclient.publish((String(topic) + String("/status")).c_str(), st.c_str() );
+  }
 
-     
-  }*/
-
-  if (inverterType == PCM)
-  { //PIP changed to pcm
+  if (inverterType == PIP)
+  {
     mqttclient.publish((String(topic) + String("/Grid Voltage")).c_str(), String(_qpigsMessage.gridV).c_str());
     mqttclient.publish((String(topic) + String("/Grid Frequenz")).c_str(), String(_qpigsMessage.gridHz).c_str());
 
