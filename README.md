@@ -2,7 +2,7 @@
 - WiFi Ap with setup
 - Web display Data for Inverters where support the QPIGS Request
 - Web Update, Reset, Restart
-- send MQTT DATA
+- send MQTT Data
 - Building using Platform.io
 - Live web pages with ajax
 
