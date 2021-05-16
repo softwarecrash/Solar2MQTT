@@ -44,13 +44,8 @@ String sendHTMLlive()
   ptr += "<span id=\"battPercent\">N/A</span>";
   ptr += "%</p>\n";
 
-  ptr += "<p>SCC | In | Out: ";
-  ptr += "<span id=\"sccBattV\">N/A</span>";
-  ptr += "V | ";
-  ptr += "<span id=\"battChargeA\">N/A</span>";
-  ptr += "A | ";
-  ptr += "<span id=\"battDischargeA\">N/A</span>";
-  ptr += "A</p>\n";
+  ptr += "<p>SCC: <span id=\"sccBattV\">N/A</span>V | In: <span id=\"battChargeA\">N/A</span>A | Out: <span id=\"battDischargeA\">N/A</span>A</p>";
+  ptr += "\n";
 
   ptr += "<p>";
   ptr += "<a class=\"btn btn-primary btn-block\" href=\"/\" role=\"button\">Main Page</a>\n";
@@ -85,7 +80,7 @@ String sendHTMLlive()
   ptr += "            }\n";
   ptr += "        });\n";
   ptr += "        }\n";
-  ptr += "        setInterval(fetch, 1000);\n";
+  ptr += "        setInterval(fetch, 5000);\n";
   ptr += "        fetch();\n";
   ptr += "        });\n";
   ptr += "</script>\n";
