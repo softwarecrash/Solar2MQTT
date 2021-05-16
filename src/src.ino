@@ -14,7 +14,7 @@
 #include "inverter.h"
 #include <ESP8266WebServer.h>
 #include "Settings.h"
-#include "weblog.h" //coming soon to view the serial1 log in the webpages
+#include "weblog.h" //coming soon to view the serial log in the webpages
 
 #include "webpages/HTMLcase.h"     //The HTML Konstructor
 #include "webpages/main.h"         //landing page with menu
@@ -373,7 +373,7 @@ bool sendtoMQTT()
 
   _allMessagesUpdated = false; // Lets reset messages and process them
                                
-  if (inverterType == PCM) { //PCM
+  if (inverterType == PIP) { //orginal PCM
      mqttclient.publish((String(topic) + String("/battv")).c_str(), String(_qpigsMessage.battV).c_str());
      mqttclient.publish((String(topic) + String("/solarv")).c_str(), String(_qpigsMessage.solarV).c_str());
      mqttclient.publish((String(topic) + String("/batta")).c_str(), String(_qpigsMessage.battChargeA).c_str());
@@ -391,7 +391,7 @@ bool sendtoMQTT()
     mqttclient.publish((String(topic) + String("/status")).c_str(), st.c_str() );
   }
 
-  if (inverterType == PIP)
+  if (inverterType == PCM) //orginal PIP
   {
     mqttclient.publish((String(topic) + String("/Grid Voltage")).c_str(), String(_qpigsMessage.gridV).c_str());
     mqttclient.publish((String(topic) + String("/Grid Frequenz")).c_str(), String(_qpigsMessage.gridHz).c_str());
@@ -402,7 +402,8 @@ bool sendtoMQTT()
     mqttclient.publish((String(topic) + String("/AC out Watt")).c_str(), String(_qpigsMessage.acOutW).c_str());
     mqttclient.publish((String(topic) + String("/AC out percent")).c_str(), String(_qpigsMessage.acOutPercent).c_str());
 
-    mqttclient.publish((String(topic) + String("/Buss Volt")).c_str(), String(_qpigsMessage.busV).c_str());
+    mqttclient.publish((String(topic) + String("/Bus Volt")).c_str(), String(_qpigsMessage.busV).c_str());
+    mqttclient.publish((String(topic) + String("/Bus Temp")).c_str(), String(_qpigsMessage.heatSinkDegC).c_str());
 
     mqttclient.publish((String(topic) + String("/Battery Voltage")).c_str(), String(_qpigsMessage.battV).c_str());
     mqttclient.publish((String(topic) + String("/Battery Percent")).c_str(), String(_qpigsMessage.battPercent).c_str());
@@ -411,7 +412,7 @@ bool sendtoMQTT()
     mqttclient.publish((String(topic) + String("/Battery SCC Volt")).c_str(), String(_qpigsMessage.sccBattV).c_str());
 
     mqttclient.publish((String(topic) + String("/PV Volt")).c_str(), String(_qpigsMessage.solarV).c_str());
-    mqttclient.publish((String(topic) + String("/PV Watt")).c_str(), String(_qpigsMessage.solarA).c_str());
+    mqttclient.publish((String(topic) + String("/PV A")).c_str(), String(_qpigsMessage.solarA).c_str());
 
     doc.clear();
     doc["pBattV"] = _qpigsMessage.battV;
