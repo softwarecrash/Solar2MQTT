@@ -6,6 +6,10 @@
 - Building using Platform.io
 - Live web pages with ajax
 
+#Last Added:
+- PV power in Watt
+- Inverter Operation Mode
+
 # ToDo:
 - Find a way to automatic detect the inverter type and communication protocol
 - add a way to auto build data from string answer
