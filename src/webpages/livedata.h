@@ -8,7 +8,9 @@ String sendHTMLlive()
   ptr += "<span id=\"solarV\">N/A</span>";
   ptr += "V | ";
   ptr += "<span id=\"solarA\">N/A</span>";
-  ptr += "A</p>\n";
+  ptr += "A | ";
+  ptr += "<span id=\"solarW\">N/A</span>";
+  ptr += "W</p>\n";
 
   ptr += "<p>Grid In: ";
   ptr += "<span id=\"gridV\">N/A</span>";
@@ -47,6 +49,9 @@ String sendHTMLlive()
   ptr += "<p>SCC: <span id=\"sccBattV\">N/A</span>V | In: <span id=\"battChargeA\">N/A</span>A | Out: <span id=\"battDischargeA\">N/A</span>A</p>";
   ptr += "\n";
 
+  ptr += "<p>Inverter Mode: <span id=\"ivmode\">N/A</span></p>";
+  ptr += "\n";
+
   ptr += "<p>";
   ptr += "<a class=\"btn btn-primary btn-block\" href=\"/\" role=\"button\">Main Page</a>\n";
   ptr += "</p>";
@@ -63,6 +68,7 @@ String sendHTMLlive()
   ptr += "                success: function (data) {\n";
   ptr += "               document.getElementById(\"solarV\").innerHTML = data.solarV;\n";
   ptr += "               document.getElementById(\"solarA\").innerHTML = data.solarA;\n";
+  ptr += "               document.getElementById(\"solarW\").innerHTML = data.solarW;\n";
   ptr += "               document.getElementById(\"gridV\").innerHTML = data.gridV;\n";
   ptr += "               document.getElementById(\"gridHz\").innerHTML = data.gridHz;\n";
   ptr += "               document.getElementById(\"acOutV\").innerHTML = data.acOutV;\n";
@@ -77,6 +83,7 @@ String sendHTMLlive()
   ptr += "               document.getElementById(\"battChargeA\").innerHTML = data.battChargeA;\n";
   ptr += "               document.getElementById(\"battDischargeA\").innerHTML = data.battDischargeA;\n";
   ptr += "               document.getElementById(\"sccBattV\").innerHTML = data.sccBattV\n";
+  ptr += "               document.getElementById(\"ivmode\").innerHTML = data.iv_mode\n";
   ptr += "            }\n";
   ptr += "        });\n";
   ptr += "        }\n";
