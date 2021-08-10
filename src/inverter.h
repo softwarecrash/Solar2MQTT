@@ -91,29 +91,34 @@ struct QpigsMessage
   byte acOutPercent;
   short busV;
   float battV;
-  float battChargeA;
-  float battPercent;
+  byte battChargeA;
+  byte battPercent;
   float heatSinkDegC;
-  float solarA;
-  float solarV;
+  byte solarA;
+  byte solarV;
   float sccBattV;
-  float battDischargeA;
-  bool addSbuPriorityVersion;
-  bool isConfigChanged;
-  bool isSccFirmwareUpdated;
-  bool isLoadOn; 
-  bool battVoltageToSteadyWhileCharging;
-  byte chargingStatus;
-  byte reservedY;
-  byte reservedZ;
-  long reservedAA;
-  short reservedBB;
+  byte battDischargeA;
+  short solarW; 
+
+  float addSbuPriorityVersion;
+  float isConfigChanged;//org bool
+  float isSccFirmwareUpdated;//org bool
+  
+  float battVoltageToSteadyWhileCharging;
+  float chargingStatus;
+  float reservedY;
+  float reservedZ;
+  float reservedAA;
+  float reservedBB;
+
+  String rawBuffer;
 
 }; 
 
 struct QmodMessage
 {
   char mode;
+  String operationMode;
 };
 
 struct QpiwsMessage

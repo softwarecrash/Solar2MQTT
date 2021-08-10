@@ -28,6 +28,7 @@ WebLog webLog;
 TickCounter _tickCounter;
 
 extern QpigsMessage _qpigsMessage;
+extern QmodMessage _qmodMessage;
 extern P003GSMessage _P003GSMessage;
 extern P003PSMessage _P003PSMessage;
 extern P006FPADJMessage _P006FPADJMessage;
@@ -304,10 +305,24 @@ void ajaxJsUpdate()
 
   ajaxJs["solarV"] = _qpigsMessage.solarV;
   ajaxJs["solarA"] = _qpigsMessage.solarA;
+  ajaxJs["solarW"] = _qpigsMessage.solarW;
+
+/*
+if(_qmodMessage.mode == 'P') ajaxJs["iv_mode"] = "Power On";
+if(_qmodMessage.mode == 'S') ajaxJs["iv_mode"] = "Standby";
+if(_qmodMessage.mode == 'Y') ajaxJs["iv_mode"] = "Bypass";
+if(_qmodMessage.mode == 'L') ajaxJs["iv_mode"] = "Line";
+if(_qmodMessage.mode == 'B') ajaxJs["iv_mode"] = "Battery";
+if(_qmodMessage.mode == 'T') ajaxJs["iv_mode"] = "Battery Test";
+if(_qmodMessage.mode == 'F') ajaxJs["iv_mode"] = "Fault";
+if(_qmodMessage.mode == 'D') ajaxJs["iv_mode"] = "Shutdown";
+if(_qmodMessage.mode == 'G') ajaxJs["iv_mode"] = "Grid";
+if(_qmodMessage.mode == 'C') ajaxJs["iv_mode"] = "Charge";
+*/
+ajaxJs["iv_mode"] = _qmodMessage.operationMode;
 
   ajaxStr = "";
   serializeJson(ajaxJs, ajaxStr);
-  //server.sendHeader("Connection", "close");
   server.send(200, "text/plane", ajaxStr); //Send value only to client ajax request
   Serial1.println("Ajax Request answer:");
   Serial1.println(ajaxStr);
@@ -347,9 +362,8 @@ bool sendtoMQTT()
 
       Serial1.println(F("Reconnected to MQTT SERVER"));
 
-      mqttclient.publish((topic + String("/Info")).c_str(), ("{\"Status\":\"Im alive!\", \"DeviceType\": \"" + _settings._deviceType + "\",\"IP \":\"" + WiFi.localIP().toString() + "\"}").c_str());
-      mqttclient.subscribe((topic + String("/code")).c_str());
-      mqttclient.subscribe((topic + String("/code")).c_str());
+      mqttclient.publish((topic + String("/IP")).c_str(), String(WiFi.localIP().toString()).c_str());
+ 
     }
     else
     {
@@ -360,7 +374,6 @@ bool sendtoMQTT()
     }
   }
 
-  //mqttclient.publish((topic + String("/uptime")).c_str(), String("{\"human\":\"" + String(uptime_formatter::getUptime()) + "\", \"seconds\":" + String(millis() / 1000) + "}").c_str());
   mqttclient.publish((topic + String("/wifi")).c_str(), (String("{ \"FreeRam\": ") + String(ESP.getFreeHeap()) + String(", \"rssi\": ") + String(WiFi.RSSI()) + String(", \"dbm\": ") + String(WifiGetRssiAsQuality(WiFi.RSSI())) + String("}")).c_str());
 
   Serial1.print(F("Data sent to MQTT SERver"));
@@ -413,6 +426,21 @@ bool sendtoMQTT()
 
     mqttclient.publish((String(topic) + String("/PV Volt")).c_str(), String(_qpigsMessage.solarV).c_str());
     mqttclient.publish((String(topic) + String("/PV A")).c_str(), String(_qpigsMessage.solarA).c_str());
+    mqttclient.publish((String(topic) + String("/PV Watt")).c_str(), String(_qpigsMessage.solarW).c_str());
+
+    mqttclient.publish((String(topic) + String("/Inverter Operation Mode")).c_str(), String(_qmodMessage.operationMode).c_str());
+
+    //raw mqtt test
+     //mqttclient.publish((String(topic) + String("/Z21")).c_str(), String(_qpigsMessage.battVoltageToSteadyWhileCharging).c_str());//10=???
+
+
+//find out what is sending
+//mqttclient.publish((String(topic) + String("/Z17")).c_str(), String(_qpigsMessage.addSbuPriorityVersion).c_str());//110110=????
+
+//mqttclient.publish((String(topic) + String("/Raw Converter String")).c_str(), String(_qpigsMessage.rawBuffer).c_str());
+
+//mqttclient.publish((String(topic) + String("/inverter mode")).c_str(), String(_qmodMessage.mode).c_str());
+
 
     doc.clear();
     doc["pBattV"] = _qpigsMessage.battV;
@@ -502,7 +530,7 @@ void sendRaw()
     _otherMessagesUpdated = false;
     Serial1.print("Sending other data to mqtt: ");
     Serial1.println(_otherBuffer);
-    mqttclient.publish((String(topic) + String("/debug/recieved")).c_str(), String(_otherBuffer).c_str());
+    //mqttclient.publish((String(topic) + String("/debug/recieved")).c_str(), String(_otherBuffer).c_str());
   }
 }
 /// TESTING MQTT SEND
@@ -520,7 +548,7 @@ void callback(char *top, byte *payload, unsigned int length)
     st += String((char)payload[i]);
   }
 
-  mqttclient.publish((String(topic) + String("/debug/sent")).c_str(), String("top: " + topic + " data: " + st).c_str());
+  //mqttclient.publish((String(topic) + String("/debug/sent")).c_str(), String("top: " + topic + " data: " + st).c_str());
   Serial1.print(F("Current command: "));
   Serial1.print(_nextCommandNeeded);
   Serial1.print(F(" Setting next command to : "));

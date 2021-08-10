@@ -241,34 +241,40 @@ bool onPIGS()
   if (_commandBuffer.length() < 109)
     return false;
 
+//answer from a smv
+//(1)000.0 (2)00.0 (3)230.1 (4)50.0 (5)0000 (6)0000 (7)000 (8)336 (9)24.36 (10)000 (11)065 (12)0015 (13)0000 (14)000.0 (15)00.00 (16)00000 (17)00010000 (18)00 (19)00 (20)00000 (21)010
+
   int index = 1; //after the starting '('
   _qpigsMessage.rxTimeSec = _tickCounter.getSeconds();
-  _qpigsMessage.gridV =       getNextFloat(_commandBuffer, index);
-  _qpigsMessage.gridHz =      getNextFloat(_commandBuffer, index);
-  _qpigsMessage.acOutV =      getNextFloat(_commandBuffer, index);
-  _qpigsMessage.acOutHz =     getNextFloat(_commandBuffer, index);
-  _qpigsMessage.acOutVa = (short)getNextLong(_commandBuffer, index);
-  _qpigsMessage.acOutW = (short)getNextLong(_commandBuffer, index);
-  _qpigsMessage.acOutPercent = (byte)getNextLong(_commandBuffer, index);
-  _qpigsMessage.busV = (short)getNextLong(_commandBuffer, index);
-  _qpigsMessage.battV = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.battChargeA = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.battPercent = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.heatSinkDegC = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.solarA = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.solarV = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.sccBattV = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.battDischargeA = getNextFloat(_commandBuffer, index);
-  _qpigsMessage.addSbuPriorityVersion = getNextBit(_commandBuffer, index);
-  _qpigsMessage.isConfigChanged = getNextBit(_commandBuffer, index);
-  _qpigsMessage.isSccFirmwareUpdated = getNextBit(_commandBuffer, index);
-  _qpigsMessage.isLoadOn = getNextBit(_commandBuffer, index);             
-  _qpigsMessage.battVoltageToSteadyWhileCharging = getNextBit(_commandBuffer, index);
-  _qpigsMessage.chargingStatus = (byte)getNextLong(_commandBuffer, index);
-  _qpigsMessage.reservedY = (byte)getNextLong(_commandBuffer, index);
-  _qpigsMessage.reservedZ = (byte)getNextLong(_commandBuffer, index);
-  _qpigsMessage.reservedAA = getNextLong(_commandBuffer, index);
-  _qpigsMessage.reservedBB = (short)getNextLong(_commandBuffer, index);
+  _qpigsMessage.gridV =                   getNextFloat(_commandBuffer, index);//1
+  _qpigsMessage.gridHz =                  getNextFloat(_commandBuffer, index);//2
+  _qpigsMessage.acOutV =                  getNextFloat(_commandBuffer, index);//3
+  _qpigsMessage.acOutHz =                 getNextFloat(_commandBuffer, index);//4
+  _qpigsMessage.acOutVa =           (short)getNextLong(_commandBuffer, index);//5
+  _qpigsMessage.acOutW =            (short)getNextLong(_commandBuffer, index);//6
+  _qpigsMessage.acOutPercent =       (byte)getNextLong(_commandBuffer, index);//7
+  _qpigsMessage.busV =              (short)getNextLong(_commandBuffer, index);//8
+  _qpigsMessage.battV =                   getNextFloat(_commandBuffer, index);//9
+  _qpigsMessage.battChargeA =        (byte)getNextLong(_commandBuffer, index);//10
+  _qpigsMessage.battPercent =        (byte)getNextLong(_commandBuffer, index);//11
+  _qpigsMessage.heatSinkDegC =            getNextFloat(_commandBuffer, index);//12
+  _qpigsMessage.solarA =             (byte)getNextLong(_commandBuffer, index);//13
+  _qpigsMessage.solarV =             (byte)getNextLong(_commandBuffer, index);//14
+  _qpigsMessage.sccBattV =                getNextFloat(_commandBuffer, index);//15
+  _qpigsMessage.battDischargeA =     (byte)getNextLong(_commandBuffer, index);//16
+
+  _qpigsMessage.addSbuPriorityVersion =    getNextLong(_commandBuffer, index);//17
+  _qpigsMessage.isConfigChanged =         getNextLong(_commandBuffer, index);//18
+  _qpigsMessage.isSccFirmwareUpdated =    getNextFloat(_commandBuffer, index);//19
+  _qpigsMessage.solarW =                getNextFloat(_commandBuffer, index);//20             
+  _qpigsMessage.battVoltageToSteadyWhileCharging = getNextFloat(_commandBuffer, index);//21
+  _qpigsMessage.chargingStatus =            getNextLong(_commandBuffer, index);//22
+  _qpigsMessage.reservedY =          getNextLong(_commandBuffer, index);//23
+  _qpigsMessage.reservedZ =          getNextLong(_commandBuffer, index);//24
+  _qpigsMessage.reservedAA =               getNextLong(_commandBuffer, index);//25
+  _qpigsMessage.reservedBB =       getNextLong(_commandBuffer, index);//26
+
+  _qpigsMessage.rawBuffer = _commandBuffer;
   
   return true;
 }
@@ -279,6 +285,19 @@ bool onMOD()
   Serial1.print(F("QMOD '"));
   Serial1.print(_commandBuffer);
   Serial1.print(F("'"));
+
+
+
+if(_commandBuffer[1] == 'P') _qmodMessage.operationMode = "Power On";
+if(_commandBuffer[1] == 'S') _qmodMessage.operationMode = "Standby";
+if(_commandBuffer[1] == 'Y') _qmodMessage.operationMode = "Bypass";
+if(_commandBuffer[1] == 'L') _qmodMessage.operationMode = "Line";
+if(_commandBuffer[1] == 'B') _qmodMessage.operationMode = "Battery";
+if(_commandBuffer[1] == 'T') _qmodMessage.operationMode = "Battery Test";
+if(_commandBuffer[1] == 'F') _qmodMessage.operationMode = "Fault";
+if(_commandBuffer[1] == 'D') _qmodMessage.operationMode = "Shutdown";
+if(_commandBuffer[1] == 'G') _qmodMessage.operationMode = "Grid";
+if(_commandBuffer[1] == 'C') _qmodMessage.operationMode = "Charge";
 
   if (_commandBuffer.length() < 2)
     return false;
@@ -447,17 +466,19 @@ void onInverterCommand()
         }
 
       // Below for PCM
-      else if (_lastRequestedCommand == "QPIGS" && !inverterType) 
+      else if (_lastRequestedCommand == "QPIGS" ) //&& !inverterType
       {
-        digitalWrite(Led_Red, LOW); //IF we got a valid command show that on the red led
+        //digitalWrite(Led_Red, LOW); //IF we got a valid command show that on the red led
         if (onPIGS()) {
-          _allMessagesUpdated = true;
+         // _allMessagesUpdated = true;
         }
-        _nextCommandNeeded = "";
+        _nextCommandNeeded = "QMOD";
       }
 
       
     //Below for PIP
+
+
       else if (_lastRequestedCommand == "QMOD") 
       {
         onMOD();
