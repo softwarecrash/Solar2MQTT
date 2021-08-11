@@ -101,8 +101,8 @@ struct QpigsMessage
   short solarW; 
 
   float addSbuPriorityVersion;
-  float isConfigChanged;//org bool
-  float isSccFirmwareUpdated;//org bool
+  float isConfigChanged;
+  float isSccFirmwareUpdated;
   
   float battVoltageToSteadyWhileCharging;
   float chargingStatus;
@@ -112,6 +112,8 @@ struct QpigsMessage
   float reservedBB;
 
   String rawBuffer;
+
+  float cSOC;
 
 }; 
 

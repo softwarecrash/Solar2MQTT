@@ -55,7 +55,7 @@ int Led_Red = 5;   //D1
 int Led_Green = 4; //D2
 
 StaticJsonDocument<300> doc;
-StaticJsonDocument<300> ajaxJs;
+StaticJsonDocument<350> ajaxJs;
 ESP8266WebServer server(80);
 
 //flag for saving data
@@ -149,8 +149,6 @@ void setup()
     inverterType = PCM;
   }
 
-  //dev = _settings._deviceName.c_str();
-  // topic = topic + String(_settings._deviceName.c_str());
   topic = _settings._mqttTopic;
 
   mqttclient.setServer(_settings._mqttServer.c_str(), _settings._mqttPort);
@@ -255,7 +253,6 @@ void setup()
 void loop()
 {
   delay(100);
-  //server.handleClient();
   // Make sure wifi is in the right mode
   if (WiFi.status() == WL_CONNECTED)
   { //No use going to next step unless WIFI is up and running.
@@ -272,14 +269,12 @@ void loop()
 
     // Check if we have something to read from MQTT
     mqttclient.loop();
-    //return;
   }
-  // Read the first line of the request
-  //String req = client.readStringUntil('\r');
-  //Serial1.println(req);
-  //client.flush();
 }
 //End void loop
+
+
+
 
 void ajaxJsUpdate()
 { //update the json doc for the ajax request
@@ -307,19 +302,11 @@ void ajaxJsUpdate()
   ajaxJs["solarA"] = _qpigsMessage.solarA;
   ajaxJs["solarW"] = _qpigsMessage.solarW;
 
-/*
-if(_qmodMessage.mode == 'P') ajaxJs["iv_mode"] = "Power On";
-if(_qmodMessage.mode == 'S') ajaxJs["iv_mode"] = "Standby";
-if(_qmodMessage.mode == 'Y') ajaxJs["iv_mode"] = "Bypass";
-if(_qmodMessage.mode == 'L') ajaxJs["iv_mode"] = "Line";
-if(_qmodMessage.mode == 'B') ajaxJs["iv_mode"] = "Battery";
-if(_qmodMessage.mode == 'T') ajaxJs["iv_mode"] = "Battery Test";
-if(_qmodMessage.mode == 'F') ajaxJs["iv_mode"] = "Fault";
-if(_qmodMessage.mode == 'D') ajaxJs["iv_mode"] = "Shutdown";
-if(_qmodMessage.mode == 'G') ajaxJs["iv_mode"] = "Grid";
-if(_qmodMessage.mode == 'C') ajaxJs["iv_mode"] = "Charge";
-*/
-ajaxJs["iv_mode"] = _qmodMessage.operationMode;
+  ajaxJs["cSOC"] = _qpigsMessage.cSOC;
+
+  ajaxJs["iv_mode"] = _qmodMessage.operationMode;
+
+
 
   ajaxStr = "";
   serializeJson(ajaxJs, ajaxStr);
@@ -378,8 +365,10 @@ bool sendtoMQTT()
 
   Serial1.print(F("Data sent to MQTT SERver"));
   Serial1.print(F(" - up: "));
-  //Serial1.println(uptime_formatter::getUptime());
   digitalWrite(Led_Green, HIGH);
+
+
+
 
   if (!_allMessagesUpdated)
     return false;
@@ -429,18 +418,8 @@ bool sendtoMQTT()
     mqttclient.publish((String(topic) + String("/PV Watt")).c_str(), String(_qpigsMessage.solarW).c_str());
 
     mqttclient.publish((String(topic) + String("/Inverter Operation Mode")).c_str(), String(_qmodMessage.operationMode).c_str());
-
-    //raw mqtt test
-     //mqttclient.publish((String(topic) + String("/Z21")).c_str(), String(_qpigsMessage.battVoltageToSteadyWhileCharging).c_str());//10=???
-
-
-//find out what is sending
-//mqttclient.publish((String(topic) + String("/Z17")).c_str(), String(_qpigsMessage.addSbuPriorityVersion).c_str());//110110=????
-
-//mqttclient.publish((String(topic) + String("/Raw Converter String")).c_str(), String(_qpigsMessage.rawBuffer).c_str());
-
-//mqttclient.publish((String(topic) + String("/inverter mode")).c_str(), String(_qmodMessage.mode).c_str());
-
+    //Beta
+    mqttclient.publish((String(topic) + String("/Calculated SOC")).c_str(), String(_qpigsMessage.cSOC).c_str());
 
     doc.clear();
     doc["pBattV"] = _qpigsMessage.battV;

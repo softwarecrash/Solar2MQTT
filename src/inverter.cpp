@@ -231,7 +231,6 @@ bool onP003GS()
 }
 
 
-
 //Parse the response to QPIGS general status message, CRC has already been confirmed
 bool onPIGS()
 {
@@ -275,6 +274,16 @@ bool onPIGS()
   _qpigsMessage.reservedBB =       getNextLong(_commandBuffer, index);//26
 
   _qpigsMessage.rawBuffer = _commandBuffer;
+
+  //Beta
+//calculate the real SOC
+if (_qpigsMessage.sccBattV > _qpigsMessage.battV)
+{
+  _qpigsMessage.cSOC = map(_qpigsMessage.battV, 22, 29, 0, 100);
+  } else {
+  _qpigsMessage.cSOC = map(_qpigsMessage.battV, 22, 27.6, 0, 100);
+}
+  
   
   return true;
 }
@@ -287,17 +296,20 @@ bool onMOD()
   Serial1.print(F("'"));
 
 
-
-if(_commandBuffer[1] == 'P') _qmodMessage.operationMode = "Power On";
-if(_commandBuffer[1] == 'S') _qmodMessage.operationMode = "Standby";
-if(_commandBuffer[1] == 'Y') _qmodMessage.operationMode = "Bypass";
-if(_commandBuffer[1] == 'L') _qmodMessage.operationMode = "Line";
-if(_commandBuffer[1] == 'B') _qmodMessage.operationMode = "Battery";
-if(_commandBuffer[1] == 'T') _qmodMessage.operationMode = "Battery Test";
-if(_commandBuffer[1] == 'F') _qmodMessage.operationMode = "Fault";
-if(_commandBuffer[1] == 'D') _qmodMessage.operationMode = "Shutdown";
-if(_commandBuffer[1] == 'G') _qmodMessage.operationMode = "Grid";
-if(_commandBuffer[1] == 'C') _qmodMessage.operationMode = "Charge";
+switch (_commandBuffer[1])
+{
+ default: _qmodMessage.operationMode = "Undefined, Origin: " +_commandBuffer[1];   break;
+case 'P': _qmodMessage.operationMode = "Power On";    break;
+case 'S': _qmodMessage.operationMode = "Standby";     break;
+case 'Y': _qmodMessage.operationMode = "Bypass";      break;
+case 'L': _qmodMessage.operationMode = "Line";        break;
+case 'B': _qmodMessage.operationMode = "Battery";     break;
+case 'T': _qmodMessage.operationMode = "Battery Test";break;
+case 'F': _qmodMessage.operationMode = "Fault";       break;
+case 'D': _qmodMessage.operationMode = "Shutdown";    break;
+case 'G': _qmodMessage.operationMode = "Grid";        break;
+case 'C': _qmodMessage.operationMode = "Charge";      break;
+}
 
   if (_commandBuffer.length() < 2)
     return false;
@@ -350,7 +362,6 @@ bool onPIWS()
 
   return true;
 }
-
 
 //Parse the response to QFLAG flags message, CRC has already been confirmed
 bool onFLAG()
@@ -419,7 +430,6 @@ bool onOther()
   _otherBuffer = _commandBuffer;
   return true;
 }
-
 
 //Called once a line has been received from the inverter (on CR)
 void onInverterCommand()
@@ -510,7 +520,6 @@ void onInverterCommand()
   _lastReceivedAt.reset();
   _lastRequestedCommand = "";
 }
-
 
 //Parses incoming characters from the serial port
 void serviceInverter()
