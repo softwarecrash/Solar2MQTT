@@ -7,6 +7,7 @@
 - Live web pages with ajax
 
 # Last Added:
+- static device information from the QPIRI command
 - PV power in Watt
 - Inverter Operation Mode
 
