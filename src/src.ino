@@ -29,6 +29,8 @@ TickCounter _tickCounter;
 
 extern QpigsMessage _qpigsMessage;
 extern QmodMessage _qmodMessage;
+extern QetMessage _qetMessage; //new testing
+extern QpiriMessage _qpiriMessage; //new testing
 extern P003GSMessage _P003GSMessage;
 extern P003PSMessage _P003PSMessage;
 extern P006FPADJMessage _P006FPADJMessage;
@@ -349,7 +351,7 @@ bool sendtoMQTT()
 
       Serial1.println(F("Reconnected to MQTT SERVER"));
 
-      mqttclient.publish((topic + String("/IP")).c_str(), String(WiFi.localIP().toString()).c_str());
+      mqttclient.publish((topic + String("/Device Data/IP")).c_str(), String(WiFi.localIP().toString()).c_str());
  
     }
     else
@@ -361,7 +363,7 @@ bool sendtoMQTT()
     }
   }
 
-  mqttclient.publish((topic + String("/wifi")).c_str(), (String("{ \"FreeRam\": ") + String(ESP.getFreeHeap()) + String(", \"rssi\": ") + String(WiFi.RSSI()) + String(", \"dbm\": ") + String(WifiGetRssiAsQuality(WiFi.RSSI())) + String("}")).c_str());
+  //mqttclient.publish((topic + String("/wifi")).c_str(), (String("{ \"FreeRam\": ") + String(ESP.getFreeHeap()) + String(", \"rssi\": ") + String(WiFi.RSSI()) + String(", \"dbm\": ") + String(WifiGetRssiAsQuality(WiFi.RSSI())) + String("}")).c_str());
 
   Serial1.print(F("Data sent to MQTT SERver"));
   Serial1.print(F(" - up: "));
@@ -421,12 +423,28 @@ bool sendtoMQTT()
     //Beta
     mqttclient.publish((String(topic) + String("/Calculated SOC")).c_str(), String(_qpigsMessage.cSOC).c_str());
 
-    doc.clear();
-    doc["pBattV"] = _qpigsMessage.battV;
-    doc["battPercent"] = _qpigsMessage.battPercent;
-    st = "";
-    serializeJson(doc, st);
-    mqttclient.publish((String(topic) + String("/status")).c_str(), st.c_str());
+
+    //for testing, not sure, i dont recive this data
+    if(_qetMessage.energy > 0)mqttclient.publish((String(topic) + String("/Energy/Total Energy KWh")).c_str(), String(_qetMessage.energy).c_str());
+
+    //piri answer
+    mqttclient.publish((String(topic) + String("/Device Data/Grid rating voltage")).c_str(), String(_qpiriMessage.gridRatingV).c_str());
+    mqttclient.publish((String(topic) + String("/Device Data/Grid rating current")).c_str(), String(_qpiriMessage.gridRatingA).c_str());
+    mqttclient.publish((String(topic) + String("/Device Data/AC output rating voltage")).c_str(), String(_qpiriMessage.acOutV).c_str());
+    mqttclient.publish((String(topic) + String("/Device Data/Grid rating frequency")).c_str(), String(_qpiriMessage.gridRatingHz).c_str());
+    mqttclient.publish((String(topic) + String("/Device Data/AC output rating current")).c_str(), String(_qpiriMessage.acOutA).c_str());
+    mqttclient.publish((String(topic) + String("/Device Data/Grid rating Watt")).c_str(), String(_qpiriMessage.gridRatingW).c_str());
+    mqttclient.publish((String(topic) + String("/Device Data/AC rating Watt")).c_str(), String(_qpiriMessage.acOutRatingW).c_str());
+    mqttclient.publish((String(topic) + String("/Device Data/Battery rating voltage")).c_str(), String(_qpiriMessage.battRatingV).c_str());
+
+
+    //doc.clear();
+    //doc["pBattV"] = _qpigsMessage.battV;
+    //doc["battPercent"] = _qpigsMessage.battPercent;
+    //st = "";
+    //serializeJson(doc, st);
+    //mqttclient.publish((String(topic) + String("/status")).c_str(), st.c_str());
+    
   }
 
   if (inverterType == MPI)

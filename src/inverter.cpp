@@ -31,6 +31,9 @@ QmodMessage _qmodMessage = {0};
 QpiwsMessage _qpiwsMessage = {0};
 QflagMessage _qflagMessage = {0};
 QidMessage _qidMessage = {0};
+//new testings
+QetMessage _qetMessage = {0};
+QpiriMessage _qpiriMessage = {0};
 
 
 //MPI Inverters use below
@@ -43,6 +46,14 @@ P006FPADJMessage _P006FPADJMessage = {0};
 //Found here: http://forums.aeva.asn.au/pip4048ms-inverter_topic4332_post53760.html#53760
 #define INT16U unsigned int
 #define INT8U byte
+
+//short map function for float mapping
+float mapf(float value, float fromLow, float fromHigh, float toLow, float toHigh) {
+  float result;
+  result = (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
+  return result;
+} 
+
 unsigned short cal_crc_half(byte* pin, byte len)
 {
   unsigned short crc;
@@ -83,7 +94,6 @@ unsigned short cal_crc_half(byte* pin, byte len)
   crc += bCRCLow;
   return(crc);
 }
-
 
 
 //Parses out the next number in the command string, starting at index
@@ -279,11 +289,33 @@ bool onPIGS()
 //calculate the real SOC
 if (_qpigsMessage.sccBattV > _qpigsMessage.battV)
 {
-  _qpigsMessage.cSOC = map(_qpigsMessage.battV, 22, 29, 0, 100);
+  _qpigsMessage.cSOC = round(mapf(_qpigsMessage.battV, 22, 29, 0, 100));
   } else {
-  _qpigsMessage.cSOC = map(_qpigsMessage.battV, 22, 27.6, 0, 100);
+  _qpigsMessage.cSOC = round(mapf(_qpigsMessage.battV, 22, 27.6, 0, 100));
 }
   
+  
+  return true;
+}
+
+bool onPIRI()
+{
+  Serial1.print("Processing data from: ");
+  Serial1.println(_lastRequestedCommand);
+  
+  if (_commandBuffer.length() < 45)
+    return false;
+
+//(230.0 13.0 230.0 50.0 13.0 3000 3000 24.0 23.0 21.5 28.2 27.0 0 02 060 0 2 3 1 01 0 0 27.0 0 1
+  int index = 1; //after the starting '('
+  _qpiriMessage.gridRatingV =             getNextFloat(_commandBuffer, index);
+  _qpiriMessage.gridRatingA =             getNextFloat(_commandBuffer, index);
+  _qpiriMessage.acOutV =             getNextFloat(_commandBuffer, index);
+  _qpiriMessage.gridRatingHz =             getNextFloat(_commandBuffer, index);
+  _qpiriMessage.acOutA =             getNextFloat(_commandBuffer, index);
+  _qpiriMessage.gridRatingW =             getNextFloat(_commandBuffer, index);
+  _qpiriMessage.acOutRatingW =             getNextFloat(_commandBuffer, index);
+  _qpiriMessage.battRatingV =             getNextFloat(_commandBuffer, index);
   
   return true;
 }
@@ -418,6 +450,23 @@ bool onPI()
   return true;
 }
 
+//QET<cr>: Inquiry total energy - BETA!!!!!
+bool onQET()
+{
+  Serial1.print(F("QET '"));
+  Serial1.print(_commandBuffer);
+  Serial1.print(F("'"));
+
+  if (_commandBuffer.length() < 2)
+    return false;
+
+  //Get number after '('
+  int index = 1;
+  _qetMessage.energy = (short)getNextLong(_commandBuffer, index);
+   
+  return true;
+}
+
 //Parse Other commands or so called RAWS
 bool onOther()
 {
@@ -507,9 +556,23 @@ void onInverterCommand()
       else if (_lastRequestedCommand == "QID") 
       {
         onID();
+        _nextCommandNeeded = "QET";//org. none
+        //_allMessagesUpdated = true;
+      }
+
+      else if (_lastRequestedCommand == "QET") 
+      {
+        onQET();
+        _nextCommandNeeded = "QPIRI";//org none
+        //_allMessagesUpdated = true;
+      }
+      else if (_lastRequestedCommand == "QPIRI") 
+      {
+        onPIRI();
         _nextCommandNeeded = "";
         _allMessagesUpdated = true;
       }
+
       // ***********  ALL OTHER **********
       else {
         onOther();

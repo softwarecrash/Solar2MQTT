@@ -170,10 +170,18 @@ struct QflagMessage
   bool enableFaultCodeRecording;
 };
 
-//for future use
+//QPIRI<cr>: Device Rating Information inquiry
 struct QpiriMessage
 {
-	
+    bool  data; //switch for the mqtt data sending
+	  float gridRatingV;
+    float gridRatingA;
+    float acOutV;
+    float gridRatingHz;
+    float acOutA;
+    float gridRatingW;
+    float acOutRatingW;
+    float battRatingV;
 };
 //for future use
 struct QmdMessage
@@ -185,5 +193,9 @@ struct QidMessage
 {
   char id[16];
 };
-
+//QET<cr>: Inquiry total energy
+struct QetMessage
+{
+  short energy;
+};
 #endif
