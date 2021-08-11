@@ -44,6 +44,8 @@ String sendHTMLlive()
   ptr += "<span id=\"battV\">N/A</span>";
   ptr += "V | ";
   ptr += "<span id=\"battPercent\">N/A</span>";
+  ptr += "% | cSOC: ";
+  ptr += "<span id=\"cSOC\">N/A</span>";
   ptr += "%</p>\n";
 
   ptr += "<p>SCC: <span id=\"sccBattV\">N/A</span>V | In: <span id=\"battChargeA\">N/A</span>A | Out: <span id=\"battDischargeA\">N/A</span>A</p>";
@@ -83,6 +85,7 @@ String sendHTMLlive()
   ptr += "               document.getElementById(\"battChargeA\").innerHTML = data.battChargeA;\n";
   ptr += "               document.getElementById(\"battDischargeA\").innerHTML = data.battDischargeA;\n";
   ptr += "               document.getElementById(\"sccBattV\").innerHTML = data.sccBattV\n";
+  ptr += "               document.getElementById(\"cSOC\").innerHTML = data.cSOC\n";
   ptr += "               document.getElementById(\"ivmode\").innerHTML = data.iv_mode\n";
   ptr += "            }\n";
   ptr += "        });\n";
