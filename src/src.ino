@@ -103,8 +103,8 @@ void setup()
   //create custom wifimanager fields
   WiFiManagerParameter custom_mqtt_server ("mqtt_server", "MQTT server",        NULL, 40);
   WiFiManagerParameter custom_mqtt_user   ("mqtt_user",   "MQTT User",          NULL, 40);
-  WiFiManagerParameter custom_mqtt_pass   ("mqtt_pass",   "MQTT Password",      NULL, 40);
-  WiFiManagerParameter custom_mqtt_topic  ("mqtt_topic",  "MQTT Topic",         NULL, 20);
+  WiFiManagerParameter custom_mqtt_pass   ("mqtt_pass",   "MQTT Password",      NULL, 65);
+  WiFiManagerParameter custom_mqtt_topic  ("mqtt_topic",  "MQTT Topic",         NULL, 60);
   WiFiManagerParameter custom_mqtt_port   ("mqtt_port",   "MQTT Port",          NULL, 5);
   WiFiManagerParameter custom_mqtt_refresh("mqtt_refresh","MQTT Send Interval", NULL, 5);
   WiFiManagerParameter custom_device_name ("device_name", "Device Name",        NULL, 40);
