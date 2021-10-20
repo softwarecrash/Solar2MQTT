@@ -397,6 +397,7 @@ bool sendtoMQTT()
 
   if (inverterType == PCM) //orginal PIP
   {
+    //qpigs
     mqttclient.publish((String(topic) + String("/Grid Voltage")).c_str(), String(_qpigsMessage.gridV).c_str());
     mqttclient.publish((String(topic) + String("/Grid Frequenz")).c_str(), String(_qpigsMessage.gridHz).c_str());
 
@@ -418,8 +419,12 @@ bool sendtoMQTT()
     mqttclient.publish((String(topic) + String("/PV Volt")).c_str(), String(_qpigsMessage.solarV).c_str());
     mqttclient.publish((String(topic) + String("/PV A")).c_str(), String(_qpigsMessage.solarA).c_str());
     mqttclient.publish((String(topic) + String("/PV Watt")).c_str(), String(_qpigsMessage.solarW).c_str());
+    //end qpigs
 
+    //qmod
     mqttclient.publish((String(topic) + String("/Inverter Operation Mode")).c_str(), String(_qmodMessage.operationMode).c_str());
+    //end qmod
+
     //Beta
     mqttclient.publish((String(topic) + String("/Calculated SOC")).c_str(), String(_qpigsMessage.cSOC).c_str());
 
@@ -427,7 +432,7 @@ bool sendtoMQTT()
     //for testing, not sure, i dont recive this data
     if(_qetMessage.energy > 0)mqttclient.publish((String(topic) + String("/Energy/Total Energy KWh")).c_str(), String(_qetMessage.energy).c_str());
 
-    //piri answer
+    //piri
     mqttclient.publish((String(topic) + String("/Device Data/Grid rating voltage")).c_str(), String(_qpiriMessage.gridRatingV).c_str());
     mqttclient.publish((String(topic) + String("/Device Data/Grid rating current")).c_str(), String(_qpiriMessage.gridRatingA).c_str());
     mqttclient.publish((String(topic) + String("/Device Data/AC output rating voltage")).c_str(), String(_qpiriMessage.acOutV).c_str());
@@ -436,7 +441,7 @@ bool sendtoMQTT()
     mqttclient.publish((String(topic) + String("/Device Data/Grid rating Watt")).c_str(), String(_qpiriMessage.gridRatingW).c_str());
     mqttclient.publish((String(topic) + String("/Device Data/AC rating Watt")).c_str(), String(_qpiriMessage.acOutRatingW).c_str());
     mqttclient.publish((String(topic) + String("/Device Data/Battery rating voltage")).c_str(), String(_qpiriMessage.battRatingV).c_str());
-
+    //end qpiori
 
     //doc.clear();
     //doc["pBattV"] = _qpigsMessage.battV;
