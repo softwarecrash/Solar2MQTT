@@ -34,12 +34,13 @@ QidMessage _qidMessage = {0};
 //new testings
 QetMessage _qetMessage = {0};
 QpiriMessage _qpiriMessage = {0};
+QtMessage _qtMessage = {0};
 
 
 //MPI Inverters use below
-P003GSMessage _P003GSMessage = {0};
-P003PSMessage _P003PSMessage = {0};
-P006FPADJMessage _P006FPADJMessage = {0};
+//P003GSMessage _P003GSMessage = {0};
+//P003PSMessage _P003PSMessage = {0};
+//P006FPADJMessage _P006FPADJMessage = {0};
 
 
 
@@ -152,7 +153,7 @@ bool getNextBit(String& command, int& index)
   }
   return false;
 }
-
+/*
 bool onP003PS()
 {
   //P003PS -- '81'^D07700139,00122,,,,,,0502,0973,0385,01860,0593,1040,0399,02032,031,1,1,1,1,2,1}⸮'
@@ -239,7 +240,7 @@ bool onP003GS()
   _P003GSMessage.acOutputCurrentT = (float)getNextFloat(_commandBuffer, index)/10;
   return true;  
 }
-
+*/
 
 //Parse the response to QPIGS general status message, CRC has already been confirmed
 bool onPIGS()
@@ -453,16 +454,31 @@ bool onPI()
 //QET<cr>: Inquiry total energy - BETA!!!!!
 bool onQET()
 {
-  Serial1.print(F("QET '"));
-  Serial1.print(_commandBuffer);
-  Serial1.print(F("'"));
+  Serial1.print("Processing data from: ");
+  Serial1.println(_lastRequestedCommand);
 
-  if (_commandBuffer.length() < 2)
+  if (_commandBuffer.length() < 1)
     return false;
 
   //Get number after '('
   int index = 1;
-  _qetMessage.energy = (short)getNextLong(_commandBuffer, index);
+  _qetMessage.energy = getNextLong(_commandBuffer, index);
+   
+  return true;
+}
+
+//QT<cr>: Inquiry Device Date - BETA!!!!!
+bool onQT()
+{
+  Serial1.print("Processing data from: ");
+  Serial1.println(_lastRequestedCommand);
+
+  if (_commandBuffer.length() < 1)
+    return false;
+
+  //Get number after '('
+  int index = 1;
+  _qtMessage.deviceTime = getNextLong(_commandBuffer, index);
    
   return true;
 }
@@ -504,6 +520,7 @@ void onInverterCommand()
     //If CRC is okay, parse message and set next message to be requested
     if (calculatedCrc == recievedCrc)
     {
+      /*
         //MPI
         digitalWrite(Led_Red, LOW);  //If we got a valid command show that on the led
         if (_lastRequestedCommand == "P003GS") 
@@ -523,21 +540,38 @@ void onInverterCommand()
           _nextCommandNeeded = "";
           _allMessagesUpdated = true;
         }
-
+*/
       // Below for PCM
-      else if (_lastRequestedCommand == "QPIGS" ) //&& !inverterType
+      if (_lastRequestedCommand == "QPIGS" ) //&& !inverterType
       {
-        //digitalWrite(Led_Red, LOW); //IF we got a valid command show that on the red led
-        if (onPIGS()) {
-         // _allMessagesUpdated = true;
-        }
+          onPIGS();
         _nextCommandNeeded = "QMOD";
       }
+      else if (_lastRequestedCommand == "QMOD")
+      {
+        onMOD();
+        _nextCommandNeeded = "QET";
+      }
+      else if (_lastRequestedCommand == "QET")
+      {
+        onQET();
+        _nextCommandNeeded = "QPIRI";
+      }
+      else if (_lastRequestedCommand == "QPIRI")
+      {
+        onPIRI();
+        _nextCommandNeeded = "QT";
+      }
+      else if (_lastRequestedCommand == "QT")
+      {
+        onQT();
+        _nextCommandNeeded = "";
+        _allMessagesUpdated = true;
+      }
 
-      
-    //Below for PIP
 
-
+    /*  
+    //Below for PIP -- not actual
       else if (_lastRequestedCommand == "QMOD") 
       {
         onMOD();
@@ -572,7 +606,7 @@ void onInverterCommand()
         _nextCommandNeeded = "";
         _allMessagesUpdated = true;
       }
-
+*/
       // ***********  ALL OTHER **********
       else {
         onOther();

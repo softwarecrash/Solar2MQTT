@@ -14,7 +14,7 @@ struct QpiMessage
   byte protocolId;
   //the inverter protocol id, is this the ident what the inverter answer?
 };
-
+/*
 struct P003PSMessage
 {
   unsigned long rxTimeSec;
@@ -35,7 +35,8 @@ struct P003PSMessage
   float va_total;
   float ac_output_procent;  
 };
-
+*/
+/*
 struct P006FPADJMessage
 {  //-- '34'^D0301,0000,1,0099,1,0109,1,0112⸮7'
   unsigned long rxTimeSec;
@@ -48,7 +49,8 @@ struct P006FPADJMessage
   float feedingGridDirectionT;
   float calibrationWattT; 
 };
-
+*/
+/*
 struct P003GSMessage
 {
   unsigned long rxTimeSec;
@@ -74,7 +76,7 @@ struct P003GSMessage
   float acOutputCurrentS;
   float acOutputCurrentT;
 };
-
+*/
 
 
 struct QpigsMessage
@@ -196,6 +198,12 @@ struct QidMessage
 //QET<cr>: Inquiry total energy
 struct QetMessage
 {
-  short energy;
+  float energy;
 };
+//QT<cr>: Device DateTime
+struct QtMessage
+{
+ float deviceTime;
+};
+
 #endif

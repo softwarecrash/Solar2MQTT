@@ -11,6 +11,8 @@
 #include <ArduinoJson.h>
 #include <ESP8266mDNS.h>
 #include "TickCounter.h"
+//#include "NTPClient.h"
+//#include "WiFiUdp.h"
 #include "inverter.h"
 #include <ESP8266WebServer.h>
 #include "Settings.h"
@@ -29,11 +31,12 @@ TickCounter _tickCounter;
 
 extern QpigsMessage _qpigsMessage;
 extern QmodMessage _qmodMessage;
-extern QetMessage _qetMessage; //new testing
-extern QpiriMessage _qpiriMessage; //new testing
-extern P003GSMessage _P003GSMessage;
-extern P003PSMessage _P003PSMessage;
-extern P006FPADJMessage _P006FPADJMessage;
+extern QetMessage _qetMessage; //new testing - not working yet
+extern QpiriMessage _qpiriMessage;
+extern QtMessage _qtMessage; // new Testing - not working yet
+//extern P003GSMessage _P003GSMessage;
+//extern P003PSMessage _P003PSMessage;
+//extern P006FPADJMessage _P006FPADJMessage;
 extern String _nextCommandNeeded;
 extern String _setCommand;
 extern String _otherBuffer;
@@ -369,14 +372,11 @@ bool sendtoMQTT()
   Serial1.print(F(" - up: "));
   digitalWrite(Led_Green, HIGH);
 
-
-
-
   if (!_allMessagesUpdated)
     return false;
 
   _allMessagesUpdated = false; // Lets reset messages and process them
-                               
+    /*                           
   if (inverterType == PIP) { //orginal PCM
      mqttclient.publish((String(topic) + String("/battv")).c_str(), String(_qpigsMessage.battV).c_str());
      mqttclient.publish((String(topic) + String("/solarv")).c_str(), String(_qpigsMessage.solarV).c_str());
@@ -394,8 +394,8 @@ bool sendtoMQTT()
     serializeJson(doc,st);
     mqttclient.publish((String(topic) + String("/status")).c_str(), st.c_str() );
   }
-
-  if (inverterType == PCM) //orginal PIP
+*/
+  if (inverterType == PCM)
   {
     //qpigs
     mqttclient.publish((String(topic) + String("/Grid Voltage")).c_str(), String(_qpigsMessage.gridV).c_str());
@@ -428,10 +428,6 @@ bool sendtoMQTT()
     //Beta
     mqttclient.publish((String(topic) + String("/Calculated SOC")).c_str(), String(_qpigsMessage.cSOC).c_str());
 
-
-    //for testing, not sure, i dont recive this data
-    if(_qetMessage.energy > 0)mqttclient.publish((String(topic) + String("/Energy/Total Energy KWh")).c_str(), String(_qetMessage.energy).c_str());
-
     //piri
     mqttclient.publish((String(topic) + String("/Device Data/Grid rating voltage")).c_str(), String(_qpiriMessage.gridRatingV).c_str());
     mqttclient.publish((String(topic) + String("/Device Data/Grid rating current")).c_str(), String(_qpiriMessage.gridRatingA).c_str());
@@ -441,17 +437,17 @@ bool sendtoMQTT()
     mqttclient.publish((String(topic) + String("/Device Data/Grid rating Watt")).c_str(), String(_qpiriMessage.gridRatingW).c_str());
     mqttclient.publish((String(topic) + String("/Device Data/AC rating Watt")).c_str(), String(_qpiriMessage.acOutRatingW).c_str());
     mqttclient.publish((String(topic) + String("/Device Data/Battery rating voltage")).c_str(), String(_qpiriMessage.battRatingV).c_str());
-    //end qpiori
+    //end qpiri
 
-    //doc.clear();
-    //doc["pBattV"] = _qpigsMessage.battV;
-    //doc["battPercent"] = _qpigsMessage.battPercent;
-    //st = "";
-    //serializeJson(doc, st);
-    //mqttclient.publish((String(topic) + String("/status")).c_str(), st.c_str());
-    
+    //QT
+    mqttclient.publish((String(topic) + String("/Device Data/Device DateTime")).c_str(), String(_qtMessage.deviceTime).c_str());
+    //end QT
+
+    //QET
+    mqttclient.publish((String(topic) + String("/Energy/Total Energy KWh")).c_str(), String(_qetMessage.energy).c_str());
+    //end QET    
   }
-
+/*
   if (inverterType == MPI)
   { //IF MPI
     mqttclient.publish((String(topic) + String("/solar1w")).c_str(), String(_P003GSMessage.solarInputV1 * _P003GSMessage.solarInputA1).c_str());
@@ -521,7 +517,7 @@ bool sendtoMQTT()
     serializeJson(doc, st);
     mqttclient.publish((String(topic) + String("/status")).c_str(), st.c_str());
   }
-
+*/
   return true;
 }
 // Check if we have pending raw messages to send to MQTT. Then send it.
