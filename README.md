@@ -1,5 +1,6 @@
 # What works:
 - WiFi Ap with setup
+- Read and send the QPIGS, QPIRI and QMOD
 - Web display Data for Inverters where support the QPIGS Request
 - Web Update, Reset, Restart
 - send MQTT Data
