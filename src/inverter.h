@@ -205,5 +205,18 @@ struct QtMessage
 {
  float deviceTime;
 };
+//for raw answer from inverter
+struct QRaw
+{
+  String QPIGS;
+  String QPIRI;
+  String QMOD;
+  String QPIWS;
+  String QFLAG;
+  String QID;
+  String QPI;
+  String QET;
+  String QT;
+};
 
 #endif

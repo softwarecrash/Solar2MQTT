@@ -4,6 +4,8 @@
 
 #include "settings.h"
 
+//#include "weblog.h"
+
 extern TickCounter _tickCounter;
 extern Settings _settings;
 extern byte inverterType; 
@@ -12,6 +14,11 @@ extern byte PCM60x;
 extern byte PIP;
 extern int Led_Red;
 extern int Led_Green;
+
+
+//extern WebLog _webLog; //for testing string buffer
+//#include "StrRingBuffer.h";
+//extern StrRingBuffer _logBuffer;
 
 String _setCommand;
 String _commandBuffer;
@@ -35,6 +42,9 @@ QidMessage _qidMessage = {0};
 QetMessage _qetMessage = {0};
 QpiriMessage _qpiriMessage = {0};
 QtMessage _qtMessage = {0};
+
+
+QRaw _qRaw;
 
 
 //MPI Inverters use below
@@ -247,7 +257,9 @@ bool onPIGS()
 {
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
-  
+  //_webLog.add("Processing data from: "+_lastRequestedCommand); //testing for weblog
+  _qRaw.QPIGS = _commandBuffer;
+
   if (_commandBuffer.length() < 109)
     return false;
 
@@ -303,6 +315,8 @@ bool onPIRI()
 {
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
+
+  _qRaw.QPIRI = _commandBuffer;
   
   if (_commandBuffer.length() < 45)
     return false;
@@ -328,6 +342,7 @@ bool onMOD()
   Serial1.print(_commandBuffer);
   Serial1.print(F("'"));
 
+  _qRaw.QMOD = _commandBuffer;
 
 switch (_commandBuffer[1])
 {
@@ -357,6 +372,8 @@ bool onPIWS()
 {
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
+
+  _qRaw.QPIWS = _commandBuffer;
 
   if (_commandBuffer.length() < 32)
     return false;
@@ -402,6 +419,8 @@ bool onFLAG()
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
 
+  _qRaw.QFLAG = _commandBuffer;
+
   if (_commandBuffer.length() < 10)
     return false;
 
@@ -425,6 +444,8 @@ bool onID()
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
 
+  _qRaw.QID = _commandBuffer;
+
   if (_commandBuffer.length() < 15)
     return false;
 
@@ -441,11 +462,13 @@ bool onPI()
   Serial1.print(_commandBuffer);
   Serial1.print(F("'"));
 
+  _qRaw.QPI = _commandBuffer;
+
   if (_commandBuffer.length() < 5)
     return false;
 
   //Get number after '(PI'
-  int index = 3;
+  int index = 1;
   _qpiMessage.protocolId = (byte)getNextLong(_commandBuffer, index);
    
   return true;
@@ -456,6 +479,8 @@ bool onQET()
 {
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
+
+  _qRaw.QET = _commandBuffer;
 
   if (_commandBuffer.length() < 1)
     return false;
@@ -472,6 +497,7 @@ bool onQT()
 {
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
+  _qRaw.QT = _commandBuffer;
 
   if (_commandBuffer.length() < 1)
     return false;
@@ -550,21 +576,31 @@ void onInverterCommand()
       else if (_lastRequestedCommand == "QMOD")
       {
         onMOD();
-        _nextCommandNeeded = "QET";
+        _nextCommandNeeded = "QPIWS";
       }
-      else if (_lastRequestedCommand == "QET")
+      else if (_lastRequestedCommand == "QPIWS")
       {
-        onQET();
+        onPIWS();
         _nextCommandNeeded = "QPIRI";
       }
       else if (_lastRequestedCommand == "QPIRI")
       {
         onPIRI();
+        _nextCommandNeeded = "QPI";
+      }
+      else if (_lastRequestedCommand == "QPI")
+      {
+        onPI();
         _nextCommandNeeded = "QT";
       }
       else if (_lastRequestedCommand == "QT")
       {
         onQT();
+        _nextCommandNeeded = "QET";
+      }
+      else if (_lastRequestedCommand == "QET")
+      {
+        onQET();
         _nextCommandNeeded = "";
         _allMessagesUpdated = true;
       }

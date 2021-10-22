@@ -16,7 +16,7 @@
 #include "inverter.h"
 #include <ESP8266WebServer.h>
 #include "Settings.h"
-#include "weblog.h" //coming soon to view the serial log in the webpages
+//#include "weblog.h" //coming soon to view the serial log in the webpages
 
 #include "webpages/HTMLcase.h"     //The HTML Konstructor
 #include "webpages/main.h"         //landing page with menu
@@ -24,9 +24,14 @@
 #include "webpages/settings.h"     //settings page
 #include "webpages/mqttsettings.h" //mqtt settings page
 
+
+
 WiFiClient client;
 Settings _settings;
-WebLog webLog;
+
+//WebLog _webLog; //testing buffer
+extern QRaw _qRaw;
+
 TickCounter _tickCounter;
 
 extern QpigsMessage _qpigsMessage;
@@ -44,9 +49,11 @@ extern String _otherBuffer;
 PubSubClient mqttclient(client);
 
 // Interface types that can be used.
+
+bool mqttRaw = true;
 const byte PCM = 0; //not sure it works
 const byte MPI = 1; //not sure it works
-const byte PIP = 2; 
+const byte PIP = 0; 
 byte inverterType = PIP; //And defaults in case...
 String topic = "/";      //Default first part of topic. We will add device ID in setup
 String st = "";
@@ -444,8 +451,22 @@ bool sendtoMQTT()
     //end QT
 
     //QET
-    mqttclient.publish((String(topic) + String("/Energy/Total Energy KWh")).c_str(), String(_qetMessage.energy).c_str());
+    if(_qetMessage.energy != NULL)mqttclient.publish((String(topic) + String("/Energy/Total Energy KWh")).c_str(), String(_qetMessage.energy).c_str());
     //end QET    
+
+    //RAW Messages from Invberter
+    if(mqttRaw){
+    if(_qRaw.QPIGS != NULL)mqttclient.publish((String(topic) + String("/RAW/QPIGS")).c_str(), String(_qRaw.QPIGS).c_str());
+    if(_qRaw.QPIRI != NULL)mqttclient.publish((String(topic) + String("/RAW/QPIRI")).c_str(), String(_qRaw.QPIRI).c_str());
+    if(_qRaw.QMOD != NULL)mqttclient.publish((String(topic) + String("/RAW/QMOD")).c_str(), String(_qRaw.QMOD).c_str());
+    if(_qRaw.QPIWS != NULL)mqttclient.publish((String(topic) + String("/RAW/QPIWS")).c_str(), String(_qRaw.QPIWS).c_str());
+    if(_qRaw.QFLAG != NULL)mqttclient.publish((String(topic) + String("/RAW/QFLAG")).c_str(), String(_qRaw.QFLAG).c_str());
+    if(_qRaw.QID != NULL)mqttclient.publish((String(topic) + String("/RAW/QID")).c_str(), String(_qRaw.QID).c_str());
+    if(_qRaw.QPI != NULL)mqttclient.publish((String(topic) + String("/RAW/QPI")).c_str(), String(_qRaw.QPI).c_str());
+    if(_qRaw.QET != NULL)mqttclient.publish((String(topic) + String("/RAW/QET")).c_str(), String(_qRaw.QET).c_str());
+    if(_qRaw.QT != NULL)mqttclient.publish((String(topic) + String("/RAW/QET")).c_str(), String(_qRaw.QT).c_str());
+    }
+    //end RAW  
   }
 /*
   if (inverterType == MPI)
