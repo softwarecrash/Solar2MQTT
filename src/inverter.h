@@ -1,10 +1,4 @@
-#ifndef INVERTER_H
-#define INVERTER_H
-
 #include <Arduino.h>
-
-#define INVERTER_COMMAND_TIMEOUT_MS 5000
-#define INVERTER_COMMAND_DELAY_MS 500
 
 //Send and receive periodic inverter commands
 void serviceInverter();
@@ -228,5 +222,3 @@ struct QAv //Query Avaible
   bool QET = true;
   bool QT = true;
 };
-
-#endif

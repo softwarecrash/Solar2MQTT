@@ -48,6 +48,8 @@ QAv _qAv;
 //Found here: http://forums.aeva.asn.au/pip4048ms-inverter_topic4332_post53760.html#53760
 #define INT16U unsigned int
 #define INT8U byte
+#define INVERTER_COMMAND_TIMEOUT_MS 5000
+#define INVERTER_COMMAND_DELAY_MS 500
 
 //short map function for float mapping
 float mapf(float value, float fromLow, float fromHigh, float toLow, float toHigh) {
