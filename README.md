@@ -8,6 +8,8 @@
 - Live web pages with ajax
 
 # Last Added:
+- mqtt raw data for QPIGS, QPIRI, QMOD, QID, QPIWS, QLFAG, QPI, QT, QET
+- mqtt debug and serial debug enable in settings.h
 - static device information from the QPIRI command
 - PV power in Watt
 - Inverter Operation Mode
