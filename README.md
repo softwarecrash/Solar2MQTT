@@ -26,7 +26,7 @@
 - pip / PCM devices
 - i solar 
 - IGrid
-- All devices from EASUN
+- Many devices from EASUN
 - and many many others based on the chinese solar inverter with a rj45 jack and usb port, primary identified by the display
 
 ![grafik](https://user-images.githubusercontent.com/44615614/109850447-d05f4880-7c52-11eb-9f97-fcd9ce55c901.png)
