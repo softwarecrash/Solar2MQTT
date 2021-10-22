@@ -3,6 +3,9 @@
 #include <arduino.h>
 #include <EEPROM.h>
 
+//#define SERIALDEBUG //enable Serial Output for debug
+//#define MQTTDEBUG //enable debug / RAW Messages from iverter to MQTT
+
 class Settings
 {
 public:
@@ -53,26 +56,31 @@ public:
     maxLen--;
     if (s.length() < maxLen - 1)
       maxLen = s.length();
-
+    #ifdef SERIALDEBUG
     Serial1.print("Writing ");
     Serial1.print(maxLen);
     Serial1.print(" ");
     Serial1.print(offset);
     Serial1.print(" ");
     Serial1.println(s);
+    #endif
 
     for (i = 0; i < maxLen; ++i)
     {
       EEPROM.write(offset + i, s[i]);
+      #ifdef SERIALDEBUG
       Serial1.print(" ");
       Serial1.print(offset + i);
       Serial1.print("=");
       Serial1.print(s[i]);
       Serial1.print(",");
+      #endif
     }
     //null terminate the string
     EEPROM.write(offset + i, 0);
+    #ifdef SERIALDEBUG
     Serial1.print(offset + i);
+    #endif
   }
 
   void load()

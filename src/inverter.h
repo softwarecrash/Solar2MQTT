@@ -113,8 +113,6 @@ struct QpigsMessage
   float reservedAA;
   float reservedBB;
 
-  String rawBuffer;
-
   float cSOC;
 
 }; 
@@ -217,6 +215,18 @@ struct QRaw
   String QPI;
   String QET;
   String QT;
+};
+struct QAv //Query Avaible
+{
+  bool QPIGS = true;
+  bool QPIRI = true;
+  bool QMOD = true;
+  bool QPIWS = true;
+  bool QFLAG = true;
+  bool QID = true;
+  bool QPI = true;
+  bool QET = true;
+  bool QT = true;
 };
 
 #endif

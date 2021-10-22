@@ -45,12 +45,14 @@ extern QtMessage _qtMessage; // new Testing - not working yet
 extern String _nextCommandNeeded;
 extern String _setCommand;
 extern String _otherBuffer;
+extern QAv _qAv;
 
 PubSubClient mqttclient(client);
 
 // Interface types that can be used.
 
 bool mqttRaw = true;
+#define SERIALOUT
 const byte PCM = 0; //not sure it works
 const byte MPI = 1; //not sure it works
 const byte PIP = 0; 
@@ -88,9 +90,12 @@ void setup()
   wm.setSaveConfigCallback(saveConfigCallback);
 
   Wire.begin(4, 5);
+  #ifdef SERIALDEBUG
   Serial1.begin(9600); // Debugging towards UART1
+  #endif
   Serial.begin(2400);  // Using UART0 for comm with inverter. IE cant be connected during flashing
 
+  #ifdef SERIALDEBUG
   //for testing list the saved data on Serial 1
   Serial1.println();
   Serial1.printf("Device Name:\t");
@@ -107,7 +112,7 @@ void setup()
   Serial1.println(_settings._mqttRefresh);
   Serial1.printf("Mqtt Topic:\t");
   Serial1.println(_settings._mqttTopic);
-
+  #endif
   //set the device name
   WiFi.hostname(_settings._deviceName);
   //create custom wifimanager fields
@@ -174,7 +179,9 @@ void setup()
   //check is WiFi connected
   if (!res)
   {
+    #ifdef SERIALDEBUG
     Serial1.println("Failed to connect or hit timeout");
+    #endif
   }
   else
   {
@@ -231,9 +238,13 @@ void setup()
       ESP.restart(); }, []() {
       HTTPUpload& upload = server.upload();
       if(upload.status == UPLOAD_FILE_START){
+        #ifdef SERIALDEBUG
         Serial1.setDebugOutput(true);
+        #endif
         WiFiUDP::stopAll();
+        #ifdef SERIALDEBUG
         Serial1.printf("Update: %s\n", upload.filename.c_str());
+        #endif
         uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
         if(!Update.begin(maxSketchSpace)){//start with max available size
           Update.printError(Serial);
@@ -244,17 +255,22 @@ void setup()
         }
       } else if(upload.status == UPLOAD_FILE_END){
         if(Update.end(true)){ //true to set the size to the current progress
-          Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
+        #ifdef SERIALDEBUG
+          Serial1.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
+          #endif
         } else {
           Update.printError(Serial);
         }
+        #ifdef SERIALDEBUG
         Serial1.setDebugOutput(false);
+        #endif
       }
       yield(); });
     server.begin();
     MDNS.addService("http", "tcp", 80);
-
+    #ifdef SERIALDEBUG
     Serial1.println("Webserver Running...");
+    #endif
   }
 }
 //end void setup
@@ -323,8 +339,10 @@ void ajaxJsUpdate()
   ajaxStr = "";
   serializeJson(ajaxJs, ajaxStr);
   server.send(200, "text/plane", ajaxStr); //Send value only to client ajax request
+  #ifdef SERIALDEBUG
   Serial1.println("Ajax Request answer:");
   Serial1.println(ajaxStr);
+  #endif
 }
 
 int WifiGetRssiAsQuality(int rssi) // THis part borrowed from Tasmota code
@@ -358,25 +376,26 @@ bool sendtoMQTT()
     //delete the esp name string
     if (mqttclient.connect((String(_settings._deviceName)).c_str(), _settings._mqttUser.c_str(), _settings._mqttPassword.c_str()))
     {
-
+      #ifdef SERIALDEBUG
       Serial1.println(F("Reconnected to MQTT SERVER"));
-
+      #endif
       mqttclient.publish((topic + String("/Device Data/IP")).c_str(), String(WiFi.localIP().toString()).c_str());
  
     }
     else
     {
+      #ifdef SERIALDEBUG
       Serial1.println(F("CANT CONNECT TO MQTT"));
+      #endif
       digitalWrite(Led_Green, LOW);
       //delay(50);
       return false; // Exit if we couldnt connect to MQTT brooker
     }
   }
-
-  //mqttclient.publish((topic + String("/wifi")).c_str(), (String("{ \"FreeRam\": ") + String(ESP.getFreeHeap()) + String(", \"rssi\": ") + String(WiFi.RSSI()) + String(", \"dbm\": ") + String(WifiGetRssiAsQuality(WiFi.RSSI())) + String("}")).c_str());
-
+#ifdef SERIALDEBUG
   Serial1.print(F("Data sent to MQTT SERver"));
   Serial1.print(F(" - up: "));
+  #endif
   digitalWrite(Led_Green, HIGH);
 
   if (!_allMessagesUpdated)
@@ -405,6 +424,7 @@ bool sendtoMQTT()
   if (inverterType == PCM)
   {
     //qpigs
+    if(_qAv.QPIGS){
     mqttclient.publish((String(topic) + String("/Grid Voltage")).c_str(), String(_qpigsMessage.gridV).c_str());
     mqttclient.publish((String(topic) + String("/Grid Frequenz")).c_str(), String(_qpigsMessage.gridHz).c_str());
 
@@ -426,16 +446,19 @@ bool sendtoMQTT()
     mqttclient.publish((String(topic) + String("/PV Volt")).c_str(), String(_qpigsMessage.solarV).c_str());
     mqttclient.publish((String(topic) + String("/PV A")).c_str(), String(_qpigsMessage.solarA).c_str());
     mqttclient.publish((String(topic) + String("/PV Watt")).c_str(), String(_qpigsMessage.solarW).c_str());
+    }
     //end qpigs
 
     //qmod
-    mqttclient.publish((String(topic) + String("/Inverter Operation Mode")).c_str(), String(_qmodMessage.operationMode).c_str());
+    if(_qAv.QMOD)mqttclient.publish((String(topic) + String("/Inverter Operation Mode")).c_str(), String(_qmodMessage.operationMode).c_str());
     //end qmod
 
     //Beta
-    mqttclient.publish((String(topic) + String("/Calculated SOC")).c_str(), String(_qpigsMessage.cSOC).c_str());
+    if(_qAv.QPIGS)mqttclient.publish((String(topic) + String("/Calculated SOC")).c_str(), String(_qpigsMessage.cSOC).c_str());
 
     //piri
+    if(_qAv.QPIRI)
+    {
     mqttclient.publish((String(topic) + String("/Device Data/Grid rating voltage")).c_str(), String(_qpiriMessage.gridRatingV).c_str());
     mqttclient.publish((String(topic) + String("/Device Data/Grid rating current")).c_str(), String(_qpiriMessage.gridRatingA).c_str());
     mqttclient.publish((String(topic) + String("/Device Data/AC output rating voltage")).c_str(), String(_qpiriMessage.acOutV).c_str());
@@ -444,28 +467,29 @@ bool sendtoMQTT()
     mqttclient.publish((String(topic) + String("/Device Data/Grid rating Watt")).c_str(), String(_qpiriMessage.gridRatingW).c_str());
     mqttclient.publish((String(topic) + String("/Device Data/AC rating Watt")).c_str(), String(_qpiriMessage.acOutRatingW).c_str());
     mqttclient.publish((String(topic) + String("/Device Data/Battery rating voltage")).c_str(), String(_qpiriMessage.battRatingV).c_str());
+    }
     //end qpiri
 
     //QT
-    mqttclient.publish((String(topic) + String("/Device Data/Device DateTime")).c_str(), String(_qtMessage.deviceTime).c_str());
+    if(_qAv.QT == true)mqttclient.publish((String(topic) + String("/Device Data/Device DateTime")).c_str(), String(_qtMessage.deviceTime).c_str());
     //end QT
 
     //QET
-    if(_qetMessage.energy != NULL)mqttclient.publish((String(topic) + String("/Energy/Total Energy KWh")).c_str(), String(_qetMessage.energy).c_str());
+    if(_qAv.QET)mqttclient.publish((String(topic) + String("/Energy/Total Energy KWh")).c_str(), String(_qetMessage.energy).c_str());
     //end QET    
 
     //RAW Messages from Invberter
-    if(mqttRaw){
-    if(_qRaw.QPIGS != NULL)mqttclient.publish((String(topic) + String("/RAW/QPIGS")).c_str(), String(_qRaw.QPIGS).c_str());
-    if(_qRaw.QPIRI != NULL)mqttclient.publish((String(topic) + String("/RAW/QPIRI")).c_str(), String(_qRaw.QPIRI).c_str());
-    if(_qRaw.QMOD != NULL)mqttclient.publish((String(topic) + String("/RAW/QMOD")).c_str(), String(_qRaw.QMOD).c_str());
-    if(_qRaw.QPIWS != NULL)mqttclient.publish((String(topic) + String("/RAW/QPIWS")).c_str(), String(_qRaw.QPIWS).c_str());
-    if(_qRaw.QFLAG != NULL)mqttclient.publish((String(topic) + String("/RAW/QFLAG")).c_str(), String(_qRaw.QFLAG).c_str());
-    if(_qRaw.QID != NULL)mqttclient.publish((String(topic) + String("/RAW/QID")).c_str(), String(_qRaw.QID).c_str());
-    if(_qRaw.QPI != NULL)mqttclient.publish((String(topic) + String("/RAW/QPI")).c_str(), String(_qRaw.QPI).c_str());
-    if(_qRaw.QET != NULL)mqttclient.publish((String(topic) + String("/RAW/QET")).c_str(), String(_qRaw.QET).c_str());
-    if(_qRaw.QT != NULL)mqttclient.publish((String(topic) + String("/RAW/QET")).c_str(), String(_qRaw.QT).c_str());
-    }
+    #ifdef MQTTDEBUG
+    mqttclient.publish((String(topic) + String("/RAW/QPIGS")).c_str(), String(_qRaw.QPIGS).c_str());
+    mqttclient.publish((String(topic) + String("/RAW/QPIRI")).c_str(), String(_qRaw.QPIRI).c_str());
+    mqttclient.publish((String(topic) + String("/RAW/QMOD")).c_str(), String(_qRaw.QMOD).c_str());
+    mqttclient.publish((String(topic) + String("/RAW/QPIWS")).c_str(), String(_qRaw.QPIWS).c_str());
+    mqttclient.publish((String(topic) + String("/RAW/QFLAG")).c_str(), String(_qRaw.QFLAG).c_str());
+    mqttclient.publish((String(topic) + String("/RAW/QID")).c_str(), String(_qRaw.QID).c_str());
+    mqttclient.publish((String(topic) + String("/RAW/QPI")).c_str(), String(_qRaw.QPI).c_str());
+    mqttclient.publish((String(topic) + String("/RAW/QET")).c_str(), String(_qRaw.QET).c_str());
+    mqttclient.publish((String(topic) + String("/RAW/QT")).c_str(), String(_qRaw.QT).c_str());
+    #endif
     //end RAW  
   }
 /*
@@ -547,15 +571,18 @@ void sendRaw()
   if (_otherMessagesUpdated)
   {
     _otherMessagesUpdated = false;
+    #ifdef SERIALDEBUG
     Serial1.print("Sending other data to mqtt: ");
     Serial1.println(_otherBuffer);
-    //mqttclient.publish((String(topic) + String("/debug/recieved")).c_str(), String(_otherBuffer).c_str());
+    #endif
   }
 }
 /// TESTING MQTT SEND
 void callback(char *top, byte *payload, unsigned int length)
 {
+  #ifdef SERIALDEBUG
   Serial1.println(F("Callback done"));
+  #endif
   if (strcmp(top, "pir1Status") == 0)
   {
     // whatever you want for this topic
@@ -567,11 +594,12 @@ void callback(char *top, byte *payload, unsigned int length)
     st += String((char)payload[i]);
   }
 
-  //mqttclient.publish((String(topic) + String("/debug/sent")).c_str(), String("top: " + topic + " data: " + st).c_str());
+  #ifdef SERIALDEBUG
   Serial1.print(F("Current command: "));
   Serial1.print(_nextCommandNeeded);
   Serial1.print(F(" Setting next command to : "));
   Serial1.println(st);
+  #endif
   _setCommand = st;
   // Add code to put the call into the queue but verify it firstly. Then send the result back to debug/new window?
 }
