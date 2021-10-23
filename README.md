@@ -1,5 +1,3 @@
--------------------Need testers------------------
-
 # What works:
 - WiFi Ap with setup
 - Read and publish the QPIGS, QPIRI and QMOD
