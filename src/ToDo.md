@@ -1,7 +1,7 @@
 # web pages
 - move live data to main page
 - - set inverter type and device name in main on top
-- Live data styling - https://getbootstrap.com/docs/3.4/components/#list-group
+- Live data styling - https://getbootstrap.com/docs/3.4/components/#list-group-badges
 - setting fields styling
 - 
 - Dark theme
