@@ -8,7 +8,7 @@ struct QpiMessage
   byte protocolId;
   //the inverter protocol id, is this the ident what the inverter answer?
 };
-/*
+
 struct P003PSMessage
 {
   unsigned long rxTimeSec;
@@ -29,8 +29,8 @@ struct P003PSMessage
   float va_total;
   float ac_output_procent;  
 };
-*/
-/*
+
+
 struct P006FPADJMessage
 {  //-- '34'^D0301,0000,1,0099,1,0109,1,0112⸮7'
   unsigned long rxTimeSec;
@@ -43,8 +43,8 @@ struct P006FPADJMessage
   float feedingGridDirectionT;
   float calibrationWattT; 
 };
-*/
-/*
+
+
 struct P003GSMessage
 {
   unsigned long rxTimeSec;
@@ -70,7 +70,7 @@ struct P003GSMessage
   float acOutputCurrentS;
   float acOutputCurrentT;
 };
-*/
+
 
 
 struct QpigsMessage
@@ -209,7 +209,11 @@ struct QRaw
   String QPI;
   String QET;
   String QT;
+  String P003GS;
+  String P003PS;
+  String P006FPADJ;
 };
+/*
 struct QAv //Query Avaible
 {
   bool QPIGS = true;
@@ -221,4 +225,4 @@ struct QAv //Query Avaible
   bool QPI = true;
   bool QET = true;
   bool QT = true;
-};
+};*/

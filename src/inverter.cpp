@@ -7,9 +7,9 @@
 extern TickCounter _tickCounter;
 extern Settings _settings;
 extern byte inverterType; 
-extern byte MPI;
-extern byte PCM60x;
-extern byte PIP;
+const byte PCM = 0; 
+const byte MPI = 1;
+const byte PIP = 2;
 extern int Led_Red;
 extern int Led_Green;
 
@@ -31,19 +31,19 @@ QmodMessage _qmodMessage = {0};
 QpiwsMessage _qpiwsMessage = {0};
 QflagMessage _qflagMessage = {0};
 QidMessage _qidMessage = {0};
-//new testings
+
 QetMessage _qetMessage = {0};
 QpiriMessage _qpiriMessage = {0};
 QtMessage _qtMessage = {0};
 
 
 QRaw _qRaw;
-QAv _qAv;
+//QAv _qAv;
 
 //MPI Inverters use below
-//P003GSMessage _P003GSMessage = {0};
-//P003PSMessage _P003PSMessage = {0};
-//P006FPADJMessage _P006FPADJMessage = {0};
+P003GSMessage _P003GSMessage = {0};
+P003PSMessage _P003PSMessage = {0};
+P006FPADJMessage _P006FPADJMessage = {0};
 
 //Found here: http://forums.aeva.asn.au/pip4048ms-inverter_topic4332_post53760.html#53760
 #define INT16U unsigned int
@@ -105,7 +105,7 @@ unsigned short cal_crc_half(byte* pin, byte len)
 float getNextFloat(String& command, int& index)
 {
   String term = "";
-  while (index < command.length())
+  while (index < (int)command.length())
   {
     char c = command[index];
     ++index;
@@ -127,7 +127,7 @@ float getNextFloat(String& command, int& index)
 long getNextLong(String& command, int& index)
 {
   String term = "";
-  while (index < command.length())
+  while (index < (int)command.length())
   {
     char c = command[index];
     ++index;
@@ -148,7 +148,7 @@ long getNextLong(String& command, int& index)
 bool getNextBit(String& command, int& index)
 {
   String term = "";
-  if (index < command.length())
+  if (index < (int)command.length())
   {
     char c = command[index];
     ++index;
@@ -156,13 +156,13 @@ bool getNextBit(String& command, int& index)
   }
   return false;
 }
-/*
+
 bool onP003PS()
 {
   //P003PS -- '81'^D07700139,00122,,,,,,0502,0973,0385,01860,0593,1040,0399,02032,031,1,1,1,1,2,1}⸮'
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
- 
+  _qRaw.P003PS = _commandBuffer;
   if (_commandBuffer.length() < 81)
     return false;
   int index = 5; //after the starting 'commands'
@@ -193,7 +193,7 @@ bool onP006FPADJ()
   //P006FPADJ -- '34'^D0301,0000,1,0099,1,0109,1,0112⸮7'
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
-  
+  _qRaw.P006FPADJ = _commandBuffer;
   if (_commandBuffer.length() < 34)
     return false;
   int index = 5; //after the starting 'commands'
@@ -214,7 +214,7 @@ bool onP003GS()
   //P003GS -- '114'^D1103462,3468,0040,0035,0503,071,+00000,2369,2367,2350,5000,0000,0000,0000,2371,2365,2352,5000,,,,025,028,000,0b'
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
-  
+  _qRaw.P003GS = _commandBuffer;
   if (_commandBuffer.length() < 114)
     return false;
 //P003GS -- '114'^D1103464,3454,0032,0026,0503,071,+00000,2395,2401,2374,5000,0000,0000,0000,2397,2399,2374,5000,,,,025,029,000,0⸮ '
@@ -243,7 +243,7 @@ bool onP003GS()
   _P003GSMessage.acOutputCurrentT = (float)getNextFloat(_commandBuffer, index)/10;
   return true;  
 }
-*/
+
 
 bool onPIGS() //QPIGS<cr>: Device general status parameters inquiry
 {
@@ -251,8 +251,8 @@ bool onPIGS() //QPIGS<cr>: Device general status parameters inquiry
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
 #endif
-  if(_commandBuffer[1]=='N') _qAv.QPIGS = false; //deactivate if NAK
-  if (_commandBuffer.length() < 109)
+  //if(_commandBuffer[1]=='N') _qAv.QPIGS = false; //deactivate if NAK
+  if (_commandBuffer.length() < 60)
   {
     return false;
   }
@@ -262,6 +262,16 @@ bool onPIGS() //QPIGS<cr>: Device general status parameters inquiry
     //(1)000.0 (2)00.0 (3)230.1 (4)50.0 (5)0000 (6)0000 (7)000 (8)336 (9)24.36 (10)000 (11)065 (12)0015 (13)0000 (14)000.0 (15)00.00 (16)00000 (17)00010000 (18)00 (19)00 (20)00000 (21)010
 
     int index = 1; //after the starting '('
+      if (inverterType == PCM) { //PCM
+    _qpigsMessage.rxTimeSec = _tickCounter.getSeconds();
+    _qpigsMessage.solarV = (short)getNextFloat(_commandBuffer, index);
+    _qpigsMessage.battV = getNextFloat(_commandBuffer, index);
+    _qpigsMessage.battChargeA = getNextFloat(_commandBuffer, index);
+    _qpigsMessage.solarA = getNextFloat(_commandBuffer, index);
+    _qpigsMessage.acOutVa = (short)getNextLong(_commandBuffer, index);
+    _qpigsMessage.solarW = getNextFloat(_commandBuffer, index); 
+  }
+    if (inverterType == PIP) { //PIP
     _qpigsMessage.rxTimeSec = _tickCounter.getSeconds();
     _qpigsMessage.gridV = getNextFloat(_commandBuffer, index);               //1
     _qpigsMessage.gridHz = getNextFloat(_commandBuffer, index);              //2
@@ -290,7 +300,7 @@ bool onPIGS() //QPIGS<cr>: Device general status parameters inquiry
     _qpigsMessage.reservedZ = getNextLong(_commandBuffer, index);                         //24
     _qpigsMessage.reservedAA = getNextLong(_commandBuffer, index);                        //25
     _qpigsMessage.reservedBB = getNextLong(_commandBuffer, index);                        //26
-
+    }
     //Beta
     //calculate the real SOC
     if (_qpigsMessage.sccBattV > _qpigsMessage.battV)
@@ -311,7 +321,7 @@ bool onPIRI() //QPIRI<cr>: Device Rating Information inquiry
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
   #endif
-  if(_commandBuffer[1]=='N') _qAv.QPIRI = false; //deactivate if NAK
+  //if(_commandBuffer[1]=='N') _qAv.QPIRI = false; //deactivate if NAK
   if (_commandBuffer.length() < 45)
   {
     return false;
@@ -341,7 +351,7 @@ bool onMOD() //QMOD<cr>: Device Mode inquiry
   Serial1.print(_commandBuffer);
   Serial1.print(F("'"));
   #endif
-  if(_commandBuffer[1]=='N') _qAv.QMOD = false; //deactivate if NAK
+ // if(_commandBuffer[1]=='N') _qAv.QMOD = false; //deactivate if NAK
   if (_commandBuffer.length() < 2)
   {
     return false;
@@ -374,7 +384,7 @@ bool onPIWS() //QPIWS<cr>: Device Warning Status inquiry
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
   #endif
-  if(_commandBuffer[1]=='N') _qAv.QPIWS = false; //deactivate if NAK
+  //if(_commandBuffer[1]=='N') _qAv.QPIWS = false; //deactivate if NAK
   if (_commandBuffer.length() < 32)
   {
     return false;
@@ -424,7 +434,7 @@ bool onFLAG() //QFLAG<cr>: Device flag status inquiry
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
   #endif
-  if(_commandBuffer[1]=='N') _qAv.QFLAG = false; //deactivate if NAK
+  //if(_commandBuffer[1]=='N') _qAv.QFLAG = false; //deactivate if NAK
   if (_commandBuffer.length() < 10)
   {
     return false;
@@ -453,7 +463,7 @@ bool onID() //QID<cr>: The device ID inquiry
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
   #endif
-  if(_commandBuffer[1]=='N') _qAv.QID = false; //deactivate if NAK
+  //if(_commandBuffer[1]=='N') _qAv.QID = false; //deactivate if NAK
   if (_commandBuffer.length() < 15)
   {
     return false;
@@ -475,7 +485,7 @@ bool onPI() //QPI<cr>: Device Protocol ID Inquiry
   Serial1.print(_commandBuffer);
   Serial1.print(F("'"));
   #endif
-  if(_commandBuffer[1]=='N') _qAv.QPI = false; //deactivate if NAK
+  //if(_commandBuffer[1]=='N') _qAv.QPI = false; //deactivate if NAK
   if (_commandBuffer.length() < 5)
   {
     return false;
@@ -497,7 +507,7 @@ bool onQET() //QET<cr>: Inquiry total energy - BETA!!!!!
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
   #endif
-  if(_commandBuffer[1]=='N') _qAv.QET = false; //deactivate if NAK
+  //if(_commandBuffer[1]=='N') _qAv.QET = false; //deactivate if NAK
   if (_commandBuffer.length() < 1 )
   {
   return false;
@@ -519,7 +529,7 @@ bool onQT() //QT<cr>: Inquiry Device Date
   Serial1.print("Processing data from: ");
   Serial1.println(_lastRequestedCommand);
 #endif
-  if (_commandBuffer[1]=='N') _qAv.QT = false;//deactivate if NAK
+  //if (_commandBuffer[1]=='N') _qAv.QT = false;//deactivate if NAK
     if (_commandBuffer.length() < 1)
     {
       return false;
@@ -560,7 +570,18 @@ void onInverterCommand()
     unsigned short calculatedCrc = cal_crc_half((byte*)_commandBuffer.c_str(), _commandBuffer.length() - 2);
     unsigned short recievedCrc = ((unsigned short)_commandBuffer[_commandBuffer.length()-2] << 8) | 
                                                   _commandBuffer[_commandBuffer.length()-1];
-    if (!inverterType) {
+
+  //for testing, remove the CRC from recived command
+  if(_commandBuffer[_commandBuffer.length()-2] < 6)
+  {
+   _commandBuffer.remove(_commandBuffer.length()-1);
+  }
+  else
+  {
+  _commandBuffer.remove(_commandBuffer.length()-2);
+  }
+
+    if (inverterType == PCM || inverterType == PIP) {
       #ifdef SERIALDEBUG
       Serial1.print(F(" Calc: "));
       Serial1.print(calculatedCrc, HEX);
@@ -578,7 +599,7 @@ void onInverterCommand()
     //If CRC is okay, parse message and set next message to be requested
     if (calculatedCrc == recievedCrc)
     {
-      /*
+      
         //MPI
         digitalWrite(Led_Red, LOW);  //If we got a valid command show that on the led
         if (_lastRequestedCommand == "P003GS") 
@@ -598,93 +619,55 @@ void onInverterCommand()
           _nextCommandNeeded = "";
           _allMessagesUpdated = true;
         }
-*/
-      // Below for PCM
-      if (_lastRequestedCommand == "QPIGS" ) //&& !inverterType
+
+      // Below for PIP
+      if (_lastRequestedCommand == "QPIGS" )
       {
-          if(_qAv.QPIGS) onPIGS();
+         onPIGS();
         _nextCommandNeeded = "QMOD";
+        if(inverterType == PCM) _allMessagesUpdated = true;
       }
       else if (_lastRequestedCommand == "QMOD")
-      {
-        if(_qAv.QMOD) onMOD();
-        _nextCommandNeeded = "QPIWS";
-      }
-      else if (_lastRequestedCommand == "QPIWS")
-      {
-        if(_qAv.QPIWS) onPIWS();
-        _nextCommandNeeded = "QPIRI";
-      }
-      else if (_lastRequestedCommand == "QPIRI")
-      {
-        if(_qAv.QPIRI) onPIRI();
-        _nextCommandNeeded = "QPI";
-      }
-      else if (_lastRequestedCommand == "QPI")
-      {
-        if(_qAv.QPI) onPI();
-        _nextCommandNeeded = "QT";
-      }
-      else if (_lastRequestedCommand == "QT")
-      {
-        if(_qAv.QT) onQT();
-        _nextCommandNeeded = "QID";
-      }
-      else if (_lastRequestedCommand == "QID")
-      {
-        if(_qAv.QID) onID();
-        _nextCommandNeeded = "QFLAG";
-      }
-      else if (_lastRequestedCommand == "QFLAG")
-      {
-        if(_qAv.QFLAG) onFLAG();
-        _nextCommandNeeded = "QET";
-      }
-      else if (_lastRequestedCommand == "QET")
-      {
-        if(_qAv.QET) onQET();
-        _nextCommandNeeded = "";
-        _allMessagesUpdated = true;
-      }
-
-
-    /*  
-    //Below for PIP -- not actual
-      else if (_lastRequestedCommand == "QMOD") 
       {
         onMOD();
         _nextCommandNeeded = "QPIWS";
       }
-      else if (_lastRequestedCommand == "QPIWS") 
+      else if (_lastRequestedCommand == "QPIWS")
       {
-        onPIWS();
-        _nextCommandNeeded = "QFLAG";
+       onPIWS();
+        _nextCommandNeeded = "QPIRI";
       }
-      else if (_lastRequestedCommand == "QFLAG") 
-      {
-        onFLAG();
-        _nextCommandNeeded = "QID";
-      }
-      else if (_lastRequestedCommand == "QID") 
-      {
-        onID();
-        _nextCommandNeeded = "QET";//org. none
-        //_allMessagesUpdated = true;
-      }
-
-      else if (_lastRequestedCommand == "QET") 
-      {
-        onQET();
-        _nextCommandNeeded = "QPIRI";//org none
-        //_allMessagesUpdated = true;
-      }
-      else if (_lastRequestedCommand == "QPIRI") 
+      else if (_lastRequestedCommand == "QPIRI")
       {
         onPIRI();
+        _nextCommandNeeded = "QPI";
+      }
+      else if (_lastRequestedCommand == "QPI")
+      {
+        onPI();
+        _nextCommandNeeded = "QT";
+      }
+      else if (_lastRequestedCommand == "QT")
+      {
+        onQT();
+        _nextCommandNeeded = "QID";
+      }
+      else if (_lastRequestedCommand == "QID")
+      {
+        onID();
+        _nextCommandNeeded = "QFLAG";
+      }
+      else if (_lastRequestedCommand == "QFLAG")
+      {
+       onFLAG();
+        _nextCommandNeeded = "QET";
+      }
+      else if (_lastRequestedCommand == "QET")
+      {
+        onQET();
         _nextCommandNeeded = "";
         _allMessagesUpdated = true;
       }
-*/
       // ***********  ALL OTHER **********
       else {
         onOther();
@@ -714,7 +697,7 @@ void serviceInverter()
   if ((_lastRequestedCommand == "") && (_lastReceivedAt.compare(INVERTER_COMMAND_DELAY_MS) > 0) &&(!_allMessagesUpdated))//-< if this the problem that not running?
   {
     if (_nextCommandNeeded == "") {
-      if (inverterType)  _nextCommandNeeded = "P003GS"; //IF MPI we start with that order
+      if (inverterType == MPI)  _nextCommandNeeded = "P003GS"; //IF MPI we start with that order
       else _nextCommandNeeded = "QPIGS";  //if PIP/PCM QPIGS
     }
 
@@ -729,7 +712,7 @@ void serviceInverter()
     #ifdef SERIALDEBUG
     Serial1.print(F("Sent Command: "));
     #endif
-    if (inverterType) { Serial.print("^");
+    if (inverterType == MPI) { Serial.print("^");
     #ifdef SERIALDEBUG
     Serial1.print("^");
     #endif
@@ -738,8 +721,8 @@ void serviceInverter()
     #ifdef SERIALDEBUG
     Serial1.println(_nextCommandNeeded);
     #endif
-    if (!inverterType) Serial.print((char)((crc >> 8) & 0xFF)); //ONLY CRC fo PCM/PIP
-    if (!inverterType) Serial.print((char)((crc >> 0) & 0xFF)); //ONLY CRC fo PCM/PIP
+    if (inverterType == PCM || inverterType == PIP) Serial.print((char)((crc >> 8) & 0xFF)); //ONLY CRC fo PCM/PIP
+    if (inverterType == PCM || inverterType == PIP) Serial.print((char)((crc >> 0) & 0xFF)); //ONLY CRC fo PCM/PIP
     Serial.print("\r");
    
    if (_setCommand.length()) { _nextCommandNeeded = ""; _setCommand = ""; }  // If it was RAW command reset it.
