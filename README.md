@@ -1,37 +1,40 @@
 # What works:
 - WiFi Ap with setup
-- Read and publish the QPIGS, QPIRI and QMOD
+- Read and publish the QPIGS, QPIRI QMOD and more....
 - Web display Data for Inverters where support the QPIGS Request
-- Web Update, Reset, Restart
+- Web Update, Reset, Restart, Configure
 - send MQTT Data
 - Building using Platform.io
 - Live web pages with ajax
 
 # Last Added:
+- fix some Wsign Compiler Warnings
+- fix answer string from inverter and remove th CRC
+- fix some lag
+- fix bug with mqtt timer
+- fix crc remove on answer string
+- added json string for inverter types
+- added inverter type selection
+- added configuration page
+- added bootstrap based layout
+- moved some html content to spiff
 - mqtt raw data for QPIGS, QPIRI, QMOD, QID, QPIWS, QFLAG, QPI, QT, QET
 - mqtt debug and serial debug enable in settings.h
 - static device information from the QPIRI command
 - PV power in Watt
 - Inverter Operation Mode
 
-# ToDo:
-- Find a way to automatic detect the inverter type and communication protocol
-- add a way to auto build data from string answer
-- some other useless things
-- change webpages to dark theme
-- add other inverters
-- rewrite the whole garbage...
-
 **works with**
-- pip / PCM devices
+- pip / PCM  / MPI devices
 - i solar 
 - IGrid
 - Many devices from EASUN
 - and many many others based on the chinese solar inverter with a rj45 jack and usb port, primary identified by the display
 
-![grafik](https://user-images.githubusercontent.com/44615614/109850447-d05f4880-7c52-11eb-9f97-fcd9ce55c901.png)
-![grafik](https://user-images.githubusercontent.com/44615614/111987231-3c74f400-8b0f-11eb-92e2-89dbf4dafac2.png)
 
+
+![live](https://user-images.githubusercontent.com/44615614/139434909-d735c268-9cd7-4382-b100-d9d965da1500.jpg)
+![edit](https://user-images.githubusercontent.com/44615614/139434941-79c6c013-d745-4eb1-adcc-4e0fd89dd4c3.jpg)
 
 
 # Overview
