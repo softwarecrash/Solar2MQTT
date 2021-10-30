@@ -1,9 +1,9 @@
-# What works:
+# Features:
 - WiFi Ap with setup
 - Read and publish the QPIGS, QPIRI QMOD and more....
 - Web display Data for Inverters where support the QPIGS Request
 - Web Update, Reset, Restart, Configure
-- send MQTT Data
+- send Data over MQTT
 - Building using Platform.io
 - Live web pages with ajax
 
