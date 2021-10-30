@@ -31,6 +31,9 @@
 - Many devices from EASUN
 - and many many others based on the chinese solar inverter with a rj45 jack and usb port, primary identified by the display
 
+# Known Bugs
+- in Wifi Setup mode the inverter type must manualy input in uppercase Letters like "PCM" or "PIP"
+
 
 
 ![live](https://user-images.githubusercontent.com/44615614/139434909-d735c268-9cd7-4382-b100-d9d965da1500.jpg)
