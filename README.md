@@ -45,7 +45,6 @@ Based around an ESP8266 WiFi microcontroller.
 
 **PROGRAMMING:** You need to program it before hooking it up to the TTL board! Im using HW Serial since its so buggy using Software Serial and Wifi reliable so its not even worth it.
 
-**RESET:** with HTTP://>ESP-IP</reset you can full reset the esp and bring it to the AP portal
 
 **UART0:** Talks to the inverter at 2400 baud and for programming. DISCONNECT RX before programming
 
@@ -54,7 +53,7 @@ Based around an ESP8266 WiFi microcontroller.
 
 **POWER:** Using a 3.3V DC Buck Converter that can handle up to 20V or a DC/DC or USB power currently.
 
-**WIFI:** The system defaults to AP mode on first setup. Surf to "Solar-AP" AP and then surf to http://192.168.4.1/ On this page configure WIFI and MQTT. Then you need to reboot the device either by the reboot botton or hard reboot. No changes are applied properly before reboot
+**WIFI:** The system defaults to AP mode on first setup. Surf to "Solar-AP" AP and then surf to http://192.168.4.1/ On this page configure WIFI and MQTT.
 
 
 # Parts required to build one
