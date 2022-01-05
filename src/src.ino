@@ -346,6 +346,7 @@ void loop()
 
 void ajaxJsUpdate()
 { //update the json doc for the ajax request
+  if (_allMessagesUpdated) _allMessagesUpdated = false; // Lets reset messages and process them
   ajaxJs.clear();
   ajaxJs["gridV"] = _qpigsMessage.gridV;
   ajaxJs["gridHz"] = _qpigsMessage.gridHz;
