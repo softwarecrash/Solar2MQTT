@@ -107,7 +107,7 @@ void setup()
   Serial1.println(_settings._mqttTopic);
 #endif
   //set the device name
-  WiFi.hostname(_settings._deviceName);
+  //WiFi.hostname(_settings._deviceName);
   //create custom wifimanager fields
   WiFiManagerParameter custom_mqtt_server("mqtt_server", "MQTT server", NULL, 40);
   WiFiManagerParameter custom_mqtt_user("mqtt_user", "MQTT User", NULL, 40);
@@ -184,6 +184,8 @@ void setup()
   {
 
     MDNS.begin(_settings._deviceName);
+    WiFi.hostname(_settings._deviceName);
+
     server.on("/", HTTP_GET, []()
               {
                 server.sendHeader("Connection", "close");
