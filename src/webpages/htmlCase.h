@@ -15,7 +15,7 @@ String HTMLhead()
     return FPSTR(HTML_HEAD);
 }
 
-const char HTML_FOOT[] PROGMEM = "<figure class=\"text-center\">Solar2MQTT V0.3.0 By <a href=\"https://github.com/softwarecrash/\" target=\"_blank\">Softwarecrash</a></figure>\n"
+const char HTML_FOOT[] PROGMEM = "<figure class=\"text-center\">Solar2MQTT V0.3.1 By <a href=\"https://github.com/softwarecrash/\" target=\"_blank\">Softwarecrash</a></figure>\n"
                                  "</div>\n"
                                  "</body>\n"
                                  "</html>\n";
