@@ -11,8 +11,6 @@
 #include <ArduinoJson.h>
 #include <ESP8266mDNS.h>
 #include "TickCounter.h"
-//#include "NTPClient.h"
-//#include "WiFiUdp.h"
 #include "inverter.h"
 #include <ESP8266WebServer.h>
 #include "Settings.h"
@@ -44,10 +42,10 @@ extern String _otherBuffer;
 
 PubSubClient mqttclient(client);
 
-// Interface types that can be used.
-#define SERIALOUT
-const byte PCM = 0; //not sure it works
-const byte MPI = 1; //not sure it works
+//#define SERIALDEBUG
+
+const byte PCM = 0; 
+const byte MPI = 1;
 const byte PIP = 2;
 byte inverterType = PIP; //And defaults in case...
 String topic = "/";      //Default first part of topic. We will add device ID in setup
