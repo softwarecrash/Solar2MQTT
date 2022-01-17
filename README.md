@@ -67,3 +67,6 @@ Approximate prices found on Ebay
 - LEDs ($0.50) - The leds are for status etc
 
 Total cost: $5
+
+
+Like my Work? Buy me a Coffee https://paypal.me/tobirocky
