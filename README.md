@@ -25,7 +25,7 @@
 - Inverter Operation Mode
 
 **works with**
-- pip / PCM  / MPI devices
+- pip / PCM  devices
 - i solar 
 - IGrid
 - Many devices from EASUN
