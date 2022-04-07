@@ -2,82 +2,38 @@
 
 //Send and receive periodic inverter commands
 void serviceInverter();
+bool sendCommand(String com);
+void sendMNCHGC(int val);
+void sendMUCHGC(int val);
+
+
+enum qCommand
+{
+  QPI,
+  QID,
+  QVFW,
+  QVFW2,
+  QPIRI,
+  QFLAG,
+  QPIGS,
+  QMOD,
+  QPIWS,
+  QDI,
+  QMCHGCR,
+  QMUCHGCR,
+  QBOOT,
+  QOPM,
+};
+
+void requestInverter(qCommand);
 
 struct QpiMessage
 {
   byte protocolId;
-  //the inverter protocol id, is this the ident what the inverter answer?
 };
-
-struct P003PSMessage
-{
-  unsigned long rxTimeSec;
-  float solarWatt1;
-  float solarWatt2;
-  float batteryWatt;
-  float acin2_r;
-  float acin2_s;
-  float acin2_t;
-  float acin2_total;
-  float w_r;
-  float w_s;
-  float w_t;
-  float w_total;
-  float va_r;
-  float va_s;
-  float va_t;
-  float va_total;
-  float ac_output_procent;  
-};
-
-
-struct P006FPADJMessage
-{  //-- '34'^D0301,0000,1,0099,1,0109,1,0112⸮7'
-  unsigned long rxTimeSec;
-  float dir;
-  float watt;
-  float feedingGridDirectionR;
-  float calibrationWattR;  
-  float feedingGridDirectionS;
-  float calibrationWattS; 
-  float feedingGridDirectionT;
-  float calibrationWattT; 
-};
-
-
-struct P003GSMessage
-{
-  unsigned long rxTimeSec;
-  float solarInputV1;
-  float solarInputV2;
-  float solarInputA1;
-  float solarInputA2;
-  float battV;
-  float battCapacity;
-  float battA;
-  float acInputVoltageR;
-  float acInputVoltageS;
-  float acInputVoltageT;
-  float acInputFrequency;
-  float acInputCurrentR;
-  float acInputCurrentS;
-  float acInputCurrentT;
-  float acOutputVoltageR;
-  float acOutputVoltageS;
-  float acOutputVoltageT;
-  float acOutputFrequency;
-  float acOutputCurrentR;
-  float acOutputCurrentS;
-  float acOutputCurrentT;
-};
-
-
 
 struct QpigsMessage
 {
-  unsigned long rxTimeSec;
-    //(000.0 00.0 230.0 50.0 0000 0000 000 353 25.55 000 095 0039 0000 000.0 00.00 00000 00010000 00 00 00000 010^
-  // 3. AC out V | 4. AC out Freq | 8. P battery voltage | 9. N battery voltage | 10. Batt Percentage |
   float gridV;
   float gridHz;
   float acOutV;
@@ -94,12 +50,12 @@ struct QpigsMessage
   byte solarV;
   float sccBattV;
   byte battDischargeA;
-  short solarW; 
+  short solarW;
 
   float addSbuPriorityVersion;
   float isConfigChanged;
   float isSccFirmwareUpdated;
-  
+
   float battVoltageToSteadyWhileCharging;
   float chargingStatus;
   float reservedY;
@@ -108,8 +64,7 @@ struct QpigsMessage
   float reservedBB;
 
   float cSOC;
-
-}; 
+};
 
 struct QmodMessage
 {
@@ -167,36 +122,37 @@ struct QflagMessage
 //QPIRI<cr>: Device Rating Information inquiry
 struct QpiriMessage
 {
-    bool  data; //switch for the mqtt data sending
-	  float gridRatingV;
-    float gridRatingA;
-    float acOutV;
-    float gridRatingHz;
-    float acOutA;
-    float gridRatingW;
-    float acOutRatingW;
-    float battRatingV;
+  float gridRatingV;   //Grid rating voltage
+  float gridRatingA;   //Grid rating current
+  float acOutRatingV;  //AC output rating voltage
+  float acOutRatingHz; //AC output rating frequency
+  float acOutRatingA;  //AC output rating current
+  float acOutRatungVA; //AC output rating apparent power
+  float acOutRatingW;  //AC output rating active power
+  float battRatingV;   //Battery rating voltage
+  float battreChargeV; //Battery re-charge voltage
+  float battUnderV;    //Battery under voltage
+  float battBulkV;     //Battery bulk voltage
+  float battFloatV;    //Battery float voltage
+  String battType;     //Battery type
+  byte battMaxAcChrgA; //Current max AC charging current
+  byte battMaxChrgA;   //Current max charging current
 };
 //for future use
 struct QmdMessage
 {
-	
 };
 
 struct QidMessage
 {
   char id[16];
 };
-//QET<cr>: Inquiry total energy
-struct QetMessage
+struct QchgcrMessage
 {
-  float energy;
+  byte chargeModes[12];
+  byte uChargeModes[12];
 };
-//QT<cr>: Device DateTime
-struct QtMessage
-{
- float deviceTime;
-};
+
 //for raw answer from inverter
 struct QRaw
 {
@@ -209,8 +165,8 @@ struct QRaw
   String QPI;
   String QET;
   String QT;
-  String P003GS;
-  String P003PS;
+  String QMCHGCR;
+  String QMUCHGCR;
   String P006FPADJ;
 };
 /*

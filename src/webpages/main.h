@@ -1,151 +1,113 @@
-const char HTML_LIVEDATA[] PROGMEM ="<figure class=\"text-center\"><h2 id=\"devicename\"></h2></figure>\n"
-                                    "<div class=\"row gx-0 mb-2\">\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">Solar In: </div>\n"
-                                        "</div>\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">"
-                                                "<span id=\"solarV\" >N/A</span>"
-                                                "<span id=\"solarA\" >N/A</span>"
-                                                "<span id=\"solarW\" >N/A</span>"
-                                            "</div>\n"
-                                        "</div>"
-                                    "</div>"
-                                    "<div class=\"row gx-0 mb-2\">\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">Grid In: </div>\n"
-                                        "</div>\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">"
-                                                "<span id=\"gridV\">N/A</span>"
-                                                "<span id=\"gridHz\">N/A</span>"
-                                            "</div>\n"
-                                        "</div>\n"
-                                    "</div>\n"
-                                    "<div class=\"row gx-0 mb-2\">\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">AC Out: </div>\n"
-                                        "</div>\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">"
-                                                "<span id=\"acOutV\">N/A</span>"
-                                                "<span id=\"acOutHz\">N/A</span>"
-                                            "</div>\n"
-                                        "</div>\n"
-                                    "</div>\n"
-                                    "<div class=\"row gx-0 mb-2\">\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">AC Load: </div>\n"
-                                        "</div>\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">"
-                                                "<span id=\"acOutVa\">N/A</span>"
-                                                "<span id=\"acOutW\">N/A</span>"
-                                                "<span id=\"acOutPercent\">N/A</span>"
-                                            "</div>\n"
-                                        "</div>\n"
-                                    "</div>\n"
-                                    "<div class=\"row gx-0 mb-2\">\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">Bus: </div>\n"
-                                        "</div>\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">"
-                                                "<span id=\"busV\">N/A</span>"
-                                            "</div>\n"
-                                        "</div>\n"
-                                    "</div>\n"
-                                    "<div class=\"row gx-0 mb-2\">\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">Temperature: </div>\n"
-                                        "</div>\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">"
-                                                "<span id=\"heatSinkDegC\">N/A</span>"
-                                            "</div>\n"
-                                        "</div>\n"
-                                    "</div>\n"
-                                    "<div class=\"row gx-0 mb-2\">\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">Battery: </div>\n"
-                                        "</div>\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">"
-                                                "<span id=\"battV\">N/A</span>"
-                                                "<span id=\"battPercent\">N/A</span>"
-                                                "<span id=\"cSOC\">N/A</span>"
-                                            "</div>\n"
-                                        "</div>\n"
-                                    "</div>\n"
-                                    "<div class=\"row gx-0 mb-2\">\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">SCC | IN | Out: </div>\n"
-                                        "</div>\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">"
-                                                "<span id=\"sccBattV\">N/A</span>"
-                                                "<span id=\"battChargeA\">N/A</span>"
-                                                "<span id=\"battDischargeA\">N/A</span>"
-                                            "</div>\n"
-                                        "</div>\n"
-                                    "</div>\n"
-                                    "<div class=\"row gx-0 mb-2\">\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">Inverter Mode: </div>\n"
-                                        "</div>\n"
-                                        "<div class=\"col\">\n"
-                                            "<div class=\"bg-light\">"
-                                                "<span id=\"ivmode\">N/A</span>"
-                                            "</div>\n"
-                                        "</div>\n"
-                                    "</div>\n"
-
-                                     "<div class=\"d-grid gap-2\">\n"
-                                     "<a class=\"btn btn-primary btn-block\" href=\"/settings\" role=\"button\">Settings</a>\n"
-                                     "</div>\n"
-
-                                     "<script>\n"
-                                     "        $(document).ready(function(load) {\n"
-                                     "         function fetch() {\n"
-                                     "        $.ajax({\n"
-                                     "            url: \"livedataAjax\",\n"
-                                     "            data: {},\n"
-                                     "            type: \"get\",\n"
-                                     "            dataType: \"json\",\n"
-                                     "               cache: false,\n"
-                                     "                success: function (data) {\n"
-                                     "               document.getElementById(\"solarV\").innerHTML = data.solarV+'V ';\n"
-                                     "               document.getElementById(\"solarA\").innerHTML = data.solarA+'A  ';\n"
-                                     "               document.getElementById(\"solarW\").innerHTML = data.solarW+'W';\n"
-                                     "               document.getElementById(\"gridV\").innerHTML = data.gridV+'V ';\n"
-                                     "               document.getElementById(\"gridHz\").innerHTML = data.gridHz+'Hz ';\n"
-                                     "               document.getElementById(\"acOutV\").innerHTML = data.acOutV+'V ';\n"
-                                     "               document.getElementById(\"acOutHz\").innerHTML = data.acOutHz+'Hz ';\n"
-                                     "               document.getElementById(\"acOutVa\").innerHTML = data.acOutVa+'Va ';\n"
-                                     "               document.getElementById(\"acOutW\").innerHTML = data.acOutW+'W ';\n"
-                                     "               document.getElementById(\"acOutPercent\").innerHTML = data.acOutPercent+'% ';\n"
-                                     "               document.getElementById(\"busV\").innerHTML = data.busV+'V ';\n"
-                                     "               document.getElementById(\"heatSinkDegC\").innerHTML = data.heatSinkDegC+'°C ';\n"
-                                     "               document.getElementById(\"battV\").innerHTML = data.battV+'V ';\n"
-                                     "               document.getElementById(\"battPercent\").innerHTML = data.battPercent+'% ';\n"
-                                     "               document.getElementById(\"battChargeA\").innerHTML = data.battChargeA+'A ';\n"
-                                     "               document.getElementById(\"battDischargeA\").innerHTML = data.battDischargeA+'A ';\n"
-                                     "               document.getElementById(\"sccBattV\").innerHTML = data.sccBattV+'V '\n"
-                                     "               document.getElementById(\"cSOC\").innerHTML = data.cSOC+'% '\n"
-                                     "               document.getElementById(\"ivmode\").innerHTML = data.iv_mode\n"
-                                     "               document.getElementById(\"devicename\").innerHTML = 'Device: '+data.device_name + ' Typ: '+data.device_type\n"
-                                     "            }\n"
-                                     "        });\n"
-                                     "        }\n"
-                                     "        setInterval(fetch, 5000);\n"
-                                     "        fetch();\n"
-                                     "        });\n"
-                                     "</script>\n";
-
-String sendHTMLmain()
-{
-    String ptr = HTMLhead();
-    ptr += FPSTR(HTML_LIVEDATA);
-    ptr += HTMLfoot();
-    return ptr;
-}
+const char HTML_MAIN[] PROGMEM = R"rawliteral(
+<figure class="text-center"><h2 id="devicename"></h2></figure>
+<div class="row gx-0 mb-2">
+<div class="col">
+<div class="bg-light">Solar In: </div>
+</div>
+<div class="col">
+<div class="bg-light"><span id="solarV" >N/A</span><span id="solarA" >N/A</span><span id="solarW" >N/A</span></div>
+</div></div><div class="row gx-0 mb-2">
+<div class="col">
+<div class="bg-light">Grid In: </div>
+</div>
+<div class="col">
+<div class="bg-light"><span id="gridV">N/A</span><span id="gridHz">N/A</span></div>
+</div>
+</div>
+<div class="row gx-0 mb-2">
+<div class="col">
+<div class="bg-light">AC Out: </div>
+</div>
+<div class="col">
+<div class="bg-light"><span id="acOutV">N/A</span><span id="acOutHz">N/A</span></div>
+</div>
+</div>
+<div class="row gx-0 mb-2">
+<div class="col">
+<div class="bg-light">AC Load: </div>
+</div>
+<div class="col">
+<div class="bg-light"><span id="acOutVa">N/A</span><span id="acOutW">N/A</span><span id="acOutPercent">N/A</span></div>
+</div>
+</div>
+<div class="row gx-0 mb-2">
+<div class="col">
+<div class="bg-light">Bus: </div>
+</div>
+<div class="col">
+<div class="bg-light"><span id="busV">N/A</span></div>
+</div>
+</div>
+<div class="row gx-0 mb-2">
+<div class="col">
+<div class="bg-light">Temperature: </div>
+</div>
+<div class="col">
+<div class="bg-light"><span id="heatSinkDegC">N/A</span></div>
+</div>
+</div>
+<div class="row gx-0 mb-2">
+<div class="col">
+<div class="bg-light">Battery: </div>
+</div>
+<div class="col">
+<div class="bg-light"><span id="battV">N/A</span><span id="battPercent">N/A</span><span id="cSOC">N/A</span></div>
+</div>
+</div>
+<div class="row gx-0 mb-2">
+<div class="col">
+<div class="bg-light">SCC | IN | Out: </div>
+</div>
+<div class="col">
+<div class="bg-light"><span id="sccBattV">N/A</span><span id="battChargeA">N/A</span><span id="battDischargeA">N/A</span></div>
+</div>
+</div>
+<div class="row gx-0 mb-2">
+<div class="col">
+<div class="bg-light">Inverter Mode: </div>
+</div>
+<div class="col">
+<div class="bg-light"><span id="ivmode">N/A</span></div>
+</div>
+</div>
+<div class="d-grid gap-2">
+<a class="btn btn-primary btn-block" href="/settings" role="button">Settings</a>
+</div>
+<script>
+        $(document).ready(function(load) {
+         function fetch() {
+        $.ajax({
+            url: "livejson",
+            data: {},
+            type: "get",
+            dataType: "json",
+               cache: false,
+                success: function (data) {
+               document.getElementById("solarV").innerHTML = data.solarV+'V ';
+               document.getElementById("solarA").innerHTML = data.solarA+'A  ';
+               document.getElementById("solarW").innerHTML = data.solarW+'W';
+               document.getElementById("gridV").innerHTML = data.gridV+'V ';
+               document.getElementById("gridHz").innerHTML = data.gridHz+'Hz ';
+               document.getElementById("acOutV").innerHTML = data.acOutV+'V ';
+               document.getElementById("acOutHz").innerHTML = data.acOutHz+'Hz ';
+               document.getElementById("acOutVa").innerHTML = data.acOutVa+'Va ';
+               document.getElementById("acOutW").innerHTML = data.acOutW+'W ';
+               document.getElementById("acOutPercent").innerHTML = data.acOutPercent+'%%';
+               document.getElementById("busV").innerHTML = data.busV+'V ';
+               document.getElementById("heatSinkDegC").innerHTML = data.heatSinkDegC+'°C ';
+               document.getElementById("battV").innerHTML = data.battV+'V ';
+               document.getElementById("battPercent").innerHTML = data.battPercent+'%% ';
+               document.getElementById("battChargeA").innerHTML = data.battChargeA+'A ';
+               document.getElementById("battDischargeA").innerHTML = data.battDischargeA+'A ';
+               document.getElementById("sccBattV").innerHTML = data.sccBattV+'V ';
+               document.getElementById("cSOC").innerHTML = data.cSOC+'%% ';
+               document.getElementById("ivmode").innerHTML = data.iv_mode;
+               document.getElementById("devicename").innerHTML = 'Device: '+data.device_name;
+            }
+        });
+        }
+        setInterval(fetch, 5000);
+        fetch();
+        });
+</script>
+)rawliteral";
