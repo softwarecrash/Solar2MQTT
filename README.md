@@ -69,3 +69,6 @@ Total cost: $5
 
 
 Like my Work? Buy me a Coffee https://paypal.me/tobirocky
+
+
+Questions? join https://discord.gg/Z4HgtBjUDX
