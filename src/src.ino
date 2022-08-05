@@ -21,7 +21,6 @@
 #include "webpages/main.h"         //landing page with menu
 #include "webpages/settings.h"     //settings page
 #include "webpages/settingsedit.h" //mqtt settings page
-//#include "webservers.h"            //excluded web servers
 
 WiFiClient client;
 
@@ -34,7 +33,6 @@ extern QmodMessage _qmodMessage;
 extern QpiriMessage _qpiriMessage;
 
 extern QRaw _qRaw;
-//extern QAv _qAv;
 
 String topic = "/"; //Default first part of topic. We will add device ID in setup
 
@@ -121,7 +119,6 @@ void setup()
   Serial1.begin(9600); // Debugging towards UART1
 #endif
   Serial.begin(2400); // Using UART0 for comm with inverter. IE cant be connected during flashing
-  //Serial.setTimeout(100);
 
 #ifdef SERIALDEBUG
   Serial1.println();
@@ -434,8 +431,6 @@ bool sendtoMQTT()
 #ifdef SERIALDEBUG
   Serial1.println(F("Data sent to MQTT Server"));
 #endif
-  //mqttclient.subscribe((String(topic) + String("/Device Data/Current max AC charging current")).c_str());
-  //mqttclient.subscribe((String(topic) + String("/Device Data/Current max charging current")).c_str());
 
   //qpigs
   mqttclient.publish((String(topic) + String("/Grid Voltage")).c_str(), String(_qpigsMessage.gridV).c_str());
@@ -479,7 +474,7 @@ bool sendtoMQTT()
   mqttclient.publish((String(topic) + String("/Device Data/Current max AC charging current")).c_str(), String(_qpiriMessage.battMaxAcChrgA).c_str());
   mqttclient.publish((String(topic) + String("/Device Data/Current max charging current")).c_str(), String(_qpiriMessage.battMaxChrgA).c_str());
 
-//RAW Messages from Invberter
+//RAW Messages from Inverter
 #ifdef MQTTDEBUG
   mqttclient.publish((String(topic) + String("/RAW/QPIGS")).c_str(), String(_qRaw.QPIGS).c_str());
   mqttclient.publish((String(topic) + String("/RAW/QPIRI")).c_str(), String(_qRaw.QPIRI).c_str());
