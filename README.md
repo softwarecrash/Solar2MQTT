@@ -1,31 +1,21 @@
 # Features:
 - WiFi Ap with setup
-- Read and publish the QPIGS, QPIRI QMOD and more....
-- Web display Data for Inverters where support the QPIGS Request
+- All Data over MQTT, Writeable pints for ac Charge and Solar Charge
+- Website with all essential data
 - Web Update, Reset, Restart, Configure
-- send Data over MQTT
 - Building using Platform.io
-- Live web pages with ajax
+- Live Data over Webpage
 
 # Last Added:
-- fix some Wsign Compiler Warnings
-- fix answer string from inverter and remove th CRC
-- fix some lag
-- fix bug with mqtt timer
-- fix crc remove on answer string
-- added json string for inverter types
-- added inverter type selection
 - added configuration page
 - added bootstrap based layout
-- moved some html content to spiff
 - mqtt raw data for QPIGS, QPIRI, QMOD, QID, QPIWS, QFLAG, QPI, QT, QET
-- mqtt debug and serial debug enable in settings.h
 - static device information from the QPIRI command
 - PV power in Watt
 - Inverter Operation Mode
 
 **works with**
-- pip / PCM  devices
+- PIP devices
 - i solar 
 - IGrid
 - Many devices from EASUN
@@ -62,8 +52,6 @@ Most of the parts can be bought as modules, it's usually cheaper that way.
 - ESP8266 - Wemos D1 Mini or ESP8266-01
 - MAX3232 module Like this https://amzn.eu/d/8t3gk5t or https://bit.ly/3BFPqrw
 - DC-DC buck module ($1.50) - 12-80v down to 5v
-
-Total cost: $5
 
 
 Like my Work? Buy me a Coffee https://paypal.me/tobirocky
