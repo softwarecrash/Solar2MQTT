@@ -59,11 +59,9 @@ Based around an ESP8266 WiFi microcontroller.
 
 Most of the parts can be bought as modules, it's usually cheaper that way.
 
-Approximate prices found on Ebay
-- ESP8266 - Wemos D1 Mini ($2.66)
-- MAX3232 module ($0.70) - it's just a max3232 with 5 capacitors on a tiny little board
+- ESP8266 - Wemos D1 Mini or ESP8266-01
+- MAX3232 module Like this https://amzn.eu/d/8t3gk5t
 - DC-DC buck module ($1.50) - 12-80v down to 5v
-- LEDs ($0.50) - The leds are for status etc
 
 Total cost: $5
 
