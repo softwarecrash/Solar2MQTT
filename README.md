@@ -60,7 +60,7 @@ Based around an ESP8266 WiFi microcontroller.
 Most of the parts can be bought as modules, it's usually cheaper that way.
 
 - ESP8266 - Wemos D1 Mini or ESP8266-01
-- MAX3232 module Like this https://amzn.eu/d/8t3gk5t
+- MAX3232 module Like this https://amzn.eu/d/8t3gk5t or https://bit.ly/3BFPqrw
 - DC-DC buck module ($1.50) - 12-80v down to 5v
 
 Total cost: $5
