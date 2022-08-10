@@ -57,4 +57,4 @@ Most of the parts can be bought as modules, it's usually cheaper that way.
 Like my Work? Buy me a Coffee https://paypal.me/tobirocky
 
 
-Questions? join https://discord.gg/Z4HgtBjUDX
+Questions? join https://discord.gg/2CcP74dBQc
