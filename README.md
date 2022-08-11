@@ -54,7 +54,4 @@ Most of the parts can be bought as modules, it's usually cheaper that way.
 - DC-DC buck module - 12-80v down to 5v
 
 
-Like my Work? Buy me a Coffee https://paypal.me/tobirocky
-
-
 Questions? join https://discord.gg/2CcP74dBQc
