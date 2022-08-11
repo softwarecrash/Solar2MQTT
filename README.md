@@ -14,6 +14,10 @@
 - PV power in Watt
 - Inverter Operation Mode
 
+# ToDo: (Need Help)
+- Restruct it to use with command lists of inverters
+- create lists with commands for each protocol id and subprotocol to autoselect the right inverter
+
 **works with**
 - PIP devices
 - i solar 
