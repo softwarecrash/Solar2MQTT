@@ -1,10 +1,6 @@
 #include "Arduino.h"
 #include "inverter.h"
 
-#include "settings.h"
-
-extern Settings _settings;
-
 String _commandBuffer;
 
 QpiMessage _qpiMessage = {0};
