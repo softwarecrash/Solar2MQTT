@@ -25,6 +25,10 @@
 - Many devices from EASUN
 - and many many others based on the chinese solar inverter with a rj45 jack and usb port, primary identified by the display
 
+#Confirmed working Device:
+- Isolar SMH 3KW
+- SMR II 3-5.5K
+- ISolar SMV 3KW 24V Plus
 
 
 
