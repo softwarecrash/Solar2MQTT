@@ -30,6 +30,8 @@
 - SMR II 3-5.5K
 - ISolar SMV 3KW 24V Plus
 
+- Easun IGRID SV II 5 KW with firmware mod https://github.com/BMBIT-oss/Solar2MQTT_P18
+
 
 
 
