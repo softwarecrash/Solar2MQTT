@@ -24,13 +24,7 @@
 - IGrid
 - Many devices from EASUN
 - and many many others based on the chinese solar inverter with a rj45 jack and usb port, primary identified by the display
-
-**Confirmed working Device:**
-- Isolar SMH 3KW
-- SMR II 3-5.5K
-- EASUN ISolar SMV 3KW 24V Plus
-- EASUN IGRID SV II 5 KW with firmware mod https://github.com/BMBIT-oss/Solar2MQTT_P18
-
+- Take a look at the device list in the wiki
 
 
 
