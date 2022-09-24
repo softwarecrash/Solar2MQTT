@@ -478,7 +478,7 @@ void requestInverter(qCommand com)
 {
   switch (com)
   {
-  //case qCommand::QPI: if(sendCommand("QPI")) onPI(); break; //vollständig
+  //case qCommand::QPI: if(sendCommand("QPI")) onPI(); break; //not needet, some inverters dont understand this
   case qCommand::QID: break;
   case qCommand::QVFW: break;
   case qCommand::QVFW2: break;

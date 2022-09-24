@@ -24,12 +24,12 @@
 - IGrid
 - Many devices from EASUN
 - and many many others based on the chinese solar inverter with a rj45 jack and usb port, primary identified by the display
-
-
+- Take a look at the device list in the wiki
 
 
 
 ![live](https://user-images.githubusercontent.com/44615614/139434909-d735c268-9cd7-4382-b100-d9d965da1500.jpg)
+
 ![edit](https://user-images.githubusercontent.com/44615614/139434941-79c6c013-d745-4eb1-adcc-4e0fd89dd4c3.jpg)
 
 
