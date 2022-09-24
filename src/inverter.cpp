@@ -478,7 +478,7 @@ void requestInverter(qCommand com)
 {
   switch (com)
   {
-  case qCommand::QPI: if(sendCommand("QPI")) onPI(); break; //vollständig
+  //case qCommand::QPI: if(sendCommand("QPI")) onPI(); break; //vollständig
   case qCommand::QID: break;
   case qCommand::QVFW: break;
   case qCommand::QVFW2: break;
@@ -539,4 +539,9 @@ void sendMUCHGC(int val) //set mac AC Charge
       break;
     }
   }
+}
+
+void sendPCVV(float val) //set max Bulk charge voltage
+{
+        sendCommand(("PCVV" + String(_qpiriMessage.battBulkV)));
 }

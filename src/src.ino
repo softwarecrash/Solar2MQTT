@@ -323,6 +323,16 @@ void setup()
                   valChange = true;
                   _qpiriMessage.battMaxAcChrgA = p->value().toInt(); //const string zu int
                 }
+                if (p->name() == "PCVV")
+                {
+                  valChange = true;
+                  _qpiriMessage.battBulkV = p->value().toFloat(); //const string zu int
+                }
+                if (p->name() == "PBFT")
+                {
+                  valChange = true;
+                  _qpiriMessage.battFloatV = p->value().toFloat(); //const string zu int
+                }
                 request->send(200, "text/plain", "message received");
               });
 
@@ -366,7 +376,11 @@ void loop()
     if (valChange)
     {
       sendMNCHGC(_qpiriMessage.battMaxChrgA);
+
       sendMUCHGC(_qpiriMessage.battMaxAcChrgA);
+
+      sendMUCHGC(_qpiriMessage.battBulkV);
+
       valChange = false;
 
       //reask the inverter for actual config
@@ -382,8 +396,8 @@ void loop()
 
     if (askInverterOnce) //ask the inverter once to get static data
     {
-      requestInverter(QPI); //just send for clear out the serial puffer and resolve the first NAK
-      requestInverter(QPI);
+      //requestInverter(QPI); //just send for clear out the serial puffer and resolve the first NAK
+      //requestInverter(QPI);
       requestInverter(QPIRI);
       requestInverter(QMCHGCR);
       requestInverter(QMUCHGCR);

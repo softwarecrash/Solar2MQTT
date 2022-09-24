@@ -5,6 +5,7 @@ void serviceInverter();
 bool sendCommand(String com);
 void sendMNCHGC(int val);
 void sendMUCHGC(int val);
+void sendPCVV(float val);
 
 
 enum qCommand
@@ -151,6 +152,10 @@ struct QchgcrMessage
 {
   byte chargeModes[12];
   byte uChargeModes[12];
+};
+struct PCVV
+{
+  float PCVV;
 };
 
 //for raw answer from inverter
