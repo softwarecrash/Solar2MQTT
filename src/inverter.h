@@ -5,7 +5,6 @@ void serviceInverter();
 bool sendCommand(String com);
 void sendMNCHGC(int val);
 void sendMUCHGC(int val);
-void sendPCVV(float val);
 
 
 enum qCommand
@@ -174,16 +173,3 @@ struct QRaw
   String QMUCHGCR;
   String P006FPADJ;
 };
-/*
-struct QAv //Query Avaible
-{
-  bool QPIGS = true;
-  bool QPIRI = true;
-  bool QMOD = true;
-  bool QPIWS = true;
-  bool QFLAG = true;
-  bool QID = true;
-  bool QPI = true;
-  bool QET = true;
-  bool QT = true;
-};*/

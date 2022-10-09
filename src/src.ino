@@ -4,7 +4,6 @@
 /* Changes by softwarecrash
 /*************************************************************************************/
 #define SERIALDEBUG
-#include <Wire.h>
 #include <EEPROM.h>
 #include <PubSubClient.h>
 
@@ -50,6 +49,7 @@ char mqtt_server[40];
 bool restartNow = false;
 bool askInverterOnce = true;
 bool valChange = false;
+bool publishFirst = false;
 String commandFromWeb;
 
 //----------------------------------------------------------------------
@@ -114,7 +114,6 @@ void setup()
 #endif
   wm.setSaveConfigCallback(saveConfigCallback);
 
-  Wire.begin(4, 5);
 #ifdef SERIALDEBUG
   Serial1.begin(9600); // Debugging towards UART1
 #endif
@@ -358,6 +357,7 @@ void setup()
   {
     mqttclient.subscribe((String(topic) + String("/Device Data/Current max AC charging current")).c_str());
     mqttclient.subscribe((String(topic) + String("/Device Data/Current max charging current")).c_str());
+    mqttclient.subscribe((String(topic) + String("/Device Data/Set Command")).c_str());
   }
 }
 //end void setup
@@ -378,8 +378,6 @@ void loop()
       sendMNCHGC(_qpiriMessage.battMaxChrgA);
 
       sendMUCHGC(_qpiriMessage.battMaxAcChrgA);
-
-      sendMUCHGC(_qpiriMessage.battBulkV);
 
       valChange = false;
 
@@ -493,19 +491,23 @@ bool sendtoMQTT()
   mqttclient.publish((String(topic) + String("/RAW/QPIGS")).c_str(), String(_qRaw.QPIGS).c_str());
   mqttclient.publish((String(topic) + String("/RAW/QPIRI")).c_str(), String(_qRaw.QPIRI).c_str());
   mqttclient.publish((String(topic) + String("/RAW/QMOD")).c_str(), String(_qRaw.QMOD).c_str());
-  mqttclient.publish((String(topic) + String("/RAW/QPIWS")).c_str(), String(_qRaw.QPIWS).c_str());
-  mqttclient.publish((String(topic) + String("/RAW/QFLAG")).c_str(), String(_qRaw.QFLAG).c_str());
-  mqttclient.publish((String(topic) + String("/RAW/QID")).c_str(), String(_qRaw.QID).c_str());
-  mqttclient.publish((String(topic) + String("/RAW/QPI")).c_str(), String(_qRaw.QPI).c_str());
+  //mqttclient.publish((String(topic) + String("/RAW/QPIWS")).c_str(), String(_qRaw.QPIWS).c_str());
+  //mqttclient.publish((String(topic) + String("/RAW/QFLAG")).c_str(), String(_qRaw.QFLAG).c_str());
+  //mqttclient.publish((String(topic) + String("/RAW/QID")).c_str(), String(_qRaw.QID).c_str());
+  //mqttclient.publish((String(topic) + String("/RAW/QPI")).c_str(), String(_qRaw.QPI).c_str());
   mqttclient.publish((String(topic) + String("/RAW/QMUCHGCR")).c_str(), String(_qRaw.QMUCHGCR).c_str());
   mqttclient.publish((String(topic) + String("/RAW/QMCHGCR")).c_str(), String(_qRaw.QMCHGCR).c_str());
 #endif
-
+  if(!publishFirst){
+    mqttclient.publish((String(topic) + String("/Device Data/Set Command/")).c_str(), "NAN");
+  }
+publishFirst = true;
   return true;
 }
 
 void callback(char *top, byte *payload, unsigned int length)
 {
+  if(!publishFirst) return;
   String messageTemp;
   for (unsigned int i = 0; i < length; i++)
   {
@@ -530,5 +532,11 @@ void callback(char *top, byte *payload, unsigned int length)
       _qpiriMessage.battMaxAcChrgA = messageTemp.toInt();
       valChange = true;
     }
+  }
+    if (strcmp(top, (topic + "/Device Data/Set Command/").c_str()) == 0)
+  {
+    Serial1.println("Send Command message recived");
+    sendCommand(messageTemp);
+      valChange = true;
   }
 }

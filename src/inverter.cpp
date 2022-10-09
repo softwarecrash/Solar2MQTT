@@ -540,8 +540,3 @@ void sendMUCHGC(int val) //set mac AC Charge
     }
   }
 }
-
-void sendPCVV(float val) //set max Bulk charge voltage
-{
-        sendCommand(("PCVV" + String(_qpiriMessage.battBulkV)));
-}
