@@ -379,12 +379,11 @@ void loop()
 
       sendMUCHGC(_qpiriMessage.battMaxAcChrgA);
 
-      valChange = false;
-
       //reask the inverter for actual config
       requestInverter(QPIRI);
       //reset mqtt timer
       mqtttimer = 0;
+      valChange = false;
     }
     else
     {
@@ -499,7 +498,7 @@ bool sendtoMQTT()
   mqttclient.publish((String(topic) + String("/RAW/QMCHGCR")).c_str(), String(_qRaw.QMCHGCR).c_str());
 #endif
   if(!publishFirst){
-    mqttclient.publish((String(topic) + String("/Device Data/Set Command/")).c_str(), "NAN");
+    mqttclient.publish((String(topic) + String("/Device Data/Set Command/")).c_str(), "NAK");
   }
 publishFirst = true;
   return true;
@@ -535,8 +534,8 @@ void callback(char *top, byte *payload, unsigned int length)
   }
     if (strcmp(top, (topic + "/Device Data/Set Command/").c_str()) == 0)
   {
-    Serial1.println("Send Command message recived");
-    sendCommand(messageTemp);
+    Serial1.println("Send Command message recived: " + messageTemp);
+    sendCommand(String(messageTemp).c_str());
       valChange = true;
   }
 }
