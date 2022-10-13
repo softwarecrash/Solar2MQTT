@@ -83,26 +83,26 @@ const char HTML_MAIN[] PROGMEM = R"rawliteral(
             dataType: "json",
                cache: false,
                 success: function (data) {
-               document.getElementById("solarV").innerHTML = data.solarV+'V ';
-               document.getElementById("solarA").innerHTML = data.solarA+'A  ';
-               document.getElementById("solarW").innerHTML = data.solarW+'W';
-               document.getElementById("gridV").innerHTML = data.gridV+'V ';
-               document.getElementById("gridHz").innerHTML = data.gridHz+'Hz ';
-               document.getElementById("acOutV").innerHTML = data.acOutV+'V ';
-               document.getElementById("acOutHz").innerHTML = data.acOutHz+'Hz ';
-               document.getElementById("acOutVa").innerHTML = data.acOutVa+'Va ';
-               document.getElementById("acOutW").innerHTML = data.acOutW+'W ';
-               document.getElementById("acOutPercent").innerHTML = data.acOutPercent+'%%';
-               document.getElementById("busV").innerHTML = data.busV+'V ';
-               document.getElementById("heatSinkDegC").innerHTML = data.heatSinkDegC+'°C ';
-               document.getElementById("battV").innerHTML = data.battV+'V ';
-               document.getElementById("battPercent").innerHTML = data.battPercent+'%% ';
-               document.getElementById("battChargeA").innerHTML = data.battChargeA+'A ';
-               document.getElementById("battDischargeA").innerHTML = data.battDischargeA+'A ';
-               document.getElementById("sccBattV").innerHTML = data.sccBattV+'V ';
-               document.getElementById("cSOC").innerHTML = data.cSOC+'%% ';
-               document.getElementById("ivmode").innerHTML = data.iv_mode;
-               document.getElementById("devicename").innerHTML = 'Device: '+data.device_name;
+                $("#solarV").html(data.solarV+'V ');
+                $("#solarA").html(data.solarA+'A  ');
+                $("#solarW").html(data.solarW+'W');
+                $("#gridV").html(data.gridV+'V ');
+                $("#gridHz").html(data.gridHz+'Hz ');
+                $("#acOutV").html(data.acOutV+'V ');
+                $("#acOutHz").html(data.acOutHz+'Hz ');
+                $("#acOutVa").html(data.acOutVa+'Va ');
+                $("#acOutW").html(data.acOutW+'W ');
+                $("#acOutPercent").html(data.acOutPercent+'%');
+                $("#busV").html(data.busV+'V ');
+                $("#heatSinkDegC").html(data.heatSinkDegC+'°C ');
+                $("#battV").html(data.battV+'V ');
+                $("#battPercent").html(data.battPercent+'% ');
+                $("#battChargeA").html(data.battChargeA+'A ');
+                $("#battDischargeA").html(data.battDischargeA+'A ');
+                $("#sccBattV").html(data.sccBattV+'V ');
+                $("#cSOC").html(data.cSOC+'% ');
+                $("#ivmode").html(data.iv_mode);
+                $("#devicename").html(data.device_name);
             }
         });
         }
