@@ -132,7 +132,7 @@ bool getNextBit(String &command, int &index)
 bool onPIGS() //QPIGS<cr>: Device general status parameters inquiry
 {
   //if(_commandBuffer[1]=='N') _qAv.QPIGS = false; //deactivate if NAK
-  if (_commandBuffer.length() < 60)
+  if (_commandBuffer.length() < 60 || _commandBuffer.substring(1, 3) == "NAK")
   {
     return false;
   }
