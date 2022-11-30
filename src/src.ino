@@ -395,6 +395,7 @@ void loop()
     {
       //requestInverter(QPI); //just send for clear out the serial puffer and resolve the first NAK
       //requestInverter(QPI);
+      requestInverter(QID);
       requestInverter(QPIRI);
       requestInverter(QMCHGCR);
       requestInverter(QMUCHGCR);
