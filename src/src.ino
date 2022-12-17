@@ -51,7 +51,6 @@ bool askInverterOnce = true;
 bool valChange = false;
 bool publishFirst = false;
 String commandFromWeb;
-
 //----------------------------------------------------------------------
 void saveConfigCallback()
 {
@@ -355,9 +354,9 @@ void setup()
     mqttclient.connect((String(_settings._deviceName)).c_str(), _settings._mqttUser.c_str(), _settings._mqttPassword.c_str());
   if (mqttclient.connect(_settings._deviceName.c_str()))
   {
-    mqttclient.subscribe((String(topic) + String("/Device Data/Current max AC charging current")).c_str());
-    mqttclient.subscribe((String(topic) + String("/Device Data/Current max charging current")).c_str());
-    mqttclient.subscribe((String(topic) + String("/Device Data/Set Command")).c_str());
+    mqttclient.subscribe((String(topic) + String("/Device_Control/AC_Max_Charge_Current")).c_str());
+    mqttclient.subscribe((String(topic) + String("/Device_Control/Max_Charge_Current")).c_str());
+    mqttclient.subscribe((String(topic) + String("/Device_Control/Set_Command")).c_str());
   }
 }
 //end void setup
@@ -375,9 +374,8 @@ void loop()
 
     if (valChange)
     {
-      sendMNCHGC(_qpiriMessage.battMaxChrgA);
-
-      sendMUCHGC(_qpiriMessage.battMaxAcChrgA);
+      //sendMNCHGC(_qpiriMessage.battMaxChrgA);
+      //sendMUCHGC(_qpiriMessage.battMaxAcChrgA);
 
       //reask the inverter for actual config
       requestInverter(QPIRI);
@@ -389,6 +387,8 @@ void loop()
     {
       requestInverter(QMOD);
       requestInverter(QPIGS);
+
+      //requestInverter(QPIRI);
     }
 
     if (askInverterOnce) //ask the inverter once to get static data
@@ -445,46 +445,46 @@ bool sendtoMQTT()
 #endif
 
   //qpigs
-  mqttclient.publish((String(topic) + String("/Grid Voltage")).c_str(), String(_qpigsMessage.gridV).c_str());
-  mqttclient.publish((String(topic) + String("/Grid Frequenz")).c_str(), String(_qpigsMessage.gridHz).c_str());
-  mqttclient.publish((String(topic) + String("/AC out Voltage")).c_str(), String(_qpigsMessage.acOutV).c_str());
-  mqttclient.publish((String(topic) + String("/AC out Frequenz")).c_str(), String(_qpigsMessage.acOutHz).c_str());
-  mqttclient.publish((String(topic) + String("/AC out VA")).c_str(), String(_qpigsMessage.acOutVa).c_str());
-  mqttclient.publish((String(topic) + String("/AC out Watt")).c_str(), String(_qpigsMessage.acOutW).c_str());
-  mqttclient.publish((String(topic) + String("/AC out percent")).c_str(), String(_qpigsMessage.acOutPercent).c_str());
-  mqttclient.publish((String(topic) + String("/Bus Volt")).c_str(), String(_qpigsMessage.busV).c_str());
-  mqttclient.publish((String(topic) + String("/Bus Temp")).c_str(), String(_qpigsMessage.heatSinkDegC).c_str());
-  mqttclient.publish((String(topic) + String("/Battery Voltage")).c_str(), String(_qpigsMessage.battV).c_str());
-  mqttclient.publish((String(topic) + String("/Battery Percent")).c_str(), String(_qpigsMessage.battPercent).c_str());
-  mqttclient.publish((String(topic) + String("/Battery Charge A")).c_str(), String(_qpigsMessage.battChargeA).c_str());
-  mqttclient.publish((String(topic) + String("/Battery Discharge A")).c_str(), String(_qpigsMessage.battDischargeA).c_str());
-  mqttclient.publish((String(topic) + String("/Battery SCC Volt")).c_str(), String(_qpigsMessage.sccBattV).c_str());
-  mqttclient.publish((String(topic) + String("/PV Volt")).c_str(), String(_qpigsMessage.solarV).c_str());
-  mqttclient.publish((String(topic) + String("/PV A")).c_str(), String(_qpigsMessage.solarA).c_str());
-  mqttclient.publish((String(topic) + String("/PV Watt")).c_str(), String(_qpigsMessage.solarW).c_str());
+  mqttclient.publish((String(topic) + String("/Grid_Voltage")).c_str(), String(_qpigsMessage.gridV).c_str());
+  mqttclient.publish((String(topic) + String("/Grid_Frequenz")).c_str(), String(_qpigsMessage.gridHz).c_str());
+  mqttclient.publish((String(topic) + String("/AC_out_Voltage")).c_str(), String(_qpigsMessage.acOutV).c_str());
+  mqttclient.publish((String(topic) + String("/AC_out_Frequenz")).c_str(), String(_qpigsMessage.acOutHz).c_str());
+  mqttclient.publish((String(topic) + String("/AC_out_VA")).c_str(), String(_qpigsMessage.acOutVa).c_str());
+  mqttclient.publish((String(topic) + String("/AC_out_Watt")).c_str(), String(_qpigsMessage.acOutW).c_str());
+  mqttclient.publish((String(topic) + String("/AC_out_percent")).c_str(), String(_qpigsMessage.acOutPercent).c_str());
+  mqttclient.publish((String(topic) + String("/Bus_Volt")).c_str(), String(_qpigsMessage.busV).c_str());
+  mqttclient.publish((String(topic) + String("/Bus_Temp")).c_str(), String(_qpigsMessage.heatSinkDegC).c_str());
+  mqttclient.publish((String(topic) + String("/Battery_Voltage")).c_str(), String(_qpigsMessage.battV).c_str());
+  mqttclient.publish((String(topic) + String("/Battery_Percent")).c_str(), String(_qpigsMessage.battPercent).c_str());
+  mqttclient.publish((String(topic) + String("/Battery_Charge_A")).c_str(), String(_qpigsMessage.battChargeA).c_str());
+  mqttclient.publish((String(topic) + String("/Battery_Discharge_A")).c_str(), String(_qpigsMessage.battDischargeA).c_str());
+  mqttclient.publish((String(topic) + String("/Battery_SCC_Volt")).c_str(), String(_qpigsMessage.sccBattV).c_str());
+  mqttclient.publish((String(topic) + String("/PV_Volt")).c_str(), String(_qpigsMessage.solarV).c_str());
+  mqttclient.publish((String(topic) + String("/PV_A")).c_str(), String(_qpigsMessage.solarA).c_str());
+  mqttclient.publish((String(topic) + String("/PV_Watt")).c_str(), String(_qpigsMessage.solarW).c_str());
   //qmod
-  mqttclient.publish((String(topic) + String("/Inverter Operation Mode")).c_str(), String(_qmodMessage.operationMode).c_str());
+  mqttclient.publish((String(topic) + String("/Inverter_Operation_Mode")).c_str(), String(_qmodMessage.operationMode).c_str());
   //Beta
-  mqttclient.publish((String(topic) + String("/Calculated SOC")).c_str(), String(_qpigsMessage.cSOC).c_str());
+  mqttclient.publish((String(topic) + String("/Calculated_SOC")).c_str(), String(_qpigsMessage.cSOC).c_str());
   //piri
-  mqttclient.publish((String(topic) + String("/Device Data/Grid rating voltage")).c_str(), String(_qpiriMessage.gridRatingV).c_str());
-  mqttclient.publish((String(topic) + String("/Device Data/Grid rating current")).c_str(), String(_qpiriMessage.gridRatingA).c_str());
-  mqttclient.publish((String(topic) + String("/Device Data/AC output rating voltage")).c_str(), String(_qpiriMessage.acOutRatingV).c_str());
-  mqttclient.publish((String(topic) + String("/Device Data/AC output rating frequency")).c_str(), String(_qpiriMessage.acOutRatingHz).c_str());
-  mqttclient.publish((String(topic) + String("/Device Data/AC output rating current")).c_str(), String(_qpiriMessage.acOutRatingA).c_str());
-  mqttclient.publish((String(topic) + String("/Device Data/AC output rating apparent power")).c_str(), String(_qpiriMessage.acOutRatungVA).c_str());
-  mqttclient.publish((String(topic) + String("/Device Data/AC output rating active power")).c_str(), String(_qpiriMessage.acOutRatingW).c_str());
-  mqttclient.publish((String(topic) + String("/Device Data/Battery rating voltage")).c_str(), String(_qpiriMessage.battRatingV).c_str());
+  mqttclient.publish((String(topic) + String("/Device_Data/Grid_rating_voltage")).c_str(), String(_qpiriMessage.gridRatingV).c_str());
+  mqttclient.publish((String(topic) + String("/Device_Data/Grid_rating_current")).c_str(), String(_qpiriMessage.gridRatingA).c_str());
+  mqttclient.publish((String(topic) + String("/Device_Data/AC_output_rating_voltage")).c_str(), String(_qpiriMessage.acOutRatingV).c_str());
+  mqttclient.publish((String(topic) + String("/Device_Data/AC_output_rating_frequency")).c_str(), String(_qpiriMessage.acOutRatingHz).c_str());
+  mqttclient.publish((String(topic) + String("/Device_Data/AC_output_rating_current")).c_str(), String(_qpiriMessage.acOutRatingA).c_str());
+  mqttclient.publish((String(topic) + String("/Device_Data/AC_output_rating_apparent_power")).c_str(), String(_qpiriMessage.acOutRatungVA).c_str());
+  mqttclient.publish((String(topic) + String("/Device_Data/AC_output_rating_active_power")).c_str(), String(_qpiriMessage.acOutRatingW).c_str());
+  mqttclient.publish((String(topic) + String("/Device_Data/Battery_rating_voltage")).c_str(), String(_qpiriMessage.battRatingV).c_str());
 
-  mqttclient.publish((String(topic) + String("/Device Data/Battery re-charge voltage")).c_str(), String(_qpiriMessage.battreChargeV).c_str());
-  mqttclient.publish((String(topic) + String("/Device Data/Battery under voltage")).c_str(), String(_qpiriMessage.battUnderV).c_str());
-  mqttclient.publish((String(topic) + String("/Device Data/Battery bulk voltage")).c_str(), String(_qpiriMessage.battBulkV).c_str());
-  mqttclient.publish((String(topic) + String("/Device Data/Battery float voltage")).c_str(), String(_qpiriMessage.battFloatV).c_str());
+  mqttclient.publish((String(topic) + String("/Device_Data/Battery_re-charge_voltage")).c_str(), String(_qpiriMessage.battreChargeV).c_str());
+  mqttclient.publish((String(topic) + String("/Device_Data/Battery_under_voltage")).c_str(), String(_qpiriMessage.battUnderV).c_str());
+  mqttclient.publish((String(topic) + String("/Device_Data/Battery_bulk_voltage")).c_str(), String(_qpiriMessage.battBulkV).c_str());
+  mqttclient.publish((String(topic) + String("/Device_Data/Battery_float_voltage")).c_str(), String(_qpiriMessage.battFloatV).c_str());
 
-  mqttclient.publish((String(topic) + String("/Device Data/Battery type")).c_str(), String(_qpiriMessage.battType).c_str());
+  mqttclient.publish((String(topic) + String("/Device_Data/Battery_type")).c_str(), String(_qpiriMessage.battType).c_str());
 
-  mqttclient.publish((String(topic) + String("/Device Data/Current max AC charging current")).c_str(), String(_qpiriMessage.battMaxAcChrgA).c_str());
-  mqttclient.publish((String(topic) + String("/Device Data/Current max charging current")).c_str(), String(_qpiriMessage.battMaxChrgA).c_str());
+  mqttclient.publish((String(topic) + String("/Device_Data/Current_max_AC_charging_current")).c_str(), String(_qpiriMessage.battMaxAcChrgA).c_str());
+  mqttclient.publish((String(topic) + String("/Device_Data/Current_max_charging_current")).c_str(), String(_qpiriMessage.battMaxChrgA).c_str());
 
 //RAW Messages from Inverter
 #ifdef MQTTDEBUG
@@ -499,7 +499,9 @@ bool sendtoMQTT()
   mqttclient.publish((String(topic) + String("/RAW/QMCHGCR")).c_str(), String(_qRaw.QMCHGCR).c_str());
 #endif
   if(!publishFirst){
-    mqttclient.publish((String(topic) + String("/Device Data/Set Command/")).c_str(), "NAK");
+    mqttclient.publish((String(topic) + String("/Device_Control/Set_Command")).c_str(), "NAK");
+    mqttclient.publish((String(topic) + String("/Device_Control/AC_Max_Charge_Current")).c_str(), "NAK");
+    mqttclient.publish((String(topic) + String("/Device_Control/Max_Charge_Current")).c_str(), "NAK");
   }
 publishFirst = true;
   return true;
@@ -513,30 +515,32 @@ void callback(char *top, byte *payload, unsigned int length)
   {
     messageTemp += (char)payload[i];
   }
+  if(messageTemp == "NAK") return;
   //modify the max charging current
-  if (strcmp(top, (topic + "/Device Data/Current max charging current").c_str()) == 0)
+  if (strcmp(top, (topic + "/Device_Control/Max_Charge_Current").c_str()) == 0)
   {
     Serial1.println("message recived");
     if (messageTemp.toInt() != _qpiriMessage.battMaxChrgA)
     {
-      _qpiriMessage.battMaxChrgA = messageTemp.toInt();
+      sendMNCHGC(messageTemp.toInt());
       valChange = true;
     }
   }
   //modify the max ac charging current
-  if (strcmp(top, (topic + "/Device Data/Current max AC charging current").c_str()) == 0)
+  if (strcmp(top, (topic + "/Device_Control/AC_Max_Charge_Current").c_str()) == 0)
   {
     Serial1.println("message recived");
     if (messageTemp.toInt() != _qpiriMessage.battMaxAcChrgA)
     {
-      _qpiriMessage.battMaxAcChrgA = messageTemp.toInt();
+      sendMUCHGC(messageTemp.toInt());
       valChange = true;
     }
   }
-    if (strcmp(top, (topic + "/Device Data/Set Command/").c_str()) == 0)
+  //send raw control command
+    if (strcmp(top, (topic + "/Device_Control/Set_Command/").c_str()) == 0)
   {
     Serial1.println("Send Command message recived: " + messageTemp);
-    sendCommand(String(messageTemp).c_str());
+    sendCommand(messageTemp);
       valChange = true;
-  }
+}
 }

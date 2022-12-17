@@ -439,6 +439,7 @@ bool sendCommand(String command)
 
   _commandBuffer = Serial.readStringUntil('\n');
 
+
   unsigned short calculatedCrc = cal_crc_half((byte *)_commandBuffer.c_str(), _commandBuffer.length() - 2);
   unsigned short recievedCrc = ((unsigned short)_commandBuffer[_commandBuffer.length() - 2] << 8);
 
@@ -478,7 +479,7 @@ void requestInverter(qCommand com)
 {
   switch (com)
   {
-  //case qCommand::QPI: if(sendCommand("QPI")) onPI(); break; //not needet, some inverters dont understand this
+  case qCommand::QPI: if(sendCommand("QPI")) onPI(); break; //not needet, some inverters dont understand this
   case qCommand::QID: if(sendCommand("QID")) onID(); break;
   case qCommand::QVFW: break;
   case qCommand::QVFW2: break;
