@@ -500,8 +500,8 @@ bool sendtoMQTT()
 #endif
   if(!publishFirst){
     mqttclient.publish((String(topic) + String("/Device_Control/Set_Command")).c_str(), "NAK");
-    mqttclient.publish((String(topic) + String("/Device_Control/AC_Max_Charge_Current")).c_str(), "NAK");
-    mqttclient.publish((String(topic) + String("/Device_Control/Max_Charge_Current")).c_str(), "NAK");
+    mqttclient.publish((String(topic) + String("/Device_Control/AC_Max_Charge_Current")).c_str(), 0);
+    mqttclient.publish((String(topic) + String("/Device_Control/Max_Charge_Current")).c_str(), 0);
   }
 publishFirst = true;
   return true;
