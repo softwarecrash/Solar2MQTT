@@ -537,7 +537,7 @@ void callback(char *top, byte *payload, unsigned int length)
     }
   }
   //send raw control command
-    if (strcmp(top, (topic + "/Device_Control/Set_Command/").c_str()) == 0)
+    if (strcmp(top, (topic + "/Device_Control/Set_Command").c_str()) == 0)
   {
     Serial1.println("Send Command message recived: " + messageTemp);
     sendCommand(messageTemp);
