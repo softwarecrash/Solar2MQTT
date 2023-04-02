@@ -1,0 +1,1 @@
+const char PIP30MAX[] PROGMEM = R"=====(#include "PIP30MAX.json")=====";

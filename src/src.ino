@@ -25,6 +25,10 @@
 
 WiFiClient client;
 
+
+//just for testing
+#include "devices/devicelist.h"
+
 Settings _settings;
 
 PubSubClient mqttclient(client);
@@ -117,6 +121,11 @@ void setup()
 
 #ifdef SERIALDEBUG
   Serial1.begin(9600); // Debugging towards UART1
+
+  //just for testing
+  Serial1.println(PIP30MAX);
+
+
 #endif
   Serial.begin(2400); // Using UART0 for comm with inverter. IE cant be connected during flashing
 
