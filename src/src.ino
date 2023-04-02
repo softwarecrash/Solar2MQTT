@@ -126,7 +126,9 @@ void setup()
 
 
   //just for testing
-  deserializeJson(DeviceData, DataStructure);
+if(1==1){
+  deserializeJson(DeviceData, PI30MAX);
+}
 serializeJson(DeviceData, Serial1);
 
 
