@@ -479,6 +479,64 @@ _commandBuffer.concat(" ");
   }
 }
 
+
+
+String sendCustomCommand(String command)
+{
+  _commandBuffer = "";
+
+  unsigned short crc = cal_crc_half((byte *)command.c_str(), command.length());
+
+#ifdef SERIALDEBUG
+  Serial1.print(F("Sent Command: "));
+  Serial1.println(command);
+
+#endif
+  Serial.print(command);
+  Serial.print((char)((crc >> 8) & 0xFF)); //ONLY CRC fo PCM/PIP
+  Serial.print((char)((crc >> 0) & 0xFF)); //ONLY CRC fo PCM/PIP
+  Serial.print("\r");
+
+
+  _commandBuffer = Serial.readStringUntil('\n');
+
+
+  unsigned short calculatedCrc = cal_crc_half((byte *)_commandBuffer.c_str(), _commandBuffer.length() - 2);
+  unsigned short recievedCrc = ((unsigned short)_commandBuffer[_commandBuffer.length() - 2] << 8);
+
+  //remove the CRC from recived command
+  if (_commandBuffer[_commandBuffer.length() - 2] < 6)
+  {
+    _commandBuffer.remove(_commandBuffer.length() - 2);
+  }
+  else
+  {
+    _commandBuffer.remove(_commandBuffer.length() - 3);
+  }
+
+//for bugfix add a space at the end of commandstring
+_commandBuffer.concat(" ");
+
+#ifdef SERIALDEBUG
+      Serial1.print(F("   Calc: "));
+      Serial1.print(calculatedCrc, HEX);
+      Serial1.print(F("   Rx: "));
+      Serial1.println(recievedCrc, HEX);
+      Serial1.print(F("   Recived: "));
+      Serial1.println(_commandBuffer);
+#endif
+
+  if (calculatedCrc == recievedCrc)
+  {
+    return _commandBuffer;
+  }
+  else
+  {
+    return "CRC Error";
+  }
+}
+
+
 void requestInverter(qCommand com)
 {
   switch (com)

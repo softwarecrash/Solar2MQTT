@@ -5,6 +5,8 @@
 /*************************************************************************************/
 #define SERIALDEBUG
 #include <EEPROM.h>
+#define ARDUINOJSON_USE_DOUBLE 0
+#define ARDUINOJSON_USE_LONG_LONG 0
 #include <PubSubClient.h>
 
 #include <ArduinoJson.h>
@@ -430,7 +432,7 @@ bool sendtoMQTT()
 #ifdef SERIALDEBUG
       Serial1.println(F("Reconnected to MQTT SERVER"));
 #endif
-      mqttclient.publish((topic + String("/Device Data/IP")).c_str(), String(WiFi.localIP().toString()).c_str());
+      mqttclient.publish((topic + String("/IP")).c_str(), String(WiFi.localIP().toString()).c_str());
     }
     else
     {
@@ -499,9 +501,9 @@ bool sendtoMQTT()
   mqttclient.publish((String(topic) + String("/RAW/QMCHGCR")).c_str(), String(_qRaw.QMCHGCR).c_str());
 #endif
   if(!publishFirst){
-    mqttclient.publish((String(topic) + String("/Device_Control/Set_Command")).c_str(), "NAK");
-    mqttclient.publish((String(topic) + String("/Device_Control/AC_Max_Charge_Current")).c_str(), 000);
-    mqttclient.publish((String(topic) + String("/Device_Control/Max_Charge_Current")).c_str(), 000);
+   // mqttclient.publish((String(topic) + String("/Device_Control/Set_Command")).c_str(), "NAK");
+   // mqttclient.publish((String(topic) + String("/Device_Control/AC_Max_Charge_Current")).c_str(), 000);
+   // mqttclient.publish((String(topic) + String("/Device_Control/Max_Charge_Current")).c_str(), 000);
   }
 publishFirst = true;
   return true;
@@ -540,7 +542,8 @@ void callback(char *top, byte *payload, unsigned int length)
     if (strcmp(top, (topic + "/Device_Control/Set_Command").c_str()) == 0)
   {
     Serial1.println("Send Command message recived: " + messageTemp);
-    sendCommand(messageTemp);
+    String tmpResponse = sendCustomCommand(messageTemp);
+    mqttclient.publish((String(topic) + String("/Device_Control/Set_Command")).c_str(), tmpResponse.c_str());
       valChange = true;
 }
 }

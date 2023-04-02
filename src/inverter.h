@@ -3,6 +3,7 @@
 //Send and receive periodic inverter commands
 void serviceInverter();
 bool sendCommand(String com);
+String sendCustomCommand(String com);
 void sendMNCHGC(int val);
 void sendMUCHGC(int val);
 
