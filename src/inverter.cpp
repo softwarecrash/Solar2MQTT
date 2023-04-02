@@ -1,3 +1,7 @@
+// all protocols to build in here
+//https://github.com/jblance/mpp-solar/tree/master/docs/protocols
+
+
 #include "Arduino.h"
 #include "inverter.h"
 
