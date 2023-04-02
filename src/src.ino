@@ -28,7 +28,7 @@ WiFiClient client;
 
 //just for testing
 #include "devices/devicelist.h"
-
+StaticJsonDocument<2048> DeviceData;
 Settings _settings;
 
 PubSubClient mqttclient(client);
@@ -122,8 +122,12 @@ void setup()
 #ifdef SERIALDEBUG
   Serial1.begin(9600); // Debugging towards UART1
 
+
+
+
   //just for testing
-  Serial1.println(PIP30MAX);
+  deserializeJson(DeviceData, DataStructure);
+serializeJson(DeviceData, Serial1);
 
 
 #endif
