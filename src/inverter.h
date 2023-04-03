@@ -6,6 +6,7 @@ bool sendCommand(String com);
 String sendCustomCommand(String com);
 void sendMNCHGC(int val);
 void sendMUCHGC(int val);
+void initmpp();
 
 
 enum qCommand
@@ -63,8 +64,6 @@ struct QpigsMessage
   float reservedZ;
   float reservedAA;
   float reservedBB;
-
-  float cSOC;
 };
 
 struct QmodMessage

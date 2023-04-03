@@ -1,0 +1,5 @@
+https://github.com/jblance/mpp-solar/tree/master/docs/protocols
+PI30MAX:
+QPIGS (BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X YYY Z CCC <CRC><cr>
+PI30REVO: SOROTEC
+QPIGS (BBB.B CC.C DDD.D EE.E FFFF GGGG HHH III JJ.JJ KKK OOO TTTT EEEE UUU.U WW.WW PPPPP b7b6b5b4b3b2b1b0 <CRC><cr>

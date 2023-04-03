@@ -5,6 +5,10 @@
 /*************************************************************************************/
 #define SERIALDEBUG
 #include <EEPROM.h>
+
+
+
+
 #define ARDUINOJSON_USE_DOUBLE 0
 #define ARDUINOJSON_USE_LONG_LONG 0
 #include <PubSubClient.h>
@@ -23,11 +27,14 @@
 #include "webpages/settings.h"     //settings page
 #include "webpages/settingsedit.h" //mqtt settings page
 
+#include "MPP_SERIAL/devicelist.h"
+
+
 WiFiClient client;
 
 
 //just for testing
-#include "devices/devicelist.h"
+
 StaticJsonDocument<2048> DeviceData;
 Settings _settings;
 
@@ -120,37 +127,37 @@ void setup()
   wm.setSaveConfigCallback(saveConfigCallback);
 
 #ifdef SERIALDEBUG
-  Serial1.begin(9600); // Debugging towards UART1
+  Serial.begin(9600); // Debugging towards UART1
 
-
+initmpp(); //start softserial
 
 
   //just for testing
 if(1==1){
-  deserializeJson(DeviceData, PI30MAX);
+ // deserializeJson(DeviceData, PI30MAX);
 }
-serializeJson(DeviceData, Serial1);
+serializeJson(DeviceData, Serial);
 
 
 #endif
-  Serial.begin(2400); // Using UART0 for comm with inverter. IE cant be connected during flashing
+ // Serial.begin(2400); // Using UART0 for comm with inverter. IE cant be connected during flashing
 
 #ifdef SERIALDEBUG
-  Serial1.println();
-  Serial1.printf("Device Name:\t");
-  Serial1.println(_settings._deviceName);
-  Serial1.printf("Mqtt Server:\t");
-  Serial1.println(_settings._mqttServer);
-  Serial1.printf("Mqtt Port:\t");
-  Serial1.println(_settings._mqttPort);
-  Serial1.printf("Mqtt User:\t");
-  Serial1.println(_settings._mqttUser);
-  Serial1.printf("Mqtt Passwort:\t");
-  Serial1.println(_settings._mqttPassword);
-  Serial1.printf("Mqtt Interval:\t");
-  Serial1.println(_settings._mqttRefresh);
-  Serial1.printf("Mqtt Topic:\t");
-  Serial1.println(_settings._mqttTopic);
+  Serial.println();
+  Serial.printf("Device Name:\t");
+  Serial.println(_settings._deviceName);
+  Serial.printf("Mqtt Server:\t");
+  Serial.println(_settings._mqttServer);
+  Serial.printf("Mqtt Port:\t");
+  Serial.println(_settings._mqttPort);
+  Serial.printf("Mqtt User:\t");
+  Serial.println(_settings._mqttUser);
+  Serial.printf("Mqtt Passwort:\t");
+  Serial.println(_settings._mqttPassword);
+  Serial.printf("Mqtt Interval:\t");
+  Serial.println(_settings._mqttRefresh);
+  Serial.printf("Mqtt Topic:\t");
+  Serial.println(_settings._mqttTopic);
 #endif
   //create custom wifimanager fields
 
@@ -202,7 +209,7 @@ serializeJson(DeviceData, Serial1);
   if (!res)
   {
 #ifdef SERIALDEBUG
-    Serial1.println("Failed to connect or hit timeout");
+    Serial.println("Failed to connect or hit timeout");
 #endif
   }
   else
@@ -240,7 +247,6 @@ serializeJson(DeviceData, Serial1);
                 liveJson["solarV"] = _qpigsMessage.solarV;
                 liveJson["solarA"] = _qpigsMessage.solarA;
                 liveJson["solarW"] = _qpigsMessage.solarW;
-                liveJson["cSOC"] = _qpigsMessage.cSOC;
                 liveJson["iv_mode"] = _qmodMessage.operationMode;
                 liveJson["device_name"] = _settings._deviceName;
                 serializeJson(liveJson, *response);
@@ -362,7 +368,7 @@ serializeJson(DeviceData, Serial1);
     server.begin();
     MDNS.addService("http", "tcp", 80);
 #ifdef SERIALDEBUG
-    Serial1.println("Webserver Running...");
+    Serial.println("Webserver Running...");
 #endif
   }
 
@@ -445,20 +451,20 @@ bool sendtoMQTT()
     if (mqttclient.connect((String(_settings._deviceName)).c_str(), _settings._mqttUser.c_str(), _settings._mqttPassword.c_str()))
     {
 #ifdef SERIALDEBUG
-      Serial1.println(F("Reconnected to MQTT SERVER"));
+      Serial.println(F("Reconnected to MQTT SERVER"));
 #endif
       mqttclient.publish((topic + String("/IP")).c_str(), String(WiFi.localIP().toString()).c_str());
     }
     else
     {
 #ifdef SERIALDEBUG
-      Serial1.println(F("CANT CONNECT TO MQTT"));
+      Serial.println(F("CANT CONNECT TO MQTT"));
 #endif
       return false; // Exit if we couldnt connect to MQTT brooker
     }
   }
 #ifdef SERIALDEBUG
-  Serial1.println(F("Data sent to MQTT Server"));
+  Serial.println(F("Data sent to MQTT Server"));
 #endif
 
   //qpigs
@@ -481,8 +487,6 @@ bool sendtoMQTT()
   mqttclient.publish((String(topic) + String("/PV_Watt")).c_str(), String(_qpigsMessage.solarW).c_str());
   //qmod
   mqttclient.publish((String(topic) + String("/Inverter_Operation_Mode")).c_str(), String(_qmodMessage.operationMode).c_str());
-  //Beta
-  mqttclient.publish((String(topic) + String("/Calculated_SOC")).c_str(), String(_qpigsMessage.cSOC).c_str());
   //piri
   mqttclient.publish((String(topic) + String("/Device_Data/Grid_rating_voltage")).c_str(), String(_qpiriMessage.gridRatingV).c_str());
   mqttclient.publish((String(topic) + String("/Device_Data/Grid_rating_current")).c_str(), String(_qpiriMessage.gridRatingA).c_str());
@@ -536,7 +540,7 @@ void callback(char *top, byte *payload, unsigned int length)
   //modify the max charging current
   if (strcmp(top, (topic + "/Device_Control/Max_Charge_Current").c_str()) == 0)
   {
-    Serial1.println("message recived");
+    Serial.println("message recived");
     if (messageTemp.toInt() != _qpiriMessage.battMaxChrgA)
     {
       sendMNCHGC(messageTemp.toInt());
@@ -546,7 +550,7 @@ void callback(char *top, byte *payload, unsigned int length)
   //modify the max ac charging current
   if (strcmp(top, (topic + "/Device_Control/AC_Max_Charge_Current").c_str()) == 0)
   {
-    Serial1.println("message recived");
+    Serial.println("message recived");
     if (messageTemp.toInt() != _qpiriMessage.battMaxAcChrgA)
     {
       sendMUCHGC(messageTemp.toInt());
@@ -556,7 +560,7 @@ void callback(char *top, byte *payload, unsigned int length)
   //send raw control command
     if (strcmp(top, (topic + "/Device_Control/Set_Command").c_str()) == 0)
   {
-    Serial1.println("Send Command message recived: " + messageTemp);
+    Serial.println("Send Command message recived: " + messageTemp);
     String tmpResponse = sendCustomCommand(messageTemp);
     mqttclient.publish((String(topic) + String("/Device_Control/Set_Command")).c_str(), tmpResponse.c_str());
       valChange = true;

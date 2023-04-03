@@ -51,7 +51,7 @@ const char HTML_MAIN[] PROGMEM = R"rawliteral(
 <div class="bg-light">Battery: </div>
 </div>
 <div class="col">
-<div class="bg-light"><span id="battV">N/A</span><span id="battPercent">N/A</span><span id="cSOC">N/A</span></div>
+<div class="bg-light"><span id="battV">N/A</span><span id="battPercent">N/A</span></div>
 </div>
 </div>
 <div class="row gx-0 mb-2">
@@ -100,7 +100,6 @@ const char HTML_MAIN[] PROGMEM = R"rawliteral(
                document.getElementById("battChargeA").innerHTML = data.battChargeA+'A ';
                document.getElementById("battDischargeA").innerHTML = data.battDischargeA+'A ';
                document.getElementById("sccBattV").innerHTML = data.sccBattV+'V ';
-               document.getElementById("cSOC").innerHTML = data.cSOC+'%% ';
                document.getElementById("ivmode").innerHTML = data.iv_mode;
                document.getElementById("devicename").innerHTML = 'Device: '+data.device_name;
             }
