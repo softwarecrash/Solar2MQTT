@@ -4,6 +4,13 @@
 
 #include "Arduino.h"
 #include "inverter.h"
+#include "SoftwareSerial.h"
+
+SoftwareSerial SerialInverter;
+
+#include "CRC16.h"
+#include "CRC.h"
+CRC16 crc;
 
 String _commandBuffer;
 
@@ -20,61 +27,46 @@ QpiriMessage _qpiriMessage = {0};
 
 
 QRaw _qRaw;
-//QAv _qAv;
 
-//Found here: http://forums.aeva.asn.au/pip4048ms-inverter_topic4332_post53760.html#53760
-#define INT16U unsigned int
-#define INT8U byte
+//#define INT16U unsigned int
+//#define INT8U byte
 
 #define SERIALDEBUG
 
-//short map function for float mapping
-float mapf(float value, float fromLow, float fromHigh, float toLow, float toHigh)
-{
-  float result;
-  result = (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
-  return result;
+void initmpp(){
+  SerialInverter.begin(2400, SWSERIAL_8N1, 12, 13, false);
 }
 
-unsigned short cal_crc_half(byte *pin, byte len)
+String appendCRC(String data) // get the crc from a string
 {
-  unsigned short crc;
-  byte da;
-  byte *ptr;
-  byte bCRCHign;
-  byte bCRCLow;
+  crc.reset();
+  crc.setPolynome(0x1021);
+  crc.add((uint8_t *)data.c_str(), data.length());
+  typedef union
+  {
+    struct
+    {
+      char cL;
+      char cH;
+    };
+    uint16_t u;
+  } cu_t;
+  cu_t v;
+  v.u = crc.getCRC();
+  data.concat(v.cH);
+  data.concat(v.cL);
 
-  const unsigned short crc_ta[16] =
-      {
-          0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
-          0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef};
-
-  ptr = pin;
-  crc = 0;
-  while (len-- != 0)
-  {
-    da = ((byte)(crc >> 8)) >> 4;
-    crc <<= 4;
-    crc ^= crc_ta[da ^ (*ptr >> 4)];
-    da = ((byte)(crc >> 8)) >> 4;
-    crc <<= 4;
-    crc ^= crc_ta[da ^ (*ptr & 0x0f)];
-    ptr++;
-  }
-  bCRCLow = crc;
-  bCRCHign = (byte)(crc >> 8);
-  if (bCRCLow == 0x28 || bCRCLow == 0x0d || bCRCLow == 0x0a)
-  {
-    bCRCLow++;
-  }
-  if (bCRCHign == 0x28 || bCRCHign == 0x0d || bCRCHign == 0x0a)
-  {
-    bCRCHign++;
-  }
-  crc = ((unsigned short)bCRCHign) << 8;
-  crc += bCRCLow;
-  return (crc);
+  return data;
 }
+
+uint16_t getCRC(String data) // get the crc from a string
+{
+  crc.reset();
+  crc.setPolynome(0x1021);
+  crc.add((uint8_t *)data.c_str(), data.length());
+  return crc.getCRC(); // here comes the crc;
+}
+
 
 //Parses out the next number in the command string, starting at index
 //updates index as it goes
@@ -171,17 +163,6 @@ bool onPIGS() //QPIGS<cr>: Device general status parameters inquiry
       _qpigsMessage.reservedZ = getNextLong(_commandBuffer, index);                         //24
       _qpigsMessage.reservedAA = getNextLong(_commandBuffer, index);                        //25
       _qpigsMessage.reservedBB = getNextLong(_commandBuffer, index);                        //26
-
-    //Beta
-    //calculate the real SOC
-    if (_qpigsMessage.sccBattV > _qpigsMessage.battV)
-    {
-      _qpigsMessage.cSOC = constrain(round(mapf(_qpigsMessage.battV, _qpiriMessage.battreChargeV, _qpiriMessage.battBulkV, 0, 100)),0,100);
-    }
-    else
-    {
-      _qpigsMessage.cSOC = constrain(round(mapf(_qpigsMessage.battV, _qpiriMessage.battreChargeV, _qpiriMessage.battFloatV, 0, 100)),0,100);
-    }
     return true;
   }
 }
@@ -427,108 +408,59 @@ bool onPI() //QPI<cr>: Device Protocol ID Inquiry
 bool sendCommand(String command)
 {
   _commandBuffer = "";
-
-  unsigned short crc = cal_crc_half((byte *)command.c_str(), command.length());
-
 #ifdef SERIALDEBUG
-  Serial1.print(F("Sent Command: "));
-  Serial1.println(command);
-
+  Serial.print(F("Sent Command: "));
+  Serial.println(command);
 #endif
-  Serial.print(command);
-  Serial.print((char)((crc >> 8) & 0xFF)); //ONLY CRC fo PCM/PIP
-  Serial.print((char)((crc >> 0) & 0xFF)); //ONLY CRC fo PCM/PIP
-  Serial.print("\r");
+  SerialInverter.print(appendCRC(command));
+  SerialInverter.print("\r");
 
 
-  _commandBuffer = Serial.readStringUntil('\n');
-
-
-  unsigned short calculatedCrc = cal_crc_half((byte *)_commandBuffer.c_str(), _commandBuffer.length() - 2);
-  unsigned short recievedCrc = ((unsigned short)_commandBuffer[_commandBuffer.length() - 2] << 8);
-
-  //remove the CRC from recived command
-  if (_commandBuffer[_commandBuffer.length() - 2] < 6)
-  {
-    _commandBuffer.remove(_commandBuffer.length() - 2);
-  }
-  else
-  {
-    _commandBuffer.remove(_commandBuffer.length() - 3);
-  }
-
-//for bugfix add a space at the end of commandstring
-_commandBuffer.concat(" ");
-
+  _commandBuffer = SerialInverter.readStringUntil('\r');
 #ifdef SERIALDEBUG
-      Serial1.print(F("   Calc: "));
-      Serial1.print(calculatedCrc, HEX);
-      Serial1.print(F("   Rx: "));
-      Serial1.println(recievedCrc, HEX);
-      Serial1.print(F("   Recived: "));
-      Serial1.println(_commandBuffer);
+    Serial.print(F("   Calc: "));
+    Serial.print(getCRC(_commandBuffer.substring(0, _commandBuffer.length() - 2)), HEX);
+    Serial.print(F("   Rx: "));
+    Serial.println(256U * (uint8_t)_commandBuffer[_commandBuffer.length() - 2] + (uint8_t)_commandBuffer[_commandBuffer.length() - 1], HEX);
+    Serial.print(F("   Recived: "));
+    Serial.println(_commandBuffer.substring(0, _commandBuffer.length() - 2).c_str());
 #endif
-
-  if (calculatedCrc == recievedCrc)
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
+    if (getCRC(_commandBuffer.substring(0, _commandBuffer.length() - 2)) == 256U * (uint8_t)_commandBuffer[_commandBuffer.length() - 2] + (uint8_t)_commandBuffer[_commandBuffer.length() - 1])
+    {
+      _commandBuffer.remove(_commandBuffer.length() - 2);
+      return true;
+      //answer(_commandBuffer.substring(0, _commandBuffer.length() - 2).c_str());
+    }
+    else
+    {
+      return false;
+    }
 }
-
 
 
 String sendCustomCommand(String command)
 {
-  _commandBuffer = "";
-
-  unsigned short crc = cal_crc_half((byte *)command.c_str(), command.length());
-
+_commandBuffer = "";
 #ifdef SERIALDEBUG
-  Serial1.print(F("Sent Command: "));
-  Serial1.println(command);
-
+  Serial.print(F("Sent Command: "));
+  Serial.println(command);
 #endif
-  Serial.print(command);
-  Serial.print((char)((crc >> 8) & 0xFF)); //ONLY CRC fo PCM/PIP
-  Serial.print((char)((crc >> 0) & 0xFF)); //ONLY CRC fo PCM/PIP
-  Serial.print("\r");
+  SerialInverter.print(appendCRC(command));
+  SerialInverter.print("\r");
 
 
-  _commandBuffer = Serial.readStringUntil('\n');
-
-
-  unsigned short calculatedCrc = cal_crc_half((byte *)_commandBuffer.c_str(), _commandBuffer.length() - 2);
-  unsigned short recievedCrc = ((unsigned short)_commandBuffer[_commandBuffer.length() - 2] << 8);
-
-  //remove the CRC from recived command
-  if (_commandBuffer[_commandBuffer.length() - 2] < 6)
-  {
-    _commandBuffer.remove(_commandBuffer.length() - 2);
-  }
-  else
-  {
-    _commandBuffer.remove(_commandBuffer.length() - 3);
-  }
-
-//for bugfix add a space at the end of commandstring
-_commandBuffer.concat(" ");
-
+  _commandBuffer = SerialInverter.readStringUntil('\r');
 #ifdef SERIALDEBUG
-      Serial1.print(F("   Calc: "));
-      Serial1.print(calculatedCrc, HEX);
-      Serial1.print(F("   Rx: "));
-      Serial1.println(recievedCrc, HEX);
-      Serial1.print(F("   Recived: "));
-      Serial1.println(_commandBuffer);
+    Serial.print(F("   Calc: "));
+    Serial.print(getCRC(_commandBuffer.substring(0, _commandBuffer.length() - 2)), HEX);
+    Serial.print(F("   Rx: "));
+    Serial.println(256U * (uint8_t)_commandBuffer[_commandBuffer.length() - 2] + (uint8_t)_commandBuffer[_commandBuffer.length() - 1], HEX);
+    Serial.print(F("   Recived: "));
+    Serial.println(_commandBuffer.substring(0, _commandBuffer.length() - 2).c_str());
 #endif
-
-  if (calculatedCrc == recievedCrc)
+  if (getCRC(_commandBuffer.substring(0, _commandBuffer.length() - 2)) == 256U * (uint8_t)_commandBuffer[_commandBuffer.length() - 2] + (uint8_t)_commandBuffer[_commandBuffer.length() - 1])
   {
-    return _commandBuffer;
+    return _commandBuffer.substring(0, _commandBuffer.length() - 2).c_str();
   }
   else
   {
