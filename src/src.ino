@@ -11,6 +11,7 @@
 
 #define ARDUINOJSON_USE_DOUBLE 0
 #define ARDUINOJSON_USE_LONG_LONG 0
+#define ARDUINOJSON_ENABLE_PROGMEM 1
 #include <PubSubClient.h>
 
 #include <ArduinoJson.h>
@@ -133,10 +134,9 @@ initmpp(); //start softserial
 
 
   //just for testing
-if(1==1){
- // deserializeJson(DeviceData, PI30MAX);
-}
-serializeJson(DeviceData, Serial);
+deserializeJson(DeviceData, PI30MAX);//read the command map
+
+//serializeJson(DeviceData, Serial); //print it out
 
 
 #endif

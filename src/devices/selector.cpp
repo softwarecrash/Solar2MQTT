@@ -1,5 +1,4 @@
-#include "Arduino.h"
-if (1==1)
+void protocolType()
 {
-    /* code */
+    
 }
