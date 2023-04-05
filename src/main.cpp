@@ -31,6 +31,10 @@
 
 WiFiClient client;
 
+
+//just for testing
+
+StaticJsonDocument<2048> DeviceData;
 Settings _settings;
 
 PubSubClient mqttclient(client);
@@ -128,6 +132,11 @@ void setup()
 
 //später ordentlich machen
 initmpp(); //start softserial
+
+
+  //just for testing
+deserializeJson(DeviceData, PI30MAX);//read the command map
+serializeJson(DeviceData, Serial); //print it out
 
 
 
