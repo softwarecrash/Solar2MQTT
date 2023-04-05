@@ -64,6 +64,10 @@ struct QpigsMessage
   float reservedZ;
   float reservedAA;
   float reservedBB;
+
+
+  //array of data from qpigs answer, first is name, second is value
+  const char * QpigsMessage[2][100];
 };
 
 struct QmodMessage

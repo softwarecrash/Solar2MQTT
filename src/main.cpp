@@ -1,13 +1,11 @@
-/*************************************************************************************
-/* ALl credits for some bits from https://github.com/scottwday/InverterOfThings
-/* And i have trashed alot of his code, rewritten some. So thanks to him and credits to him. 
-/* Changes by softwarecrash
-/*************************************************************************************/
+/*
+ ALl credits for some bits from https://github.com/scottwday/InverterOfThings
+ And i have trashed alot of his code, rewritten some. So thanks to him and credits to him. 
+ Changes by softwarecrash
+*/
+#include "main.h"
 #define SERIALDEBUG
 #include <EEPROM.h>
-
-
-
 
 #define ARDUINOJSON_USE_DOUBLE 0
 #define ARDUINOJSON_USE_LONG_LONG 0
@@ -33,10 +31,6 @@
 
 WiFiClient client;
 
-
-//just for testing
-
-StaticJsonDocument<2048> DeviceData;
 Settings _settings;
 
 PubSubClient mqttclient(client);
@@ -130,19 +124,13 @@ void setup()
 #ifdef SERIALDEBUG
   Serial.begin(9600); // Debugging towards UART1
 
+
+
+//später ordentlich machen
 initmpp(); //start softserial
 
 
-  //just for testing
-deserializeJson(DeviceData, PI30MAX);//read the command map
 
-//serializeJson(DeviceData, Serial); //print it out
-
-
-#endif
- // Serial.begin(2400); // Using UART0 for comm with inverter. IE cant be connected during flashing
-
-#ifdef SERIALDEBUG
   Serial.println();
   Serial.printf("Device Name:\t");
   Serial.println(_settings._deviceName);
@@ -203,7 +191,7 @@ deserializeJson(DeviceData, PI30MAX);//read the command map
 
   mqttclient.setServer(_settings._mqttServer.c_str(), _settings._mqttPort);
 
-  mqttclient.setCallback(callback);
+  mqttclient.setCallback(mqttcallback);
 
   //check is WiFi connected
   if (!res)
@@ -528,7 +516,7 @@ publishFirst = true;
   return true;
 }
 
-void callback(char *top, byte *payload, unsigned int length)
+void mqttcallback(char *top, unsigned char *payload, unsigned int length)
 {
   if(!publishFirst) return;
   String messageTemp;
