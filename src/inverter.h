@@ -33,10 +33,10 @@ enum protocolType
   PI16,
   PI17,
   PI18,
-  PI30_MAX,
+  PI30_MAX,// current implementet protocol
   PI30_REVO,
   PI30_C,
-  PI30_HS_MS_MSX, // current implementet protocol
+  PI30_HS_MS_MSX, 
   PI30_PIP,
   PI34,
   PI41,
@@ -79,11 +79,18 @@ struct QpigsMessage
   float reservedZ;
   float reservedAA;
   float reservedBB;
-
-
-  //array of data from qpigs answer, first is name, second is value
-  const char * QpigsMessage[2][100];
 };
+
+
+
+struct InverterData
+{
+  //array of data from qpigs answer, first is name, second is value
+  const char * qpigs[2][100];
+  const char * qpiri[2][100];
+};
+
+
 
 struct QmodMessage
 {
