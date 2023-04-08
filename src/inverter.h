@@ -27,6 +27,21 @@ enum qCommand
   QOPM,
 };
 
+enum protocolType
+{
+  PI00,
+  PI16,
+  PI17,
+  PI18,
+  PI30_MAX,
+  PI30_REVO,
+  PI30_C,
+  PI30_HS_MS_MSX, // current implementet protocol
+  PI30_PIP,
+  PI34,
+  PI41,
+};
+
 void requestInverter(qCommand);
 
 struct QpiMessage

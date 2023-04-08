@@ -26,15 +26,9 @@
 #include "webpages/settings.h"     //settings page
 #include "webpages/settingsedit.h" //mqtt settings page
 
-#include "MPP_SERIAL/devicelist.h"
-
 
 WiFiClient client;
 
-
-//just for testing
-
-StaticJsonDocument<2048> DeviceData;
 Settings _settings;
 
 PubSubClient mqttclient(client);
@@ -132,12 +126,6 @@ void setup()
 
 //später ordentlich machen
 initmpp(); //start softserial
-
-
-  //just for testing
-deserializeJson(DeviceData, PI30MAX);//read the command map
-serializeJson(DeviceData, Serial); //print it out
-
 
 
   Serial.println();
@@ -533,7 +521,7 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
   {
     messageTemp += (char)payload[i];
   }
-  if(messageTemp == "NAK") return;
+  if(messageTemp == "NAK" || messageTemp == "(NAK" || messageTemp == "") return;
   //modify the max charging current
   if (strcmp(top, (topic + "/Device_Control/Max_Charge_Current").c_str()) == 0)
   {
