@@ -25,8 +25,9 @@ QpiriMessage _qpiriMessage = {0};
 
 QRaw _qRaw;
 
-// #define INT16U unsigned int
-// #define INT8U byte
+// for testing manual set the inverter
+int inverterType = PI30_MAX;
+const char *startChar = "(";
 
 #define SERIALDEBUG
 
@@ -124,15 +125,10 @@ bool getNextBit(String &command, int &index)
 
 bool onPIGS() // QPIGS<cr>: Device general status parameters inquiry
 {
-  // if(_commandBuffer[1]=='N') _qAv.QPIGS = false; //deactivate if NAK
-  if (_commandBuffer.length() < 60 || _commandBuffer.substring(1, 3) == "NAK")
-  {
-    return false;
-  }
-  else
+  if (inverterType == PI30_MAX)
   {
     _qRaw.QPIGS = _commandBuffer;
-    int index = 1;                                                           // after the starting '('
+    int index = 0;                                                           // after the starting '('
     _qpigsMessage.gridV = getNextFloat(_commandBuffer, index);               // 1
     _qpigsMessage.gridHz = getNextFloat(_commandBuffer, index);              // 2
     _qpigsMessage.acOutV = getNextFloat(_commandBuffer, index);              // 3
@@ -162,19 +158,18 @@ bool onPIGS() // QPIGS<cr>: Device general status parameters inquiry
     _qpigsMessage.reservedBB = getNextLong(_commandBuffer, index);                        // 26
     return true;
   }
+  else
+  {
+    return false;
+  }
 }
 
 bool onPIRI() // QPIRI<cr>: Device Rating Information inquiry
 {
-  // if(_commandBuffer[1]=='N') _qAv.QPIRI = false; //deactivate if NAK
-  if (_commandBuffer.length() < 45)
-  {
-    return false;
-  }
-  else
+  if (inverterType == PI30_MAX)
   {
     _qRaw.QPIRI = _commandBuffer;
-    int index = 1;                                                     // after the starting '('
+    int index = 0;                                                     // after the starting '('
     _qpiriMessage.gridRatingV = getNextFloat(_commandBuffer, index);   // BBB.B
     _qpiriMessage.gridRatingA = getNextFloat(_commandBuffer, index);   // CC.C
     _qpiriMessage.acOutRatingV = getNextFloat(_commandBuffer, index);  // DDD.D
@@ -207,23 +202,22 @@ bool onPIRI() // QPIRI<cr>: Device Rating Information inquiry
 
     return true;
   }
+  else
+  {
+    return false;
+  }
 }
 
 bool onMOD() // QMOD<cr>: Device Mode inquiry
 {
-  // if(_commandBuffer[1]=='N') _qAv.QMOD = false; //deactivate if NAK
-  if (_commandBuffer.length() < 2)
-  {
-    return false;
-  }
-  else
+  if (inverterType == PI30_MAX)
   {
     _qRaw.QMOD = _commandBuffer;
-    _qmodMessage.mode = _commandBuffer[1];
-    switch (_commandBuffer[1])
+    _qmodMessage.mode = _commandBuffer[0];
+    switch (_commandBuffer[0])
     {
     default:
-      _qmodMessage.operationMode = "Undefined, Origin: " + _commandBuffer[1];
+      _qmodMessage.operationMode = "Undefined, Origin: " + _commandBuffer[0];
       break;
     case 'P':
       _qmodMessage.operationMode = "Power On";
@@ -258,18 +252,17 @@ bool onMOD() // QMOD<cr>: Device Mode inquiry
     }
     return true;
   }
+  else
+  {
+    return false;
+  }
 }
 
 bool onMCHGCR() // QMOD<cr>: Device Mode inquiry
 {
-  // if(_commandBuffer[1]=='N') _qAv.QMOD = false; //deactivate if NAK
-  if (_commandBuffer.length() < 2)
+  if (inverterType == PI30_MAX)
   {
-    return false;
-  }
-  else
-  {
-    int index = 1; // after the starting '('
+    int index = 0; // after the starting '('
     _qRaw.QMCHGCR = _commandBuffer;
 
     for (size_t i = 0; i < sizeof(_qchgcrMessage.chargeModes); i++)
@@ -279,18 +272,17 @@ bool onMCHGCR() // QMOD<cr>: Device Mode inquiry
 
     return true;
   }
+  else
+  {
+    return false;
+  }
 }
 
 bool onMUCHGCR() // QMOD<cr>: Device Mode inquiry
 {
-  // if(_commandBuffer[1]=='N') _qAv.QMOD = false; //deactivate if NAK
-  if (_commandBuffer.length() < 2)
+  if (inverterType == PI30_MAX)
   {
-    return false;
-  }
-  else
-  {
-    int index = 1; // after the starting '('
+    int index = 0; // after the starting '('
     _qRaw.QMUCHGCR = _commandBuffer;
     for (size_t i = 0; i < sizeof(_qchgcrMessage.uChargeModes); i++)
     {
@@ -299,19 +291,18 @@ bool onMUCHGCR() // QMOD<cr>: Device Mode inquiry
 
     return true;
   }
+  else
+  {
+    return false;
+  }
 }
 
 bool onPIWS() // QPIWS<cr>: Device Warning Status inquiry
 {
-  // if(_commandBuffer[1]=='N') _qAv.QPIWS = false; //deactivate if NAK
-  if (_commandBuffer.length() < 32)
-  {
-    return false;
-  }
-  else
+  if (inverterType == PI30_MAX)
   {
     _qRaw.QPIWS = _commandBuffer;
-    int index = 1; // after the starting '('
+    int index = 0; // after the starting '('
     _qpiwsMessage.reserved0 = getNextBit(_commandBuffer, index);
     _qpiwsMessage.inverterFault = getNextBit(_commandBuffer, index);
     _qpiwsMessage.busOver = getNextBit(_commandBuffer, index);
@@ -345,19 +336,18 @@ bool onPIWS() // QPIWS<cr>: Device Warning Status inquiry
 
     return true;
   }
+  else
+  {
+    return false;
+  }
 }
 
 bool onFLAG() // QFLAG<cr>: Device flag status inquiry
 {
-  // if(_commandBuffer[1]=='N') _qAv.QFLAG = false; //deactivate if NAK
-  if (_commandBuffer.length() < 10)
-  {
-    return false;
-  }
-  else
+  if (inverterType == PI30_MAX)
   {
     _qRaw.QFLAG = _commandBuffer;
-    int index = 1; // after the starting '('
+    int index = 0; // after the starting '('
     _qflagMessage.disableBuzzer = getNextBit(_commandBuffer, index);
     _qflagMessage.enableOverloadBypass = getNextBit(_commandBuffer, index);
     _qflagMessage.enablePowerSaving = getNextBit(_commandBuffer, index);
@@ -370,40 +360,42 @@ bool onFLAG() // QFLAG<cr>: Device flag status inquiry
 
     return true;
   }
+  else
+  {
+    return false;
+  }
 }
 
 bool onID() // QID<cr>: The device ID inquiry
 {
-  // if(_commandBuffer[1]=='N') _qAv.QID = false; //deactivate if NAK
-  if (_commandBuffer.length() < 15)
-  {
-    return false;
-  }
-  else
+  if (inverterType == PI30_MAX)
   {
     _qRaw.QID = _commandBuffer;
     // Discard the first '('
-    _commandBuffer.substring(1).toCharArray(_qidMessage.id, sizeof(_qidMessage.id) - 1);
+    // _commandBuffer.substring(0).toCharArray(_qidMessage.id, sizeof(_qidMessage.id) - 1);
 
     return true;
+  }
+  else
+  {
+    return false;
   }
 }
 
 bool onPI() // QPI<cr>: Device Protocol ID Inquiry
 {
-  // if(_commandBuffer[1]=='N') _qAv.QPI = false; //deactivate if NAK
-  if (_commandBuffer.length() < 5)
-  {
-    return false;
-  }
-  else
+  if (inverterType == PI30_MAX)
   {
     _qRaw.QPI = _commandBuffer;
     // Get number after '(PI'
-    int index = 1;
+    int index = 0;
     _qpiMessage.protocolId = (byte)getNextLong(_commandBuffer, index);
 
     return true;
+  }
+  else
+  {
+    return false;
   }
 }
 
@@ -427,7 +419,13 @@ bool sendCommand(String command)
 #endif
   if (getCRC(_commandBuffer.substring(0, _commandBuffer.length() - 2)) == 256U * (uint8_t)_commandBuffer[_commandBuffer.length() - 2] + (uint8_t)_commandBuffer[_commandBuffer.length() - 1])
   {
-    _commandBuffer.remove(_commandBuffer.length() - 2);
+    _commandBuffer.remove(_commandBuffer.length() - 2); // remove the crc
+    _commandBuffer.remove(0, strlen(startChar));        // remove the start character
+    Serial.println(_commandBuffer);
+    if (_commandBuffer == "(NAK)")
+    {
+      return false;
+    }
     return true;
     // answer(_commandBuffer.substring(0, _commandBuffer.length() - 2).c_str());
   }
