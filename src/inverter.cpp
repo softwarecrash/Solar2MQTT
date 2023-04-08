@@ -422,7 +422,7 @@ bool sendCommand(String command)
     _commandBuffer.remove(_commandBuffer.length() - 2); // remove the crc
     _commandBuffer.remove(0, strlen(startChar));        // remove the start character
     Serial.println(_commandBuffer);
-    if (_commandBuffer == "(NAK)")
+    if (_commandBuffer == "NAK")
     {
       return false;
     }
