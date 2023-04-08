@@ -86,8 +86,18 @@ struct QpigsMessage
 struct InverterData
 {
   //array of data from qpigs answer, first is name, second is value
-  const char * qpigs[2][100];
-  const char * qpiri[2][100];
+  const char * qpigs[3][30];
+
+  const char * qpiri[3][30];
+  /*
+  qpigs[0][0] = "0" //no data avaible
+  qpigs[1][0] = "PV_Watt" //data name
+  qpigs[2][0] = "0.00" //data value
+
+  qpigs[0][1] = "1" //data avaible
+  qpigs[1][1] = "PV_Volt" //data name
+  qpigs[2][1] = "0.00" //data value
+  */
 };
 
 
