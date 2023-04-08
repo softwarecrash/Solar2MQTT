@@ -492,6 +492,10 @@ bool sendtoMQTT()
   mqttclient.publish((String(topic) + String("/Device_Data/Current_max_AC_charging_current")).c_str(), String(_qpiriMessage.battMaxAcChrgA).c_str());
   mqttclient.publish((String(topic) + String("/Device_Data/Current_max_charging_current")).c_str(), String(_qpiriMessage.battMaxChrgA).c_str());
 
+//for test
+  mqttclient.publish((String(topic) + String("/PV_Watt1")).c_str(), String(_qpigsMessage.solarW1).c_str());
+
+
 //RAW Messages from Inverter
 #ifdef MQTTDEBUG
   mqttclient.publish((String(topic) + String("/RAW/QPIGS")).c_str(), String(_qRaw.QPIGS).c_str());

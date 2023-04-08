@@ -68,6 +68,8 @@ struct QpigsMessage
   float sccBattV;
   byte battDischargeA;
   short solarW;
+//for test
+  short solarW1;
 
   float addSbuPriorityVersion;
   float isConfigChanged;
@@ -97,6 +99,9 @@ struct InverterData
   qpigs[0][1] = "1" //data avaible
   qpigs[1][1] = "PV_Volt" //data name
   qpigs[2][1] = "0.00" //data value
+  eigentlich auch quatsch
+
+  ggf ein bool array was listet welche daten verfügbar sind
   */
 };
 
