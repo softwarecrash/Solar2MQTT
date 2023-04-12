@@ -4,7 +4,7 @@ void PI_Serial::PI30_HS_MS_MSX_QPIGS()
     if (commandAnswer != "NAK" && commandAnswer.length() == 106) // make sure
     {
         int index = 0;
-        get.variableData.gridV = PI_Serial::getNextFloat(commandAnswer, index);
+        get.variableData.gridV = getNextFloat(commandAnswer, index);
         get.variableData.gridHz = getNextFloat(commandAnswer, index);
         get.variableData.acOutV = getNextFloat(commandAnswer, index);
         get.variableData.acOutHz = getNextFloat(commandAnswer, index);
