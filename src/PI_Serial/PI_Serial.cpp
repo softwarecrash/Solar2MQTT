@@ -48,8 +48,20 @@ unsigned int PI_Serial::autoDetect() // function for autodetect the inverter typ
 
 bool PI_Serial::setProtocol(int protocolID)
 {
-    protocolID = PI30_MAX;
-    return true;
+    if (protocolID >= 0 && protocolID <= 20)
+    {
+        protocolType = protocolID;
+
+        Serial.print("Match protocol number: ");
+        Serial.println(protocolType);
+        return true;
+    }
+    else
+    {
+        Serial.print("protocol number: ");
+        Serial.println(protocolType);
+        return false;
+    }
 }
 
 bool PI_Serial::update()
@@ -61,47 +73,51 @@ bool PI_Serial::update()
 bool PI_Serial::getVariableData()
 {
     String commandAnswer;
-    protocolType = PI30_HS_MS_MSX;
     switch (protocolType)
     {
     case PI30_HS_MS_MSX:
         commandAnswer = this->requestData("QPIGS");
         if (commandAnswer != "NAK" && commandAnswer.length() == 106) // make sure
-        {   
+        {
             int index = 0;
-            get.variableData.gridV = getNextFloat(commandAnswer, index);               // 1
-            get.variableData.gridHz = getNextFloat(commandAnswer, index);              // 2
-            get.variableData.acOutV = getNextFloat(commandAnswer, index);              // 3
-            get.variableData.acOutHz = getNextFloat(commandAnswer, index);             // 4
-            get.variableData.acOutVa = (short)getNextLong(commandAnswer, index);       // 5
-            get.variableData.acOutW = (short)getNextLong(commandAnswer, index);        // 6
-            get.variableData.acOutPercent = (byte)getNextLong(commandAnswer, index);   // 7
-            get.variableData.busV = (short)getNextLong(commandAnswer, index);          // 8
-            get.variableData.battV = getNextFloat(commandAnswer, index);               // 9
+            get.variableData.gridV = getNextFloat(commandAnswer, index);
+            get.variableData.gridHz = getNextFloat(commandAnswer, index);
+            get.variableData.acOutV = getNextFloat(commandAnswer, index);
+            get.variableData.acOutHz = getNextFloat(commandAnswer, index);
+            get.variableData.acOutVa = (short)getNextLong(commandAnswer, index);
+            get.variableData.acOutW = (short)getNextLong(commandAnswer, index);
+            get.variableData.acOutPercent = (byte)getNextLong(commandAnswer, index);
+            get.variableData.busV = (short)getNextLong(commandAnswer, index);
+            get.variableData.battV = getNextFloat(commandAnswer, index);
 
-            get.variableData.batteryLoad = (byte)getNextLong(commandAnswer, index);    // 10 mit 16 vereinen?
+            get.variableData.batteryLoad = (byte)getNextLong(commandAnswer, index);
 
-            get.variableData.battPercent = (byte)getNextLong(commandAnswer, index);    // 11
-            get.variableData.heatSinkDegC = getNextFloat(commandAnswer, index);        // 12
-            get.variableData.solarA = (byte)getNextLong(commandAnswer, index);         // 13 input curent for battery from solar
-            get.variableData.solarV = (byte)getNextLong(commandAnswer, index);         // 14
-            get.variableData.sccBattV = getNextFloat(commandAnswer, index);            // 15
+            get.variableData.battPercent = (byte)getNextLong(commandAnswer, index);
+            get.variableData.heatSinkDegC = getNextFloat(commandAnswer, index);
+            get.variableData.solarA = (byte)getNextLong(commandAnswer, index);
+            get.variableData.solarV = (byte)getNextLong(commandAnswer, index);
+            get.variableData.sccBattV = getNextFloat(commandAnswer, index);
 
-            get.variableData.batteryLoad = (get.variableData.batteryLoad - (byte)getNextLong(commandAnswer, index)); // 16
+            get.variableData.batteryLoad = (get.variableData.batteryLoad - (byte)getNextLong(commandAnswer, index));
 
-            get.variableData.addSbuPriorityVersion = getNextLong(commandAnswer, index);             // 17
-            get.variableData.isConfigChanged = getNextLong(commandAnswer, index);                   // 18
-            get.variableData.isSccFirmwareUpdated = getNextFloat(commandAnswer, index);             // 19
-            get.variableData.solarW = getNextFloat(commandAnswer, index);                           // 20
-            get.variableData.battVoltageToSteadyWhileCharging = getNextFloat(commandAnswer, index); // 21
-            get.variableData.chargingStatus = getNextLong(commandAnswer, index);                    // 22
-            get.variableData.reservedY = getNextLong(commandAnswer, index);                         // 23
-            get.variableData.reservedZ = getNextLong(commandAnswer, index);                         // 24
-            get.variableData.reservedAA = getNextLong(commandAnswer, index);                        // 25
-            get.variableData.reservedBB = getNextLong(commandAnswer, index);                        // 26
+            get.variableData.addSbuPriorityVersion = getNextLong(commandAnswer, index);
+            get.variableData.isConfigChanged = getNextLong(commandAnswer, index);
+            get.variableData.isSccFirmwareUpdated = getNextFloat(commandAnswer, index);
+            get.variableData.solarW = getNextFloat(commandAnswer, index);
+            get.variableData.battVoltageToSteadyWhileCharging = getNextFloat(commandAnswer, index);
+            get.variableData.chargingStatus = getNextLong(commandAnswer, index);
+            get.variableData.reservedY = getNextLong(commandAnswer, index);
+            get.variableData.reservedZ = getNextLong(commandAnswer, index);
+            get.variableData.reservedAA = getNextLong(commandAnswer, index);
+            get.variableData.reservedBB = getNextLong(commandAnswer, index);
 
             Serial.println(commandAnswer.length()); // debug
             Serial.println(commandAnswer);          // debug
+        }
+        commandAnswer = this->requestData("QMOD");
+        if (commandAnswer != "NAK" && commandAnswer.length() == 1) // make sure
+        {
+           get.variableData.operationMode = getModeDesc((char)commandAnswer.charAt(0));
         }
         break;
 
@@ -221,54 +237,96 @@ uint16_t PI_Serial::getCRC(String data) // get a calculated crc from a string
     return crc.getCRC(); // here comes the crc;
 }
 
-float PI_Serial::getNextFloat(String &command, int &index) //Parses out the next long number
+float PI_Serial::getNextFloat(String &command, int &index) // Parses out the next long number
 {
-  String term = "";
-  while (index < (int)command.length())
-  {
-    char c = command[index];
-    ++index;
+    String term = "";
+    while (index < (int)command.length())
+    {
+        char c = command[index];
+        ++index;
 
-    if ((c == '.') || (c == '+') || (c == '-') || ((c >= '0') && (c <= '9')))
-    {
-      term += c;
+        if ((c == '.') || (c == '+') || (c == '-') || ((c >= '0') && (c <= '9')))
+        {
+            term += c;
+        }
+        else
+        {
+            return term.toFloat();
+        }
     }
-    else
-    {
-      return term.toFloat();
-    }
-  }
-  return 0;
+    return 0;
 }
 
-long PI_Serial::getNextLong(String &command, int &index) //Parses out the next number in the command string, starting at index
+long PI_Serial::getNextLong(String &command, int &index) // Parses out the next number in the command string, starting at index
 {
-  String term = "";
-  while (index < (int)command.length())
-  {
-    char c = command[index];
-    ++index;
+    String term = "";
+    while (index < (int)command.length())
+    {
+        char c = command[index];
+        ++index;
 
-    if ((c == '.') || ((c >= '0') && (c <= '9')))
-    {
-      term += c;
+        if ((c == '.') || ((c >= '0') && (c <= '9')))
+        {
+            term += c;
+        }
+        else
+        {
+            return term.toInt();
+        }
     }
-    else
-    {
-      return term.toInt();
-    }
-  }
-  return 0;
+    return 0;
 }
 
 bool PI_Serial::getNextBit(String &command, int &index) // Gets if the next character is '1'
 {
-  String term = "";
-  if (index < (int)command.length())
-  {
-    char c = command[index];
-    ++index;
-    return c == '1';
-  }
-  return false;
+    String term = "";
+    if (index < (int)command.length())
+    {
+        char c = command[index];
+        ++index;
+        return c == '1';
+    }
+    return false;
+}
+
+String PI_Serial::getModeDesc(char mode) //get the char from QMOD and make readable things
+{
+String modeString;
+            switch (mode)
+            {
+            default:
+                modeString = "Undefined, Origin: " + mode;
+                break;
+            case 'P':
+                modeString = "Power On";
+                break;
+            case 'S':
+                modeString = "Standby";
+                break;
+            case 'Y':
+                modeString = "Bypass";
+                break;
+            case 'L':
+                modeString = "Line";
+                break;
+            case 'B':
+                modeString = "Battery";
+                break;
+            case 'T':
+                modeString = "Battery Test";
+                break;
+            case 'F':
+                modeString = "Fault";
+                break;
+            case 'D':
+                modeString = "Shutdown";
+                break;
+            case 'G':
+                modeString = "Grid";
+                break;
+            case 'C':
+                modeString = "Charge";
+                break;
+            }
+return modeString;
 }

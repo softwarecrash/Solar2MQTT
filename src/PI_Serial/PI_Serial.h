@@ -46,7 +46,7 @@ public:
     byte requestCounter = 0;
     int soft_tx;
     int soft_rx;
-    unsigned int protocolType;
+    
 
     enum protocolType
     {
@@ -62,12 +62,6 @@ public:
         PI34,
         PI41,
     };
-
-    enum COMMAND
-    {
-
-    };
-
     struct
     {
         struct
@@ -178,6 +172,7 @@ public:
     std::function<void()> requestCallback;
 
 private:
+    unsigned int protocolType;
     /**
      * @brief get the crc from a string
      */
@@ -194,7 +189,7 @@ private:
     float getNextFloat(String &command, int &index);
 
     /**
-     * @brief Parses out the long 
+     * @brief Parses out the long
      */
     long getNextLong(String &command, int &index);
     /**
@@ -207,6 +202,11 @@ private:
      * @details calculates the checksum and sends the command over the specified serial connection
      */
     String requestData(String command);
+
+    /**
+     * @brief accept a achar and get back the operation mode as string
+     */
+    String getModeDesc(char mode);
 
     /**
      * @brief Clear all data from the Get struct

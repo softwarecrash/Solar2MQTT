@@ -117,6 +117,15 @@ void setup()
   //new gen mpp solar 
   mppClient.Init();
 
+
+
+
+
+
+
+
+
+
   WiFi.persistent(true); //fix wifi save bug
 
   AsyncWiFiManager wm(&server, &dns);
@@ -131,10 +140,6 @@ void setup()
 
 #ifdef SERIALDEBUG
   Serial.begin(9600); // Debugging towards UART1
-
-//später ordentlich machen
-//initmpp(); //start softserial
-
 
   Serial.println();
   Serial.printf("Device Name:\t");
@@ -152,6 +157,18 @@ void setup()
   Serial.printf("Mqtt Topic:\t");
   Serial.println(_settings._mqttTopic);
 #endif
+
+
+
+
+  mppClient.setProtocol(7);// nur für mich zum testen
+
+
+
+
+
+
+
   //create custom wifimanager fields
 
   AsyncWiFiManagerParameter custom_mqtt_server("mqtt_server", "MQTT server", NULL, 40);
