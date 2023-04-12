@@ -3,12 +3,7 @@
 #ifndef PI_SERIAL_H
 #define PI_SERIAL_H
 
-#ifndef SERIAL_TX
-#define SERIAL_TX 13
-#endif
-#ifndef SERIAL_RX
-#define SERIAL_RX 12
-#endif
+
 
 // time in ms for delay the bms requests, to fast brings connection error
 #define DELAYTINME 100

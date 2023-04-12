@@ -15,8 +15,8 @@ PI_Serial::PI_Serial(int rx, int tx)
 {
     // SoftwareSerial myPort;
     // this->my_serialIntf = &serial_peripheral;
-    // soft_rx = rx;
-    // soft_tx = tx;
+     soft_rx = rx;
+     soft_tx = tx;
     this->my_serialIntf = &myPort;
 }
 
@@ -29,7 +29,7 @@ bool PI_Serial::Init()
         return false;
     }
 
-    this->my_serialIntf->begin(2400, SWSERIAL_8N1, SERIAL_RX, SERIAL_TX, false);
+    this->my_serialIntf->begin(2400, SWSERIAL_8N1, soft_rx, soft_tx, false);
     clearGet();
     return true;
 }
@@ -37,7 +37,7 @@ bool PI_Serial::Init()
 unsigned int PI_Serial::autoDetect() // function for autodetect the inverter type
 {
     /*
-        QPI abfragen
+        QPI mit 2400 abfragen
         wenn antwort nicht NAK dann schauen welche nummer, anhand der nummer zuordnen
         wenn 30 dann QPIGS, QPIRI abfragen und anhand der längen das protokoll zuordnen
         wenn NAK dann??

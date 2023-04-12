@@ -9,7 +9,6 @@
 
 #define ARDUINOJSON_USE_DOUBLE 0
 #define ARDUINOJSON_USE_LONG_LONG 0
-#define ARDUINOJSON_ENABLE_PROGMEM 1
 #include <PubSubClient.h>
 
 #include <ArduinoJson.h>
@@ -18,7 +17,6 @@
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
-//#include "inverter.h"
 #include "Settings.h"
 
 #include "webpages/htmlCase.h"     //The HTML Konstructor
@@ -26,13 +24,9 @@
 #include "webpages/settings.h"     //settings page
 #include "webpages/settingsedit.h" //mqtt settings page
 
-
-
-
-
 #include "PI_Serial/PI_Serial.h"
 
-PI_Serial mppClient(12,13);
+PI_Serial mppClient(INVERTER_RX,INVERTER_TX);
 
 
 WiFiClient client;
