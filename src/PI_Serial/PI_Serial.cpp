@@ -13,8 +13,6 @@ const char *startChar = "("; // move later to changeable
 
 PI_Serial::PI_Serial(int rx, int tx)
 {
-    // SoftwareSerial myPort;
-    // this->my_serialIntf = &serial_peripheral;
      soft_rx = rx;
      soft_tx = tx;
     this->my_serialIntf = &myPort;
