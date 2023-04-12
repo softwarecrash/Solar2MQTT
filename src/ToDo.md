@@ -7,4 +7,5 @@
 - div. umbauten aus mqtt und webserver von daly übernehmen
 - inverter abfrage ausbauen
 - inverter reihenfolgen eintragen
+- datenzuweisung aus inverter in eigene dateien auslagern
 - autodetect modus bauen
