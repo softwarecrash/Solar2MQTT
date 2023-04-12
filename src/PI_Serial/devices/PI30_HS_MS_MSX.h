@@ -34,15 +34,12 @@ void PI_Serial::PI30_HS_MS_MSX_QPIGS()
         get.variableData.reservedZ = getNextLong(commandAnswer, index);
         get.variableData.reservedAA = getNextLong(commandAnswer, index);
         get.variableData.reservedBB = getNextLong(commandAnswer, index);
-
-        Serial.println(commandAnswer.length()); // debug
-        Serial.println(commandAnswer);          // debug
     }
 }
 void PI_Serial::PI30_HS_MS_MSX_QMOD()
 {
     String commandAnswer = this->requestData("QMOD");
-    if (commandAnswer != "NAK" && commandAnswer.length() == 1) // make sure
+    if (commandAnswer != "NAK" && commandAnswer.length() == 1)
     {
         get.variableData.operationMode = getModeDesc((char)commandAnswer.charAt(0));
     }

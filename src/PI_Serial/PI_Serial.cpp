@@ -158,10 +158,17 @@ String PI_Serial::requestData(String command)
 #endif
     if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) != 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1])
     {
+        #ifdef SERIALDEBUG
+        Serial.println("ERCRC");
+        #endif
         return commandBuffer = "ERCRC";
     }
     commandBuffer.remove(commandBuffer.length() - 2); // remove the crc
     commandBuffer.remove(0, strlen(startChar));       // remove the start character
+#ifdef SERIALDEBUG
+        Serial.print("Command Length: ");
+        Serial.println(commandBuffer.length());
+#endif
     return commandBuffer;
 }
 
