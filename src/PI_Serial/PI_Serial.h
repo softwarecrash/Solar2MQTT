@@ -1,38 +1,11 @@
 #include "SoftwareSerial.h"
-
+//#include "devices/PI30_HS_MS_MSX.h"
 #ifndef PI_SERIAL_H
 #define PI_SERIAL_H
-
-
 
 // time in ms for delay the bms requests, to fast brings connection error
 #define DELAYTINME 100
 
-// DON'T edit DEBUG here, edit build_type in platformio.ini !!!
-#ifdef isDEBUG
-#define DEBUG_SERIAL Serial
-#endif
-
-#ifdef DEBUG_SERIAL
-// make it better like
-// https://stackoverflow.com/questions/28931195/way-to-toggle-debugging-code-on-and-off
-#define BMS_DEBUG_BEGIN(...) DEBUG_SERIAL.begin(__VA_ARGS__)
-#define BMS_DEBUG_PRINT(...) DEBUG_SERIAL.print(__VA_ARGS__)
-#define BMS_DEBUG_PRINTF(...) DEBUG_SERIAL.printf(__VA_ARGS__)
-#define BMS_DEBUG_WRITE(...) DEBUG_SERIAL.write(__VA_ARGS__)
-#define BMS_DEBUG_PRINTLN(...) DEBUG_SERIAL.println(__VA_ARGS__)
-#else
-#undef BMS_DEBUG_BEGIN
-#undef BMS_DEBUG_PRINT
-#undef BMS_DEBUG_PRINTF
-#undef BMS_DEBUG_WRITE
-#undef BMS_DEBUG_PRINTLN
-#define BMS_DEBBUG_BEGIN(...)
-#define BMS_DEBUG_PRINT(...)
-#define BMS_DEBUG_PRINTF(...)
-#define BMS_DEBUG_WRITE(...)
-#define BMS_DEBUG_PRINTLN(...)
-#endif
 
 class PI_Serial
 {
@@ -214,6 +187,12 @@ private:
      * @details This is set in the constructor
      */
     SoftwareSerial *my_serialIntf;
+
+
+
+
+    void PI30_HS_MS_MSX_QPIGS(String commandAnswer);
+    void PI30_HS_MS_MSX_QMOD(String commandAnswer);
 };
 
 #endif

@@ -3,6 +3,7 @@ SoftwareSerial myPort;
 #include "CRC16.h"
 #include "CRC.h"
 CRC16 crc;
+#include "devices/PI30_HS_MS_MSX.h"
 
 #define SERIALDEBUG
 
@@ -13,8 +14,8 @@ const char *startChar = "("; // move later to changeable
 
 PI_Serial::PI_Serial(int rx, int tx)
 {
-     soft_rx = rx;
-     soft_tx = tx;
+    soft_rx = rx;
+    soft_tx = tx;
     this->my_serialIntf = &myPort;
 }
 
@@ -23,7 +24,7 @@ bool PI_Serial::Init()
     // Null check the serial interface
     if (this->my_serialIntf == NULL)
     {
-        BMS_DEBUG_PRINTLN("<PI SERIAL> ERROR: No serial peripheral specificed!");
+        // BMS_DEBUG_PRINTLN("<PI SERIAL> ERROR: No serial peripheral specificed!");
         return false;
     }
 
@@ -64,7 +65,7 @@ bool PI_Serial::setProtocol(int protocolID)
 
 bool PI_Serial::update()
 {
-    //kommt später
+    // kommt später
     return true;
 }
 
@@ -74,6 +75,10 @@ bool PI_Serial::getVariableData()
     switch (protocolType)
     {
     case PI30_HS_MS_MSX:
+
+        PI30_HS_MS_MSX_QPIGS(this->requestData("QPIGS")); // only for testing
+        PI30_HS_MS_MSX_QMOD(this->requestData("QMOD"));   // only for testing
+/*
         commandAnswer = this->requestData("QPIGS");
         if (commandAnswer != "NAK" && commandAnswer.length() == 106) // make sure
         {
@@ -115,8 +120,9 @@ bool PI_Serial::getVariableData()
         commandAnswer = this->requestData("QMOD");
         if (commandAnswer != "NAK" && commandAnswer.length() == 1) // make sure
         {
-           get.variableData.operationMode = getModeDesc((char)commandAnswer.charAt(0));
+            get.variableData.operationMode = getModeDesc((char)commandAnswer.charAt(0));
         }
+        */
         break;
 
     default:
@@ -287,44 +293,44 @@ bool PI_Serial::getNextBit(String &command, int &index) // Gets if the next char
     return false;
 }
 
-String PI_Serial::getModeDesc(char mode) //get the char from QMOD and make readable things
+String PI_Serial::getModeDesc(char mode) // get the char from QMOD and make readable things
 {
-String modeString;
-            switch (mode)
-            {
-            default:
-                modeString = "Undefined, Origin: " + mode;
-                break;
-            case 'P':
-                modeString = "Power On";
-                break;
-            case 'S':
-                modeString = "Standby";
-                break;
-            case 'Y':
-                modeString = "Bypass";
-                break;
-            case 'L':
-                modeString = "Line";
-                break;
-            case 'B':
-                modeString = "Battery";
-                break;
-            case 'T':
-                modeString = "Battery Test";
-                break;
-            case 'F':
-                modeString = "Fault";
-                break;
-            case 'D':
-                modeString = "Shutdown";
-                break;
-            case 'G':
-                modeString = "Grid";
-                break;
-            case 'C':
-                modeString = "Charge";
-                break;
-            }
-return modeString;
+    String modeString;
+    switch (mode)
+    {
+    default:
+        modeString = "Undefined, Origin: " + mode;
+        break;
+    case 'P':
+        modeString = "Power On";
+        break;
+    case 'S':
+        modeString = "Standby";
+        break;
+    case 'Y':
+        modeString = "Bypass";
+        break;
+    case 'L':
+        modeString = "Line";
+        break;
+    case 'B':
+        modeString = "Battery";
+        break;
+    case 'T':
+        modeString = "Battery Test";
+        break;
+    case 'F':
+        modeString = "Fault";
+        break;
+    case 'D':
+        modeString = "Shutdown";
+        break;
+    case 'G':
+        modeString = "Grid";
+        break;
+    case 'C':
+        modeString = "Charge";
+        break;
+    }
+    return modeString;
 }
