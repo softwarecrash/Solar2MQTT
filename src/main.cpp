@@ -108,23 +108,13 @@ void setup()
 {
   _settings.load();
 
-  //new gen mpp solar 
-  mppClient.Init();
-
-
-
-
-
-
-
-
-
+  mppClient.Init(); //init the PI_serial Library
 
   WiFi.persistent(true); //fix wifi save bug
 
   AsyncWiFiManager wm(&server, &dns);
 
-  //muss dann wieder weg
+  //muss dann wieder weg??????????
   wm.setDebugOutput(false);
 
 #ifdef SERIALDEBUG
@@ -394,7 +384,15 @@ void setup()
 void loop()
 {
 
-  mppClient.getVariableData();
+
+
+
+  mppClient.getVariableData();//später durch update ersetzen
+
+
+
+
+
   // Make sure wifi is in the right mode
   if (WiFi.status() == WL_CONNECTED)
   { //No use going to next step unless WIFI is up and running.

@@ -66,7 +66,7 @@ bool PI_Serial::setProtocol(int protocolID)
 
 bool PI_Serial::update()
 {
-
+    //kommt später
     return true;
 }
 
