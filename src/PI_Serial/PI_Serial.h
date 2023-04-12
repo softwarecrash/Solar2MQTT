@@ -4,8 +4,7 @@
 #define PI_SERIAL_H
 
 // time in ms for delay the bms requests, to fast brings connection error
-#define DELAYTINME 100
-
+//#define DELAYTINME 100
 
 class PI_Serial
 {
@@ -15,7 +14,6 @@ public:
     int soft_tx;
     int soft_rx;
     
-
     enum protocolType
     {
         PI00,
