@@ -27,6 +27,13 @@
 #include "webpages/settingsedit.h" //mqtt settings page
 
 
+
+
+
+#include "PI_Serial/PI_Serial.h"
+
+
+
 WiFiClient client;
 
 Settings _settings;

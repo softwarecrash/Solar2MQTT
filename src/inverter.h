@@ -1,5 +1,8 @@
 #include <Arduino.h>
 
+#include "inverter_qpigs.h"
+
+
 //Send and receive periodic inverter commands
 void serviceInverter();
 bool sendCommand(String com);

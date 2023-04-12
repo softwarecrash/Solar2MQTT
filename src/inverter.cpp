@@ -125,6 +125,16 @@ bool getNextBit(String &command, int &index)
 
 bool onPIGS() // QPIGS<cr>: Device general status parameters inquiry
 {
+
+  switch (inverterType)
+  {
+  case PI30_MAX:
+    //Pi30Max(getDataFrom("QPIGS"));//daten von dem befehl als string holen und der pi30Max funktion übergeben
+    break;
+  
+  default:
+    break;
+  }
   if (inverterType == PI30_MAX)
   {
     _qRaw.QPIGS = _commandBuffer;
