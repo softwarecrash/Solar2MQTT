@@ -46,7 +46,7 @@ public:
     byte requestCounter = 0;
     int soft_tx;
     int soft_rx;
-    const char *startChar = "("; //move later to changeable
+    unsigned int protocolType;
 
     enum protocolType
     {
@@ -54,10 +54,10 @@ public:
         PI16,
         PI17,
         PI18,
-        PI30_MAX, // current implementet protocol
+        PI30_MAX,
         PI30_REVO,
         PI30_C,
-        PI30_HS_MS_MSX,
+        PI30_HS_MS_MSX, // current implementet protocol
         PI30_PIP,
         PI34,
         PI41,
@@ -70,6 +70,64 @@ public:
 
     struct
     {
+        struct
+        {
+            float gridRatingV;   // Grid rating voltage
+            float gridRatingA;   // Grid rating current
+            float acOutRatingV;  // AC output rating voltage
+            float acOutRatingHz; // AC output rating frequency
+            float acOutRatingA;  // AC output rating current
+            float acOutRatungVA; // AC output rating apparent power
+            float acOutRatingW;  // AC output rating active power
+            float battRatingV;   // Battery rating voltage
+            float battreChargeV; // Battery re-charge voltage
+            float battUnderV;    // Battery under voltage
+            float battBulkV;     // Battery bulk voltage
+            float battFloatV;    // Battery float voltage
+            String battType;     // Battery type
+            byte battMaxAcChrgA; // Current max AC charging current
+            byte battMaxChrgA;   // Current max charging current
+        } staticData;
+        // grid charge and solar charge array data
+        struct
+        {
+            byte grid[12];
+            byte solar[12];
+        } chargeValues;
+        struct
+        {
+            // QPIGS
+            float gridV;
+            float gridHz;
+            float acOutV;
+            float acOutHz;
+            short acOutVa;
+            short acOutW;
+            byte acOutPercent;
+            short busV;
+            float battV;
+            byte battChargeA;
+            byte battPercent;
+            float heatSinkDegC;
+            byte solarA;
+            byte solarV;
+            float sccBattV;
+            int batteryLoad; // Value is Ampere
+            short solarW;
+
+            float addSbuPriorityVersion;
+            float isConfigChanged;
+            float isSccFirmwareUpdated;
+
+            float battVoltageToSteadyWhileCharging;
+            float chargingStatus;
+            float reservedY;
+            float reservedZ;
+            float reservedAA;
+            float reservedBB;
+            // QMOD
+            String operationMode;
+        } variableData;
 
     } get;
 
@@ -107,6 +165,10 @@ public:
      */
     bool update();
 
+    /**
+     * @brief fetching the QPIGS Data
+     */
+    bool getVariableData();
 
     /**
      * @brief callback function
@@ -117,12 +179,6 @@ public:
 
 private:
     /**
-     * @brief Sends a complete packet with the specified command
-     * @details calculates the checksum and sends the command over the specified serial connection
-     */
-    void requestData(String command);
-
-    /**
      * @brief get the crc from a string
      */
     uint16_t getCRC(String data);
@@ -131,6 +187,26 @@ private:
      * @brief append the calcualted crc to the given string and return it
      */
     String appendCRC(String data);
+
+    /**
+     * @brief Parses out the float
+     */
+    float getNextFloat(String &command, int &index);
+
+    /**
+     * @brief Parses out the long 
+     */
+    long getNextLong(String &command, int &index);
+    /**
+     * @brief // Gets if the next character is '1'
+     */
+    bool getNextBit(String &command, int &index);
+
+    /**
+     * @brief Sends a complete packet with the specified command
+     * @details calculates the checksum and sends the command over the specified serial connection
+     */
+    String requestData(String command);
 
     /**
      * @brief Clear all data from the Get struct

@@ -18,7 +18,7 @@
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
-#include "inverter.h"
+//#include "inverter.h"
 #include "Settings.h"
 
 #include "webpages/htmlCase.h"     //The HTML Konstructor
@@ -32,6 +32,7 @@
 
 #include "PI_Serial/PI_Serial.h"
 
+PI_Serial mppClient(12,13);
 
 
 WiFiClient client;
@@ -40,11 +41,11 @@ Settings _settings;
 
 PubSubClient mqttclient(client);
 
-extern QpigsMessage _qpigsMessage;
-extern QmodMessage _qmodMessage;
-extern QpiriMessage _qpiriMessage;
+//extern QpigsMessage _qpigsMessage;
+//extern QmodMessage _qmodMessage;
+//extern QpiriMessage _qpiriMessage;
 
-extern QRaw _qRaw;
+//extern QRaw _qRaw;
 
 String topic = "/"; //Default first part of topic. We will add device ID in setup
 
@@ -112,7 +113,9 @@ static void handle_update_progress_cb(AsyncWebServerRequest *request, String fil
 void setup()
 {
   _settings.load();
-  delay(1000);
+
+  //new gen mpp solar 
+  mppClient.Init();
 
   WiFi.persistent(true); //fix wifi save bug
 
@@ -129,10 +132,8 @@ void setup()
 #ifdef SERIALDEBUG
   Serial.begin(9600); // Debugging towards UART1
 
-
-
 //später ordentlich machen
-initmpp(); //start softserial
+//initmpp(); //start softserial
 
 
   Serial.println();
@@ -222,24 +223,24 @@ initmpp(); //start softserial
               {
                 AsyncResponseStream *response = request->beginResponseStream("application/json");
                 DynamicJsonDocument liveJson(1024);
-                liveJson["gridV"] = _qpigsMessage.gridV;
-                liveJson["gridHz"] = _qpigsMessage.gridHz;
-                liveJson["acOutV"] = _qpigsMessage.acOutV;
-                liveJson["acOutHz"] = _qpigsMessage.acOutHz;
-                liveJson["acOutVa"] = _qpigsMessage.acOutVa;
-                liveJson["acOutW"] = _qpigsMessage.acOutW;
-                liveJson["acOutPercent"] = _qpigsMessage.acOutPercent;
-                liveJson["busV"] = _qpigsMessage.busV;
-                liveJson["heatSinkDegC"] = _qpigsMessage.heatSinkDegC;
-                liveJson["battV"] = _qpigsMessage.battV;
-                liveJson["battPercent"] = _qpigsMessage.battPercent;
-                liveJson["battChargeA"] = _qpigsMessage.battChargeA;
-                liveJson["battDischargeA"] = _qpigsMessage.battDischargeA;
-                liveJson["sccBattV"] = _qpigsMessage.sccBattV;
-                liveJson["solarV"] = _qpigsMessage.solarV;
-                liveJson["solarA"] = _qpigsMessage.solarA;
-                liveJson["solarW"] = _qpigsMessage.solarW;
-                liveJson["iv_mode"] = _qmodMessage.operationMode;
+                liveJson["gridV"] = mppClient.get.variableData.gridV;
+                liveJson["gridHz"] = mppClient.get.variableData.gridHz;
+                liveJson["acOutV"] = mppClient.get.variableData.acOutV;
+                liveJson["acOutHz"] = mppClient.get.variableData.acOutHz;
+                liveJson["acOutVa"] = mppClient.get.variableData.acOutVa;
+                liveJson["acOutW"] = mppClient.get.variableData.acOutW;
+                liveJson["acOutPercent"] = mppClient.get.variableData.acOutPercent;
+                liveJson["busV"] = mppClient.get.variableData.busV;
+                liveJson["heatSinkDegC"] = mppClient.get.variableData.heatSinkDegC;
+                liveJson["battV"] = mppClient.get.variableData.battV;
+                liveJson["battPercent"] = mppClient.get.variableData.battPercent;
+                liveJson["battChargeA"] = mppClient.get.variableData.battChargeA;
+                liveJson["battDischargeA"] = mppClient.get.variableData.batteryLoad;
+                liveJson["sccBattV"] = mppClient.get.variableData.sccBattV;
+                liveJson["solarV"] = mppClient.get.variableData.solarV;
+                liveJson["solarA"] = mppClient.get.variableData.solarA;
+                liveJson["solarW"] = mppClient.get.variableData.solarW;
+                liveJson["iv_mode"] = mppClient.get.variableData.operationMode;
                 liveJson["device_name"] = _settings._deviceName;
                 serializeJson(liveJson, *response);
                 request->send(response);
@@ -329,22 +330,22 @@ initmpp(); //start softserial
                 if (p->name() == "maxcharge")
                 {
                   valChange = true;
-                  _qpiriMessage.battMaxChrgA = p->value().toInt(); //const string zu int
+                //  _qpiriMessage.battMaxChrgA = p->value().toInt(); //const string zu int
                 }
                 if (p->name() == "maxaccharge")
                 {
                   valChange = true;
-                  _qpiriMessage.battMaxAcChrgA = p->value().toInt(); //const string zu int
+                 // _qpiriMessage.battMaxAcChrgA = p->value().toInt(); //const string zu int
                 }
                 if (p->name() == "PCVV")
                 {
                   valChange = true;
-                  _qpiriMessage.battBulkV = p->value().toFloat(); //const string zu int
+                 // _qpiriMessage.battBulkV = p->value().toFloat(); //const string zu int
                 }
                 if (p->name() == "PBFT")
                 {
                   valChange = true;
-                  _qpiriMessage.battFloatV = p->value().toFloat(); //const string zu int
+                  //_qpiriMessage.battFloatV = p->value().toFloat(); //const string zu int
                 }
                 request->send(200, "text/plain", "message received");
               });
@@ -381,6 +382,8 @@ initmpp(); //start softserial
 //----------------------------------------------------------------------
 void loop()
 {
+
+  mppClient.getVariableData();
   // Make sure wifi is in the right mode
   if (WiFi.status() == WL_CONNECTED)
   { //No use going to next step unless WIFI is up and running.
@@ -393,15 +396,15 @@ void loop()
       //sendMUCHGC(_qpiriMessage.battMaxAcChrgA);
 
       //reask the inverter for actual config
-      requestInverter(QPIRI);
+      //requestInverter(QPIRI);
       //reset mqtt timer
       mqtttimer = 0;
       valChange = false;
     }
     else
     {
-      requestInverter(QMOD);
-      requestInverter(QPIGS);
+    //  requestInverter(QMOD);
+    //  requestInverter(QPIGS);
 
       //requestInverter(QPIRI);
     }
@@ -410,10 +413,10 @@ void loop()
     {
       //requestInverter(QPI); //just send for clear out the serial puffer and resolve the first NAK
       //requestInverter(QPI);
-      requestInverter(QID);
-      requestInverter(QPIRI);
-      requestInverter(QMCHGCR);
-      requestInverter(QMUCHGCR);
+     // requestInverter(QID);
+      //requestInverter(QPIRI);
+    //  requestInverter(QMCHGCR);
+     // requestInverter(QMUCHGCR);
       askInverterOnce = false;
     }
     sendtoMQTT(); // Update data to MQTT server if we should
@@ -458,7 +461,7 @@ bool sendtoMQTT()
 #ifdef SERIALDEBUG
   Serial.println(F("Data sent to MQTT Server"));
 #endif
-
+/*
   //qpigs
   mqttclient.publish((String(topic) + String("/Grid_Voltage")).c_str(), String(_qpigsMessage.gridV).c_str());
   mqttclient.publish((String(topic) + String("/Grid_Frequenz")).c_str(), String(_qpigsMessage.gridHz).c_str());
@@ -519,13 +522,13 @@ bool sendtoMQTT()
    // mqttclient.publish((String(topic) + String("/Device_Control/Set_Command")).c_str(), "NAK");
    // mqttclient.publish((String(topic) + String("/Device_Control/AC_Max_Charge_Current")).c_str(), 000);
    // mqttclient.publish((String(topic) + String("/Device_Control/Max_Charge_Current")).c_str(), 000);
-  }
+  }*/
 publishFirst = true;
   return true;
 }
 
 void mqttcallback(char *top, unsigned char *payload, unsigned int length)
-{
+{/*
   if(!publishFirst) return;
   String messageTemp;
   for (unsigned int i = 0; i < length; i++)
@@ -561,4 +564,5 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
     mqttclient.publish((String(topic) + String("/Device_Control/Set_Command")).c_str(), tmpResponse.c_str());
       valChange = true;
 }
+*/
 }

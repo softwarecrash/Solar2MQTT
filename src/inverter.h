@@ -1,7 +1,5 @@
 #include <Arduino.h>
 
-#include "inverter_qpigs.h"
-
 
 //Send and receive periodic inverter commands
 void serviceInverter();
@@ -28,21 +26,6 @@ enum qCommand
   QMUCHGCR,
   QBOOT,
   QOPM,
-};
-
-enum protocolType
-{
-  PI00,
-  PI16,
-  PI17,
-  PI18,
-  PI30_MAX,// current implementet protocol
-  PI30_REVO,
-  PI30_C,
-  PI30_HS_MS_MSX, 
-  PI30_PIP,
-  PI34,
-  PI41,
 };
 
 void requestInverter(qCommand);
@@ -85,31 +68,6 @@ struct QpigsMessage
   float reservedAA;
   float reservedBB;
 };
-
-
-
-struct InverterData
-{
-  //array of data from qpigs answer, first is name, second is value
-  const char * qpigs[3][30];
-
-  const char * qpiri[3][30];
-  /*
-  qpigs[0][0] = "0" //no data avaible
-  qpigs[1][0] = "PV_Watt" //data name
-  qpigs[2][0] = "0.00" //data value
-
-  qpigs[0][1] = "1" //data avaible
-  qpigs[1][1] = "PV_Volt" //data name
-  qpigs[2][1] = "0.00" //data value
-  eigentlich auch quatsch
-
-  ggf ein bool array was listet welche daten verfügbar sind
-  */
-};
-
-
-
 struct QmodMessage
 {
   char mode;
