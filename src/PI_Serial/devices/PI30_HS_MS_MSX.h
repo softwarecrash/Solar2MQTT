@@ -1,5 +1,6 @@
-void PI_Serial::PI30_HS_MS_MSX_QPIGS(String commandAnswer)
+void PI_Serial::PI30_HS_MS_MSX_QPIGS()
 {
+    String commandAnswer = this->requestData("QPIGS");
     if (commandAnswer != "NAK" && commandAnswer.length() == 106) // make sure
     {
         int index = 0;
@@ -38,8 +39,9 @@ void PI_Serial::PI30_HS_MS_MSX_QPIGS(String commandAnswer)
         Serial.println(commandAnswer);          // debug
     }
 }
-void PI_Serial::PI30_HS_MS_MSX_QMOD(String commandAnswer)
+void PI_Serial::PI30_HS_MS_MSX_QMOD()
 {
+    String commandAnswer = this->requestData("QMOD");
     if (commandAnswer != "NAK" && commandAnswer.length() == 1) // make sure
     {
         get.variableData.operationMode = getModeDesc((char)commandAnswer.charAt(0));

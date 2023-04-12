@@ -76,8 +76,8 @@ bool PI_Serial::getVariableData()
     {
     case PI30_HS_MS_MSX:
 
-        PI30_HS_MS_MSX_QPIGS(this->requestData("QPIGS")); // only for testing
-        PI30_HS_MS_MSX_QMOD(this->requestData("QMOD"));   // only for testing
+        PI30_HS_MS_MSX_QPIGS(); // only for testing
+        PI30_HS_MS_MSX_QMOD();   // only for testing
 /*
         commandAnswer = this->requestData("QPIGS");
         if (commandAnswer != "NAK" && commandAnswer.length() == 106) // make sure

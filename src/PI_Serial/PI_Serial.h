@@ -191,8 +191,8 @@ private:
 
 
 
-    void PI30_HS_MS_MSX_QPIGS(String commandAnswer);
-    void PI30_HS_MS_MSX_QMOD(String commandAnswer);
+    void PI30_HS_MS_MSX_QPIGS();
+    void PI30_HS_MS_MSX_QMOD();
 };
 
 #endif
