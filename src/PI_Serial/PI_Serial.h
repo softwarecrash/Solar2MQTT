@@ -196,6 +196,9 @@ private:
 
     void PI30_HS_MS_MSX_QPIGS();
     void PI30_HS_MS_MSX_QMOD();
+
+    void PI30_PIP_QPIGS(); //example
+    void PI30_PIP_QMOD(); //example
 };
 
 #endif

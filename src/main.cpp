@@ -145,7 +145,7 @@ void setup()
 
 
 
-  mppClient.setProtocol(7);// nur für mich zum testen
+  mppClient.setProtocol(mppClient.PI30_HS_MS_MSX);// nur für mich zum testen
 
 
 

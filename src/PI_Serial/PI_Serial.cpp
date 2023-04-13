@@ -4,6 +4,7 @@ SoftwareSerial myPort;
 #include "CRC.h"
 CRC16 crc;
 #include "devices/PI30_HS_MS_MSX.h"
+#include "devices/PI30_PIP.h"
 
 #define SERIALDEBUG
 
@@ -75,54 +76,12 @@ bool PI_Serial::getVariableData()
     switch (protocolType)
     {
     case PI30_HS_MS_MSX:
-
-        PI30_HS_MS_MSX_QPIGS(); // only for testing
-        PI30_HS_MS_MSX_QMOD();   // only for testing
-/*
-        commandAnswer = this->requestData("QPIGS");
-        if (commandAnswer != "NAK" && commandAnswer.length() == 106) // make sure
-        {
-            int index = 0;
-            get.variableData.gridV = getNextFloat(commandAnswer, index);
-            get.variableData.gridHz = getNextFloat(commandAnswer, index);
-            get.variableData.acOutV = getNextFloat(commandAnswer, index);
-            get.variableData.acOutHz = getNextFloat(commandAnswer, index);
-            get.variableData.acOutVa = (short)getNextLong(commandAnswer, index);
-            get.variableData.acOutW = (short)getNextLong(commandAnswer, index);
-            get.variableData.acOutPercent = (byte)getNextLong(commandAnswer, index);
-            get.variableData.busV = (short)getNextLong(commandAnswer, index);
-            get.variableData.battV = getNextFloat(commandAnswer, index);
-
-            get.variableData.batteryLoad = (byte)getNextLong(commandAnswer, index);
-
-            get.variableData.battPercent = (byte)getNextLong(commandAnswer, index);
-            get.variableData.heatSinkDegC = getNextFloat(commandAnswer, index);
-            get.variableData.solarA = (byte)getNextLong(commandAnswer, index);
-            get.variableData.solarV = (byte)getNextLong(commandAnswer, index);
-            get.variableData.sccBattV = getNextFloat(commandAnswer, index);
-
-            get.variableData.batteryLoad = (get.variableData.batteryLoad - (byte)getNextLong(commandAnswer, index));
-
-            get.variableData.addSbuPriorityVersion = getNextLong(commandAnswer, index);
-            get.variableData.isConfigChanged = getNextLong(commandAnswer, index);
-            get.variableData.isSccFirmwareUpdated = getNextFloat(commandAnswer, index);
-            get.variableData.solarW = getNextFloat(commandAnswer, index);
-            get.variableData.battVoltageToSteadyWhileCharging = getNextFloat(commandAnswer, index);
-            get.variableData.chargingStatus = getNextLong(commandAnswer, index);
-            get.variableData.reservedY = getNextLong(commandAnswer, index);
-            get.variableData.reservedZ = getNextLong(commandAnswer, index);
-            get.variableData.reservedAA = getNextLong(commandAnswer, index);
-            get.variableData.reservedBB = getNextLong(commandAnswer, index);
-
-            Serial.println(commandAnswer.length()); // debug
-            Serial.println(commandAnswer);          // debug
-        }
-        commandAnswer = this->requestData("QMOD");
-        if (commandAnswer != "NAK" && commandAnswer.length() == 1) // make sure
-        {
-            get.variableData.operationMode = getModeDesc((char)commandAnswer.charAt(0));
-        }
-        */
+        PI30_HS_MS_MSX_QPIGS();
+        PI30_HS_MS_MSX_QMOD();
+        break;
+    case PI30_PIP://example
+        PI30_PIP_QPIGS();//example
+        PI30_PIP_QMOD();//example
         break;
 
     default:
@@ -155,16 +114,16 @@ String PI_Serial::sendCommand(String command)
 #endif
     if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) != 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1])
     {
-        #ifdef SERIALDEBUG
+#ifdef SERIALDEBUG
         Serial.println("ERCRC");
-        #endif
+#endif
         return commandBuffer = "ERCRC";
     }
     commandBuffer.remove(commandBuffer.length() - 2); // remove the crc
     commandBuffer.remove(0, strlen(startChar));       // remove the start character
 #ifdef SERIALDEBUG
-        Serial.print("Command Length: ");
-        Serial.println(commandBuffer.length());
+    Serial.print("Command Length: ");
+    Serial.println(commandBuffer.length());
 #endif
     return commandBuffer;
 }
@@ -189,16 +148,16 @@ String PI_Serial::requestData(String command)
 #endif
     if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) != 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1])
     {
-        #ifdef SERIALDEBUG
+#ifdef SERIALDEBUG
         Serial.println("ERCRC");
-        #endif
+#endif
         return commandBuffer = "ERCRC";
     }
     commandBuffer.remove(commandBuffer.length() - 2); // remove the crc
     commandBuffer.remove(0, strlen(startChar));       // remove the start character
 #ifdef SERIALDEBUG
-        Serial.print("Command Length: ");
-        Serial.println(commandBuffer.length());
+    Serial.print("Command Length: ");
+    Serial.println(commandBuffer.length());
 #endif
     return commandBuffer;
 }
