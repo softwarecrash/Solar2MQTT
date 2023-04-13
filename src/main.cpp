@@ -352,7 +352,8 @@ void setup()
                 if (p->name() == "CC")
                 {
                   //valChange = true;
-                  mppClient.sendCommand(p->value()); //send a custom command to the device
+                  //geht nicht
+                 String tmp = mppClient.sendCommand(p->value()); //send a custom command to the device
                 }
                 request->send(200, "text/plain", "message received");
               });
