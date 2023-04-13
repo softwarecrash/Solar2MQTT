@@ -131,6 +131,11 @@ public:
     bool getVariableData();
 
     /**
+     * @brief Send custom command to the device
+     */
+    String sendCommand(String command);
+
+    /**
      * @brief callback function
      *
      */

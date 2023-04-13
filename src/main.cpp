@@ -348,6 +348,12 @@ void setup()
                   valChange = true;
                   //_qpiriMessage.battFloatV = p->value().toFloat(); //const string zu int
                 }
+
+                if (p->name() == "CC")
+                {
+                  //valChange = true;
+                  mppClient.sendCommand(p->value()); //send a custom command to the device
+                }
                 request->send(200, "text/plain", "message received");
               });
 
