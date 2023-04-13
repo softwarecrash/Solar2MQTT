@@ -29,6 +29,8 @@ bool PI_Serial::Init()
         return false;
     }
 
+    autoDetect();
+
     this->my_serialIntf->begin(2400, SWSERIAL_8N1, soft_rx, soft_tx, false);
     clearGet();
     return true;
@@ -36,14 +38,21 @@ bool PI_Serial::Init()
 
 unsigned int PI_Serial::autoDetect() // function for autodetect the inverter type
 {
+    for (size_t i = 0; i < 10; i++)
+    {
+        /* code */
+    }
+    
     /*
+        zur privaten function machen!!!
+
         QPI mit 2400 abfragen
         wenn antwort nicht NAK dann schauen welche nummer, anhand der nummer zuordnen
         wenn 30 dann QPIGS, QPIRI abfragen und anhand der längen das protokoll zuordnen
         wenn NAK dann??
         wenn keine antwort, dann ist es ein protokoll mit anderen vorzeichen, dann änderung der preampel und erneut versuchen.
     */
-    return 4;
+    return 7;
 }
 
 bool PI_Serial::setProtocol(int protocolID)
