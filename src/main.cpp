@@ -351,9 +351,8 @@ void setup()
 
                 if (p->name() == "CC")
                 {
-                  //valChange = true;
-                  //geht nicht
-                 String tmp = mppClient.sendCommand(p->value()); //send a custom command to the device
+                  valChange = true;
+                  commandFromWeb = (p->value());
                 }
                 request->send(200, "text/plain", "message received");
               });
@@ -394,7 +393,7 @@ void loop()
 
 
 
-  mppClient.getVariableData();//später durch update ersetzen
+
 
 
 
@@ -408,6 +407,19 @@ void loop()
 
     if (valChange)
     {
+
+
+      if(commandFromWeb != "")
+      {
+        Serial.println(commandFromWeb);
+      String tmp = mppClient.sendCommand(commandFromWeb); //send a custom command to the device
+      Serial.println(tmp);
+      commandFromWeb = "";
+      }
+      
+
+
+
       //sendMNCHGC(_qpiriMessage.battMaxChrgA);
       //sendMUCHGC(_qpiriMessage.battMaxAcChrgA);
 
@@ -423,6 +435,10 @@ void loop()
     //  requestInverter(QPIGS);
 
       //requestInverter(QPIRI);
+
+  mppClient.getVariableData();//später durch update ersetzen
+
+
     }
 
     if (askInverterOnce) //ask the inverter once to get static data
