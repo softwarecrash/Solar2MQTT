@@ -1,4 +1,6 @@
 # ToDo
+
+esp:
 - debug umbauen und von daly übernehmen
 - platformio daten und einstellungen von daly übernehmen
 - Webinterface auf websocket umbauen
@@ -10,7 +12,7 @@
 - datenzuweisung aus inverter in eigene dateien auslagern
 - autodetect modus bauen
 
-github
+github:
 - templates für issues umbauen
 - issue template für report funktionierender inverter einbauen
 - wiki ausarbeiten
