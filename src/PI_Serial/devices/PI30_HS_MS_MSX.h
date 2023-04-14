@@ -1,7 +1,14 @@
+//QPIGS: BBB.B CC.C DDD.D EE.E FFFF GGGG HHH III JJ.JJ KKK OOO TTTT EEEE UUU.U WW.WW PPPPP 00000000
+//QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X
+
+
+/*
+not sorted, need work
+*/
 void PI_Serial::PI30_HS_MS_MSX_QPIGS()
 {
     String commandAnswer = this->requestData("QPIGS");
-    if (commandAnswer != "NAK" && commandAnswer.length() == 106) // make sure
+    if (commandAnswer != "NAK" && commandAnswer.length() == 90) // make sure
     {
         int index = 0;
         get.variableData.gridV = getNextFloat(commandAnswer, index);

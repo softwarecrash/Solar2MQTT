@@ -9,6 +9,7 @@ CRC16 crc;
 #define SERIALDEBUG
 
 const char *startChar = "("; // move later to changeable
+
 //----------------------------------------------------------------------
 // Public Functions
 //----------------------------------------------------------------------
@@ -30,17 +31,12 @@ bool PI_Serial::Init()
     }
 
     autoDetect();
-    //serialIntfBaud = 2400;
-     
-
 
     this->my_serialIntf->setTimeout(250);
     this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
     clearGet();
     return true;
 }
-
-
 
 bool PI_Serial::setProtocol(int protocolID)
 {
@@ -66,7 +62,7 @@ bool PI_Serial::update()
     return true;
 }
 
-bool PI_Serial::getVariableData() //request the variable data
+bool PI_Serial::getVariableData() // request the variable data
 {
     String commandAnswer;
     switch (protocolType)
@@ -75,9 +71,9 @@ bool PI_Serial::getVariableData() //request the variable data
         PI30_HS_MS_MSX_QPIGS();
         PI30_HS_MS_MSX_QMOD();
         break;
-    case PI30_PIP://example
-        PI30_PIP_QPIGS();//example
-        PI30_PIP_QMOD();//example
+    case PI30_PIP:        // example
+        PI30_PIP_QPIGS(); // example
+        PI30_PIP_QMOD();  // example
         break;
 
     default:
@@ -94,8 +90,8 @@ bool PI_Serial::getStaticeData() // request static data
     case PI30_HS_MS_MSX:
         PI30_HS_MS_MSX_QPIRI();
         break;
-    case PI30_PIP://example
-        PI30_PIP_QPIRI();//example
+    case PI30_PIP:        // example
+        PI30_PIP_QPIRI(); // example
         break;
 
     default:
@@ -146,27 +142,36 @@ String PI_Serial::sendCommand(String command)
 //----------------------------------------------------------------------
 unsigned int PI_Serial::autoDetect() // function for autodetect the inverter type
 {
-if(protocolType == 100)
-{
-Serial.print("Try Autodetect Protocol");
-    serialIntfBaud = 2400;
-    this->my_serialIntf->setTimeout(250);
-    this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
+    if (protocolType == 100)
+    {
+        for (size_t i = 0; i < 3; i++) // try 3 times to detect the inverter
+        {
+            Serial.print("Try Autodetect Protocol");
+            serialIntfBaud = 2400;
+            this->my_serialIntf->setTimeout(250);
+            this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
 
-    if(this->requestData("QPIRI").length() == 94 && this->requestData("QPIGS").length() == 106) //typical length of PI30_HS_MS_MSX
-    {
-    protocolType = PI30_HS_MS_MSX;
-    Serial.print("Match protocol number: ");
-    Serial.println(protocolType);
-    } else 
-    if (this->requestData("QPIRI").length() == 94 && this->requestData("QPIGS").length() == 106)
-    {
-      protocolType = PI30_HS_MS_MSX;
+            unsigned int qpririLength = this->requestData("QPIRI").length();
+            unsigned int qpigsLength = this->requestData("QPIGS").length();
+
+            if (qpririLength == 94 && qpigsLength == 90) // typical length of PI30_HS_MS_MSX
+            {
+                protocolType = PI30_HS_MS_MSX;
+                Serial.print("Match protocol number: ");
+                Serial.println(protocolType);
+            }
+            else if (qpririLength == 94 && qpigsLength == 106) // typical length of PI30_PIP
+            {
+                protocolType = PI30_PIP;
+                Serial.print("Match protocol number: ");
+                Serial.println(protocolType);
+            }
+            this->my_serialIntf->end();
+
+            if (protocolType != 100) // protocol found, break and report it
+                break;
+        }
     }
-    
-    //not ready, yust a first test if the autodetect working
-    this->my_serialIntf->end();
-}
     return protocolType;
 }
 

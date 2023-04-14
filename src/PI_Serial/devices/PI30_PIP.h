@@ -1,25 +1,6 @@
-/*
+//QPIGS: BBB.B CC.C DDD.D EE.E FFFF GGGG HHH III JJ.JJ KKK OOO TTTT EE.E UUU.U WW.WW PPPPP 00000000 QQ VV MMMMM 000
+//QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X
 
-
-
-
-
-
-
-
-not usable, youst for testing
-
-
-need resort to the PIP protocol
-
-
-
-
-
-
-
-
- */
 void PI_Serial::PI30_PIP_QPIGS()
 {
     String commandAnswer = this->requestData("QPIGS");
