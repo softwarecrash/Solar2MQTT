@@ -158,7 +158,12 @@ Serial.print("Try Autodetect Protocol");
     protocolType = PI30_HS_MS_MSX;
     Serial.print("Match protocol number: ");
     Serial.println(protocolType);
+    } else 
+    if (this->requestData("QPIRI").length() == 94 && this->requestData("QPIGS").length() == 106)
+    {
+      protocolType = PI30_HS_MS_MSX;
     }
+    
     //not ready, yust a first test if the autodetect working
     this->my_serialIntf->end();
 }
