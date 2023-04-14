@@ -9,10 +9,9 @@
 class PI_Serial
 {
 public:
-    unsigned int previousTime = 0;
-    byte requestCounter = 0;
-    int soft_tx;
-    int soft_rx;
+    //unsigned int previousTime = 0;
+    //byte requestCounter = 0;
+
     
     enum protocolType
     {
@@ -110,12 +109,6 @@ public:
     bool Init();
 
     /**
-     * @brief function for autodetect the inverter
-     * @details ask all modes and sort it to a protocol
-     */
-    unsigned int autoDetect();
-
-    /**
      * @brief set global the protocol
      */
     bool setProtocol(int protocolID);
@@ -148,7 +141,11 @@ public:
     std::function<void()> requestCallback;
 
 private:
-    unsigned int protocolType;
+    unsigned int soft_tx;
+    unsigned int soft_rx;
+    unsigned int serialIntfBaud;
+
+    unsigned int protocolType = 100;
     /**
      * @brief get the crc from a string
      */
@@ -172,6 +169,12 @@ private:
      * @brief // Gets if the next character is '1'
      */
     bool getNextBit(String &command, int &index);
+
+        /**
+     * @brief function for autodetect the inverter
+     * @details ask all modes and sort it to a protocol
+     */
+    unsigned int autoDetect();
 
     /**
      * @brief Sends a complete packet with the specified command

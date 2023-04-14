@@ -30,30 +30,17 @@ bool PI_Serial::Init()
     }
 
     autoDetect();
+    //serialIntfBaud = 2400;
+     
 
-    this->my_serialIntf->begin(2400, SWSERIAL_8N1, soft_rx, soft_tx, false);
+
+    this->my_serialIntf->setTimeout(250);
+    this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
     clearGet();
     return true;
 }
 
-unsigned int PI_Serial::autoDetect() // function for autodetect the inverter type
-{
-    for (size_t i = 0; i < 10; i++)
-    {
-        /* code */
-    }
-    
-    /*
-        zur privaten function machen!!!
 
-        QPI mit 2400 abfragen
-        wenn antwort nicht NAK dann schauen welche nummer, anhand der nummer zuordnen
-        wenn 30 dann QPIGS, QPIRI abfragen und anhand der längen das protokoll zuordnen
-        wenn NAK dann??
-        wenn keine antwort, dann ist es ein protokoll mit anderen vorzeichen, dann änderung der preampel und erneut versuchen.
-    */
-    return 7;
-}
 
 bool PI_Serial::setProtocol(int protocolID)
 {
@@ -157,6 +144,27 @@ String PI_Serial::sendCommand(String command)
 //----------------------------------------------------------------------
 // Private Functions
 //----------------------------------------------------------------------
+unsigned int PI_Serial::autoDetect() // function for autodetect the inverter type
+{
+if(protocolType == 100)
+{
+Serial.print("Try Autodetect Protocol");
+    serialIntfBaud = 2400;
+    this->my_serialIntf->setTimeout(250);
+    this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
+
+    if(this->requestData("QPIRI").length() == 94 && this->requestData("QPIGS").length() == 106) //typical length of PI30_HS_MS_MSX
+    {
+    protocolType = PI30_HS_MS_MSX;
+    Serial.print("Match protocol number: ");
+    Serial.println(protocolType);
+    }
+    //not ready, yust a first test if the autodetect working
+    this->my_serialIntf->end();
+}
+    return protocolType;
+}
+
 String PI_Serial::requestData(String command)
 {
     String commandBuffer = "";

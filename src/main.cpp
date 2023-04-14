@@ -99,7 +99,7 @@ void setup()
 {
   _settings.load();
 
-  mppClient.Init(); // init the PI_serial Library
+  //mppClient.Init(); // init the PI_serial Library
 
   WiFi.persistent(true); // fix wifi save bug
 
@@ -133,7 +133,8 @@ void setup()
   Serial.println(_settings._mqttTopic);
 #endif
 
-  mppClient.setProtocol(mppClient.PI30_HS_MS_MSX); // nur für mich zum testen
+  //mppClient.setProtocol(mppClient.PI30_HS_MS_MSX); // manual set the protocol
+  mppClient.Init(); // init the PI_serial Library
 
   // create custom wifimanager fields
 
@@ -352,6 +353,7 @@ void setup()
     mqttclient.subscribe((String(topic) + String("/Device_Control/Max_Charge_Current")).c_str());
     mqttclient.subscribe((String(topic) + String("/Device_Control/Set_Command")).c_str());
   }
+  
 }
 // end void setup
 
