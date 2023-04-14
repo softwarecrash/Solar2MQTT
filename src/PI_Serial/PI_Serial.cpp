@@ -106,11 +106,9 @@ bool PI_Serial::getStaticeData() // request static data
     {
     case PI30_HS_MS_MSX:
         PI30_HS_MS_MSX_QPIRI();
-        PI30_HS_MS_MSX_QMOD();
         break;
     case PI30_PIP://example
         PI30_PIP_QPIRI();//example
-        PI30_PIP_QMOD();//example
         break;
 
     default:
@@ -166,6 +164,7 @@ String PI_Serial::requestData(String command)
     this->my_serialIntf->print("\r");
     commandBuffer = this->my_serialIntf->readStringUntil('\r');
 #ifdef SERIALDEBUG
+    Serial.println();
     Serial.print(F("Sending:\t"));
     Serial.print(command);
     Serial.print(F("\tCalc: "));

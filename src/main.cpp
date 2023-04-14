@@ -47,6 +47,7 @@ bool shouldSaveConfig = false;
 char mqtt_server[40];
 bool restartNow = false;
 bool valChange = false;
+bool askInverterOnce = false;
 bool publishFirst = false;
 String commandFromWeb;
 //----------------------------------------------------------------------
@@ -384,6 +385,12 @@ void loop()
     else
     {
       mppClient.getVariableData(); // später durch update ersetzen
+      if(!askInverterOnce)
+      {
+      mppClient.getStaticeData();
+      askInverterOnce = true;
+      }
+      
     }
 
     sendtoMQTT(); // Update data to MQTT server if we should

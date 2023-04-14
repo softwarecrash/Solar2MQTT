@@ -46,8 +46,8 @@ void PI_Serial::PI30_HS_MS_MSX_QMOD()
 }
 void PI_Serial::PI30_HS_MS_MSX_QPIRI()
 {
-    String commandAnswer = this->requestData("QMOD");
-    if (commandAnswer != "NAK" && commandAnswer.length() == 1)
+    String commandAnswer = this->requestData("QPIRI");
+    if (commandAnswer != "NAK" && commandAnswer.length() == 94)
     {
         int index = 0;                                                     // after the starting '('
         get.staticData.gridRatingV = getNextFloat(commandAnswer, index);   // BBB.B

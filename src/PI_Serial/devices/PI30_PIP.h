@@ -23,6 +23,7 @@ need resort to the PIP protocol
 void PI_Serial::PI30_PIP_QPIGS()
 {
     String commandAnswer = this->requestData("QPIGS");
+    //calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
     if (commandAnswer != "NAK" && commandAnswer.length() == 106) // make sure
     {
         int index = 0;
@@ -61,6 +62,7 @@ void PI_Serial::PI30_PIP_QPIGS()
 void PI_Serial::PI30_PIP_QMOD()
 {
     String commandAnswer = this->requestData("QMOD");
+    //calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
     if (commandAnswer != "NAK" && commandAnswer.length() == 1)
     {
         get.variableData.operationMode = getModeDesc((char)commandAnswer.charAt(0));
@@ -68,8 +70,9 @@ void PI_Serial::PI30_PIP_QMOD()
 }
 void PI_Serial::PI30_PIP_QPIRI()
 {
-    String commandAnswer = this->requestData("QMOD");
-    if (commandAnswer != "NAK" && commandAnswer.length() == 1)
+    String commandAnswer = this->requestData("QPIRI");
+    //calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
+    if (commandAnswer != "NAK" && commandAnswer.length() == 94)
     {
         int index = 0;                                                     // after the starting '('
     get.staticData.gridRatingV = getNextFloat(commandAnswer, index);   // BBB.B
