@@ -9,3 +9,9 @@
 - inverter reihenfolgen eintragen
 - datenzuweisung aus inverter in eigene dateien auslagern
 - autodetect modus bauen
+
+github
+- templates für issues umbauen
+- issue template für report funktionierender inverter einbauen
+- wiki ausarbeiten
+- anschlussplan neu zeichnen
