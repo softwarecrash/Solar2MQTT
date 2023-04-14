@@ -79,7 +79,7 @@ bool PI_Serial::update()
     return true;
 }
 
-bool PI_Serial::getVariableData()
+bool PI_Serial::getVariableData() //request the variable data
 {
     String commandAnswer;
     switch (protocolType)
@@ -90,6 +90,26 @@ bool PI_Serial::getVariableData()
         break;
     case PI30_PIP://example
         PI30_PIP_QPIGS();//example
+        PI30_PIP_QMOD();//example
+        break;
+
+    default:
+        break;
+    }
+    return true;
+}
+
+bool PI_Serial::getStaticeData() // request static data
+{
+    String commandAnswer;
+    switch (protocolType)
+    {
+    case PI30_HS_MS_MSX:
+        PI30_HS_MS_MSX_QPIRI();
+        PI30_HS_MS_MSX_QMOD();
+        break;
+    case PI30_PIP://example
+        PI30_PIP_QPIRI();//example
         PI30_PIP_QMOD();//example
         break;
 

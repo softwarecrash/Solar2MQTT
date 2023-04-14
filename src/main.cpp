@@ -1,6 +1,6 @@
 /*
  ALl credits for some bits from https://github.com/scottwday/InverterOfThings
- And i have trashed alot of his code, rewritten some. So thanks to him and credits to him. 
+ And i have trashed alot of his code, rewritten some. So thanks to him and credits to him.
  Changes by softwarecrash
 */
 #include "main.h"
@@ -26,8 +26,7 @@
 
 #include "PI_Serial/PI_Serial.h"
 
-PI_Serial mppClient(INVERTER_RX,INVERTER_TX);
-
+PI_Serial mppClient(INVERTER_RX, INVERTER_TX);
 
 WiFiClient client;
 
@@ -35,27 +34,18 @@ Settings _settings;
 
 PubSubClient mqttclient(client);
 
-//extern QpigsMessage _qpigsMessage;
-//extern QmodMessage _qmodMessage;
-//extern QpiriMessage _qpiriMessage;
-
-//extern QRaw _qRaw;
-
-String topic = "/"; //Default first part of topic. We will add device ID in setup
+String topic = "/"; // Default first part of topic. We will add device ID in setup
 
 unsigned long mqtttimer = 0;
-
-//StaticJsonDocument<300> doc;
 
 AsyncWebServer server(80);
 
 DNSServer dns;
 
-//flag for saving data
+// flag for saving data
 bool shouldSaveConfig = false;
 char mqtt_server[40];
 bool restartNow = false;
-bool askInverterOnce = true;
 bool valChange = false;
 bool publishFirst = false;
 String commandFromWeb;
@@ -98,7 +88,7 @@ static void handle_update_progress_cb(AsyncWebServerRequest *request, String fil
       response->addHeader("Connection", "close");
       request->send(response);
 
-      restartNow = true; //Set flag so main loop can issue restart call
+      restartNow = true; // Set flag so main loop can issue restart call
       Serial.println("Update complete");
     }
   }
@@ -108,13 +98,13 @@ void setup()
 {
   _settings.load();
 
-  mppClient.Init(); //init the PI_serial Library
+  mppClient.Init(); // init the PI_serial Library
 
-  WiFi.persistent(true); //fix wifi save bug
+  WiFi.persistent(true); // fix wifi save bug
 
   AsyncWiFiManager wm(&server, &dns);
 
-  //muss dann wieder weg??????????
+  // muss dann wieder weg??????????
   wm.setDebugOutput(false);
 
 #ifdef SERIALDEBUG
@@ -142,18 +132,9 @@ void setup()
   Serial.println(_settings._mqttTopic);
 #endif
 
+  mppClient.setProtocol(mppClient.PI30_HS_MS_MSX); // nur für mich zum testen
 
-
-
-  mppClient.setProtocol(mppClient.PI30_HS_MS_MSX);// nur für mich zum testen
-
-
-
-
-
-
-
-  //create custom wifimanager fields
+  // create custom wifimanager fields
 
   AsyncWiFiManagerParameter custom_mqtt_server("mqtt_server", "MQTT server", NULL, 40);
   AsyncWiFiManagerParameter custom_mqtt_user("mqtt_user", "MQTT User", NULL, 40);
@@ -176,7 +157,7 @@ void setup()
   wm.setConnectTimeout(30);       // how long to try to connect for before continuing
   wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
 
-  //save settings if wifi setup is fire up
+  // save settings if wifi setup is fire up
   if (shouldSaveConfig)
   {
     _settings._mqttServer = custom_mqtt_server.getValue();
@@ -199,7 +180,7 @@ void setup()
 
   mqttclient.setCallback(mqttcallback);
 
-  //check is WiFi connected
+  // check is WiFi connected
   if (!res)
   {
 #ifdef SERIALDEBUG
@@ -208,7 +189,7 @@ void setup()
   }
   else
   {
-    //set the device name
+    // set the device name
     MDNS.begin(_settings._deviceName);
     WiFi.hostname(_settings._deviceName);
 
@@ -218,8 +199,7 @@ void setup()
                 response->printf_P(HTML_HEAD);
                 response->printf_P(HTML_MAIN);
                 response->printf_P(HTML_FOOT);
-                request->send(response);
-              });
+                request->send(response); });
     server.on("/livejson", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                 AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -244,8 +224,7 @@ void setup()
                 liveJson["iv_mode"] = mppClient.get.variableData.operationMode;
                 liveJson["device_name"] = _settings._deviceName;
                 serializeJson(liveJson, *response);
-                request->send(response);
-              });
+                request->send(response); });
 
     server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest *request)
               {
@@ -253,16 +232,14 @@ void setup()
                 response->addHeader("Refresh", "15; url=/");
                 response->addHeader("Connection", "close");
                 request->send(response);
-                restartNow = true;
-              });
+                restartNow = true; });
     server.on("/confirmreset", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                 AsyncResponseStream *response = request->beginResponseStream("text/html");
                 response->printf_P(HTML_HEAD);
                 response->printf_P(HTML_CONFIRM_RESET);
                 response->printf_P(HTML_FOOT);
-                request->send(response);
-              });
+                request->send(response); });
 
     server.on("/reset", HTTP_GET, [](AsyncWebServerRequest *request)
               {
@@ -273,8 +250,7 @@ void setup()
                 delay(1000);
                 _settings.reset();
                 ESP.eraseConfig();
-                ESP.restart();
-              });
+                ESP.restart(); });
 
     server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request)
               {
@@ -282,8 +258,7 @@ void setup()
                 response->printf_P(HTML_HEAD);
                 response->printf_P(HTML_SETTINGS);
                 response->printf_P(HTML_FOOT);
-                request->send(response);
-              });
+                request->send(response); });
 
     server.on("/settingsedit", HTTP_GET, [](AsyncWebServerRequest *request)
               {
@@ -291,8 +266,7 @@ void setup()
                 response->printf_P(HTML_HEAD);
                 response->printf_P(HTML_SETTINGS_EDIT);
                 response->printf_P(HTML_FOOT);
-                request->send(response);
-              });
+                request->send(response); });
 
     server.on("/settingsjson", HTTP_GET, [](AsyncWebServerRequest *request)
               {
@@ -306,8 +280,7 @@ void setup()
                 SettingsJson["mqtt_password"] = _settings._mqttPassword;
                 SettingsJson["mqtt_refresh"] = _settings._mqttRefresh;
                 serializeJson(SettingsJson, *response);
-                request->send(response);
-              });
+                request->send(response); });
 
     server.on("/settingssave", HTTP_POST, [](AsyncWebServerRequest *request)
               {
@@ -322,8 +295,7 @@ void setup()
                 Serial.print(_settings._mqttServer);
                 _settings.save();
                 delay(500);
-                _settings.load();
-              });
+                _settings.load(); });
 
     server.on("/set", HTTP_GET, [](AsyncWebServerRequest *request)
               {
@@ -354,15 +326,13 @@ void setup()
                   valChange = true;
                   commandFromWeb = (p->value());
                 }
-                request->send(200, "text/plain", "message received");
-              });
+                request->send(200, "text/plain", "message received"); });
 
     server.on(
         "/update", HTTP_POST, [](AsyncWebServerRequest *request)
         {
           request->send(200);
-          request->redirect("/");
-        },
+          request->redirect("/"); },
         handle_update_progress_cb);
 
     server.begin();
@@ -382,7 +352,7 @@ void setup()
     mqttclient.subscribe((String(topic) + String("/Device_Control/Set_Command")).c_str());
   }
 }
-//end void setup
+// end void setup
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
@@ -390,67 +360,32 @@ void setup()
 void loop()
 {
 
-
-
-
-
-
-
-
-
-
   // Make sure wifi is in the right mode
   if (WiFi.status() == WL_CONNECTED)
-  { //No use going to next step unless WIFI is up and running.
+  { // No use going to next step unless WIFI is up and running.
     MDNS.update();
     mqttclient.loop(); // Check if we have something to read from MQTT
 
     if (valChange)
     {
-
-
-      if(commandFromWeb != "")
+      if (commandFromWeb != "")
       {
         Serial.println(commandFromWeb);
-      String tmp = mppClient.sendCommand(commandFromWeb); //send a custom command to the device
-      Serial.println(tmp);
-      commandFromWeb = "";
+        String tmp = mppClient.sendCommand(commandFromWeb); // send a custom command to the device
+        Serial.println(tmp);
+        commandFromWeb = "";
       }
-      
 
+      mppClient.getStaticeData();
 
-
-      //sendMNCHGC(_qpiriMessage.battMaxChrgA);
-      //sendMUCHGC(_qpiriMessage.battMaxAcChrgA);
-
-      //reask the inverter for actual config
-      //requestInverter(QPIRI);
-      //reset mqtt timer
       mqtttimer = 0;
       valChange = false;
     }
     else
     {
-    //  requestInverter(QMOD);
-    //  requestInverter(QPIGS);
-
-      //requestInverter(QPIRI);
-
-  mppClient.getVariableData();//später durch update ersetzen
-
-
+      mppClient.getVariableData(); // später durch update ersetzen
     }
 
-    if (askInverterOnce) //ask the inverter once to get static data
-    {
-      //requestInverter(QPI); //just send for clear out the serial puffer and resolve the first NAK
-      //requestInverter(QPI);
-     // requestInverter(QID);
-      //requestInverter(QPIRI);
-    //  requestInverter(QMCHGCR);
-     // requestInverter(QMUCHGCR);
-      askInverterOnce = false;
-    }
     sendtoMQTT(); // Update data to MQTT server if we should
   }
   if (restartNow)
@@ -459,22 +394,20 @@ void loop()
     Serial.println("Restart");
     ESP.restart();
   }
-
-  yield();
 }
-//End void loop
+// End void loop
 
 bool sendtoMQTT()
 {
 
-  if (millis() < (mqtttimer + (_settings._mqttRefresh * 1000)) || _settings._mqttRefresh == 0) //its save for rollover?
+  if (millis() < (mqtttimer + (_settings._mqttRefresh * 1000)) || _settings._mqttRefresh == 0) // its save for rollover?
   {
     return false;
   }
   mqtttimer = millis();
   if (!mqttclient.connected())
   {
-    //delete the esp name string
+    // delete the esp name string
     if (mqttclient.connect((String(_settings._deviceName)).c_str(), _settings._mqttUser.c_str(), _settings._mqttPassword.c_str()))
     {
 #ifdef SERIALDEBUG
@@ -493,108 +426,108 @@ bool sendtoMQTT()
 #ifdef SERIALDEBUG
   Serial.println(F("Data sent to MQTT Server"));
 #endif
-/*
-  //qpigs
-  mqttclient.publish((String(topic) + String("/Grid_Voltage")).c_str(), String(_qpigsMessage.gridV).c_str());
-  mqttclient.publish((String(topic) + String("/Grid_Frequenz")).c_str(), String(_qpigsMessage.gridHz).c_str());
-  mqttclient.publish((String(topic) + String("/AC_out_Voltage")).c_str(), String(_qpigsMessage.acOutV).c_str());
-  mqttclient.publish((String(topic) + String("/AC_out_Frequenz")).c_str(), String(_qpigsMessage.acOutHz).c_str());
-  mqttclient.publish((String(topic) + String("/AC_out_VA")).c_str(), String(_qpigsMessage.acOutVa).c_str());
-  mqttclient.publish((String(topic) + String("/AC_out_Watt")).c_str(), String(_qpigsMessage.acOutW).c_str());
-  mqttclient.publish((String(topic) + String("/AC_out_percent")).c_str(), String(_qpigsMessage.acOutPercent).c_str());
-  mqttclient.publish((String(topic) + String("/Bus_Volt")).c_str(), String(_qpigsMessage.busV).c_str());
-  mqttclient.publish((String(topic) + String("/Bus_Temp")).c_str(), String(_qpigsMessage.heatSinkDegC).c_str());
-  mqttclient.publish((String(topic) + String("/Battery_Voltage")).c_str(), String(_qpigsMessage.battV).c_str());
-  mqttclient.publish((String(topic) + String("/Battery_Percent")).c_str(), String(_qpigsMessage.battPercent).c_str());
-  mqttclient.publish((String(topic) + String("/Battery_Charge_A")).c_str(), String(_qpigsMessage.battChargeA).c_str());
-  mqttclient.publish((String(topic) + String("/Battery_Discharge_A")).c_str(), String(_qpigsMessage.battDischargeA).c_str());
-  mqttclient.publish((String(topic) + String("/Battery_SCC_Volt")).c_str(), String(_qpigsMessage.sccBattV).c_str());
-  mqttclient.publish((String(topic) + String("/PV_Volt")).c_str(), String(_qpigsMessage.solarV).c_str());
-  mqttclient.publish((String(topic) + String("/PV_A")).c_str(), String(_qpigsMessage.solarA).c_str());
-  mqttclient.publish((String(topic) + String("/PV_Watt")).c_str(), String(_qpigsMessage.solarW).c_str());
-  //qmod
-  mqttclient.publish((String(topic) + String("/Inverter_Operation_Mode")).c_str(), String(_qmodMessage.operationMode).c_str());
-  //piri
-  mqttclient.publish((String(topic) + String("/Device_Data/Grid_rating_voltage")).c_str(), String(_qpiriMessage.gridRatingV).c_str());
-  mqttclient.publish((String(topic) + String("/Device_Data/Grid_rating_current")).c_str(), String(_qpiriMessage.gridRatingA).c_str());
-  mqttclient.publish((String(topic) + String("/Device_Data/AC_output_rating_voltage")).c_str(), String(_qpiriMessage.acOutRatingV).c_str());
-  mqttclient.publish((String(topic) + String("/Device_Data/AC_output_rating_frequency")).c_str(), String(_qpiriMessage.acOutRatingHz).c_str());
-  mqttclient.publish((String(topic) + String("/Device_Data/AC_output_rating_current")).c_str(), String(_qpiriMessage.acOutRatingA).c_str());
-  mqttclient.publish((String(topic) + String("/Device_Data/AC_output_rating_apparent_power")).c_str(), String(_qpiriMessage.acOutRatungVA).c_str());
-  mqttclient.publish((String(topic) + String("/Device_Data/AC_output_rating_active_power")).c_str(), String(_qpiriMessage.acOutRatingW).c_str());
-  mqttclient.publish((String(topic) + String("/Device_Data/Battery_rating_voltage")).c_str(), String(_qpiriMessage.battRatingV).c_str());
+  /*
+    //qpigs
+    mqttclient.publish((String(topic) + String("/Grid_Voltage")).c_str(), String(_qpigsMessage.gridV).c_str());
+    mqttclient.publish((String(topic) + String("/Grid_Frequenz")).c_str(), String(_qpigsMessage.gridHz).c_str());
+    mqttclient.publish((String(topic) + String("/AC_out_Voltage")).c_str(), String(_qpigsMessage.acOutV).c_str());
+    mqttclient.publish((String(topic) + String("/AC_out_Frequenz")).c_str(), String(_qpigsMessage.acOutHz).c_str());
+    mqttclient.publish((String(topic) + String("/AC_out_VA")).c_str(), String(_qpigsMessage.acOutVa).c_str());
+    mqttclient.publish((String(topic) + String("/AC_out_Watt")).c_str(), String(_qpigsMessage.acOutW).c_str());
+    mqttclient.publish((String(topic) + String("/AC_out_percent")).c_str(), String(_qpigsMessage.acOutPercent).c_str());
+    mqttclient.publish((String(topic) + String("/Bus_Volt")).c_str(), String(_qpigsMessage.busV).c_str());
+    mqttclient.publish((String(topic) + String("/Bus_Temp")).c_str(), String(_qpigsMessage.heatSinkDegC).c_str());
+    mqttclient.publish((String(topic) + String("/Battery_Voltage")).c_str(), String(_qpigsMessage.battV).c_str());
+    mqttclient.publish((String(topic) + String("/Battery_Percent")).c_str(), String(_qpigsMessage.battPercent).c_str());
+    mqttclient.publish((String(topic) + String("/Battery_Charge_A")).c_str(), String(_qpigsMessage.battChargeA).c_str());
+    mqttclient.publish((String(topic) + String("/Battery_Discharge_A")).c_str(), String(_qpigsMessage.battDischargeA).c_str());
+    mqttclient.publish((String(topic) + String("/Battery_SCC_Volt")).c_str(), String(_qpigsMessage.sccBattV).c_str());
+    mqttclient.publish((String(topic) + String("/PV_Volt")).c_str(), String(_qpigsMessage.solarV).c_str());
+    mqttclient.publish((String(topic) + String("/PV_A")).c_str(), String(_qpigsMessage.solarA).c_str());
+    mqttclient.publish((String(topic) + String("/PV_Watt")).c_str(), String(_qpigsMessage.solarW).c_str());
+    //qmod
+    mqttclient.publish((String(topic) + String("/Inverter_Operation_Mode")).c_str(), String(_qmodMessage.operationMode).c_str());
+    //piri
+    mqttclient.publish((String(topic) + String("/Device_Data/Grid_rating_voltage")).c_str(), String(_qpiriMessage.gridRatingV).c_str());
+    mqttclient.publish((String(topic) + String("/Device_Data/Grid_rating_current")).c_str(), String(_qpiriMessage.gridRatingA).c_str());
+    mqttclient.publish((String(topic) + String("/Device_Data/AC_output_rating_voltage")).c_str(), String(_qpiriMessage.acOutRatingV).c_str());
+    mqttclient.publish((String(topic) + String("/Device_Data/AC_output_rating_frequency")).c_str(), String(_qpiriMessage.acOutRatingHz).c_str());
+    mqttclient.publish((String(topic) + String("/Device_Data/AC_output_rating_current")).c_str(), String(_qpiriMessage.acOutRatingA).c_str());
+    mqttclient.publish((String(topic) + String("/Device_Data/AC_output_rating_apparent_power")).c_str(), String(_qpiriMessage.acOutRatungVA).c_str());
+    mqttclient.publish((String(topic) + String("/Device_Data/AC_output_rating_active_power")).c_str(), String(_qpiriMessage.acOutRatingW).c_str());
+    mqttclient.publish((String(topic) + String("/Device_Data/Battery_rating_voltage")).c_str(), String(_qpiriMessage.battRatingV).c_str());
 
-  mqttclient.publish((String(topic) + String("/Device_Data/Battery_re-charge_voltage")).c_str(), String(_qpiriMessage.battreChargeV).c_str());
-  mqttclient.publish((String(topic) + String("/Device_Data/Battery_under_voltage")).c_str(), String(_qpiriMessage.battUnderV).c_str());
-  mqttclient.publish((String(topic) + String("/Device_Data/Battery_bulk_voltage")).c_str(), String(_qpiriMessage.battBulkV).c_str());
-  mqttclient.publish((String(topic) + String("/Device_Data/Battery_float_voltage")).c_str(), String(_qpiriMessage.battFloatV).c_str());
+    mqttclient.publish((String(topic) + String("/Device_Data/Battery_re-charge_voltage")).c_str(), String(_qpiriMessage.battreChargeV).c_str());
+    mqttclient.publish((String(topic) + String("/Device_Data/Battery_under_voltage")).c_str(), String(_qpiriMessage.battUnderV).c_str());
+    mqttclient.publish((String(topic) + String("/Device_Data/Battery_bulk_voltage")).c_str(), String(_qpiriMessage.battBulkV).c_str());
+    mqttclient.publish((String(topic) + String("/Device_Data/Battery_float_voltage")).c_str(), String(_qpiriMessage.battFloatV).c_str());
 
-  mqttclient.publish((String(topic) + String("/Device_Data/Battery_type")).c_str(), String(_qpiriMessage.battType).c_str());
+    mqttclient.publish((String(topic) + String("/Device_Data/Battery_type")).c_str(), String(_qpiriMessage.battType).c_str());
 
-  mqttclient.publish((String(topic) + String("/Device_Data/Current_max_AC_charging_current")).c_str(), String(_qpiriMessage.battMaxAcChrgA).c_str());
-  mqttclient.publish((String(topic) + String("/Device_Data/Current_max_charging_current")).c_str(), String(_qpiriMessage.battMaxChrgA).c_str());
+    mqttclient.publish((String(topic) + String("/Device_Data/Current_max_AC_charging_current")).c_str(), String(_qpiriMessage.battMaxAcChrgA).c_str());
+    mqttclient.publish((String(topic) + String("/Device_Data/Current_max_charging_current")).c_str(), String(_qpiriMessage.battMaxChrgA).c_str());
 
-//for test
-  mqttclient.publish((String(topic) + String("/PV_Watt1")).c_str(), String(_qpigsMessage.solarW1).c_str());
+  //for test
+    mqttclient.publish((String(topic) + String("/PV_Watt1")).c_str(), String(_qpigsMessage.solarW1).c_str());
 
 
-//RAW Messages from Inverter
-#ifdef MQTTDEBUG
-  mqttclient.publish((String(topic) + String("/RAW/QPIGS")).c_str(), String(_qRaw.QPIGS).c_str());
-  mqttclient.publish((String(topic) + String("/RAW/QPIRI")).c_str(), String(_qRaw.QPIRI).c_str());
-  mqttclient.publish((String(topic) + String("/RAW/QMOD")).c_str(), String(_qRaw.QMOD).c_str());
-  //mqttclient.publish((String(topic) + String("/RAW/QPIWS")).c_str(), String(_qRaw.QPIWS).c_str());
-  //mqttclient.publish((String(topic) + String("/RAW/QFLAG")).c_str(), String(_qRaw.QFLAG).c_str());
-  //mqttclient.publish((String(topic) + String("/RAW/QID")).c_str(), String(_qRaw.QID).c_str());
-  //mqttclient.publish((String(topic) + String("/RAW/QPI")).c_str(), String(_qRaw.QPI).c_str());
-  mqttclient.publish((String(topic) + String("/RAW/QMUCHGCR")).c_str(), String(_qRaw.QMUCHGCR).c_str());
-  mqttclient.publish((String(topic) + String("/RAW/QMCHGCR")).c_str(), String(_qRaw.QMCHGCR).c_str());
-#endif
-  if(!publishFirst){
-   // mqttclient.publish((String(topic) + String("/Device_Control/Set_Command")).c_str(), "NAK");
-   // mqttclient.publish((String(topic) + String("/Device_Control/AC_Max_Charge_Current")).c_str(), 000);
-   // mqttclient.publish((String(topic) + String("/Device_Control/Max_Charge_Current")).c_str(), 000);
-  }*/
-publishFirst = true;
+  //RAW Messages from Inverter
+  #ifdef MQTTDEBUG
+    mqttclient.publish((String(topic) + String("/RAW/QPIGS")).c_str(), String(_qRaw.QPIGS).c_str());
+    mqttclient.publish((String(topic) + String("/RAW/QPIRI")).c_str(), String(_qRaw.QPIRI).c_str());
+    mqttclient.publish((String(topic) + String("/RAW/QMOD")).c_str(), String(_qRaw.QMOD).c_str());
+    //mqttclient.publish((String(topic) + String("/RAW/QPIWS")).c_str(), String(_qRaw.QPIWS).c_str());
+    //mqttclient.publish((String(topic) + String("/RAW/QFLAG")).c_str(), String(_qRaw.QFLAG).c_str());
+    //mqttclient.publish((String(topic) + String("/RAW/QID")).c_str(), String(_qRaw.QID).c_str());
+    //mqttclient.publish((String(topic) + String("/RAW/QPI")).c_str(), String(_qRaw.QPI).c_str());
+    mqttclient.publish((String(topic) + String("/RAW/QMUCHGCR")).c_str(), String(_qRaw.QMUCHGCR).c_str());
+    mqttclient.publish((String(topic) + String("/RAW/QMCHGCR")).c_str(), String(_qRaw.QMCHGCR).c_str());
+  #endif
+    if(!publishFirst){
+     // mqttclient.publish((String(topic) + String("/Device_Control/Set_Command")).c_str(), "NAK");
+     // mqttclient.publish((String(topic) + String("/Device_Control/AC_Max_Charge_Current")).c_str(), 000);
+     // mqttclient.publish((String(topic) + String("/Device_Control/Max_Charge_Current")).c_str(), 000);
+    }*/
+  publishFirst = true;
   return true;
 }
 
 void mqttcallback(char *top, unsigned char *payload, unsigned int length)
-{/*
-  if(!publishFirst) return;
-  String messageTemp;
-  for (unsigned int i = 0; i < length; i++)
-  {
-    messageTemp += (char)payload[i];
-  }
-  if(messageTemp == "NAK" || messageTemp == "(NAK" || messageTemp == "") return;
-  //modify the max charging current
-  if (strcmp(top, (topic + "/Device_Control/Max_Charge_Current").c_str()) == 0)
-  {
-    Serial.println("message recived");
-    if (messageTemp.toInt() != _qpiriMessage.battMaxChrgA)
-    {
-      sendMNCHGC(messageTemp.toInt());
-      valChange = true;
-    }
-  }
-  //modify the max ac charging current
-  if (strcmp(top, (topic + "/Device_Control/AC_Max_Charge_Current").c_str()) == 0)
-  {
-    Serial.println("message recived");
-    if (messageTemp.toInt() != _qpiriMessage.battMaxAcChrgA)
-    {
-      sendMUCHGC(messageTemp.toInt());
-      valChange = true;
-    }
-  }
-  //send raw control command
-    if (strcmp(top, (topic + "/Device_Control/Set_Command").c_str()) == 0)
-  {
-    Serial.println("Send Command message recived: " + messageTemp);
-    String tmpResponse = sendCustomCommand(messageTemp);
-    mqttclient.publish((String(topic) + String("/Device_Control/Set_Command")).c_str(), tmpResponse.c_str());
-      valChange = true;
-}
-*/
+{ /*
+   if(!publishFirst) return;
+   String messageTemp;
+   for (unsigned int i = 0; i < length; i++)
+   {
+     messageTemp += (char)payload[i];
+   }
+   if(messageTemp == "NAK" || messageTemp == "(NAK" || messageTemp == "") return;
+   //modify the max charging current
+   if (strcmp(top, (topic + "/Device_Control/Max_Charge_Current").c_str()) == 0)
+   {
+     Serial.println("message recived");
+     if (messageTemp.toInt() != _qpiriMessage.battMaxChrgA)
+     {
+       sendMNCHGC(messageTemp.toInt());
+       valChange = true;
+     }
+   }
+   //modify the max ac charging current
+   if (strcmp(top, (topic + "/Device_Control/AC_Max_Charge_Current").c_str()) == 0)
+   {
+     Serial.println("message recived");
+     if (messageTemp.toInt() != _qpiriMessage.battMaxAcChrgA)
+     {
+       sendMUCHGC(messageTemp.toInt());
+       valChange = true;
+     }
+   }
+   //send raw control command
+     if (strcmp(top, (topic + "/Device_Control/Set_Command").c_str()) == 0)
+   {
+     Serial.println("Send Command message recived: " + messageTemp);
+     String tmpResponse = sendCustomCommand(messageTemp);
+     mqttclient.publish((String(topic) + String("/Device_Control/Set_Command")).c_str(), tmpResponse.c_str());
+       valChange = true;
+ }
+ */
 }

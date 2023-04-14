@@ -44,3 +44,37 @@ void PI_Serial::PI30_HS_MS_MSX_QMOD()
         get.variableData.operationMode = getModeDesc((char)commandAnswer.charAt(0));
     }
 }
+void PI_Serial::PI30_HS_MS_MSX_QPIRI()
+{
+    String commandAnswer = this->requestData("QMOD");
+    if (commandAnswer != "NAK" && commandAnswer.length() == 1)
+    {
+        int index = 0;                                                     // after the starting '('
+        get.staticData.gridRatingV = getNextFloat(commandAnswer, index);   // BBB.B
+        get.staticData.gridRatingA = getNextFloat(commandAnswer, index);   // CC.C
+        get.staticData.acOutRatingV = getNextFloat(commandAnswer, index);  // DDD.D
+        get.staticData.acOutRatingHz = getNextFloat(commandAnswer, index); // EE.E
+        get.staticData.acOutRatingA = getNextFloat(commandAnswer, index);  // FF.F
+        get.staticData.acOutRatungVA = getNextFloat(commandAnswer, index); // HHHH
+        get.staticData.acOutRatingW = getNextFloat(commandAnswer, index);  // IIII
+        get.staticData.battRatingV = getNextFloat(commandAnswer, index);   // JJ.J
+
+        get.staticData.battreChargeV = getNextFloat(commandAnswer, index); // KK.K
+        get.staticData.battUnderV = getNextFloat(commandAnswer, index);    // 1JJ.J
+        get.staticData.battBulkV = getNextFloat(commandAnswer, index);     // 1KK.K
+        get.staticData.battFloatV = getNextFloat(commandAnswer, index);    // LL.L
+
+        switch ((byte)getNextLong(commandAnswer, index)) // O
+        {
+        case 0:
+            get.staticData.battType = "AGM";
+            break;
+        case 1:
+            get.staticData.battType = "Flooded";
+            break;
+        case 2:
+            get.staticData.battType = "User";
+            break;
+        }
+    }
+}

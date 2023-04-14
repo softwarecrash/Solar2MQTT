@@ -126,9 +126,14 @@ public:
     bool update();
 
     /**
-     * @brief fetching the QPIGS Data
+     * @brief fetching the Variable data
      */
     bool getVariableData();
+
+    /**
+     * @brief fetching the Static data
+     */
+    bool getStaticeData();
 
     /**
      * @brief Send custom command to the device
@@ -196,9 +201,11 @@ private:
 
     void PI30_HS_MS_MSX_QPIGS();
     void PI30_HS_MS_MSX_QMOD();
+    void PI30_HS_MS_MSX_QPIRI();
 
     void PI30_PIP_QPIGS(); //example
     void PI30_PIP_QMOD(); //example
+    void PI30_PIP_QPIRI(); //example
 };
 
 #endif
