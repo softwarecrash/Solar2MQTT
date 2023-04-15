@@ -11,7 +11,11 @@
 //QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O P P Q Q 0 O P Q R SS T U VV.V W X YYY                      PI41 / LV5048
 
 
-//QPIGS: 232.0 50.0 232.0 50.0 0263 0274 009 402 25.31 002 057 0688 0002 032.4 25.29 00000 10010110 00 04 00069 000                 von Masterpower Omega-UM3KVA, wox?
+//                                                                                                                                  all-solutions ->def. pip / prod. hs ms msx
+//                                                                                                                                  wox -> hs ms msx
+//                                                                                                                                  dbl]rock -> pi30revo
+
+//QPIGS: 232.0 50.0 232.0 50.0 0263 0274 009 402 25.31 002 057 0688 0002 032.4 25.29 00000 10010110 00 04 00069 000                 von Masterpower Omega-UM3KVA -> github issue
 
 //QPIGS: AAA.A BBBBBB CC.C DDDD.D EEE.E FFFFF GG.G HHH.H III JJJ.J KKK.K LLL.L MMM.M NNN OOOOO PPPPP QQQQQ RRR.R SSS.S TTT.T UUU.U V WWWWWWWWW PI16
 //QPIGS: MMM.M CBBBBB HH.H CZZZ.Z LLL.L MMMMM NN.N QQQ.Q DDD KKK.K VVV.V SSS.S RRR.R XXX PPPPP EEEEE OOOOO UUU.U WWW.W YYY.Y TTT.T 00000000     PI00
