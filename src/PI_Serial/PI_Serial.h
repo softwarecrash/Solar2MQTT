@@ -1,18 +1,17 @@
 #include "SoftwareSerial.h"
-//#include "devices/PI30_HS_MS_MSX.h"
+// #include "devices/PI30_HS_MS_MSX.h"
 #ifndef PI_SERIAL_H
 #define PI_SERIAL_H
 
 // time in ms for delay the bms requests, to fast brings connection error
-//#define DELAYTINME 100
+// #define DELAYTINME 100
 
 class PI_Serial
 {
 public:
-    //unsigned int previousTime = 0;
-    //byte requestCounter = 0;
+    // unsigned int previousTime = 0;
+    // byte requestCounter = 0;
 
-    
     enum protocolType
     {
         PI00,
@@ -55,6 +54,27 @@ public:
         } chargeValues;
         struct
         {
+            //-----------QPIGS----------------
+            float GridVoltage;                 // The units is V.
+            float GridFrequency;               // The units is Hz.
+            float ACOutputVoltage;             // The units is V.
+            float ACOutputFrequency;           // The units is Hz.
+            short ACOutputApparentPower;       // The units is VA.
+            short ACOutputActivePower;         // The units is W.
+            short OutputLoadPercent;           // The units is %.
+            short BUSVoltage;                  // The units is V.
+            float BatteryVoltage;              // The units is V.
+            short BatteryChargingCurrent;      // The units is A.
+            short batteryCapacity;             // The units is %.
+            short InverterHeatSinkTemperature; // The units is ℃
+            float PVInputCurrentForBattery;    // The units is A.
+            float PCInputVoltage1;             // The unitsis V.
+            float PCInputVoltage2;             // The unitsis V.
+            float PCInputVoltage3;             // The unitsis V.
+            float PCInputVoltage4;             // The unitsis V.
+            short BatteryDischargeCurrent;     // The units is A.
+            short batteryLoad;                 // The units is A. - Combined charge and discharge
+
             // QPIGS
             float gridV;
             float gridHz;
@@ -87,6 +107,23 @@ public:
             // QMOD
             String operationMode;
         } variableData;
+        struct
+        {  
+            //first part from qpigs (pip sample)
+            bool PVorACFeedTheLoad;             // PV or AC feed the load, 1:yes,0:no
+            bool configurationStatus;           // configuration status: 1:Change 0:unchanged
+            bool SCCFirmwareVersionChange;      // SCC firmware version 1: Updated 0:unchanged
+            bool loadStatus;                    // Load status: 0: Load off 1:Load on
+            //reserved bits
+            bool chargingStatus;                // Charging status( Charging on/off)
+            bool SCCChargingStatus;             // Charging status( SCC charging on/off)
+            bool ACChargingStatus;              // Charging status(AC charging on/off)
+            //second device status of qpigs (pip sample)
+            bool chargingToFloatingMode; // flag for charging to floating mode
+            bool switchOn;               // Switch On
+            bool dustproofInstalled;     // flag for dustproof installed
+
+        } deviceStatus;
 
     } get;
 
@@ -170,7 +207,7 @@ private:
      */
     bool getNextBit(String &command, int &index);
 
-        /**
+    /**
      * @brief function for autodetect the inverter
      * @details ask all modes and sort it to a protocol
      */
@@ -199,16 +236,13 @@ private:
      */
     SoftwareSerial *my_serialIntf;
 
-
-
-
     void PI30_HS_MS_MSX_QPIGS();
     void PI30_HS_MS_MSX_QMOD();
     void PI30_HS_MS_MSX_QPIRI();
 
-    void PI30_PIP_QPIGS(); //example
-    void PI30_PIP_QMOD(); //example
-    void PI30_PIP_QPIRI(); //example
+    void PI30_PIP_QPIGS(); // example
+    void PI30_PIP_QMOD();  // example
+    void PI30_PIP_QPIRI(); // example
 };
 
 #endif
