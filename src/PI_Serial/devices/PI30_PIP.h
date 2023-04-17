@@ -7,8 +7,9 @@ void PI_Serial::PI30_PIP_QPIGS()
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer != "NAK" && commandAnswer.length() == 106) // make sure
   {
-    long garbage;
+    String tmpBit;
     int index = 0;
+    int i = 0;
     get.variableData.gridVoltage = getNextFloat(commandAnswer, index);                // BBB.B
     get.variableData.gridFrequency = getNextFloat(commandAnswer, index);              // CC.C
     get.variableData.acOutputVoltage = getNextFloat(commandAnswer, index);            // DDD.D
@@ -25,24 +26,26 @@ void PI_Serial::PI30_PIP_QPIGS()
     get.variableData.pvInputVoltage1 = getNextFloat(commandAnswer, index);            // UUU.U
     get.variableData.batteryVoltageFromScc = getNextFloat(commandAnswer, index);      // WW.WW
     get.variableData.batteryDischargeCurrent = getNextLong(commandAnswer, index);     // PPPP
-    //so without state bits put the netx in the garbage
-    garbage = getNextLong(commandAnswer, index);
-    // get.deviceStatus.pvOrAcFeedTheLoad = getNextBit(commandAnswer, index);        // b7
-    // get.deviceStatus.configurationStatus = getNextBit(commandAnswer, index);      // b6
-    // get.deviceStatus.sccFirmwareVersionChange = getNextBit(commandAnswer, index); // b5
-    // get.deviceStatus.loadStatus = getNextBit(commandAnswer, index);               // b4
-    // get.deviceStatus.chargingStatus = getNextBit(commandAnswer, index);           // b3
-    // get.deviceStatus.sccChargingStatus = getNextBit(commandAnswer, index);        // b2
-    // get.deviceStatus.acChargingStatus = getNextBit(commandAnswer, index);         // b1
+
+     tmpBit = getNextLong(commandAnswer, index);
+     i = 0;
+     get.deviceStatus.pvOrAcFeedTheLoad = getNextBit(tmpBit, i);        // b7
+     get.deviceStatus.configurationStatus = getNextBit(tmpBit, i);      // b6
+     get.deviceStatus.sccFirmwareVersionChange = getNextBit(tmpBit, i); // b5
+     get.deviceStatus.loadStatus = getNextBit(tmpBit, i);               // b4
+     get.deviceStatus.chargingStatus = getNextBit(tmpBit, i);           // b3
+     get.deviceStatus.sccChargingStatus = getNextBit(tmpBit, i);        // b2
+     get.deviceStatus.acChargingStatus = getNextBit(tmpBit, i);         // b1
 
     get.variableData.batteryVoltageOffsetForFansOn = getNextLong(commandAnswer, index); // QQ
     get.variableData.eepromVersion = getNextLong(commandAnswer, index);                 // VV
     get.variableData.pvChargingPower = getNextLong(commandAnswer, index);               // MMMMM
-    //so without state bits put the netx in the garbage
-    garbage = getNextLong(commandAnswer, index);
-    // get.deviceStatus.chargingToFloatingMode = getNextBit(commandAnswer, index);         // b10
-    // get.deviceStatus.switchOn = getNextBit(commandAnswer, index);                       // b9
-    // get.deviceStatus.dustproofInstalled = getNextBit(commandAnswer, index);             // b8
+
+    tmpBit = getNextLong(commandAnswer, index);
+    i = 0;
+     get.deviceStatus.chargingToFloatingMode = getNextBit(tmpBit, i);         // b10
+     get.deviceStatus.switchOn = getNextBit(tmpBit, i);                       // b9
+     get.deviceStatus.dustproofInstalled = getNextBit(tmpBit, i);             // b8
 
     get.variableData.batteryLoad = (get.variableData.batteryChargingCurrent - get.variableData.batteryDischargeCurrent);
   }
@@ -140,7 +143,7 @@ void PI_Serial::PI30_PIP_QPIRI()
       get.staticData.machineType = "Hybrid";
       break;
     }
-    switch ((byte)getNextLong(commandAnswer, index)) // SS
+    switch ((byte)getNextLong(commandAnswer, index)) // T
     {
     case 0:
       get.staticData.topolgy = "transformerless";
