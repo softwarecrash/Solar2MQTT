@@ -205,7 +205,7 @@ private:
     /**
      * @brief accept a achar and get back the operation mode as string
      */
-    String getModeDesc(char mode);
+    char* getModeDesc(char mode);
 
     /**
      * @brief Clear all data from the Get struct

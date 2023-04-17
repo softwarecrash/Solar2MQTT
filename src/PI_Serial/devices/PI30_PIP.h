@@ -73,13 +73,13 @@ void PI_Serial::PI30_PIP_QPIRI()
     switch ((byte)getNextLong(commandAnswer, index)) // O
     {
     case 0:
-      get.staticData.battType = "AGM";
+      get.staticData.batterytype = "AGM";
       break;
     case 1:
-      get.staticData.battType = "Flooded";
+      get.staticData.batterytype = "Flooded";
       break;
     case 2:
-      get.staticData.battType = "User";
+      get.staticData.batterytype = "User";
       break;
     }
     }

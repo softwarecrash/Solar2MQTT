@@ -340,13 +340,13 @@ bool PI_Serial::getNextBit(String &command, int &index) // Gets if the next char
     return false;
 }
 
-String PI_Serial::getModeDesc(char mode) // get the char from QMOD and make readable things
+char* PI_Serial::getModeDesc(char mode) // get the char from QMOD and make readable things
 {
-    String modeString;
+   char *modeString;
     switch (mode)
     {
     default:
-        modeString = "Undefined, Origin: " + mode;
+        modeString = (char*)("Undefined, Origin: " + mode);
         break;
     case 'P':
         modeString = "Power On";
