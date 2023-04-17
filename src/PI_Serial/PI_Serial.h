@@ -59,23 +59,6 @@ public:
             short maxChargingTimeAtCvStage;    // Y is an Integer ranging from 0 to 9. The unit is minute. (Only for PIP-MK )
             char *operationLogik;              // 0: Automatically 1: On-line mode 2: ECO mode (Only for PIP-MK )
 
-            /*
-            float gridRatingV;   // Grid rating voltage
-            float gridRatingA;   // Grid rating current
-            float acOutRatingV;  // AC output rating voltage
-            float acOutRatingHz; // AC output rating frequency
-            float acOutRatingA;  // AC output rating current
-            float acOutRatungVA; // AC output rating apparent power
-            float acOutRatingW;  // AC output rating active power
-            float battRatingV;   // Battery rating voltage
-            float battreChargeV; // Battery re-charge voltage
-            float battUnderV;    // Battery under voltage
-            float battBulkV;     // Battery bulk voltage
-            float battFloatV;    // Battery float voltage
-            String battType;     // Battery type
-            byte battMaxAcChrgA; // Current max AC charging current
-            byte battMaxChrgA;   // Current max charging current
-            */
         } staticData;
         // grid charge and solar charge array data
         struct
@@ -105,38 +88,6 @@ public:
             float pvInputVoltage4;             // The unitsis V.
             short batteryDischargeCurrent;     // The units is A.
             short batteryLoad;                 // The units is A. - Combined charge and discharge
-                                               /*
-                                                           // QPIGS
-                                                           float gridV;
-                                                           float gridHz;
-                                                           float acOutV;
-                                                           float acOutHz;
-                                                           short acOutVa;
-                                                           short acOutW;
-                                                           byte acOutPercent;
-                                                           short busV;
-                                                           float battV;
-                                                           byte battChargeA;
-                                                           byte battPercent;
-                                                           float heatSinkDegC;
-                                                           byte solarA;
-                                                           byte solarV;
-                                                           float sccBattV;
-                                                           int batteryLoad; // Value is Ampere
-                                                           short solarW;
-                                   
-                                                           float addSbuPriorityVersion;
-                                                           float isConfigChanged;
-                                                           float isSccFirmwareUpdated;
-                                   
-                                                           float battVoltageToSteadyWhileCharging;
-                                                           float chargingStatus;
-                                                           float reservedY;
-                                                           float reservedZ;
-                                                           float reservedAA;
-                                                           float reservedBB;
-                                                           // QMOD
-                                                           */
 
             char *operationMode;
         } variableData;
