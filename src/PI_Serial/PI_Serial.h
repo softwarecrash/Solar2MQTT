@@ -108,17 +108,16 @@ public:
             String operationMode;
         } variableData;
         struct
-        {  
-            //first part from qpigs (pip sample)
-            bool PVorACFeedTheLoad;             // PV or AC feed the load, 1:yes,0:no
-            bool configurationStatus;           // configuration status: 1:Change 0:unchanged
-            bool SCCFirmwareVersionChange;      // SCC firmware version 1: Updated 0:unchanged
-            bool loadStatus;                    // Load status: 0: Load off 1:Load on
-            //reserved bits
-            bool chargingStatus;                // Charging status( Charging on/off)
-            bool SCCChargingStatus;             // Charging status( SCC charging on/off)
-            bool ACChargingStatus;              // Charging status(AC charging on/off)
-            //second device status of qpigs (pip sample)
+        {
+            // first part from qpigs (pip sample)
+            bool PVorACFeedTheLoad;        // PV or AC feed the load, 1:yes,0:no
+            bool configurationStatus;      // configuration status: 1:Change 0:unchanged
+            bool SCCFirmwareVersionChange; // SCC firmware version 1: Updated 0:unchanged
+            bool loadStatus;               // Load status: 0: Load off 1:Load on
+            bool chargingStatus;           // Charging status( Charging on/off)
+            bool SCCChargingStatus;        // Charging status( SCC charging on/off)
+            bool ACChargingStatus;         // Charging status(AC charging on/off)
+
             bool chargingToFloatingMode; // flag for charging to floating mode
             bool switchOn;               // Switch On
             bool dustproofInstalled;     // flag for dustproof installed
