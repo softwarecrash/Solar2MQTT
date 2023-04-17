@@ -30,6 +30,36 @@ public:
     {
         struct
         {
+            //----------------QPIRI--------------------
+            float gridRatingVoltage;           // The units is V.
+            float gridRatingCurrent;           // The units is A.
+            float acOutputRatingVoltage;       // The units is V.
+            float acOutputRatingFrquency;      // The units is Hz.
+            float acoutputRatingCurrent;       // The unit is A.
+            short acOutputRatingApparentPower; // The unit is VA.
+            short acOutputRatingActivePower;   // The unit is W.
+            float batteryRatingVoltage;        // The units is V.
+            float batteryReChargeVoltage;      // The units is V.
+            float batteryUnderVoltage;         // The units is V.
+            float batteryBulkVoltage;          // The units is V.
+            float batteryFloatVoltage;         // The units is V.
+            char *batterytype;                 // 0: AGM 1: Flooded 2: User
+            short currentMaxAcChargingCurrent; // The units is A.
+            short currentMaxChargingCurrent;   // The units is A.
+            char *inputVoltageRange;           // 0: Appliance 1: UPS
+            char *outputSourcePriority;        // 0: Utility first 1: Solar first 2: SBU first
+            char *chargerSourcePriority;       // 0: Utility first 1: Solar first 2: Solar + Utility 3: Only solar charging permitted
+            short parallelMaxNumber;           // max parallel inverter / Charger
+            char *machineType;                 // 00: Grid tie; 01: Off Grid; 10: Hybrid.
+            bool topolgy;                      // 0: transformerless 1: transformer
+            char *outputMode;                  // 00: single machine output 01: parallel output 02: Phase 1 of 3 Phase output 03: Phase 2 of 3 Phase output 04: Phase 3 of 3 Phase output
+            float batteryReDischargeVoltage;   // The unit is V.
+            bool pvOkConditionForParallel;     // 0: As long as one unit of inverters has connect PV, parallel system will consider PV OK; 1: Only All of inverters have connect PV, parallel system will consider PV OK
+            bool pvPowerBalance;               // 0: PV input max current will be the max charged current; 1: PV input max power will be the sum of the max charged power and loads power.
+            short maxChargingTimeAtCvStage;    // Y is an Integer ranging from 0 to 9. The unit is minute. (Only for PIP-MK )
+            char *operationLogik;              // 0: Automatically 1: On-line mode 2: ECO mode (Only for PIP-MK )
+
+            /*
             float gridRatingV;   // Grid rating voltage
             float gridRatingA;   // Grid rating current
             float acOutRatingV;  // AC output rating voltage
@@ -45,6 +75,7 @@ public:
             String battType;     // Battery type
             byte battMaxAcChrgA; // Current max AC charging current
             byte battMaxChrgA;   // Current max charging current
+            */
         } staticData;
         // grid charge and solar charge array data
         struct
@@ -74,38 +105,40 @@ public:
             float pvInputVoltage4;             // The unitsis V.
             short batteryDischargeCurrent;     // The units is A.
             short batteryLoad;                 // The units is A. - Combined charge and discharge
+                                               /*
+                                                           // QPIGS
+                                                           float gridV;
+                                                           float gridHz;
+                                                           float acOutV;
+                                                           float acOutHz;
+                                                           short acOutVa;
+                                                           short acOutW;
+                                                           byte acOutPercent;
+                                                           short busV;
+                                                           float battV;
+                                                           byte battChargeA;
+                                                           byte battPercent;
+                                                           float heatSinkDegC;
+                                                           byte solarA;
+                                                           byte solarV;
+                                                           float sccBattV;
+                                                           int batteryLoad; // Value is Ampere
+                                                           short solarW;
+                                   
+                                                           float addSbuPriorityVersion;
+                                                           float isConfigChanged;
+                                                           float isSccFirmwareUpdated;
+                                   
+                                                           float battVoltageToSteadyWhileCharging;
+                                                           float chargingStatus;
+                                                           float reservedY;
+                                                           float reservedZ;
+                                                           float reservedAA;
+                                                           float reservedBB;
+                                                           // QMOD
+                                                           */
 
-            // QPIGS
-            float gridV;
-            float gridHz;
-            float acOutV;
-            float acOutHz;
-            short acOutVa;
-            short acOutW;
-            byte acOutPercent;
-            short busV;
-            float battV;
-            byte battChargeA;
-            byte battPercent;
-            float heatSinkDegC;
-            byte solarA;
-            byte solarV;
-            float sccBattV;
-            int batteryLoad; // Value is Ampere
-            short solarW;
-
-            float addSbuPriorityVersion;
-            float isConfigChanged;
-            float isSccFirmwareUpdated;
-
-            float battVoltageToSteadyWhileCharging;
-            float chargingStatus;
-            float reservedY;
-            float reservedZ;
-            float reservedAA;
-            float reservedBB;
-            // QMOD
-            String operationMode;
+            char *operationMode;
         } variableData;
         struct
         {
