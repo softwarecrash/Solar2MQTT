@@ -58,7 +58,6 @@ public:
             bool pvPowerBalance;               // 0: PV input max current will be the max charged current; 1: PV input max power will be the sum of the max charged power and loads power.
             short maxChargingTimeAtCvStage;    // Y is an Integer ranging from 0 to 9. The unit is minute. (Only for PIP-MK )
             char *operationLogik;              // 0: Automatically 1: On-line mode 2: ECO mode (Only for PIP-MK )
-
         } staticData;
         // grid charge and solar charge array data
         struct

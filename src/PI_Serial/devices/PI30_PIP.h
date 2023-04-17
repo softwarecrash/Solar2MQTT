@@ -7,6 +7,7 @@ void PI_Serial::PI30_PIP_QPIGS()
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer != "NAK" && commandAnswer.length() == 106) // make sure
   {
+    long garbage;
     int index = 0;
     get.variableData.gridVoltage = getNextFloat(commandAnswer, index);                // BBB.B
     get.variableData.gridFrequency = getNextFloat(commandAnswer, index);              // CC.C
@@ -24,7 +25,8 @@ void PI_Serial::PI30_PIP_QPIGS()
     get.variableData.pvInputVoltage1 = getNextFloat(commandAnswer, index);            // UUU.U
     get.variableData.batteryVoltageFromScc = getNextFloat(commandAnswer, index);      // WW.WW
     get.variableData.batteryDischargeCurrent = getNextLong(commandAnswer, index);     // PPPP
-
+    //so without state bits put the netx in the garbage
+    garbage = getNextLong(commandAnswer, index);
     // get.deviceStatus.pvOrAcFeedTheLoad = getNextBit(commandAnswer, index);        // b7
     // get.deviceStatus.configurationStatus = getNextBit(commandAnswer, index);      // b6
     // get.deviceStatus.sccFirmwareVersionChange = getNextBit(commandAnswer, index); // b5
@@ -36,6 +38,8 @@ void PI_Serial::PI30_PIP_QPIGS()
     get.variableData.batteryVoltageOffsetForFansOn = getNextLong(commandAnswer, index); // QQ
     get.variableData.eepromVersion = getNextLong(commandAnswer, index);                 // VV
     get.variableData.pvChargingPower = getNextLong(commandAnswer, index);               // MMMMM
+    //so without state bits put the netx in the garbage
+    garbage = getNextLong(commandAnswer, index);
     // get.deviceStatus.chargingToFloatingMode = getNextBit(commandAnswer, index);         // b10
     // get.deviceStatus.switchOn = getNextBit(commandAnswer, index);                       // b9
     // get.deviceStatus.dustproofInstalled = getNextBit(commandAnswer, index);             // b8
