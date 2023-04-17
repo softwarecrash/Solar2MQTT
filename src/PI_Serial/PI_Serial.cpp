@@ -152,11 +152,11 @@ unsigned int PI_Serial::autoDetect() // function for autodetect the inverter typ
             this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
             
             String qpi = this->requestData("QPI");
-            Serial.println("QPI:\t\t"+qpi);
+            Serial.println("QPI:\t\t"+qpi+" (Length: "+qpi.length()+")");
             String qpiri = this->requestData("QPIRI");
-            Serial.println("QPIRI:\t\t"+qpiri);
+            Serial.println("QPIRI:\t\t"+qpiri+" (Length: "+qpiri.length()+")");
             String qpigs = this->requestData("QPIGS");
-            Serial.println("QPIGS:\t\t"+qpigs);
+            Serial.println("QPIGS:\t\t"+qpigs+" (Length: "+qpigs.length()+")");
 
             if (qpiri.length() == 94 && qpigs.length() == 90) // typical length of PI30_HS_MS_MSX
             {
