@@ -54,25 +54,25 @@ public:
         } chargeValues;
         struct
         {
-            //-----------QPIGS----------------
-            float GridVoltage;                 // The units is V.
-            float GridFrequency;               // The units is Hz.
-            float ACOutputVoltage;             // The units is V.
-            float ACOutputFrequency;           // The units is Hz.
-            short ACOutputApparentPower;       // The units is VA.
-            short ACOutputActivePower;         // The units is W.
-            short OutputLoadPercent;           // The units is %.
-            short BUSVoltage;                  // The units is V.
-            float BatteryVoltage;              // The units is V.
-            short BatteryChargingCurrent;      // The units is A.
+            //----------------------------QPIGS----------------------------
+            float gridVoltage;                 // The units is V.
+            float gridFrequency;               // The units is Hz.
+            float acOutputVoltage;             // The units is V.
+            float acOutputFrequency;           // The units is Hz.
+            short acOutputApparentPower;       // The units is VA.
+            short acOutputActivePower;         // The units is W.
+            short outputLoadPercent;           // The units is %.
+            short busVoltage;                  // The units is V.
+            float batteryVoltage;              // The units is V.
+            short batteryChargingCurrent;      // The units is A.
             short batteryCapacity;             // The units is %.
-            short InverterHeatSinkTemperature; // The units is ℃
-            float PVInputCurrentForBattery;    // The units is A.
-            float PCInputVoltage1;             // The unitsis V.
-            float PCInputVoltage2;             // The unitsis V.
-            float PCInputVoltage3;             // The unitsis V.
-            float PCInputVoltage4;             // The unitsis V.
-            short BatteryDischargeCurrent;     // The units is A.
+            short inverterHeatSinkTemperature; // The units is ℃
+            float pvInputCurrentForBattery;    // The units is A.
+            float pvInputVoltage1;             // The unitsis V.
+            float pvInputVoltage2;             // The unitsis V.
+            float pvInputVoltage3;             // The unitsis V.
+            float pvInputVoltage4;             // The unitsis V.
+            short batteryDischargeCurrent;     // The units is A.
             short batteryLoad;                 // The units is A. - Combined charge and discharge
 
             // QPIGS
@@ -110,13 +110,13 @@ public:
         struct
         {
             // first part from qpigs (pip sample)
-            bool PVorACFeedTheLoad;        // PV or AC feed the load, 1:yes,0:no
+            bool pvOrAcFeedTheLoad;        // PV or AC feed the load, 1:yes,0:no
             bool configurationStatus;      // configuration status: 1:Change 0:unchanged
-            bool SCCFirmwareVersionChange; // SCC firmware version 1: Updated 0:unchanged
+            bool sccFirmwareVersionChange; // SCC firmware version 1: Updated 0:unchanged
             bool loadStatus;               // Load status: 0: Load off 1:Load on
             bool chargingStatus;           // Charging status( Charging on/off)
-            bool SCCChargingStatus;        // Charging status( SCC charging on/off)
-            bool ACChargingStatus;         // Charging status(AC charging on/off)
+            bool sccChargingStatus;        // Charging status( SCC charging on/off)
+            bool acChargingStatus;         // Charging status(AC charging on/off)
 
             bool chargingToFloatingMode; // flag for charging to floating mode
             bool switchOn;               // Switch On
