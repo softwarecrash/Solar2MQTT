@@ -150,17 +150,21 @@ unsigned int PI_Serial::autoDetect() // function for autodetect the inverter typ
             serialIntfBaud = 2400;
             this->my_serialIntf->setTimeout(250);
             this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
+            
+            String qpi = this->requestData("QPI");
+            Serial.println("QPI:\t\t"+qpi);
+            String qpiri = this->requestData("QPIRI");
+            Serial.println("QPIRI:\t\t"+qpiri);
+            String qpigs = this->requestData("QPIGS");
+            Serial.println("QPIGS:\t\t"+qpigs);
 
-            unsigned int qpririLength = this->requestData("QPIRI").length();
-            unsigned int qpigsLength = this->requestData("QPIGS").length();
-
-            if (qpririLength == 94 && qpigsLength == 90) // typical length of PI30_HS_MS_MSX
+            if (qpiri.length() == 94 && qpigs.length() == 90) // typical length of PI30_HS_MS_MSX
             {
                 protocolType = PI30_HS_MS_MSX;
                 Serial.print("Match protocol number: ");
                 Serial.println(protocolType);
             }
-            else if (qpririLength == 94 && qpigsLength == 106) // typical length of PI30_PIP
+            else if (qpiri.length() == 94 && qpigs.length() == 106) // typical length of PI30_PIP
             {
                 protocolType = PI30_PIP;
                 Serial.print("Match protocol number: ");
