@@ -80,8 +80,8 @@ public:
             short batteryChargingCurrent;      // The units is A.
             short batteryCapacity;             // The units is %.
             short inverterHeatSinkTemperature; // The units is ℃
-            float pvInputCurrent[10];          // The units is A.
-            float pvInputVoltage[10];          // The unitsis V.
+            float pvInputCurrent[4] = -10000;          // The units is A.
+            float pvInputVoltage[4] = -10000;          // The unitsis V.
             float batteryVoltageFromScc;         // The units is V.
             short batteryDischargeCurrent;       // The units is A.
             short batteryVoltageOffsetForFansOn; // The unit is 10mV.
