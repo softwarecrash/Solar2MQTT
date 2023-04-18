@@ -18,7 +18,7 @@ void PI_Serial::PIXX_QPIRI()
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer == "NAK")
   {
-    qAvaible.qpiri = false; // iv recived NAK, set the command avaible to false and never aks again until reboot
+    qAvaible.qpiri = false; // if recived NAK, set the command avaible to false and never aks again until reboot
   }
   else if (commandAnswer.length() == 83 || // Revo
            commandAnswer.length() == 94 || // PIP MSX
