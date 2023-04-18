@@ -340,34 +340,34 @@ char *PI_Serial::getModeDesc(char mode) // get the char from QMOD and make reada
         modeString = (char *)("Undefined, Origin: " + mode);
         break;
     case 'P':
-        modeString = "Power On";
+        modeString = (char *)"Power On";
         break;
     case 'S':
-        modeString = "Standby";
+        modeString = (char *)"Standby";
         break;
     case 'Y':
-        modeString = "Bypass";
+        modeString = (char *)"Bypass";
         break;
     case 'L':
-        modeString = "Line";
+        modeString = (char *)"Line";
         break;
     case 'B':
-        modeString = "Battery";
+        modeString = (char *)"Battery";
         break;
     case 'T':
-        modeString = "Battery Test";
+        modeString = (char *)"Battery Test";
         break;
     case 'F':
-        modeString = "Fault";
+        modeString = (char *)"Fault";
         break;
     case 'D':
-        modeString = "Shutdown";
+        modeString = (char *)"Shutdown";
         break;
     case 'G':
-        modeString = "Grid";
+        modeString = (char *)"Grid";
         break;
     case 'C':
-        modeString = "Charge";
+        modeString = (char *)"Charge";
         break;
     }
     return modeString;

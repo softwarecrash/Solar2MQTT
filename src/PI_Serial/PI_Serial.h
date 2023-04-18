@@ -108,6 +108,14 @@ public:
             bool dustproofInstalled;     // flag for dustproof installed
         } deviceStatus;
 
+        struct
+        {
+         String qpigs;
+         String qpiri;
+         String qmod;
+        }raw;
+        
+
     } get;
 
     struct

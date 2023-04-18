@@ -26,7 +26,7 @@ void PI_Serial::PIXX_QPIRI()
            commandAnswer.length() == 104   // PI30 MAX
   )
   {
-
+    get.raw.qpiri = commandAnswer;
     int index = 0;
     get.staticData.gridRatingVoltage = getNextFloat(commandAnswer, index);          // BBB.B
     get.staticData.gridRatingCurrent = getNextFloat(commandAnswer, index);          // CC.C
@@ -44,13 +44,13 @@ void PI_Serial::PIXX_QPIRI()
     switch ((byte)getNextLong(commandAnswer, index)) // O
     {
     case 0:
-      get.staticData.batterytype = "AGM";
+      get.staticData.batterytype = (char *)"AGM";
       break;
     case 1:
-      get.staticData.batterytype = "Flooded";
+      get.staticData.batterytype = (char *)"Flooded";
       break;
     case 2:
-      get.staticData.batterytype = "User";
+      get.staticData.batterytype = (char *)"User";
       break;
     }
     get.staticData.currentMaxAcChargingCurrent = getNextLong(commandAnswer, index); // PP
@@ -59,59 +59,59 @@ void PI_Serial::PIXX_QPIRI()
     switch ((byte)getNextLong(commandAnswer, index)) // o
     {
     case 0:
-      get.staticData.inputVoltageRange = "Appliance";
+      get.staticData.inputVoltageRange = (char *)"Appliance";
       break;
     case 1:
-      get.staticData.inputVoltageRange = "UPS";
+      get.staticData.inputVoltageRange = (char *)"UPS";
       break;
     }
     switch ((byte)getNextLong(commandAnswer, index)) // P
     {
     case 0:
-      get.staticData.outputSourcePriority = "Utility first";
+      get.staticData.outputSourcePriority = (char *)"Utility first";
       break;
     case 1:
-      get.staticData.outputSourcePriority = "Solar first";
+      get.staticData.outputSourcePriority = (char *)"Solar first";
       break;
     case 2:
-      get.staticData.outputSourcePriority = "SBU first";
+      get.staticData.outputSourcePriority = (char *)"SBU first";
       break;
     }
     switch ((byte)getNextLong(commandAnswer, index)) // Q
     {
     case 0:
-      get.staticData.chargerSourcePriority = "Utility first";
+      get.staticData.chargerSourcePriority = (char *)"Utility first";
       break;
     case 1:
-      get.staticData.chargerSourcePriority = "Solar first";
+      get.staticData.chargerSourcePriority = (char *)"Solar first";
       break;
     case 2:
-      get.staticData.chargerSourcePriority = "Solar + Utility";
+      get.staticData.chargerSourcePriority = (char *)"Solar + Utility";
       break;
     case 3:
-      get.staticData.chargerSourcePriority = "Only solar charging permitted";
+      get.staticData.chargerSourcePriority = (char *)"Only solar charging permitted";
       break;
     }
     get.staticData.parallelMaxNumber = getNextLong(commandAnswer, index); // R
     switch ((byte)getNextLong(commandAnswer, index))                      // SS
     {
     case 00:
-      get.staticData.machineType = "Grid tie";
+      get.staticData.machineType = (char *)"Grid tie";
       break;
     case 01:
-      get.staticData.machineType = "Off Grid";
+      get.staticData.machineType = (char *)"Off Grid";
       break;
     case 10:
-      get.staticData.machineType = "Hybrid";
+      get.staticData.machineType = (char *)"Hybrid";
       break;
     }
     switch ((byte)getNextLong(commandAnswer, index)) // T
     {
     case 0:
-      get.staticData.topolgy = "transformerless";
+      get.staticData.topolgy = (char *)"transformerless";
       break;
     case 1:
-      get.staticData.topolgy = "Otransformer";
+      get.staticData.topolgy = (char *)"Otransformer";
       break;
     }
   }

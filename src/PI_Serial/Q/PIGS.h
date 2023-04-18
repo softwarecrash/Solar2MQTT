@@ -25,7 +25,7 @@ void PI_Serial::PIXX_QPIGS()
            commandAnswer.length() == 118    // PI30MAX
   )
   {
-
+    get.raw.qpigs = commandAnswer;
     int index = 0;
     get.variableData.gridVoltage = getNextFloat(commandAnswer, index);                // BBB.B
     get.variableData.gridFrequency = getNextFloat(commandAnswer, index);              // CC.C

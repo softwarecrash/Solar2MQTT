@@ -8,6 +8,7 @@ void PI_Serial::PIXX_QMOD()
   } else
   if (commandAnswer.length() == 1)
   {
+    get.raw.qmod = commandAnswer;
     get.variableData.operationMode = getModeDesc((char)commandAnswer.charAt(0));
   }
 }
