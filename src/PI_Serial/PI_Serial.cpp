@@ -3,8 +3,7 @@ SoftwareSerial myPort;
 #include "CRC16.h"
 #include "CRC.h"
 CRC16 crc;
-#include "devices/PI30_HS_MS_MSX.h"
-#include "devices/PI30_PIP.h"
+#include "QPIGS.h"
 
 #define SERIALDEBUG
 

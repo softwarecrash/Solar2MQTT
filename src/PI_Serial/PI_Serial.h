@@ -68,23 +68,20 @@ public:
         struct
         {
             //----------------------------QPIGS----------------------------
-            float gridVoltage;                   // The units is V.
-            float gridFrequency;                 // The units is Hz.
-            float acOutputVoltage;               // The units is V.
-            float acOutputFrequency;             // The units is Hz.
-            short acOutputApparentPower;         // The units is VA.
-            short acOutputActivePower;           // The units is W.
-            short outputLoadPercent;             // The units is %.
-            short busVoltage;                    // The units is V.
-            float batteryVoltage;                // The units is V.
-            short batteryChargingCurrent;        // The units is A.
-            short batteryCapacity;               // The units is %.
-            short inverterHeatSinkTemperature;   // The units is ℃
-            float pvInputCurrentForBattery;      // The units is A.
-            float pvInputVoltage1;               // The unitsis V.
-            float pvInputVoltage2;               // The unitsis V.
-            float pvInputVoltage3;               // The unitsis V.
-            float pvInputVoltage4;               // The unitsis V.
+            float gridVoltage;                 // The units is V.
+            float gridFrequency;               // The units is Hz.
+            float acOutputVoltage;             // The units is V.
+            float acOutputFrequency;           // The units is Hz.
+            short acOutputApparentPower;       // The units is VA.
+            short acOutputActivePower;         // The units is W.
+            short outputLoadPercent;           // The units is %.
+            short busVoltage;                  // The units is V.
+            float batteryVoltage;              // The units is V.
+            short batteryChargingCurrent;      // The units is A.
+            short batteryCapacity;             // The units is %.
+            short inverterHeatSinkTemperature; // The units is ℃
+            float pvInputCurrent[10];          // The units is A.
+            float pvInputVoltage[10];          // The unitsis V.
             float batteryVoltageFromScc;         // The units is V.
             short batteryDischargeCurrent;       // The units is A.
             short batteryVoltageOffsetForFansOn; // The unit is 10mV.
@@ -222,9 +219,9 @@ private:
      */
     SoftwareSerial *my_serialIntf;
 
-    void PI30_HS_MS_MSX_QPIGS();
-    void PI30_HS_MS_MSX_QMOD();
-    void PI30_HS_MS_MSX_QPIRI();
+    void PI30_QPIGS();
+    void PI30_QMOD();
+    void PI30_QPIRI();
 
     void PI30_PIP_QPIGS(); // example
     void PI30_PIP_QMOD();  // example

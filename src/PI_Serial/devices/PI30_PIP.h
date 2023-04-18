@@ -22,30 +22,26 @@ void PI_Serial::PI30_PIP_QPIGS()
     get.variableData.batteryChargingCurrent = getNextLong(commandAnswer, index);      // KKK
     get.variableData.batteryCapacity = getNextLong(commandAnswer, index);             // OOO
     get.variableData.inverterHeatSinkTemperature = getNextLong(commandAnswer, index); // TTTT
-    get.variableData.pvInputCurrentForBattery = getNextFloat(commandAnswer, index);   // EE.E
-    get.variableData.pvInputVoltage1 = getNextFloat(commandAnswer, index);            // UUU.U
+    get.variableData.pvInputCurrent[0] = getNextFloat(commandAnswer, index);   // EE.E
+    get.variableData.pvInputVoltage[0] = getNextFloat(commandAnswer, index);            // UUU.U
     get.variableData.batteryVoltageFromScc = getNextFloat(commandAnswer, index);      // WW.WW
     get.variableData.batteryDischargeCurrent = getNextLong(commandAnswer, index);     // PPPP
 
-     tmpBit = getNextLong(commandAnswer, index);
-     i = 0;
-     get.deviceStatus.pvOrAcFeedTheLoad = getNextBit(tmpBit, i);        // b7
-     get.deviceStatus.configurationStatus = getNextBit(tmpBit, i);      // b6
-     get.deviceStatus.sccFirmwareVersionChange = getNextBit(tmpBit, i); // b5
-     get.deviceStatus.loadStatus = getNextBit(tmpBit, i);               // b4
-     get.deviceStatus.chargingStatus = getNextBit(tmpBit, i);           // b3
-     get.deviceStatus.sccChargingStatus = getNextBit(tmpBit, i);        // b2
-     get.deviceStatus.acChargingStatus = getNextBit(tmpBit, i);         // b1
+    get.deviceStatus.pvOrAcFeedTheLoad = getNextBit(commandAnswer, index);        // b7
+    get.deviceStatus.configurationStatus = getNextBit(commandAnswer, index);      // b6
+    get.deviceStatus.sccFirmwareVersionChange = getNextBit(commandAnswer, index); // b5
+    get.deviceStatus.loadStatus = getNextBit(commandAnswer, index);               // b4
+    get.deviceStatus.chargingStatus = getNextBit(commandAnswer, index);           // b3
+    get.deviceStatus.sccChargingStatus = getNextBit(commandAnswer, index);        // b2
+    get.deviceStatus.acChargingStatus = getNextBit(commandAnswer, index);         // b1
 
     get.variableData.batteryVoltageOffsetForFansOn = getNextLong(commandAnswer, index); // QQ
     get.variableData.eepromVersion = getNextLong(commandAnswer, index);                 // VV
     get.variableData.pvChargingPower = getNextLong(commandAnswer, index);               // MMMMM
 
-    tmpBit = getNextLong(commandAnswer, index);
-    i = 0;
-     get.deviceStatus.chargingToFloatingMode = getNextBit(tmpBit, i);         // b10
-     get.deviceStatus.switchOn = getNextBit(tmpBit, i);                       // b9
-     get.deviceStatus.dustproofInstalled = getNextBit(tmpBit, i);             // b8
+    get.deviceStatus.chargingToFloatingMode = getNextBit(commandAnswer, index); // b10
+    get.deviceStatus.switchOn = getNextBit(commandAnswer, index);               // b9
+    get.deviceStatus.dustproofInstalled = getNextBit(commandAnswer, index);     // b8
 
     get.variableData.batteryLoad = (get.variableData.batteryChargingCurrent - get.variableData.batteryDischargeCurrent);
   }
