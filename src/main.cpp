@@ -387,7 +387,7 @@ void loop()
       }
       if (commandFromMqtt != "")
       {
-        Serial.println(commandFromWeb);
+        Serial.println(commandFromMqtt);
         String customResponse = mppClient.sendCommand(commandFromMqtt); // send a custom command to the device
         Serial.println(customResponse);
         commandFromMqtt = "";
