@@ -388,9 +388,10 @@ void loop()
       if (commandFromMqtt != "")
       {
         Serial.println(commandFromWeb);
-        String customResponse = mppClient.sendCommand(commandFromWeb); // send a custom command to the device
+        String customResponse = mppClient.sendCommand(commandFromMqtt); // send a custom command to the device
         Serial.println(customResponse);
         commandFromMqtt = "";
+        mqttclient.publish((String(topic) + String("/Device_Control/Set_Command_answer")).c_str(), customResponse.c_str());
       }
 
       mppClient.getStaticeData();
@@ -551,7 +552,7 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
    {
      Serial.println("Send Command message recived: " + messageTemp);
      commandFromMqtt = messageTemp;
-     mqttclient.publish((String(topic) + String("/Device_Control/Set_Command")).c_str(), customResponse.c_str());
+     //mqttclient.publish((String(topic) + String("/Device_Control/Set_Command_answer")).c_str(), customResponse.c_str());
     valChange = true;
  }
  
