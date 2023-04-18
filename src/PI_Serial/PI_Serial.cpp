@@ -3,7 +3,9 @@ SoftwareSerial myPort;
 #include "CRC16.h"
 #include "CRC.h"
 CRC16 crc;
-#include "QPIGS.h"
+#include "Q/PIGS.h"
+#include "Q/PIRI.h"
+#include "Q/MOD.h"
 
 #define SERIALDEBUG
 
@@ -67,8 +69,8 @@ bool PI_Serial::getVariableData() // request the variable data
     switch (protocolType)
     {
     case PI30_HS_MS_MSX:
-        PI30_HS_MS_MSX_QPIGS();
-        PI30_HS_MS_MSX_QMOD();
+        PI30_QPIGS();
+        PI30_QMOD();
         break;
     case PI30_PIP:        // example
         PI30_PIP_QPIGS(); // example
@@ -87,7 +89,7 @@ bool PI_Serial::getStaticeData() // request static data
     switch (protocolType)
     {
     case PI30_HS_MS_MSX:
-        PI30_HS_MS_MSX_QPIRI();
+        PI30_QPIRI();
         break;
     case PI30_PIP:        // example
         PI30_PIP_QPIRI(); // example
