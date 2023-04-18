@@ -68,26 +68,26 @@ public:
         struct
         {
             //----------------------------QPIGS----------------------------
-            float gridVoltage;                 // The units is V.
-            float gridFrequency;               // The units is Hz.
-            float acOutputVoltage;             // The units is V.
-            float acOutputFrequency;           // The units is Hz.
-            short acOutputApparentPower;       // The units is VA.
-            short acOutputActivePower;         // The units is W.
-            short outputLoadPercent;           // The units is %.
-            short busVoltage;                  // The units is V.
-            float batteryVoltage;              // The units is V.
-            short batteryChargingCurrent;      // The units is A.
-            short batteryCapacity;             // The units is %.
-            short inverterHeatSinkTemperature; // The units is ℃
-            float pvInputCurrent[4] = -10000;          // The units is A.
-            float pvInputVoltage[4] = -10000;          // The unitsis V.
-            float batteryVoltageFromScc;         // The units is V.
-            short batteryDischargeCurrent;       // The units is A.
-            short batteryVoltageOffsetForFansOn; // The unit is 10mV.
-            short batteryLoad;                   // The units is A. - Combined charge and discharge
-            short eepromVersion;                 // version info
-            short pvChargingPower;               // The unit is watt.
+            float gridVoltage;                                          // The units is V.
+            float gridFrequency;                                        // The units is Hz.
+            float acOutputVoltage;                                      // The units is V.
+            float acOutputFrequency;                                    // The units is Hz.
+            short acOutputApparentPower;                                // The units is VA.
+            short acOutputActivePower;                                  // The units is W.
+            short outputLoadPercent;                                    // The units is %.
+            short busVoltage;                                           // The units is V.
+            float batteryVoltage;                                       // The units is V.
+            short batteryChargingCurrent;                               // The units is A.
+            short batteryCapacity;                                      // The units is %.
+            short inverterHeatSinkTemperature;                          // The units is ℃
+            float pvInputCurrent[4] = {-10000, -10000, -10000, -10000}; // The units is A.
+            float pvInputVoltage[4] = {-10000, -10000, -10000, -10000}; // The unitsis V.
+            float batteryVoltageFromScc;                                // The units is V.
+            short batteryDischargeCurrent;                              // The units is A.
+            short batteryVoltageOffsetForFansOn;                        // The unit is 10mV.
+            short batteryLoad;                                          // The units is A. - Combined charge and discharge
+            short eepromVersion;                                        // version info
+            short pvChargingPower;                                      // The unit is watt.
 
             char *operationMode;
         } variableData;
