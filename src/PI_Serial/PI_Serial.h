@@ -14,6 +14,7 @@ public:
 
     enum protocolType
     {
+        PIXX,
         PI00,
         PI16,
         PI17,
@@ -105,7 +106,6 @@ public:
             bool chargingToFloatingMode; // flag for charging to floating mode
             bool switchOn;               // Switch On
             bool dustproofInstalled;     // flag for dustproof installed
-
         } deviceStatus;
 
     } get;
@@ -165,6 +165,15 @@ private:
     unsigned int soft_rx;
     unsigned int serialIntfBaud;
 
+            struct
+        {
+            bool qpigs = true;
+            bool qpigs2 = true;
+            bool qall = true;
+            bool qpiri = true;
+            bool qmod = true;
+        }qAvaible;
+
     unsigned int protocolType = 100;
     /**
      * @brief get the crc from a string
@@ -219,9 +228,9 @@ private:
      */
     SoftwareSerial *my_serialIntf;
 
-    void PI30_QPIGS();
-    void PI30_QMOD();
-    void PI30_QPIRI();
+    void PIXX_QPIGS();
+    void PIXX_QMOD();
+    void PIXX_QPIRI();
 
     void PI30_PIP_QPIGS(); // example
     void PI30_PIP_QMOD();  // example

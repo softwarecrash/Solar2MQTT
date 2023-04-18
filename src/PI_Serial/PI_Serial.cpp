@@ -68,15 +68,12 @@ bool PI_Serial::getVariableData() // request the variable data
     String commandAnswer;
     switch (protocolType)
     {
-    case PI30_HS_MS_MSX:
-        PI30_QPIGS();
-        PI30_QMOD();
+    case PIXX:
+        if(qAvaible.qpigs)PIXX_QPIGS();
+        //PIXX_QPIGS2();
+        //PIXX_QALL();
+        if(qAvaible.qmod)PIXX_QMOD();
         break;
-    case PI30_PIP:        // example
-        PI30_PIP_QPIGS(); // example
-        PI30_PIP_QMOD();  // example
-        break;
-
     default:
         break;
     }
@@ -88,13 +85,9 @@ bool PI_Serial::getStaticeData() // request static data
     String commandAnswer;
     switch (protocolType)
     {
-    case PI30_HS_MS_MSX:
-        PI30_QPIRI();
+    case PIXX:
+        if(qAvaible.qpiri)PIXX_QPIRI();
         break;
-    case PI30_PIP:        // example
-        PI30_PIP_QPIRI(); // example
-        break;
-
     default:
         break;
     }
@@ -149,25 +142,22 @@ unsigned int PI_Serial::autoDetect() // function for autodetect the inverter typ
         {
             Serial.print("Try Autodetect Protocol");
             serialIntfBaud = 2400;
-            //this->my_serialIntf->setTimeout(250);
+            // this->my_serialIntf->setTimeout(250);
             this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
-            
-            String qpi = this->requestData("QPI");
-            Serial.println("QPI:\t\t"+qpi+" (Length: "+qpi.length()+")");
-            String qpiri = this->requestData("QPIRI");
-            Serial.println("QPIRI:\t\t"+qpiri+" (Length: "+qpiri.length()+")");
-            String qpigs = this->requestData("QPIGS");
-            Serial.println("QPIGS:\t\t"+qpigs+" (Length: "+qpigs.length()+")");
 
-            if (qpiri.length() == 94 && qpigs.length() == 90) // typical length of PI30_HS_MS_MSX
+            String qpi = this->requestData("QPI");
+            Serial.println("QPI:\t\t" + qpi + " (Length: " + qpi.length() + ")");
+            String qpiri = this->requestData("QPIRI");
+            Serial.println("QPIRI:\t\t" + qpiri + " (Length: " + qpiri.length() + ")");
+            String qpigs = this->requestData("QPIGS");
+            Serial.println("QPIGS:\t\t" + qpigs + " (Length: " + qpigs.length() + ")");
+
+            if (
+                (qpiri.length() == 94 && qpigs.length() == 90) || // typical length of PI30_HS_MS_MSX
+                (qpiri.length() == 94 && qpigs.length() == 106)   // typical length of PI30_PI
+            )
             {
-                protocolType = PI30_HS_MS_MSX;
-                Serial.print("Match protocol number: ");
-                Serial.println(protocolType);
-            }
-            else if (qpiri.length() == 94 && qpigs.length() == 106) // typical length of PI30_PIP
-            {
-                protocolType = PI30_PIP;
+                protocolType = PIXX;
                 Serial.print("Match protocol number: ");
                 Serial.println(protocolType);
             }
@@ -341,13 +331,13 @@ bool PI_Serial::getNextBit(String &command, int &index) // Gets if the next char
     return false;
 }
 
-char* PI_Serial::getModeDesc(char mode) // get the char from QMOD and make readable things
+char *PI_Serial::getModeDesc(char mode) // get the char from QMOD and make readable things
 {
-   char *modeString;
+    char *modeString;
     switch (mode)
     {
     default:
-        modeString = (char*)("Undefined, Origin: " + mode);
+        modeString = (char *)("Undefined, Origin: " + mode);
         break;
     case 'P':
         modeString = "Power On";
