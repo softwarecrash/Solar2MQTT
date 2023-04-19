@@ -1,5 +1,7 @@
 // QPIRI: 230.0 21.7 230.0 50.0 21.7 5000 5000 48.0 48.0 46.0 56.4 56.4 2 02 060 0 2 1 9 01 0 0 52.0 0 1 300                                     loosi (PI41 / LV5048)
-// QPIRI: 230.0 13.0 230.0 50.0 13.0 3000 3000 24.0 22.0 21.9 29.2 29.2 2 02 040 1 1 3 1 01 0 0 25.0 0 1                                         crash seiner
+// QPIRI: 230.0 13.0 230.0 50.0 13.0 3000 3000 24.0 22.0 21.9 29.2 29.2 2 02 040 1 1 3 1 01 0 0 25.0 0 1                                         crash seine
+
+// QPIRI: 230.0 13.0 230.0 50.0 13.0 3000 3000 24.0 22.0 21.0 29.2 27.0 1 25 60 1 1 1 - 01 1 0 27.0 0 0                                          // issue/27
 
 // QPIRI: AAA.A BB.B CCC.C DDD.D EEE.E FF.F GGG.G H II J        not correct letters equal to other documents                                     PI16
 // QPIRI: BBB.B FF.F III.I EEE.E DDD.D AA.A GGG.G R MM T                                                                                         PI00
