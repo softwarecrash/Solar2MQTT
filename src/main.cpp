@@ -52,6 +52,8 @@ bool publishFirst = false;
 String commandFromWeb;
 String commandFromMqtt;
 String customResponse;
+
+char mqttClientId[80];
 //----------------------------------------------------------------------
 void saveConfigCallback()
 {
@@ -114,6 +116,8 @@ void setup()
   wm.setDebugOutput(false);
 #endif
   wm.setSaveConfigCallback(saveConfigCallback);
+
+  sprintf(mqttClientId, "%s-%06X", _settings._deviceName, ESP.getChipId());
 
 #ifdef SERIALDEBUG
   Serial.begin(9600); // Debugging towards UART1
@@ -353,8 +357,7 @@ void setup()
 
   server.begin();
   if (!mqttclient.connected())
-    mqttclient.connect((String(_settings._deviceName)).c_str(), _settings._mqttUser.c_str(), _settings._mqttPassword.c_str());
-  if (mqttclient.connect(_settings._deviceName.c_str()))
+  if (mqttclient.connect(mqttClientId, _settings._mqttUser.c_str(), _settings._mqttPassword.c_str()))
   {
     mqttclient.subscribe((String(topic) + String("/Device_Control/AC_Max_Charge_Current")).c_str());
     mqttclient.subscribe((String(topic) + String("/Device_Control/Max_Charge_Current")).c_str());
