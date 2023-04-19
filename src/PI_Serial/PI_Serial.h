@@ -240,9 +240,9 @@ private:
     void PIXX_QMOD();
     void PIXX_QPIRI();
 
-    void PI30_PIP_QPIGS(); // example
-    void PI30_PIP_QMOD();  // example
-    void PI30_PIP_QPIRI(); // example
+   // void PI30_PIP_QPIGS(); // example
+   // void PI30_PIP_QMOD();  // example
+   // void PI30_PIP_QPIRI(); // example
 };
 
 #endif
