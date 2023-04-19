@@ -296,7 +296,7 @@ float PI_Serial::getNextFloat(String &command, int &index) // Parses out the nex
             return term.toFloat();
         }
     }
-    return 0;
+    return -1;
 }
 
 long PI_Serial::getNextLong(String &command, int &index) // Parses out the next number in the command string, starting at index
@@ -316,7 +316,7 @@ long PI_Serial::getNextLong(String &command, int &index) // Parses out the next 
             return term.toInt();
         }
     }
-    return 0;
+    return -1;
 }
 
 bool PI_Serial::getNextBit(String &command, int &index) // Gets if the next character is '1'
