@@ -296,7 +296,7 @@ float PI_Serial::getNextFloat(String &command, int &index) // Parses out the nex
             return term.toFloat();
         }
     }
-    return -1;
+    return -1; //befor it was return 0
 }
 
 long PI_Serial::getNextLong(String &command, int &index) // Parses out the next number in the command string, starting at index
@@ -316,7 +316,7 @@ long PI_Serial::getNextLong(String &command, int &index) // Parses out the next 
             return term.toInt();
         }
     }
-    return -1;
+    return -1; //befor it was return 0
 }
 
 bool PI_Serial::getNextBit(String &command, int &index) // Gets if the next character is '1'
@@ -328,7 +328,7 @@ bool PI_Serial::getNextBit(String &command, int &index) // Gets if the next char
         ++index;
         return c == '1';
     }
-    return false;
+    return NAN; //before it was return false
 }
 
 char *PI_Serial::getModeDesc(char mode) // get the char from QMOD and make readable things
