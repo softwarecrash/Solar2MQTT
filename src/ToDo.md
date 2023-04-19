@@ -1,6 +1,7 @@
 # ToDo
 
 esp:
+- getxet funktionen umbauen das gesetzte negativwerte nicht überschrieben werden
 - debug umbauen und von daly übernehmen
 - platformio daten und einstellungen von daly übernehmen
 - Webinterface auf websocket umbauen
