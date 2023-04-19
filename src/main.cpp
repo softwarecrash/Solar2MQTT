@@ -1,7 +1,21 @@
 /*
- ALl credits for some bits from https://github.com/scottwday/InverterOfThings
- And i have trashed alot of his code, rewritten some. So thanks to him and credits to him.
- Changes by softwarecrash
+Solar2MQTT Project
+https://github.com/softwarecrash/Solar2MQTT
+This code is free for use without any waranty.
+when copy code or reuse make a note where the codes comes from.
+
+
+Dear programmer:
+When I wrote this code, only god and
+I knew how it worked.
+Now, only god knows it!
+
+Therefore, if you are trying to optimize
+this routine and it fails (most surely),
+please increase this counter as a
+warning for the next person:
+
+total_hours_wasted_here = 254
 */
 #include "main.h"
 #define SERIALDEBUG
