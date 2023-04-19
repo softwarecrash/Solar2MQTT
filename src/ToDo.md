@@ -11,6 +11,7 @@ esp:
 - inverter reihenfolgen eintragen
 - datenzuweisung aus inverter in eigene dateien auslagern
 - autodetect modus bauen
+- esp chip id zu mqtt id hinzufügen
 
 github:
 - templates für issues umbauen
