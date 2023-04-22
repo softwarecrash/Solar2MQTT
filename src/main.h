@@ -41,10 +41,28 @@
 #endif
 
 /**
+ * @brief callback function for wifimanager save config data
+ * 
+ */
+void saveConfigCallback();
+
+/**
+ * @brief fires up the websocket and send data to the clients
+ * 
+ */
+void notifyClients();
+
+/**
  * @brief websocket event handler
  * 
  */
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
+
+/**
+ * @brief function for get the firmware and upgrade the flash
+ * 
+ */
+static void handle_update_progress_cb(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
 
 /**
  * @brief build the topic string and return

@@ -42,6 +42,7 @@ WiFiClient client;
 PubSubClient mqttclient(client);
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
+AsyncWebSocketClient *wsClient;
 DNSServer dns;
 Settings _settings;
 
@@ -65,11 +66,28 @@ String customResponse;
 bool firstPublish;
 
 char mqttClientId[80];
+
+StaticJsonDocument<JSON_BUFFER> Json;                          // main Json
+JsonObject deviceJson = Json.createNestedObject("Device");     // basic device data
+JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
+JsonObject liveData = Json.createNestedObject("liveData");     // battery package data
 //----------------------------------------------------------------------
 void saveConfigCallback()
 {
   DEBUG_PRINTLN("Should save config");
   shouldSaveConfig = true;
+}
+
+void notifyClients()
+{
+  if (wsClient != nullptr && wsClient->canSend())
+  {
+    DEBUG_PRINT(F("Info: Data sent to WebSocket... "));
+    char data[JSON_BUFFER];
+    size_t len = serializeJson(Json, data);
+    wsClient->text(data, len);
+    DEBUG_PRINTLN(F("Done"));
+  }
 }
 
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
@@ -122,12 +140,10 @@ static void handle_update_progress_cb(AsyncWebServerRequest *request, String fil
     }
     else
     {
-
       AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Please wait while the device is booting new Firmware");
       response->addHeader("Refresh", "10; url=/");
       response->addHeader("Connection", "close");
       request->send(response);
-
       restartNow = true; // Set flag so main loop can issue restart call
       DEBUG_PRINTLN("Update complete");
     }
@@ -391,8 +407,9 @@ void loop()
   // Make sure wifi is in the right mode
   if (WiFi.status() == WL_CONNECTED)
   { // No use going to next step unless WIFI is up and running.
+    ws.cleanupClients(); // clean unused client connections
     MDNS.update();
-    mqttclient.loop(); // Check if we have something to read from MQTT
+    
 
     if (valChange)
     {
@@ -428,6 +445,8 @@ void loop()
     }
 
     sendtoMQTT(); // Update data to MQTT server if we should
+
+    mqttclient.loop(); // Check if we have something to read from MQTT
   }
   if (restartNow)
   {
@@ -498,7 +517,7 @@ bool sendtoMQTT()
   DEBUG_PRINT(F("Info: Data sent to MQTT Server... "));
   if (!_settings.data.mqttJson)
   {
-    
+
     mqttclient.publish(topicBuilder(buff, "Pack_Voltage"), dtostrf(bms.get.packVoltage, 4, 1, msgBuffer));
     mqttclient.publish(topicBuilder(buff, "Pack_Current"), dtostrf(bms.get.packCurrent, 4, 1, msgBuffer));
     mqttclient.publish(topicBuilder(buff, "Pack_Power"), dtostrf((bms.get.packVoltage * bms.get.packCurrent), 4, 1, msgBuffer));
