@@ -9,10 +9,6 @@
 
 #define LED_PIN 02 //D4 with the LED on Wemos D1 Mini
 
-#define RELAISINTERVAL 1000   // interval for relaisHandler()
-#define WAKEUP_DURATION 250   // duration for wakeupHandler()
-#define ESP01
-
 #define JSON_BUFFER 2048
 #define MQTT_BUFFER 512
 

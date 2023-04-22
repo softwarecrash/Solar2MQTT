@@ -45,14 +45,14 @@ bool PI_Serial::setProtocol(int protocolID)
     {
         protocolType = protocolID;
 
-        Serial.print("Match protocol number: ");
-        Serial.println(protocolType);
+        PI_DEBUG_PRINT("Match protocol number: ");
+        PI_DEBUG_PRINTLN(protocolType);
         return true;
     }
     else
     {
-        Serial.print("protocol number: ");
-        Serial.println(protocolType);
+        PI_DEBUG_PRINT("protocol number: ");
+        PI_DEBUG_PRINTLN(protocolType);
         return false;
     }
 }
@@ -106,29 +106,23 @@ String PI_Serial::sendCommand(String command)
     this->my_serialIntf->print(appendCRC(command));
     this->my_serialIntf->print("\r");
     commandBuffer = this->my_serialIntf->readStringUntil('\r');
-#ifdef SERIALDEBUG
-    Serial.print(F("Sending:\t"));
-    Serial.print(command);
-    Serial.print(F("\tCalc: "));
-    Serial.print(getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)), HEX);
-    Serial.print(F("\tRx: "));
-    Serial.println(256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1], HEX);
-    Serial.print(F("Recived:\t"));
-    Serial.println(commandBuffer.substring(0, commandBuffer.length() - 2).c_str());
-#endif
+    PI_DEBUG_PRINT(F("Sending:\t"));
+    PI_DEBUG_PRINT(command);
+    PI_DEBUG_PRINT(F("\tCalc: "));
+    PI_DEBUG_PRINT(getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)), HEX);
+    PI_DEBUG_PRINT(F("\tRx: "));
+    PI_DEBUG_PRINTLN(256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1], HEX);
+    PI_DEBUG_PRINT(F("Recived:\t"));
+    PI_DEBUG_PRINTLN(commandBuffer.substring(0, commandBuffer.length() - 2).c_str());
     if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) != 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1])
     {
-#ifdef SERIALDEBUG
-        Serial.println("ERCRC");
-#endif
+        PI_DEBUG_PRINTLN("ERCRC");
         return commandBuffer = "ERCRC";
     }
     commandBuffer.remove(commandBuffer.length() - 2); // remove the crc
     commandBuffer.remove(0, strlen(startChar));       // remove the start character
-#ifdef SERIALDEBUG
-    Serial.print("Command Length: ");
-    Serial.println(commandBuffer.length());
-#endif
+    PI_DEBUG_PRINT("Command Length: ");
+    PI_DEBUG_PRINTLN(commandBuffer.length());
     return commandBuffer;
 }
 //----------------------------------------------------------------------
@@ -140,17 +134,17 @@ unsigned int PI_Serial::autoDetect() // function for autodetect the inverter typ
     {
         for (size_t i = 0; i < 3; i++) // try 3 times to detect the inverter
         {
-            Serial.print("Try Autodetect Protocol");
+            PI_DEBUG_PRINT("Try Autodetect Protocol");
             serialIntfBaud = 2400;
             // this->my_serialIntf->setTimeout(250);
             this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
 
             String qpi = this->requestData("QPI");
-            Serial.println("QPI:\t\t" + qpi + " (Length: " + qpi.length() + ")");
+            PI_DEBUG_PRINTLN("QPI:\t\t" + qpi + " (Length: " + qpi.length() + ")");
             String qpiri = this->requestData("QPIRI");
-            Serial.println("QPIRI:\t\t" + qpiri + " (Length: " + qpiri.length() + ")");
+            PI_DEBUG_PRINTLN("QPIRI:\t\t" + qpiri + " (Length: " + qpiri.length() + ")");
             String qpigs = this->requestData("QPIGS");
-            Serial.println("QPIGS:\t\t" + qpigs + " (Length: " + qpigs.length() + ")");
+            PI_DEBUG_PRINTLN("QPIGS:\t\t" + qpigs + " (Length: " + qpigs.length() + ")");
 
             if (
                 (qpiri.length() == 94 && qpigs.length() == 90) || // typical length of PI30_HS_MS_MSX
@@ -158,8 +152,8 @@ unsigned int PI_Serial::autoDetect() // function for autodetect the inverter typ
             )
             {
                 protocolType = PIXX;
-                Serial.print("Match protocol number: ");
-                Serial.println(protocolType);
+                PI_DEBUG_PRINT("Match protocol number: ");
+                PI_DEBUG_PRINTLN(protocolType);
             }
             this->my_serialIntf->end();
 
@@ -176,30 +170,26 @@ String PI_Serial::requestData(String command)
     this->my_serialIntf->print(appendCRC(command));
     this->my_serialIntf->print("\r");
     commandBuffer = this->my_serialIntf->readStringUntil('\r');
-#ifdef SERIALDEBUG
-    Serial.println();
-    Serial.print(F("Sending:\t"));
-    Serial.print(command);
-    Serial.print(F("\tCalc: "));
-    Serial.print(getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)), HEX);
-    Serial.print(F("\tRx: "));
-    Serial.println(256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1], HEX);
-    Serial.print(F("Recived:\t"));
-    Serial.println(commandBuffer.substring(0, commandBuffer.length() - 2).c_str());
-#endif
+
+    PI_DEBUG_PRINTLN();
+    PI_DEBUG_PRINT(F("Sending:\t"));
+    PI_DEBUG_PRINT(command);
+    PI_DEBUG_PRINT(F("\tCalc: "));
+    PI_DEBUG_PRINT(getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)), HEX);
+    PI_DEBUG_PRINT(F("\tRx: "));
+    PI_DEBUG_PRINTLN(256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1], HEX);
+    PI_DEBUG_PRINT(F("Recived:\t"));
+    PI_DEBUG_PRINTLN(commandBuffer.substring(0, commandBuffer.length() - 2).c_str());
+
     if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) != 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1])
     {
-#ifdef SERIALDEBUG
-        Serial.println("ERCRC");
-#endif
+        PI_DEBUG_PRINTLN("ERCRC");
         return commandBuffer = "ERCRC";
     }
     commandBuffer.remove(commandBuffer.length() - 2); // remove the crc
     commandBuffer.remove(0, strlen(startChar));       // remove the start character
-#ifdef SERIALDEBUG
-    Serial.print("Command Length: ");
-    Serial.println(commandBuffer.length());
-#endif
+    PI_DEBUG_PRINT("Command Length: ");
+    PI_DEBUG_PRINTLN(commandBuffer.length());
     return commandBuffer;
 }
 

@@ -18,11 +18,7 @@ warning for the next person:
 total_hours_wasted_here = 254
 */
 #include "main.h"
-#define SERIALDEBUG
-#include <EEPROM.h>
 
-#define ARDUINOJSON_USE_DOUBLE 0
-#define ARDUINOJSON_USE_LONG_LONG 0
 #include <PubSubClient.h>
 
 #include <ArduinoJson.h>
@@ -54,7 +50,7 @@ char mqttClientId[80];
 ADC_MODE(ADC_VCC);
 
 // flag for saving data
-String topic = "/"; // Default first part of topic. We will add device ID in setup
+// String topic = "/"; // Default first part of topic. We will add device ID in setup
 unsigned long mqtttimer = 0;
 bool shouldSaveConfig = false;
 char mqtt_server[40];
@@ -138,11 +134,9 @@ static void handle_update_progress_cb(AsyncWebServerRequest *request, String fil
   }
 }
 
-
-
 void setup()
 {
-  #ifdef DEBUG
+#ifdef DEBUG
   DEBUG_BEGIN(9600); // Debugging towards UART1
 #endif
   _settings.load();
@@ -156,7 +150,6 @@ void setup()
   wm.setSaveConfigCallback(saveConfigCallback);
 
   sprintf(mqttClientId, "%s-%06X", _settings.data.deviceName, ESP.getChipId());
-
 
   DEBUG_PRINTLN();
   DEBUG_PRINTF("Device Name:\t");
@@ -173,7 +166,6 @@ void setup()
   DEBUG_PRINTLN(_settings.data.mqttRefresh);
   DEBUG_PRINTF("Mqtt Topic:\t");
   DEBUG_PRINTLN(_settings.data.mqttTopic);
-
 
   // mppClient.setProtocol(mppClient.PI30_HS_MS_MSX); // manual set the protocol
   mppClient.Init(); // init the PI_serial Library
@@ -226,7 +218,7 @@ void setup()
   }
   else
   {
-    deviceJson["IP"] = WiFi.localIP(); // grab the device ip
+    // deviceJson["IP"] = WiFi.localIP(); // grab the device ip
 
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
               {
@@ -262,7 +254,7 @@ void setup()
                 liveJson["solarW"] = mppClient.get.variableData.pvChargingPower; //not realy?
                 liveJson["iv_mode"] = mppClient.get.variableData.operationMode;
 
-                liveJson["device_name"] = _settings._deviceName;
+                liveJson["device_name"] = _settings.data.deviceName;
                 serializeJson(liveJson, *response);
                 request->send(response); });
 
@@ -312,29 +304,28 @@ void setup()
               {
                 AsyncResponseStream *response = request->beginResponseStream("application/json");
                 DynamicJsonDocument SettingsJson(256);
-                SettingsJson["device_name"] = _settings._deviceName;
-                SettingsJson["mqtt_server"] = _settings._mqttServer;
-                SettingsJson["mqtt_port"] = _settings._mqttPort;
-                SettingsJson["mqtt_topic"] = _settings._mqttTopic;
-                SettingsJson["mqtt_user"] = _settings._mqttUser;
-                SettingsJson["mqtt_password"] = _settings._mqttPassword;
-                SettingsJson["mqtt_refresh"] = _settings._mqttRefresh;
+                SettingsJson["device_name"] = _settings.data.deviceName;
+                SettingsJson["mqtt_server"] = _settings.data.mqttServer;
+                SettingsJson["mqtt_port"] = _settings.data.mqttPort;
+                SettingsJson["mqtt_topic"] = _settings.data.mqttTopic;
+                SettingsJson["mqtt_user"] = _settings.data.mqttUser;
+                SettingsJson["mqtt_password"] = _settings.data.mqttPassword;
+                SettingsJson["mqtt_refresh"] = _settings.data.mqttRefresh;
                 serializeJson(SettingsJson, *response);
                 request->send(response); });
 
     server.on("/settingssave", HTTP_POST, [](AsyncWebServerRequest *request)
               {
                 request->redirect("/settings");
-                _settings._mqttServer = request->arg("post_mqttServer");
-                _settings._mqttPort = request->arg("post_mqttPort").toInt();
-                _settings._mqttUser = request->arg("post_mqttUser");
-                _settings._mqttPassword = request->arg("post_mqttPassword");
-                _settings._mqttTopic = request->arg("post_mqttTopic");
-                _settings._mqttRefresh = request->arg("post_mqttRefresh").toInt();
-                _settings._deviceName = request->arg("post_deviceName");
-                DEBUG_PRINT(_settings._mqttServer);
+                strncpy(_settings.data.mqttServer, request->arg("post_mqttServer").c_str(), 40);
+                _settings.data.mqttPort = request->arg("post_mqttPort").toInt();
+                strncpy(_settings.data.mqttUser, request->arg("post_mqttUser").c_str(), 40);
+                strncpy(_settings.data.mqttPassword, request->arg("post_mqttPassword").c_str(), 40);
+                strncpy(_settings.data.mqttTopic, request->arg("post_mqttTopic").c_str(), 40);
+                _settings.data.mqttRefresh = request->arg("post_mqttRefresh").toInt() < 1 ? 1 : request->arg("post_mqttRefresh").toInt(); // prevent lower numbers
+                strncpy(_settings.data.deviceName, request->arg("post_deviceName").c_str(), 40);
                 _settings.save();
-                _settings.load(); });
+                request->redirect("/reboot"); });
 
     server.on("/set", HTTP_GET, [](AsyncWebServerRequest *request)
               {
@@ -379,7 +370,6 @@ void setup()
 
     DEBUG_PRINTLN("Webserver Running...");
 
-
     // set the device name
     MDNS.addService("http", "tcp", 80);
     if (MDNS.begin(_settings.data.deviceName))
@@ -419,7 +409,7 @@ void loop()
         String customResponse = mppClient.sendCommand(commandFromMqtt); // send a custom command to the device
         DEBUG_PRINTLN(customResponse);
         commandFromMqtt = "";
-        mqttclient.publish((String(topic) + String("/Device_Control/Set_Command_answer")).c_str(), customResponse.c_str());
+        mqttclient.publish((String(_settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), customResponse.c_str());
       }
 
       mppClient.getStaticeData();
@@ -508,6 +498,7 @@ bool sendtoMQTT()
   DEBUG_PRINT(F("Info: Data sent to MQTT Server... "));
   if (!_settings.data.mqttJson)
   {
+    
     mqttclient.publish(topicBuilder(buff, "Pack_Voltage"), dtostrf(bms.get.packVoltage, 4, 1, msgBuffer));
     mqttclient.publish(topicBuilder(buff, "Pack_Current"), dtostrf(bms.get.packCurrent, 4, 1, msgBuffer));
     mqttclient.publish(topicBuilder(buff, "Pack_Power"), dtostrf((bms.get.packVoltage * bms.get.packCurrent), 4, 1, msgBuffer));
@@ -646,6 +637,7 @@ bool sendtoMQTT()
 
 void mqttcallback(char *top, unsigned char *payload, unsigned int length)
 {
+  char buff[256];
   if (!publishFirst)
     return;
   String messageTemp;
@@ -678,7 +670,7 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
   }
   */
   // send raw control command
-  if (strcmp(top, (topic + "/Device_Control/Set_Command").c_str()) == 0)
+  if (strcmp(top, topicBuilder(buff, "/Device_Control/Set_Command")) == 0)
   {
     DEBUG_PRINTLN("Send Command message recived: " + messageTemp);
     commandFromMqtt = messageTemp;
