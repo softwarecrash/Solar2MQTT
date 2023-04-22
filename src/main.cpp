@@ -17,10 +17,12 @@ warning for the next person:
 
 total_hours_wasted_here = 254
 */
+
+//---------remove later-----------------
+#define isDEBUG
+
 #include "main.h"
-
 #include <PubSubClient.h>
-
 #include <ArduinoJson.h>
 #include <ESP8266mDNS.h>
 #include <ESPAsyncWiFiManager.h>
@@ -44,14 +46,13 @@ AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 AsyncWebSocketClient *wsClient;
 DNSServer dns;
-Settings _settings;
+Settings settings;
 
 // new importetd
 char mqttClientId[80];
 ADC_MODE(ADC_VCC);
 
 // flag for saving data
-// String topic = "/"; // Default first part of topic. We will add device ID in setup
 unsigned long mqtttimer = 0;
 bool shouldSaveConfig = false;
 char mqtt_server[40];
@@ -155,7 +156,7 @@ void setup()
 #ifdef DEBUG
   DEBUG_BEGIN(9600); // Debugging towards UART1
 #endif
-  _settings.load();
+  settings.load();
 
   // mppClient.Init(); // init the PI_serial Library
 
@@ -165,23 +166,23 @@ void setup()
 
   wm.setSaveConfigCallback(saveConfigCallback);
 
-  sprintf(mqttClientId, "%s-%06X", _settings.data.deviceName, ESP.getChipId());
+  sprintf(mqttClientId, "%s-%06X", settings.data.deviceName, ESP.getChipId());
 
   DEBUG_PRINTLN();
   DEBUG_PRINTF("Device Name:\t");
-  DEBUG_PRINTLN(_settings.data.deviceName);
+  DEBUG_PRINTLN(settings.data.deviceName);
   DEBUG_PRINTF("Mqtt Server:\t");
-  DEBUG_PRINTLN(_settings.data.mqttServer);
+  DEBUG_PRINTLN(settings.data.mqttServer);
   DEBUG_PRINTF("Mqtt Port:\t");
-  DEBUG_PRINTLN(_settings.data.mqttPort);
+  DEBUG_PRINTLN(settings.data.mqttPort);
   DEBUG_PRINTF("Mqtt User:\t");
-  DEBUG_PRINTLN(_settings.data.mqttUser);
+  DEBUG_PRINTLN(settings.data.mqttUser);
   DEBUG_PRINTF("Mqtt Passwort:\t");
-  DEBUG_PRINTLN(_settings.data.mqttPassword);
+  DEBUG_PRINTLN(settings.data.mqttPassword);
   DEBUG_PRINTF("Mqtt Interval:\t");
-  DEBUG_PRINTLN(_settings.data.mqttRefresh);
+  DEBUG_PRINTLN(settings.data.mqttRefresh);
   DEBUG_PRINTF("Mqtt Topic:\t");
-  DEBUG_PRINTLN(_settings.data.mqttTopic);
+  DEBUG_PRINTLN(settings.data.mqttTopic);
 
   // mppClient.setProtocol(mppClient.PI30_HS_MS_MSX); // manual set the protocol
   mppClient.Init(); // init the PI_serial Library
@@ -212,18 +213,18 @@ void setup()
   // save settings if wifi setup is fire up
   if (shouldSaveConfig)
   {
-    strncpy(_settings.data.mqttServer, custom_mqtt_server.getValue(), 40);
-    strncpy(_settings.data.mqttUser, custom_mqtt_user.getValue(), 40);
-    strncpy(_settings.data.mqttPassword, custom_mqtt_pass.getValue(), 40);
-    _settings.data.mqttPort = atoi(custom_mqtt_port.getValue());
-    strncpy(_settings.data.deviceName, custom_device_name.getValue(), 40);
-    strncpy(_settings.data.mqttTopic, custom_mqtt_topic.getValue(), 40);
-    _settings.data.mqttRefresh = atoi(custom_mqtt_refresh.getValue());
-    _settings.save();
+    strncpy(settings.data.mqttServer, custom_mqtt_server.getValue(), 40);
+    strncpy(settings.data.mqttUser, custom_mqtt_user.getValue(), 40);
+    strncpy(settings.data.mqttPassword, custom_mqtt_pass.getValue(), 40);
+    settings.data.mqttPort = atoi(custom_mqtt_port.getValue());
+    strncpy(settings.data.deviceName, custom_device_name.getValue(), 40);
+    strncpy(settings.data.mqttTopic, custom_mqtt_topic.getValue(), 40);
+    settings.data.mqttRefresh = atoi(custom_mqtt_refresh.getValue());
+    settings.save();
     ESP.restart();
   }
 
-  mqttclient.setServer(_settings.data.mqttServer, _settings.data.mqttPort);
+  mqttclient.setServer(settings.data.mqttServer, settings.data.mqttPort);
   mqttclient.setCallback(mqttcallback);
   mqttclient.setBufferSize(MQTT_BUFFER);
 
@@ -270,7 +271,7 @@ void setup()
                 liveJson["solarW"] = mppClient.get.variableData.pvChargingPower; //not realy?
                 liveJson["iv_mode"] = mppClient.get.variableData.operationMode;
 
-                liveJson["device_name"] = _settings.data.deviceName;
+                liveJson["device_name"] = settings.data.deviceName;
                 serializeJson(liveJson, *response);
                 request->send(response); });
 
@@ -296,7 +297,7 @@ void setup()
                 response->addHeader("Connection", "close");
                 request->send(response);
                 delay(1000);
-                _settings.reset();
+                settings.reset();
                 ESP.eraseConfig();
                 ESP.restart(); });
 
@@ -320,27 +321,27 @@ void setup()
               {
                 AsyncResponseStream *response = request->beginResponseStream("application/json");
                 DynamicJsonDocument SettingsJson(256);
-                SettingsJson["device_name"] = _settings.data.deviceName;
-                SettingsJson["mqtt_server"] = _settings.data.mqttServer;
-                SettingsJson["mqtt_port"] = _settings.data.mqttPort;
-                SettingsJson["mqtt_topic"] = _settings.data.mqttTopic;
-                SettingsJson["mqtt_user"] = _settings.data.mqttUser;
-                SettingsJson["mqtt_password"] = _settings.data.mqttPassword;
-                SettingsJson["mqtt_refresh"] = _settings.data.mqttRefresh;
+                SettingsJson["device_name"] = settings.data.deviceName;
+                SettingsJson["mqtt_server"] = settings.data.mqttServer;
+                SettingsJson["mqtt_port"] = settings.data.mqttPort;
+                SettingsJson["mqtt_topic"] = settings.data.mqttTopic;
+                SettingsJson["mqtt_user"] = settings.data.mqttUser;
+                SettingsJson["mqtt_password"] = settings.data.mqttPassword;
+                SettingsJson["mqtt_refresh"] = settings.data.mqttRefresh;
                 serializeJson(SettingsJson, *response);
                 request->send(response); });
 
     server.on("/settingssave", HTTP_POST, [](AsyncWebServerRequest *request)
               {
                 request->redirect("/settings");
-                strncpy(_settings.data.mqttServer, request->arg("post_mqttServer").c_str(), 40);
-                _settings.data.mqttPort = request->arg("post_mqttPort").toInt();
-                strncpy(_settings.data.mqttUser, request->arg("post_mqttUser").c_str(), 40);
-                strncpy(_settings.data.mqttPassword, request->arg("post_mqttPassword").c_str(), 40);
-                strncpy(_settings.data.mqttTopic, request->arg("post_mqttTopic").c_str(), 40);
-                _settings.data.mqttRefresh = request->arg("post_mqttRefresh").toInt() < 1 ? 1 : request->arg("post_mqttRefresh").toInt(); // prevent lower numbers
-                strncpy(_settings.data.deviceName, request->arg("post_deviceName").c_str(), 40);
-                _settings.save();
+                strncpy(settings.data.mqttServer, request->arg("post_mqttServer").c_str(), 40);
+                settings.data.mqttPort = request->arg("post_mqttPort").toInt();
+                strncpy(settings.data.mqttUser, request->arg("post_mqttUser").c_str(), 40);
+                strncpy(settings.data.mqttPassword, request->arg("post_mqttPassword").c_str(), 40);
+                strncpy(settings.data.mqttTopic, request->arg("post_mqttTopic").c_str(), 40);
+                settings.data.mqttRefresh = request->arg("post_mqttRefresh").toInt() < 1 ? 1 : request->arg("post_mqttRefresh").toInt(); // prevent lower numbers
+                strncpy(settings.data.deviceName, request->arg("post_deviceName").c_str(), 40);
+                settings.save();
                 request->redirect("/reboot"); });
 
     server.on("/set", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -388,9 +389,9 @@ void setup()
 
     // set the device name
     MDNS.addService("http", "tcp", 80);
-    if (MDNS.begin(_settings.data.deviceName))
+    if (MDNS.begin(settings.data.deviceName))
       DEBUG_PRINTLN(F("mDNS running..."));
-    WiFi.hostname(_settings.data.deviceName);
+    WiFi.hostname(settings.data.deviceName);
     ws.onEvent(onEvent);
     server.addHandler(&ws);
     server.begin();
@@ -421,7 +422,7 @@ void loop()
         String customResponse = mppClient.sendCommand(commandFromMqtt); // send a custom command to the device
         DEBUG_PRINTLN(customResponse);
         commandFromMqtt = "";
-        mqttclient.publish((String(_settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), customResponse.c_str());
+        mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), customResponse.c_str());
       }
 
       mppClient.getStaticeData();
@@ -453,7 +454,7 @@ void loop()
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
 {                                                   // buffer, topic
-  const char *mainTopic = _settings.data.mqttTopic; // get the main topic path
+  const char *mainTopic = settings.data.mqttTopic; // get the main topic path
   strcpy(buffer, mainTopic);
   strcat(buffer, "/");
   strcat(buffer, path);
@@ -471,7 +472,7 @@ bool connectMQTT()
     DEBUG_PRINTLN(mqttclient.state());
     DEBUG_PRINT(F("Info: establish MQTT Connection... "));
 
-    if (mqttclient.connect(mqttClientId, _settings.data.mqttUser, _settings.data.mqttPassword, (topicBuilder(buff, "alive")), 0, true, "false", true))
+    if (mqttclient.connect(mqttClientId, settings.data.mqttUser, settings.data.mqttPassword, (topicBuilder(buff, "alive")), 0, true, "false", true))
     {
       if (mqttclient.connected())
       {
@@ -480,7 +481,7 @@ bool connectMQTT()
         mqttclient.publish(topicBuilder(buff, "Device_IP"), (const char *)(WiFi.localIP().toString()).c_str(), true);
         mqttclient.subscribe(topicBuilder(buff, "/Device_Control/Set_Command"));
 
-        if (_settings.data.relaisFunction == 4)
+        if (settings.data.relaisFunction == 4)
           mqttclient.subscribe(topicBuilder(buff, "Device_Control/Relais"));
       }
       else
@@ -509,8 +510,9 @@ bool sendtoMQTT()
     return false;
   }
   DEBUG_PRINT(F("Info: Data sent to MQTT Server... "));
-  if (!_settings.data.mqttJson)
+  if (!settings.data.mqttJson)
   {
+    // QPIGS
     if (mppClient.get.variableData.gridVoltage != -1)
       mqttclient.publish(topicBuilder(buff, "/Grid_Voltage"), dtostrf(mppClient.get.variableData.gridVoltage, 5, 1, msgBuffer));
     if (mppClient.get.variableData.gridFrequency != -1)
@@ -539,21 +541,74 @@ bool sendtoMQTT()
       mqttclient.publish(topicBuilder(buff, "/Battery_Discharge_A"), itoa(mppClient.get.variableData.batteryDischargeCurrent, msgBuffer, 10));
     if (mppClient.get.variableData.batteryVoltageFromScc != -1)
       mqttclient.publish(topicBuilder(buff, "/Battery_SCC_Volt"), dtostrf(mppClient.get.variableData.batteryVoltageFromScc, 4, 1, msgBuffer));
-    // not ready
-    for (size_t i : mppClient.get.variableData.pvInputVoltage)
+
+    if (mppClient.get.variableData.pvInputVoltage[1] = -1)
     {
-      if (mppClient.get.variableData.pvInputVoltage[i] != -1)
-        mqttclient.publish(topicBuilder(buff, "/PV_Volt"), String(mppClient.get.variableData.pvInputVoltage[i]).c_str());
+      for (size_t i : mppClient.get.variableData.pvInputVoltage)
+      {
+        if (mppClient.get.variableData.pvInputVoltage[i] != -1)
+          mqttclient.publish(topicBuilder(buff, "/PV_Volt_" + i), String(mppClient.get.variableData.pvInputVoltage[i]).c_str());
+      }
     }
-    // not ready
-    for (size_t i : mppClient.get.variableData.pvInputCurrent)
+    else if (mppClient.get.variableData.pvInputVoltage[0] != -1)
     {
-      if (mppClient.get.variableData.pvInputCurrent[i] != -1)
-        mqttclient.publish(topicBuilder(buff, "/PV_A"), String(mppClient.get.variableData.pvInputCurrent[i]).c_str());
+      mqttclient.publish(topicBuilder(buff, "/PV_Volt"), String(mppClient.get.variableData.pvInputVoltage[0]).c_str());
+    }
+
+    if (mppClient.get.variableData.pvInputCurrent[1] = -1)
+    {
+      for (size_t i : mppClient.get.variableData.pvInputCurrent)
+      {
+        if (mppClient.get.variableData.pvInputCurrent[i] != -1)
+          mqttclient.publish(topicBuilder(buff, "/PV_A_" + i), String(mppClient.get.variableData.pvInputCurrent[i]).c_str());
+      }
+    }
+    else if (mppClient.get.variableData.pvInputCurrent[0] != -1)
+    {
+      if (mppClient.get.variableData.pvInputCurrent[0] != -1)
+        mqttclient.publish(topicBuilder(buff, "/PV_A"), String(mppClient.get.variableData.pvInputCurrent[0]).c_str());
     }
 
     if (mppClient.get.variableData.pvChargingPower != -1)
       mqttclient.publish(topicBuilder(buff, "/PV_Watt"), String(mppClient.get.variableData.pvChargingPower).c_str());
+
+    // QMOD
+    if (mppClient.get.variableData.operationMode != "")
+      mqttclient.publish(topicBuilder(buff, "/Inverter_Operation_Mode"), mppClient.get.variableData.operationMode);
+    // QPIRI
+    mqttclient.publish(topicBuilder(buff, "/Device_Data/Grid_rating_voltage"), String(mppClient.get.staticData.gridRatingVoltage).c_str());
+    mqttclient.publish(topicBuilder(buff, "/Device_Data/Grid_rating_current"), String(mppClient.get.staticData.gridRatingCurrent).c_str());
+    mqttclient.publish(topicBuilder(buff, "/Device_Data/AC_output_rating_voltage"), String(mppClient.get.staticData.acOutputRatingVoltage).c_str());
+    mqttclient.publish(topicBuilder(buff, "/Device_Data/AC_output_rating_frequency"), String(mppClient.get.staticData.acOutputRatingFrquency).c_str());
+    mqttclient.publish(topicBuilder(buff, "/Device_Data/AC_output_rating_current"), String(mppClient.get.staticData.acoutputRatingCurrent).c_str());
+    mqttclient.publish(topicBuilder(buff, "/Device_Data/AC_output_rating_apparent_power"), String(mppClient.get.staticData.acOutputRatingApparentPower).c_str());
+    mqttclient.publish(topicBuilder(buff, "/Device_Data/AC_output_rating_active_power"), String(mppClient.get.staticData.acOutputRatingActivePower).c_str());
+    mqttclient.publish(topicBuilder(buff, "/Device_Data/Battery_rating_voltage"), String(mppClient.get.staticData.batteryRatingVoltage).c_str());
+
+    mqttclient.publish(topicBuilder(buff, "/Device_Data/Battery_re-charge_voltage"), String(mppClient.get.staticData.batteryReChargeVoltage).c_str());
+    mqttclient.publish(topicBuilder(buff, "/Device_Data/Battery_under_voltage"), String(mppClient.get.staticData.batteryUnderVoltage).c_str());
+    mqttclient.publish(topicBuilder(buff, "/Device_Data/Battery_bulk_voltage"), String(mppClient.get.staticData.batteryBulkVoltage).c_str());
+    mqttclient.publish(topicBuilder(buff, "/Device_Data/Battery_float_voltage"), String(mppClient.get.staticData.batteryFloatVoltage).c_str());
+
+    mqttclient.publish(topicBuilder(buff, "/Device_Data/Battery_type"), String(mppClient.get.staticData.batterytype).c_str());
+
+    mqttclient.publish(topicBuilder(buff, "/Device_Data/Current_max_AC_charging_current"), String(mppClient.get.staticData.currentMaxAcChargingCurrent).c_str());
+    mqttclient.publish(topicBuilder(buff, "/Device_Data/Current_max_charging_current"), String(mppClient.get.staticData.currentMaxChargingCurrent).c_str());
+// RAW
+#ifdef DEBUG
+    if (mppClient.get.raw.qpigs != "")
+      mqttclient.publish(topicBuilder(buff, "/RAW/QPIGS"), (mppClient.get.raw.qpigs).c_str());
+    if (mppClient.get.raw.qpiri != "")
+      mqttclient.publish(topicBuilder(buff, "/RAW/QPIRI"), (mppClient.get.raw.qpiri).c_str());
+    if (mppClient.get.raw.qmod != "")
+      mqttclient.publish(topicBuilder(buff, "/RAW/QMOD"), (mppClient.get.raw.qmod).c_str());
+      // mqttclient.publish((String(topic) + String("/RAW/QPIWS")).c_str(), String(_qRaw.QPIWS).c_str());
+      // mqttclient.publish((String(topic) + String("/RAW/QFLAG")).c_str(), String(_qRaw.QFLAG).c_str());
+      // mqttclient.publish((String(topic) + String("/RAW/QID")).c_str(), String(_qRaw.QID).c_str());
+      // mqttclient.publish((String(topic) + String("/RAW/QPI")).c_str(), String(_qRaw.QPI).c_str());
+      // mqttclient.publish((String(topic) + String("/RAW/QMUCHGCR")).c_str(), String(_qRaw.QMUCHGCR).c_str());
+      // mqttclient.publish((String(topic) + String("/RAW/QMCHGCR")).c_str(), String(_qRaw.QMCHGCR).c_str());
+#endif
   }
   else
   {
@@ -568,25 +623,6 @@ bool sendtoMQTT()
   return true;
   /*
 
-        //qpigs
-        mqttclient.publish((String(topic) + String("/Grid_Frequenz")).c_str(), String(mppClient.get.variableData.gridFrequency).c_str());
-        mqttclient.publish((String(topic) + String("/AC_out_Voltage")).c_str(), String(mppClient.get.variableData.acOutputVoltage).c_str());
-        mqttclient.publish((String(topic) + String("/AC_out_Frequenz")).c_str(), String(mppClient.get.variableData.acOutputFrequency).c_str());
-        mqttclient.publish((String(topic) + String("/AC_out_VA")).c_str(), String(mppClient.get.variableData.acOutputApparentPower).c_str());
-        mqttclient.publish((String(topic) + String("/AC_out_Watt")).c_str(), String(mppClient.get.variableData.acOutputActivePower).c_str());
-        mqttclient.publish((String(topic) + String("/AC_out_percent")).c_str(), String(mppClient.get.variableData.outputLoadPercent).c_str());
-        mqttclient.publish((String(topic) + String("/Bus_Volt")).c_str(), String(mppClient.get.variableData.busVoltage).c_str());
-        mqttclient.publish((String(topic) + String("/Bus_Temp")).c_str(), String(mppClient.get.variableData.inverterHeatSinkTemperature).c_str());
-        mqttclient.publish((String(topic) + String("/Battery_Voltage")).c_str(), String(mppClient.get.variableData.batteryVoltage).c_str());
-        mqttclient.publish((String(topic) + String("/Battery_Percent")).c_str(), String(mppClient.get.variableData.batteryCapacity).c_str());
-        mqttclient.publish((String(topic) + String("/Battery_Charge_A")).c_str(), String(mppClient.get.variableData.batteryChargingCurrent).c_str());
-        mqttclient.publish((String(topic) + String("/Battery_Discharge_A")).c_str(), String(mppClient.get.variableData.batteryDischargeCurrent).c_str());
-        mqttclient.publish((String(topic) + String("/Battery_SCC_Volt")).c_str(), String(mppClient.get.variableData.batteryVoltageFromScc).c_str());
-        mqttclient.publish((String(topic) + String("/PV_Volt")).c_str(), String(mppClient.get.variableData.pvInputVoltage[0]).c_str());
-        mqttclient.publish((String(topic) + String("/PV_A")).c_str(), String(mppClient.get.variableData.pvInputCurrent[0]).c_str());
-        mqttclient.publish((String(topic) + String("/PV_Watt")).c_str(), String(mppClient.get.variableData.pvChargingPower).c_str());
-        //qmod
-        mqttclient.publish((String(topic) + String("/Inverter_Operation_Mode")).c_str(), String(mppClient.get.variableData.operationMode).c_str());
         //piri
         mqttclient.publish((String(topic) + String("/Device_Data/Grid_rating_voltage")).c_str(), String(mppClient.get.staticData.gridRatingVoltage).c_str());
         mqttclient.publish((String(topic) + String("/Device_Data/Grid_rating_current")).c_str(), String(mppClient.get.staticData.gridRatingCurrent).c_str());
