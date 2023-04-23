@@ -93,7 +93,7 @@ private:
     {
       data.mqttJson = false;
     }
-    if (data.protocolType <0 || !data.protocolType > 100)
+    if (data.protocolType <0 || data.protocolType > 100)
     {
       data.protocolType = 0;
     }

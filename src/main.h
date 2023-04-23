@@ -53,22 +53,10 @@ void saveConfigCallback();
 void notifyClients();
 
 /**
- * @brief websocket event handler
- * 
- */
-void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
-
-/**
- * @brief function for get the firmware and upgrade the flash
- * 
- */
-static void handle_update_progress_cb(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
-
-/**
  * @brief build the topic string and return
  * 
  */
-char *topicBuilder(char *buffer, char const *path, char const *numering = "");
+char *topicBuilder(char *buffer, char const *path, char const *numering);
 
 /**
  * @brief mqtt connect function, check if connection etablished and reconnect and subscribe to spezific topics if needed
