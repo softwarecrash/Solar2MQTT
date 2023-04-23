@@ -476,7 +476,7 @@ bool connectMQTT()
         DEBUG_PRINTLN(F("Done"));
         mqttclient.publish(topicBuilder(buff, "alive"), "true", true); // LWT online message must be retained!
         mqttclient.publish(topicBuilder(buff, "Device_IP"), (const char *)(WiFi.localIP().toString()).c_str(), true);
-        mqttclient.subscribe(topicBuilder(buff, "/Device_Control/Set_Command"));
+        mqttclient.subscribe(topicBuilder(buff, "Device_Control/Set_Command"));
 
         if (settings.data.relaisFunction == 4)
           mqttclient.subscribe(topicBuilder(buff, "Device_Control/Relais"));
