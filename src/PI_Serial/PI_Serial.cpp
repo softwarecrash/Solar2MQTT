@@ -1,3 +1,7 @@
+#define isDEBUG
+
+
+
 #include "PI_Serial.h"
 SoftwareSerial myPort;
 #include "CRC16.h"
@@ -7,7 +11,7 @@ CRC16 crc;
 #include "Q/PIRI.h"
 #include "Q/MOD.h"
 
-#define SERIALDEBUG
+
 
 const char *startChar = "("; // move later to changeable
 

@@ -66,7 +66,6 @@ String customResponse;
 
 bool firstPublish;
 
-
 StaticJsonDocument<JSON_BUFFER> Json;                          // main Json
 JsonObject deviceJson = Json.createNestedObject("Device");     // basic device data
 JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
@@ -193,8 +192,8 @@ void setup()
   AsyncWiFiManagerParameter custom_mqtt_pass("mqtt_pass", "MQTT Password", NULL, 100);
   AsyncWiFiManagerParameter custom_mqtt_topic("mqtt_topic", "MQTT Topic", NULL, 30);
   AsyncWiFiManagerParameter custom_mqtt_port("mqtt_port", "MQTT Port", NULL, 6);
-  AsyncWiFiManagerParameter custom_mqtt_refresh("mqtt_refresh", "MQTT Send Interval", NULL, 4);
-  AsyncWiFiManagerParameter custom_device_name("device_name", "Device Name", NULL, 40);
+  AsyncWiFiManagerParameter custom_mqtt_refresh("mqtt_refresh", "MQTT Send Interval", "300", 4);
+  AsyncWiFiManagerParameter custom_device_name("device_name", "Device Name", "Solar2MQTT", 40);
 
   wm.addParameter(&custom_mqtt_server);
   wm.addParameter(&custom_mqtt_user);
@@ -204,7 +203,7 @@ void setup()
   wm.addParameter(&custom_mqtt_refresh);
   wm.addParameter(&custom_device_name);
 
-  bool apRunning = wm.autoConnect("Solar-AP");
+  bool apRunning = wm.autoConnect("Solar2MQTT-AP");
 
   wm.setConnectTimeout(30);       // how long to try to connect for before continuing
   wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
@@ -381,9 +380,6 @@ void setup()
           request->redirect("/"); },
         handle_update_progress_cb);
 
-    server.begin();
-    MDNS.addService("http", "tcp", 80);
-
     DEBUG_PRINTLN("Webserver Running...");
 
     // set the device name
@@ -452,7 +448,7 @@ void loop()
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
-{                                                   // buffer, topic
+{                                                  // buffer, topic
   const char *mainTopic = settings.data.mqttTopic; // get the main topic path
   strcpy(buffer, mainTopic);
   strcat(buffer, "/");
@@ -463,6 +459,8 @@ char *topicBuilder(char *buffer, char const *path, char const *numering = "")
 
 bool connectMQTT()
 {
+  if (strcmp(settings.data.mqttServer, "") == 0)
+    return false;
   char buff[256];
   if (!mqttclient.connected())
   {
