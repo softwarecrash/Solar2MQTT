@@ -430,20 +430,20 @@ void loop()
     {
       if (millis() >= (requestTimer + (3 * 1000)) && wsClient != nullptr && wsClient->canSend())
       {
-      mppClient.getVariableData(); // später durch update ersetzen
-      if (!askInverterOnce)
-      {
-        mppClient.getStaticeData();
-        askInverterOnce = true;
+        mppClient.getVariableData(); // später durch update ersetzen
+        if (!askInverterOnce)
+        {
+          mppClient.getStaticeData();
+          askInverterOnce = true;
+        }
+        requestTimer = millis();
       }
-            }
       if (millis() >= (mqtttimer + (settings.data.mqttRefresh * 1000)))
       {
         sendtoMQTT(); // Update data to MQTT server if we should
+        mqtttimer = millis();
       }
     }
-
-    
 
     mqttclient.loop(); // Check if we have something to read from MQTT
   }
