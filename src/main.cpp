@@ -54,6 +54,7 @@ ADC_MODE(ADC_VCC);
 
 // flag for saving data
 unsigned long mqtttimer = 0;
+unsigned long requestTimer = 0;
 bool shouldSaveConfig = false;
 char mqtt_server[40];
 bool restartNow = false;
@@ -427,15 +428,22 @@ void loop()
     }
     else
     {
+      if (millis() >= (requestTimer + (3 * 1000)) && wsClient != nullptr && wsClient->canSend())
+      {
       mppClient.getVariableData(); // später durch update ersetzen
       if (!askInverterOnce)
       {
         mppClient.getStaticeData();
         askInverterOnce = true;
       }
+            }
+      if (millis() >= (mqtttimer + (settings.data.mqttRefresh * 1000)))
+      {
+        sendtoMQTT(); // Update data to MQTT server if we should
+      }
     }
 
-    sendtoMQTT(); // Update data to MQTT server if we should
+    
 
     mqttclient.loop(); // Check if we have something to read from MQTT
   }
