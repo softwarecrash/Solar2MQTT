@@ -418,19 +418,17 @@ void loop()
         String customResponse = mppClient.sendCommand(commandFromMqtt); // send a custom command to the device
         DEBUG_PRINTLN(customResponse);
         commandFromMqtt = "";
-        mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), customResponse.c_str());
+        mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (customResponse).c_str());
       }
-
       mppClient.getStaticeData();
-
       mqtttimer = 0;
+      requestTimer = 0;
       valChange = false;
     }
-    else
-    {
-      if (millis() >= (requestTimer + (3 * 1000)) && wsClient != nullptr && wsClient->canSend())
+
+      if (millis() >= (requestTimer + (3 * 1000)) /*&& wsClient != nullptr && wsClient->canSend()*/)
       {
-        mppClient.getVariableData(); // später durch update ersetzen
+        mppClient.getVariableData();
         if (!askInverterOnce)
         {
           mppClient.getStaticeData();
@@ -443,10 +441,10 @@ void loop()
         sendtoMQTT(); // Update data to MQTT server if we should
         mqtttimer = millis();
       }
-    }
 
     mqttclient.loop(); // Check if we have something to read from MQTT
   }
+
   if (restartNow)
   {
     delay(1000);
@@ -647,8 +645,8 @@ bool sendtoMQTT()
 void mqttcallback(char *top, unsigned char *payload, unsigned int length)
 {
   char buff[256];
-  if (!publishFirst)
-    return;
+  //if (!publishFirst)
+  //  return;
   String messageTemp;
   for (unsigned int i = 0; i < length; i++)
   {
@@ -679,7 +677,7 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
   }
   */
   // send raw control command
-  if (strcmp(top, topicBuilder(buff, "/Device_Control/Set_Command")) == 0)
+  if (strcmp(top, topicBuilder(buff, "Device_Control/Set_Command")) == 0)
   {
     DEBUG_PRINTLN("Send Command message recived: " + messageTemp);
     commandFromMqtt = messageTemp;
