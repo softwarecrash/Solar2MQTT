@@ -572,6 +572,13 @@ bool sendtoMQTT()
     // QMOD
     if (strcmp(mppClient.get.variableData.operationMode, "") != 0)
       mqttclient.publish(topicBuilder(buff, "Inverter_Operation_Mode"), mppClient.get.variableData.operationMode);
+
+    // QALL
+    if (mppClient.get.variableData.pvGenerationDay != -1)
+      mqttclient.publish(topicBuilder(buff, "PV_generation_day"), itoa(mppClient.get.variableData.pvGenerationDay, msgBuffer, 10));
+    if (mppClient.get.variableData.pvGenerationSum != -1)
+      mqttclient.publish(topicBuilder(buff, "PV_generation_sum"), itoa(mppClient.get.variableData.pvGenerationSum, msgBuffer, 10));
+      
     // QPIRI
     mqttclient.publish(topicBuilder(buff, "Device_Data/Grid_rating_voltage"), String(mppClient.get.staticData.gridRatingVoltage).c_str());
     mqttclient.publish(topicBuilder(buff, "Device_Data/Grid_rating_current"), String(mppClient.get.staticData.gridRatingCurrent).c_str());
