@@ -675,7 +675,7 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
   {
     DEBUG_PRINTLN("Send Command message recived: " + messageTemp);
     commandFromMqtt = messageTemp;
-    // mqttclient.publish((String(topic) + String("/Device_Control/Set_Command_answer")).c_str(), customResponse.c_str());
+    mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), customResponse.c_str());
     valChange = true;
   }
 }
