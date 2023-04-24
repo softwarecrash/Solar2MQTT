@@ -10,6 +10,7 @@ CRC16 crc;
 #include "Q/PIGS.h"
 #include "Q/PIRI.h"
 #include "Q/MOD.h"
+#include "Q/QALL.h"
 
 
 
@@ -73,7 +74,9 @@ bool PI_Serial::getVariableData() // request the variable data
     switch (protocolType)
     {
     case PIXX:
+
         if(qAvaible.qpigs)PIXX_QPIGS();
+        if(qAvaible.qall)PIXX_QALL();
         //PIXX_QPIGS2();
         //PIXX_QALL();
         if(qAvaible.qmod)PIXX_QMOD();

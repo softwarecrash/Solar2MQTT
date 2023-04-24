@@ -112,6 +112,9 @@ public:
             short batteryLoad = -1;                     // The units is A. - Combined charge and discharge
             short eepromVersion = -1;                   // version info
             short pvChargingPower = -1;                 // The unit is watt.
+            //-------------------extra values from QALL-----------------------
+            short pvGenerationDay = -1;                 // The unit is WH
+            short pvGenerationSum = -1;                 // The unit is KWH
 
             char *operationMode;
         } variableData;
@@ -134,6 +137,7 @@ public:
         struct
         {
             String qpigs;
+            String qall;
             String qpiri;
             String qmod;
         } raw;
@@ -259,6 +263,7 @@ private:
     SoftwareSerial *my_serialIntf;
 
     void PIXX_QPIGS();
+    void PIXX_QALL();
     void PIXX_QMOD();
     void PIXX_QPIRI();
 
