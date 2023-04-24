@@ -145,6 +145,7 @@ unsigned int PI_Serial::autoDetect() // function for autodetect the inverter typ
 {
     if (protocolType == 100)
     {
+        PI_DEBUG_PRINTLN("------------- Start Autodetect -----------------");
         for (size_t i = 0; i < 3; i++) // try 3 times to detect the inverter
         {
             PI_DEBUG_PRINT("Try Autodetect Protocol");
@@ -180,6 +181,7 @@ unsigned int PI_Serial::autoDetect() // function for autodetect the inverter typ
             if (protocolType != 100) // protocol found, break and report it
                 break;
         }
+        PI_DEBUG_PRINTLN("------------- End Autodetect -----------------");
     }
     return protocolType;
 }
