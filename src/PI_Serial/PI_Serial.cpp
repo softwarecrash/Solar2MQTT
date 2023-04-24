@@ -163,6 +163,7 @@ unsigned int PI_Serial::autoDetect() // function for autodetect the inverter typ
             if ((
                     qpiri.length() == 83 || // Revo
                     qpiri.length() == 94 || // PIP MSX
+qpiri.length() == 95 || // wox
                     qpiri.length() == 98 || // LV5048
                     qpiri.length() == 104   // PI30 MAX
                     ) &&
