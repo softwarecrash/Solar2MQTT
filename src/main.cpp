@@ -183,7 +183,7 @@ void setup()
   DEBUG_PRINTF("Mqtt Topic:\t");
   DEBUG_PRINTLN(settings.data.mqttTopic);
 
-  // mppClient.setProtocol(mppClient.PI30_HS_MS_MSX); // manual set the protocol
+  mppClient.setProtocol(100); // manual set the protocol
   mppClient.Init(); // init the PI_serial Library
 
   // create custom wifimanager fields

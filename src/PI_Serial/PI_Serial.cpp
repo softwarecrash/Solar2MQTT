@@ -159,10 +159,17 @@ unsigned int PI_Serial::autoDetect() // function for autodetect the inverter typ
             String qpigs = this->requestData("QPIGS");
             PI_DEBUG_PRINTLN("QPIGS:\t\t" + qpigs + " (Length: " + qpigs.length() + ")");
 
-            if (
-                (qpiri.length() == 94 && qpigs.length() == 90) || // typical length of PI30_HS_MS_MSX
-                (qpiri.length() == 94 && qpigs.length() == 106)   // typical length of PI30_PI
-            )
+            if ((
+                    qpiri.length() == 83 || // Revo
+                    qpiri.length() == 94 || // PIP MSX
+                    qpiri.length() == 98 || // LV5048
+                    qpiri.length() == 104   // PI30 MAX
+                    ) &&
+                (qpigs.length() == 90 ||  // Revo MSX
+                 qpigs.length() == 105 || // PIP special for samson71
+                 qpigs.length() == 106 || // PIP PI41
+                 qpigs.length() == 118    // PI30MAX
+                 ))
             {
                 protocolType = PIXX;
                 PI_DEBUG_PRINT("Match protocol number: ");
