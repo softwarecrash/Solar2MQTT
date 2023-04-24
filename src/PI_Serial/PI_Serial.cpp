@@ -1,7 +1,5 @@
 #define isDEBUG
 
-
-
 #include "PI_Serial.h"
 SoftwareSerial myPort;
 #include "CRC16.h"
@@ -11,8 +9,6 @@ CRC16 crc;
 #include "Q/PIRI.h"
 #include "Q/MOD.h"
 #include "Q/QALL.h"
-
-
 
 const char *startChar = "("; // move later to changeable
 
@@ -75,11 +71,14 @@ bool PI_Serial::getVariableData() // request the variable data
     {
     case PIXX:
 
-        if(qAvaible.qpigs)PIXX_QPIGS();
-        if(qAvaible.qall)PIXX_QALL();
-        //PIXX_QPIGS2();
-        //PIXX_QALL();
-        if(qAvaible.qmod)PIXX_QMOD();
+        if (qAvaible.qpigs)
+            PIXX_QPIGS();
+        if (qAvaible.qall)
+            PIXX_QALL();
+        // PIXX_QPIGS2();
+        // PIXX_QALL();
+        if (qAvaible.qmod)
+            PIXX_QMOD();
         break;
     default:
         break;
@@ -93,7 +92,8 @@ bool PI_Serial::getStaticeData() // request static data
     switch (protocolType)
     {
     case PIXX:
-        if(qAvaible.qpiri)PIXX_QPIRI();
+        if (qAvaible.qpiri)
+            PIXX_QPIRI();
         break;
     default:
         break;
@@ -109,6 +109,12 @@ void PI_Serial::callback(std::function<void()> func)
 
 String PI_Serial::sendCommand(String command)
 {
+    // for testing
+    while (this->my_serialIntf->available() > 0)
+    {
+        this->my_serialIntf->read();
+    }
+
     String commandBuffer = "";
     this->my_serialIntf->print(appendCRC(command));
     this->my_serialIntf->print("\r");
@@ -293,7 +299,7 @@ float PI_Serial::getNextFloat(String &command, int &index) // Parses out the nex
             return term.toFloat();
         }
     }
-    return -1; //befor it was return 0
+    return -1; // befor it was return 0
 }
 
 long PI_Serial::getNextLong(String &command, int &index) // Parses out the next number in the command string, starting at index
@@ -313,7 +319,7 @@ long PI_Serial::getNextLong(String &command, int &index) // Parses out the next 
             return term.toInt();
         }
     }
-    return -1; //befor it was return 0
+    return -1; // befor it was return 0
 }
 
 bool PI_Serial::getNextBit(String &command, int &index) // Gets if the next character is '1'
@@ -325,7 +331,7 @@ bool PI_Serial::getNextBit(String &command, int &index) // Gets if the next char
         ++index;
         return c == '1';
     }
-    return NAN; //before it was return false
+    return NAN; // before it was return false
 }
 
 char *PI_Serial::getModeDesc(char mode) // get the char from QMOD and make readable things
