@@ -63,7 +63,7 @@ private:
   {
     if (strlen(data.deviceName) == 0 || strlen(data.deviceName) >= 40)
     {
-      strcpy(data.deviceName, "DALY-BMS-to-MQTT");
+      strcpy(data.deviceName, "Solar2MQTT");
     }
     if (strlen(data.mqttServer) == 0 || strlen(data.mqttServer) >= 40)
     {
@@ -79,7 +79,7 @@ private:
     }
     if (strlen(data.mqttTopic) == 0 || strlen(data.mqttTopic) >= 40)
     {
-      strcpy(data.mqttTopic, "BMS01");
+      strcpy(data.mqttTopic, "Solar2MQTT");
     }
     if (data.mqttPort <= 0 || data.mqttPort >= 65530)
     {
@@ -135,11 +135,11 @@ private:
     if (data.coVers != configVersion)
     {
       data.coVers = configVersion;
-      strcpy(data.deviceName, "DALY-BMS-to-MQTT");
-      strcpy(data.mqttServer, "-1");
+      strcpy(data.deviceName, "Solar2MQTT");
+      strcpy(data.mqttServer, "");
       strcpy(data.mqttUser, "");
       strcpy(data.mqttPassword, "");
-      strcpy(data.mqttTopic, "BMS01");
+      strcpy(data.mqttTopic, "Solar2MQTT");
       data.mqttPort = 0;
       data.mqttRefresh = 300;
       data.mqttJson = false;

@@ -156,15 +156,8 @@ void setup()
   DEBUG_BEGIN(9600); // Debugging towards UART1
 #endif
   settings.load();
-
-  // mppClient.Init(); // init the PI_serial Library
-
   WiFi.persistent(true); // fix wifi save bug
-
   AsyncWiFiManager wm(&server, &dns);
-
-  wm.setSaveConfigCallback(saveConfigCallback);
-
   sprintf(mqttClientId, "%s-%06X", settings.data.deviceName, ESP.getChipId());
 
   DEBUG_PRINTLN();
@@ -205,9 +198,11 @@ void setup()
   wm.addParameter(&custom_device_name);
 
   bool apRunning = wm.autoConnect("Solar2MQTT-AP");
-
-  wm.setConnectTimeout(30);       // how long to try to connect for before continuing
+  wm.setDebugOutput(false);       // disable wifimanager debug output
+  wm.setMinimumSignalQuality(20); // filter weak wifi signals
+  wm.setConnectTimeout(15);       // how long to try to connect for before continuing
   wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
+  wm.setSaveConfigCallback(saveConfigCallback);
 
   // save settings if wifi setup is fire up
   if (shouldSaveConfig)
