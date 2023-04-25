@@ -206,6 +206,9 @@ String PI_Serial::requestData(String command)
     if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) != 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1])
     {
         PI_DEBUG_PRINTLN("ERCRC");
+        PI_DEBUG_PRINT("RAW: >");
+        PI_DEBUG_PRINT(commandBuffer);
+        PI_DEBUG_PRINTLN("<");
         return commandBuffer = "ERCRC";
     }
     commandBuffer.remove(commandBuffer.length() - 2); // remove the crc
