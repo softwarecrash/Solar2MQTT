@@ -157,6 +157,7 @@ void setup()
 #endif
   settings.load();
   WiFi.persistent(true); // fix wifi save bug
+  WiFi.hostname(settings.data.deviceName);
   AsyncWiFiManager wm(&server, &dns);
   sprintf(mqttClientId, "%s-%06X", settings.data.deviceName, ESP.getChipId());
 
@@ -382,7 +383,7 @@ void setup()
     MDNS.addService("http", "tcp", 80);
     if (MDNS.begin(settings.data.deviceName))
       DEBUG_PRINTLN(F("mDNS running..."));
-    WiFi.hostname(settings.data.deviceName);
+    //WiFi.hostname(settings.data.deviceName);
     ws.onEvent(onEvent);
     server.addHandler(&ws);
     server.begin();
@@ -421,9 +422,11 @@ void loop()
       valChange = false;
     }
 
+    mppClient.getVariableData();
+
       if (millis() >= (requestTimer + (3 * 1000)) /*&& wsClient != nullptr && wsClient->canSend()*/)
       {
-        mppClient.getVariableData();
+        //mppClient.getVariableData();
         if (!askInverterOnce)
         {
           mppClient.getStaticeData();
@@ -540,7 +543,7 @@ bool sendtoMQTT()
     if (mppClient.get.variableData.batteryVoltageFromScc != -1)
       mqttclient.publish(topicBuilder(buff, "Battery_SCC_Volt"), dtostrf(mppClient.get.variableData.batteryVoltageFromScc, 4, 1, msgBuffer));
 
-    if (mppClient.get.variableData.pvInputVoltage[1] == -1)
+    if (mppClient.get.variableData.pvInputVoltage[1] != -1)
     {
       for (size_t i : mppClient.get.variableData.pvInputVoltage)
       {
@@ -553,7 +556,7 @@ bool sendtoMQTT()
       mqttclient.publish(topicBuilder(buff, "PV_Volt"), String(mppClient.get.variableData.pvInputVoltage[0]).c_str());
     }
 
-    if (mppClient.get.variableData.pvInputCurrent[1] == -1)
+    if (mppClient.get.variableData.pvInputCurrent[1] != -1)
     {
       for (size_t i : mppClient.get.variableData.pvInputCurrent)
       {

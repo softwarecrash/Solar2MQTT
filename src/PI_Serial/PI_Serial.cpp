@@ -28,13 +28,13 @@ bool PI_Serial::Init()
     // Null check the serial interface
     if (this->my_serialIntf == NULL)
     {
-        // BMS_DEBUG_PRINTLN("<PI SERIAL> ERROR: No serial peripheral specificed!");
+        PI_DEBUG_PRINTLN("<PI SERIAL> ERROR: No serial peripheral specificed!");
         return false;
     }
 
     autoDetect();
 
-    this->my_serialIntf->setTimeout(250);
+    //this->my_serialIntf->setTimeout(450);
     this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
     clearGet();
     return true;
@@ -163,7 +163,7 @@ unsigned int PI_Serial::autoDetect() // function for autodetect the inverter typ
             if ((
                     qpiri.length() == 83 || // Revo
                     qpiri.length() == 94 || // PIP MSX
-qpiri.length() == 95 || // wox
+                    qpiri.length() == 95 || // wox
                     qpiri.length() == 98 || // LV5048
                     qpiri.length() == 104   // PI30 MAX
                     ) &&
@@ -190,8 +190,10 @@ qpiri.length() == 95 || // wox
 String PI_Serial::requestData(String command)
 {
     String commandBuffer = "";
+    
     this->my_serialIntf->print(appendCRC(command));
     this->my_serialIntf->print("\r");
+
     commandBuffer = this->my_serialIntf->readStringUntil('\r');
 
     PI_DEBUG_PRINTLN();
@@ -207,8 +209,17 @@ String PI_Serial::requestData(String command)
     if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) != 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1])
     {
         PI_DEBUG_PRINTLN("ERCRC");
-        PI_DEBUG_PRINT("RAW: >");
+        PI_DEBUG_PRINT("RAW INT: >");
         PI_DEBUG_PRINT(commandBuffer);
+        PI_DEBUG_PRINTLN("<");
+
+        PI_DEBUG_PRINT("RAW HEX: >");
+        for (size_t i = 0; i < commandBuffer.length(); i++)
+        {
+        PI_DEBUG_PRINT("0x");
+        PI_DEBUG_PRINT(commandBuffer[i], HEX);
+        PI_DEBUG_PRINT(" ");
+        }
         PI_DEBUG_PRINTLN("<");
         return commandBuffer = "ERCRC";
     }
