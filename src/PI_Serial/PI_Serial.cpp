@@ -34,7 +34,7 @@ bool PI_Serial::Init()
 
     autoDetect();
 
-    //this->my_serialIntf->setTimeout(450);
+    // this->my_serialIntf->setTimeout(450);
     this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
     clearGet();
     return true;
@@ -190,7 +190,7 @@ unsigned int PI_Serial::autoDetect() // function for autodetect the inverter typ
 String PI_Serial::requestData(String command)
 {
     String commandBuffer = "";
-    
+
     this->my_serialIntf->print(appendCRC(command));
     this->my_serialIntf->print("\r");
 
@@ -206,20 +206,25 @@ String PI_Serial::requestData(String command)
     PI_DEBUG_PRINT(F("Recived:\t"));
     PI_DEBUG_PRINTLN(commandBuffer.substring(0, commandBuffer.length() - 2).c_str());
 
+    // only for debug
+    PI_DEBUG_PRINT("RAW HEX: >");
+    for (size_t i = 0; i < commandBuffer.length(); i++)
+    {
+        PI_DEBUG_PRINT(commandBuffer[i], HEX);
+        PI_DEBUG_PRINT(" ");
+    }
+    PI_DEBUG_PRINTLN("<");
+    //for testing
+    if (command == "QALL")
+    {
+        PI_DEBUG_PRINTLN("skip crc for QALL");
+        return commandBuffer;
+    }
     if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) != 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1])
     {
         PI_DEBUG_PRINTLN("ERCRC");
-        PI_DEBUG_PRINT("RAW INT: >");
+        PI_DEBUG_PRINT("RAW: >");
         PI_DEBUG_PRINT(commandBuffer);
-        PI_DEBUG_PRINTLN("<");
-
-        PI_DEBUG_PRINT("RAW HEX: >");
-        for (size_t i = 0; i < commandBuffer.length(); i++)
-        {
-        PI_DEBUG_PRINT("0x");
-        PI_DEBUG_PRINT(commandBuffer[i], HEX);
-        PI_DEBUG_PRINT(" ");
-        }
         PI_DEBUG_PRINTLN("<");
         return commandBuffer = "ERCRC";
     }
@@ -229,7 +234,6 @@ String PI_Serial::requestData(String command)
     PI_DEBUG_PRINTLN(commandBuffer.length());
     return commandBuffer;
 }
-
 void PI_Serial::clearGet(void)
 {
     /*
