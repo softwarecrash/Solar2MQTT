@@ -624,7 +624,7 @@ bool sendtoMQTT()
     if (mppClient.get.raw.qmod != "")
       mqttclient.publish(topicBuilder(buff, "RAW/QMOD"), (mppClient.get.raw.qmod).c_str());
     if (mppClient.get.raw.qall != "")
-      mqttclient.publish(topicBuilder(buff, "RAW/QMOD"), (mppClient.get.raw.qall).c_str());
+      mqttclient.publish(topicBuilder(buff, "RAW/QALL"), (mppClient.get.raw.qall).c_str());
 #endif
   }
   else
