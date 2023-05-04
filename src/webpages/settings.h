@@ -1,4 +1,5 @@
 const char HTML_CONFIRM_RESET[] PROGMEM = R"rawliteral(
+    %HEAD_TEMPLATE%
 <figure class="text-center"><h1>Erease all Data?</h1></figure>
 <div class="d-grid gap-2">
 <a class="btn btn-danger" href="/reset" role="button">Yes</a>
@@ -8,6 +9,7 @@ const char HTML_CONFIRM_RESET[] PROGMEM = R"rawliteral(
 
 
 const char HTML_SETTINGS[] PROGMEM = R"rawliteral(
+    %HEAD_TEMPLATE%
 <figure class="text-center"><h1>Settings</h1></figure>
 <div class="d-grid gap-2">
 <form method="POST" action="/update" enctype="multipart/form-data">
@@ -20,6 +22,7 @@ const char HTML_SETTINGS[] PROGMEM = R"rawliteral(
 <a class="btn btn-primary" href="/confirmreset" role="button">Reset ESP</a>
 <a class="btn btn-primary" href="/" role="button">Back</a>
 </div>
+%FOOT_TEMPLATE%
 )rawliteral";
 
 

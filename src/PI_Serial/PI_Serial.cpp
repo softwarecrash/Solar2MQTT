@@ -1,4 +1,4 @@
-#define isDEBUG
+//#define isDEBUG
 
 #include "PI_Serial.h"
 SoftwareSerial myPort;

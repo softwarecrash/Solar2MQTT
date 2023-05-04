@@ -1,4 +1,5 @@
 const char HTML_MAIN[] PROGMEM = R"rawliteral(
+    %HEAD_TEMPLATE%
 <figure class="text-center"><h2 id="devicename"></h2></figure>
 <div class="row gx-0 mb-2">
 <div class="col">
@@ -109,4 +110,5 @@ const char HTML_MAIN[] PROGMEM = R"rawliteral(
         fetch();
         });
 </script>
+%FOOT_TEMPLATE%
 )rawliteral";
