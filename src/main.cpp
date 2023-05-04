@@ -18,8 +18,6 @@ warning for the next person:
 total_hours_wasted_here = 254
 */
 
-//---------remove later-----------------
-#define isDEBUG
 
 #include "main.h"
 #include <PubSubClient.h>

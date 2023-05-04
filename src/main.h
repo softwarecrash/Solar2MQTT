@@ -14,7 +14,7 @@
 
 // DON'T edit version here, place version number in platformio.ini (custom_prog_version) !!!
 #define SOFTWARE_VERSION SWVERSION
-#ifdef DEBUG
+#ifdef isDEBUG
 #undef SOFTWARE_VERSION
 #define SOFTWARE_VERSION SWVERSION " " HWBOARD " " __DATE__ " " __TIME__
 #endif
