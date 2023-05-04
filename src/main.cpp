@@ -33,6 +33,7 @@ total_hours_wasted_here = 254
 #include "webpages/main.h"         //landing page with menu
 #include "webpages/settings.h"     //settings page
 #include "webpages/settingsedit.h" //mqtt settings page
+#include "webpages/htmlProzessor.h" // The html Prozessor
 
 #include "PI_Serial/PI_Serial.h"
 
@@ -232,11 +233,9 @@ void setup()
 
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
               {
-                AsyncResponseStream *response = request->beginResponseStream("text/html");
-                response->printf_P(HTML_HEAD);
-                response->printf_P(HTML_MAIN);
-                response->printf_P(HTML_FOOT);
-                request->send(response); });
+              AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_MAIN, htmlProcessor);
+              request->send(response); });
+
     server.on("/livejson", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                 AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -277,12 +276,8 @@ void setup()
                 restartNow = true; });
     server.on("/confirmreset", HTTP_GET, [](AsyncWebServerRequest *request)
               {
-                AsyncResponseStream *response = request->beginResponseStream("text/html");
-                response->printf_P(HTML_HEAD);
-                response->printf_P(HTML_CONFIRM_RESET);
-                response->printf_P(HTML_FOOT);
+                AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_CONFIRM_RESET, htmlProcessor);
                 request->send(response); });
-
     server.on("/reset", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                 AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Device is Erasing...");
@@ -294,20 +289,14 @@ void setup()
                 ESP.eraseConfig();
                 ESP.restart(); });
 
-    server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request)
-              {
-                AsyncResponseStream *response = request->beginResponseStream("text/html");
-                response->printf_P(HTML_HEAD);
-                response->printf_P(HTML_SETTINGS);
-                response->printf_P(HTML_FOOT);
-                request->send(response); });
-
     server.on("/settingsedit", HTTP_GET, [](AsyncWebServerRequest *request)
               {
-                AsyncResponseStream *response = request->beginResponseStream("text/html");
-                response->printf_P(HTML_HEAD);
-                response->printf_P(HTML_SETTINGS_EDIT);
-                response->printf_P(HTML_FOOT);
+                AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_SETTINGS_EDIT, htmlProcessor);
+                request->send(response); });
+
+    server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+                AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_SETTINGS, htmlProcessor);
                 request->send(response); });
 
     server.on("/settingsjson", HTTP_GET, [](AsyncWebServerRequest *request)
