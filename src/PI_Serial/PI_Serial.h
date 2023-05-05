@@ -8,25 +8,33 @@
 // DON'T edit DEBUG here, edit build_type in platformio.ini !!!
 #ifdef isDEBUG
 #define DEBUG_SERIAL Serial
+#include <WebSerialLite.h>
 #endif
 
 #ifdef DEBUG_SERIAL
+
 #define PI_DEBUG_BEGIN(...) DEBUG_SERIAL.begin(__VA_ARGS__)
 #define PI_DEBUG_PRINT(...) DEBUG_SERIAL.print(__VA_ARGS__)
 #define PI_DEBUG_PRINTF(...) DEBUG_SERIAL.printf(__VA_ARGS__)
 #define PI_DEBUG_WRITE(...) DEBUG_SERIAL.write(__VA_ARGS__)
 #define PI_DEBUG_PRINTLN(...) DEBUG_SERIAL.println(__VA_ARGS__)
+#define PI_DEBUG_WEB(...) WebSerial.print(__VA_ARGS__)
+#define PI_DEBUG_WEBLN(...) WebSerial.println(__VA_ARGS__)
 #else
 #undef PI_DEBUG_BEGIN
 #undef PI_DEBUG_PRINT
 #undef PI_DEBUG_PRINTF
 #undef PI_DEBUG_WRITE
 #undef PI_DEBUG_PRINTLN
+#undef PI_DEBUG_WEB
+#undef PI_DEBUG_WEBLN
 #define PI_DEBBUG_BEGIN(...)
 #define PI_DEBUG_PRINT(...)
 #define PI_DEBUG_PRINTF(...)
 #define PI_DEBUG_WRITE(...)
 #define PI_DEBUG_PRINTLN(...)
+#define PI_DEBUG_WEB(...)
+#define PI_DEBUG_WEBLN(...)
 #endif
 
 class PI_Serial

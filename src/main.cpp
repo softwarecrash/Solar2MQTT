@@ -73,7 +73,8 @@ JsonObject liveData = Json.createNestedObject("liveData");     // battery packag
 //----------------------------------------------------------------------
 void saveConfigCallback()
 {
-  DEBUG_PRINTLN("Should save config");
+  DEBUG_PRINTLN(F("Should save config"));
+  DEBUG_WEBLN(F("Should save config"));
   shouldSaveConfig = true;
 }
 
@@ -82,10 +83,12 @@ void notifyClients()
   if (wsClient != nullptr && wsClient->canSend())
   {
     DEBUG_PRINT(F("Info: Data sent to WebSocket... "));
+    DEBUG_WEB(F("Info: Data sent to WebSocket... "));
     char data[JSON_BUFFER];
     size_t len = serializeJson(Json, data);
     wsClient->text(data, len);
     DEBUG_PRINTLN(F("Done"));
+    DEBUG_WEBLN(F("Done"));
   }
 }
 
@@ -129,6 +132,7 @@ static void handle_update_progress_cb(AsyncWebServerRequest *request, String fil
   if (!index)
   {
     DEBUG_PRINTLN("Update");
+    DEBUG_WEBLN("Update");
     Update.runAsync(true);
     if (!Update.begin(free_space))
     {
@@ -158,9 +162,22 @@ static void handle_update_progress_cb(AsyncWebServerRequest *request, String fil
       request->send(response);
       restartNow = true; // Set flag so main loop can issue restart call
       DEBUG_PRINTLN("Update complete");
+      DEBUG_WEBLN("Update complete");
     }
   }
 }
+
+#ifdef isDEBUG
+  /* Message callback of WebSerial */
+  void recvMsg(uint8_t *data, size_t len){
+    WebSerial.println("Received Data...");
+    String d = "";
+    for(uint i=0; i < len; i++){
+      d += char(data[i]);
+    }
+    WebSerial.println(d);
+  }
+#endif
 
 void setup()
 {
@@ -188,6 +205,21 @@ void setup()
   DEBUG_PRINTLN(settings.data.mqttRefresh);
   DEBUG_PRINTF("Mqtt Topic:\t");
   DEBUG_PRINTLN(settings.data.mqttTopic);
+  DEBUG_WEBLN();
+  DEBUG_WEBF("Device Name:\t");
+  DEBUG_WEBLN(settings.data.deviceName);
+  DEBUG_WEBF("Mqtt Server:\t");
+  DEBUG_WEBLN(settings.data.mqttServer);
+  DEBUG_WEBF("Mqtt Port:\t");
+  DEBUG_WEBLN(settings.data.mqttPort);
+  DEBUG_WEBF("Mqtt User:\t");
+  DEBUG_WEBLN(settings.data.mqttUser);
+  DEBUG_WEBF("Mqtt Passwort:\t");
+  DEBUG_WEBLN(settings.data.mqttPassword);
+  DEBUG_WEBF("Mqtt Interval:\t");
+  DEBUG_WEBLN(settings.data.mqttRefresh);
+  DEBUG_WEBF("Mqtt Topic:\t");
+  DEBUG_WEBLN(settings.data.mqttTopic);
 
   mppClient.setProtocol(100); // manual set the protocol
   mppClient.Init(); // init the PI_serial Library
@@ -381,14 +413,22 @@ void setup()
         handle_update_progress_cb);
 
     DEBUG_PRINTLN("Webserver Running...");
+    DEBUG_WEBLN("Webserver Running...");
 
     // set the device name
     MDNS.addService("http", "tcp", 80);
     if (MDNS.begin(settings.data.deviceName))
       DEBUG_PRINTLN(F("mDNS running..."));
+      DEBUG_WEBLN(F("mDNS running..."));
     //WiFi.hostname(settings.data.deviceName);
     ws.onEvent(onEvent);
     server.addHandler(&ws);
+    #ifdef isDEBUG
+      // WebSerial is accessible at "<IP Address>/webserial" in browser
+      WebSerial.begin(&server);
+      /* Attach Message Callback */
+      WebSerial.onMessage(recvMsg);
+    #endif
     server.begin();
   }
 }
@@ -407,15 +447,19 @@ void loop()
       if (commandFromWeb != "")
       {
         DEBUG_PRINTLN(commandFromWeb);
+        DEBUG_WEBLN(commandFromWeb);
         String tmp = mppClient.sendCommand(commandFromWeb); // send a custom command to the device
         DEBUG_PRINTLN(tmp);
+        DEBUG_WEBLN(tmp);
         commandFromWeb = "";
       }
       if (commandFromMqtt != "")
       {
         DEBUG_PRINTLN(commandFromMqtt);
+        DEBUG_WEBLN(commandFromMqtt);
         String customResponse = mppClient.sendCommand(commandFromMqtt); // send a custom command to the device
         DEBUG_PRINTLN(customResponse);
+        DEBUG_WEBLN(customResponse);
         commandFromMqtt = "";
         mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (customResponse).c_str());
       }
@@ -454,6 +498,7 @@ void loop()
   {
     delay(1000);
     DEBUG_PRINTLN("Restart");
+    DEBUG_WEBLN("Restart");
     ESP.restart();
   }
 }
@@ -502,12 +547,16 @@ bool connectMQTT()
     DEBUG_PRINT(F("Info: MQTT Client State is: "));
     DEBUG_PRINTLN(mqttclient.state());
     DEBUG_PRINT(F("Info: establish MQTT Connection... "));
+    DEBUG_WEB(F("Info: MQTT Client State is: "));
+    DEBUG_WEBLN(mqttclient.state());
+    DEBUG_WEB(F("Info: establish MQTT Connection... "));
 
     if (mqttclient.connect(mqttClientId, settings.data.mqttUser, settings.data.mqttPassword, (topicBuilder(buff, "alive")), 0, true, "false", true))
     {
       if (mqttclient.connected())
       {
         DEBUG_PRINTLN(F("Done"));
+        DEBUG_WEBLN(F("Done"));
         mqttclient.publish(topicBuilder(buff, "alive"), "true", true); // LWT online message must be retained!
         mqttclient.publish(topicBuilder(buff, "Device_IP"), (const char *)(WiFi.localIP().toString()).c_str(), true);
         mqttclient.subscribe(topicBuilder(buff, "Device_Control/Set_Command"));
@@ -518,11 +567,13 @@ bool connectMQTT()
       else
       {
         DEBUG_PRINT(F("Fail\n"));
+        DEBUG_WEB(F("Fail\n"));
       }
     }
     else
     {
       DEBUG_PRINT(F("Fail\n"));
+      DEBUG_WEB(F("Fail\n"));
       return false; // Exit if we couldnt connect to MQTT brooker
     }
     firstPublish = true;
@@ -537,10 +588,14 @@ bool sendtoMQTT()
   if (!connectMQTT())
   {
     DEBUG_PRINTLN(F("Error: No connection to MQTT Server, cant send Data!"));
+    DEBUG_WEBLN(F("Error: No connection to MQTT Server, cant send Data!"));
     firstPublish = false;
     return false;
   }
-  DEBUG_PRINT(F("Info: Data sent to MQTT Server... "));
+  //DEBUG_PRINT(F("Info: Data sent to MQTT Server... "));
+  DEBUG_PRINTLN(F("Info: Data sent to MQTT Server... "));
+  DEBUG_WEBLN(F("Info: Data sent to MQTT Server... "));
+
   if (!settings.data.mqttJson)
   {
     // QPIGS
@@ -665,6 +720,7 @@ bool sendtoMQTT()
     mqttclient.publish(topicBuilder(buff, "Data"), data, false);
   }
   DEBUG_PRINTLN(F("Done"));
+  DEBUG_WEBLN(F("Done"));
   firstPublish = true;
 
   return true;
@@ -707,9 +763,26 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
   // send raw control command
   if (strcmp(top, topicBuilder(buff, "Device_Control/Set_Command")) == 0)
   {
-    DEBUG_PRINTLN("Send Command message recived: " + messageTemp);
+    DEBUG_PRINT(F("Send Command message recived: "));
+    DEBUG_PRINTLN(messageTemp);
+    DEBUG_WEB(F("Send Command message recived: "));
+    DEBUG_WEBLN(messageTemp);
+ 
     commandFromMqtt = messageTemp;
     mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), customResponse.c_str());
     valChange = true;
   }
 }
+
+/* later
+void DEBUG_PRINT(const __FlashStringHelper *logmessage)
+{
+  DEBUG_PRINT(logmessage);
+  DEBUG_WEB(logmessage);
+}
+void DEBUG_PRINTLN(const __FlashStringHelper *logmessage)
+{
+  DEBUG_PRINTLN(logmessage);
+  DEBUG_WEBLN(logmessage);
+}
+*/
