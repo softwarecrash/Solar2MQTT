@@ -1,5 +1,6 @@
 #ifdef isDEBUG
 #define DEBUG Serial // Uncomment the below #define to enable debugging print statements.
+#include <WebSerialLite.h>
 #endif
 #define ARDUINOJSON_USE_DOUBLE 0
 #define ARDUINOJSON_USE_LONG_LONG 0
@@ -24,20 +25,29 @@
 #ifdef DEBUG
 #define DEBUG_BEGIN(...) DEBUG.begin(__VA_ARGS__)
 #define DEBUG_PRINT(...) DEBUG.print(__VA_ARGS__)
+#define DEBUG_WEB(...) WebSerial.print(__VA_ARGS__)
 #define DEBUG_PRINTF(...) DEBUG.printf(__VA_ARGS__)
+#define DEBUG_WEBF(...) WebSerial.printf(__VA_ARGS__)
 #define DEBUG_WRITE(...) DEBUG.write(__VA_ARGS__)
 #define DEBUG_PRINTLN(...) DEBUG.println(__VA_ARGS__)
+#define DEBUG_WEBLN(...) WebSerial.println(__VA_ARGS__)
 #else
 #undef DEBUG_BEGIN
 #undef DEBUG_PRINT
+#undef DEBUG_WEB
 #undef DEBUG_PRINTF
+#undef DEBUG_WEBF
 #undef DEBUG_WRITE
 #undef DEBUG_PRINTLN
+#undef DEBUG_WEBLN
 #define DEBUG_BEGIN(...)
 #define DEBUG_PRINT(...)
+#define DEBUG_WEB(...)
 #define DEBUG_PRINTF(...)
+#define DEBUG_WEBF(...)
 #define DEBUG_WRITE(...)
 #define DEBUG_PRINTLN(...)
+#define DEBUG_WEBLN(...)
 #endif
 
 /**
@@ -86,3 +96,12 @@ void getJsonData();
  * 
  */
 void mqttcallback(char *top, unsigned char *payload, unsigned int length);
+
+/** later
+
+ * @brief callback functions for debug
+ * 
+
+void debugcallback(const __FlashStringHelper *logmessage);
+void debugcallbackLN(const __FlashStringHelper *logmessage);
+ */
