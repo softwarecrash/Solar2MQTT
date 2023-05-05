@@ -14,9 +14,10 @@ esp:
 - autodetect modus bauen
 - - esp chip id zu mqtt id hinzufügen
 - ~~Firmware-Check einbauen~~
+- ~~pre-compile und post-compile Scripts einbauen~~
 
 github:
-- templates für issues umbauen
-- issue template für report funktionierender inverter einbauen
+- ~~templates für issues umbauen~~
+- ~~issue template für report funktionierender inverter einbauen~~
 - wiki ausarbeiten
 - anschlussplan neu zeichnen
