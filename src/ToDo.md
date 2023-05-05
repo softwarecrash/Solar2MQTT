@@ -12,7 +12,7 @@ esp:
 - inverter reihenfolgen eintragen
 - datenzuweisung aus inverter in eigene dateien auslagern
 - autodetect modus bauen
-- - esp chip id zu mqtt id hinzufügen
+- - ~~esp chip id zu mqtt id hinzufügen~~
 - ~~Firmware-Check einbauen~~
 - ~~pre-compile und post-compile Scripts einbauen~~
 
