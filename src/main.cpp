@@ -89,6 +89,16 @@ void notifyClients()
   }
 }
 
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
+{
+  AwsFrameInfo *info = (AwsFrameInfo *)arg;
+  if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
+  {
+    data[len] = 0;
+    //updateProgress = true;
+  }
+}
+
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
 {
   switch (type)
@@ -96,7 +106,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
   case WS_EVT_CONNECT:
     wsClient = client;
     // getJsonDevice();
-    // getJsonData();
+    getJsonData();
     notifyClients();
     break;
   case WS_EVT_DISCONNECT:
@@ -105,7 +115,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
   case WS_EVT_DATA:
     // bmstimer = millis();
     mqtttimer = millis();
-    // handleWebSocketMessage(arg, data, len);
+    handleWebSocketMessage(arg, data, len);
     break;
   case WS_EVT_PONG:
   case WS_EVT_ERROR:
@@ -123,12 +133,14 @@ static void handle_update_progress_cb(AsyncWebServerRequest *request, String fil
     if (!Update.begin(free_space))
     {
       Update.printError(Serial);
+      ESP.restart();
     }
   }
 
   if (Update.write(data, len) != len)
   {
     Update.printError(Serial);
+    ESP.restart();
   }
 
   if (final)
@@ -136,6 +148,7 @@ static void handle_update_progress_cb(AsyncWebServerRequest *request, String fil
     if (!Update.end(true))
     {
       Update.printError(Serial);
+      ESP.restart();
     }
     else
     {
@@ -360,8 +373,11 @@ void setup()
     server.on(
         "/update", HTTP_POST, [](AsyncWebServerRequest *request)
         {
-          request->send(200);
-          request->redirect("/"); },
+          Serial.end();
+//          updateProgress = true;
+          ws.enable(false);
+          ws.closeAll();
+          request->send(200); },
         handle_update_progress_cb);
 
     DEBUG_PRINTLN("Webserver Running...");
@@ -424,6 +440,10 @@ void loop()
       if (millis() >= (mqtttimer + (settings.data.mqttRefresh * 1000)))
       {
         sendtoMQTT(); // Update data to MQTT server if we should
+//        getJsonDevice();
+        getJsonData();
+        notifyClients();
+
         mqtttimer = millis();
       }
 
@@ -436,6 +456,29 @@ void loop()
     DEBUG_PRINTLN("Restart");
     ESP.restart();
   }
+}
+
+void getJsonData()
+{
+  staticData["gridV"] = mppClient.get.variableData.gridVoltage;
+	staticData["gridHz"] = mppClient.get.variableData.gridFrequency;
+  staticData["acOutV"] = mppClient.get.variableData.acOutputVoltage;
+  staticData["acOutHz"] = mppClient.get.variableData.acOutputFrequency;
+  staticData["acOutVa"] = mppClient.get.variableData.acOutputApparentPower;
+  staticData["acOutW"] = mppClient.get.variableData.acOutputActivePower;
+  staticData["acOutPercent"] = mppClient.get.variableData.outputLoadPercent;
+  staticData["busV"] = mppClient.get.variableData.busVoltage;
+  staticData["heatSinkDegC"] = mppClient.get.variableData.inverterHeatSinkTemperature;
+  staticData["battV"] = mppClient.get.variableData.batteryVoltage;
+  staticData["battPercent"] = mppClient.get.variableData.batteryCapacity;
+  staticData["battChargeA"] = mppClient.get.variableData.batteryChargingCurrent;
+  staticData["battDischargeA"] = mppClient.get.variableData.batteryDischargeCurrent;
+  staticData["sccBattV"] = mppClient.get.variableData.batteryVoltageFromScc;
+  staticData["solarV"] = mppClient.get.variableData.pvInputVoltage[0];
+  staticData["solarA"] = mppClient.get.variableData.pvInputCurrent[0];
+  staticData["solarW"] = mppClient.get.variableData.pvChargingPower; //not realy?
+  staticData["iv_mode"] = mppClient.get.variableData.operationMode;
+	staticData["device_name"] = settings.data.deviceName;
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
