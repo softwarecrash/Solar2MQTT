@@ -360,7 +360,6 @@ void setup()
 
     server.on("/settingssave", HTTP_POST, [](AsyncWebServerRequest *request)
               {
-                request->redirect("/settings");
                 strncpy(settings.data.mqttServer, request->arg("post_mqttServer").c_str(), 40);
                 settings.data.mqttPort = request->arg("post_mqttPort").toInt();
                 strncpy(settings.data.mqttUser, request->arg("post_mqttUser").c_str(), 40);
