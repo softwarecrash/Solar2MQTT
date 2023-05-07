@@ -157,10 +157,9 @@ static void handle_update_progress_cb(AsyncWebServerRequest *request, String fil
     }
     else
     {
-      AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Please wait while the device is booting new Firmware");
-      response->addHeader("Refresh", "10; url=/");
-      response->addHeader("Connection", "close");
-      request->send(response);
+
+      AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_REBOOT, htmlProcessor);
+      request->send(response); 
       restartNow = true; // Set flag so main loop can issue restart call
       DEBUG_PRINTLN("Update complete");
       DEBUG_WEBLN("Update complete");
@@ -317,15 +316,6 @@ void setup()
               {
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_REBOOT, htmlProcessor);
                 request->send(response); });
-/*
-    server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest *request)
-              {
-                AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Please wait while the device reboots...");
-                response->addHeader("Refresh", "15; url=/");
-                response->addHeader("Connection", "close");
-                request->send(response);
-                restartNow = true; });
-*/
 
     server.on("/confirmreset", HTTP_GET, [](AsyncWebServerRequest *request)
               {
@@ -413,10 +403,8 @@ void setup()
         "/update", HTTP_POST, [](AsyncWebServerRequest *request)
         {
           Serial.end();
-//          updateProgress = true;
           ws.enable(false);
-          ws.closeAll();
-          request->send(200); },
+          ws.closeAll();},
         handle_update_progress_cb);
 
     DEBUG_PRINTLN("Webserver Running...");
@@ -427,7 +415,6 @@ void setup()
     if (MDNS.begin(settings.data.deviceName))
       DEBUG_PRINTLN(F("mDNS running..."));
       DEBUG_WEBLN(F("mDNS running..."));
-    //WiFi.hostname(settings.data.deviceName);
     ws.onEvent(onEvent);
     server.addHandler(&ws);
     #ifdef isDEBUG
