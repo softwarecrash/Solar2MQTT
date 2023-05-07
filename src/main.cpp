@@ -55,6 +55,7 @@ ADC_MODE(ADC_VCC);
 // flag for saving data
 unsigned long mqtttimer = 0;
 unsigned long requestTimer = 0;
+unsigned long RestartTimer = 0;
 bool shouldSaveConfig = false;
 char mqtt_server[40];
 bool restartNow = false;
@@ -315,7 +316,10 @@ void setup()
     server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_REBOOT, htmlProcessor);
-                request->send(response); });
+                request->send(response);
+                restartNow = true;
+                RestartTimer = millis();
+                });
 
     server.on("/confirmreset", HTTP_GET, [](AsyncWebServerRequest *request)
               {
@@ -488,9 +492,9 @@ void loop()
     mqttclient.loop(); // Check if we have something to read from MQTT
   }
 
-  if (restartNow)
+  if (restartNow && millis() >= (RestartTimer + 500))
   {
-    delay(1000);
+    //delay(1000);
     DEBUG_PRINTLN("Restart");
     DEBUG_WEBLN("Restart");
     ESP.restart();
