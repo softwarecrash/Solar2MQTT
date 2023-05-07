@@ -162,6 +162,7 @@ static void handle_update_progress_cb(AsyncWebServerRequest *request, String fil
       AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_REBOOT, htmlProcessor);
       request->send(response); 
       restartNow = true; // Set flag so main loop can issue restart call
+      RestartTimer = millis();
       DEBUG_PRINTLN("Update complete");
       DEBUG_WEBLN("Update complete");
     }
