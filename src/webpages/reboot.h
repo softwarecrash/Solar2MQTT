@@ -15,7 +15,7 @@ function startCheck(){
 }
 
 function serverReachable() {
-$.get("/reboot").done(function () {
+$.get("/").done(function () {
   window.location = "/";
   console.log("success");
 }).fail(function () {
