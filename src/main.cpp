@@ -33,6 +33,7 @@ total_hours_wasted_here = 254
 #include "webpages/main.h"         //landing page with menu
 #include "webpages/settings.h"     //settings page
 #include "webpages/settingsedit.h" //mqtt settings page
+#include "webpages/reboot.h"       // Reboot Page
 #include "webpages/htmlProzessor.h" // The html Prozessor
 
 #include "PI_Serial/PI_Serial.h"
@@ -314,11 +315,18 @@ void setup()
 
     server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+                AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_REBOOT, htmlProcessor);
+                request->send(response); });
+/*
+    server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
                 AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Please wait while the device reboots...");
                 response->addHeader("Refresh", "15; url=/");
                 response->addHeader("Connection", "close");
                 request->send(response);
                 restartNow = true; });
+*/
+
     server.on("/confirmreset", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_CONFIRM_RESET, htmlProcessor);
