@@ -494,7 +494,6 @@ void loop()
 
   if (restartNow && millis() >= (RestartTimer + 500))
   {
-    //delay(1000);
     DEBUG_PRINTLN("Restart");
     DEBUG_WEBLN("Restart");
     ESP.restart();
