@@ -64,7 +64,7 @@ For a donation you are welcome to get fully stocked and tested PCB's. These are 
 
 ![Solar-MQTT-PCB](https://user-images.githubusercontent.com/17761850/233859179-cc9c9075-b88a-4f38-b804-bc0f409cf8ce.png)
 
-If interested see [here](https://github.com/all-solutions/PCBs/blob/1c63eaa48b8406a27b7dcc7bd0578feef4607e2e/solar2mqtt.md)
+If interested see [here](https://all-solutions.github.io/PCBs/solar2mqtt.html)
 
 #
 Questions? join https://discord.gg/2CcP74dBQc
