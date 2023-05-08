@@ -18,7 +18,6 @@ warning for the next person:
 total_hours_wasted_here = 254
 */
 
-
 #include "main.h"
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
@@ -29,11 +28,11 @@ total_hours_wasted_here = 254
 
 #include "Settings.h"
 
-#include "webpages/htmlCase.h"     //The HTML Konstructor
-#include "webpages/main.h"         //landing page with menu
-#include "webpages/settings.h"     //settings page
-#include "webpages/settingsedit.h" //mqtt settings page
-#include "webpages/reboot.h"       // Reboot Page
+#include "webpages/htmlCase.h"      //The HTML Konstructor
+#include "webpages/main.h"          //landing page with menu
+#include "webpages/settings.h"      //settings page
+#include "webpages/settingsedit.h"  //mqtt settings page
+#include "webpages/reboot.h"        // Reboot Page
 #include "webpages/htmlProzessor.h" // The html Prozessor
 
 #include "PI_Serial/PI_Serial.h"
@@ -100,7 +99,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
   {
     data[len] = 0;
-    //updateProgress = true;
+    // updateProgress = true;
   }
 }
 
@@ -160,7 +159,7 @@ static void handle_update_progress_cb(AsyncWebServerRequest *request, String fil
     {
 
       AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_REBOOT, htmlProcessor);
-      request->send(response); 
+      request->send(response);
       restartNow = true; // Set flag so main loop can issue restart call
       RestartTimer = millis();
       DEBUG_PRINTLN("Update complete");
@@ -170,15 +169,17 @@ static void handle_update_progress_cb(AsyncWebServerRequest *request, String fil
 }
 
 #ifdef isDEBUG
-  /* Message callback of WebSerial */
-  void recvMsg(uint8_t *data, size_t len){
-    WebSerial.println("Received Data...");
-    String d = "";
-    for(uint i=0; i < len; i++){
-      d += char(data[i]);
-    }
-    WebSerial.println(d);
+/* Message callback of WebSerial */
+void recvMsg(uint8_t *data, size_t len)
+{
+  WebSerial.println("Received Data...");
+  String d = "";
+  for (uint i = 0; i < len; i++)
+  {
+    d += char(data[i]);
   }
+  WebSerial.println(d);
+}
 #endif
 
 void setup()
@@ -224,7 +225,7 @@ void setup()
   DEBUG_WEBLN(settings.data.mqttTopic);
 
   mppClient.setProtocol(100); // manual set the protocol
-  mppClient.Init(); // init the PI_serial Library
+  mppClient.Init();           // init the PI_serial Library
 
   // create custom wifimanager fields
 
@@ -319,8 +320,7 @@ void setup()
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_REBOOT, htmlProcessor);
                 request->send(response);
                 restartNow = true;
-                RestartTimer = millis();
-                });
+                RestartTimer = millis(); });
 
     server.on("/confirmreset", HTTP_GET, [](AsyncWebServerRequest *request)
               {
@@ -409,8 +409,11 @@ void setup()
         {
           Serial.end();
           ws.enable(false);
-          ws.closeAll();},
+          ws.closeAll(); },
         handle_update_progress_cb);
+
+    server.onNotFound([](AsyncWebServerRequest *request)
+                      { request->send(418, "text/plain", "418 I'm a teapot"); });
 
     DEBUG_PRINTLN("Webserver Running...");
     DEBUG_WEBLN("Webserver Running...");
@@ -419,15 +422,15 @@ void setup()
     MDNS.addService("http", "tcp", 80);
     if (MDNS.begin(settings.data.deviceName))
       DEBUG_PRINTLN(F("mDNS running..."));
-      DEBUG_WEBLN(F("mDNS running..."));
+    DEBUG_WEBLN(F("mDNS running..."));
     ws.onEvent(onEvent);
     server.addHandler(&ws);
-    #ifdef isDEBUG
-      // WebSerial is accessible at "<IP Address>/webserial" in browser
-      WebSerial.begin(&server);
-      /* Attach Message Callback */
-      WebSerial.onMessage(recvMsg);
-    #endif
+#ifdef isDEBUG
+    // WebSerial is accessible at "<IP Address>/webserial" in browser
+    WebSerial.begin(&server);
+    /* Attach Message Callback */
+    WebSerial.onMessage(recvMsg);
+#endif
     server.begin();
   }
 }
@@ -470,25 +473,25 @@ void loop()
 
     mppClient.getVariableData();
 
-      if (millis() >= (requestTimer + (3 * 1000)) /*&& wsClient != nullptr && wsClient->canSend()*/)
+    if (millis() >= (requestTimer + (3 * 1000)) /*&& wsClient != nullptr && wsClient->canSend()*/)
+    {
+      // mppClient.getVariableData();
+      if (!askInverterOnce)
       {
-        //mppClient.getVariableData();
-        if (!askInverterOnce)
-        {
-          mppClient.getStaticeData();
-          askInverterOnce = true;
-        }
-        requestTimer = millis();
+        mppClient.getStaticeData();
+        askInverterOnce = true;
       }
-      if (millis() >= (mqtttimer + (settings.data.mqttRefresh * 1000)))
-      {
-        sendtoMQTT(); // Update data to MQTT server if we should
-//        getJsonDevice();
-        getJsonData();
-        notifyClients();
+      requestTimer = millis();
+    }
+    if (millis() >= (mqtttimer + (settings.data.mqttRefresh * 1000)))
+    {
+      sendtoMQTT(); // Update data to MQTT server if we should
+                    //        getJsonDevice();
+      getJsonData();
+      notifyClients();
 
-        mqtttimer = millis();
-      }
+      mqtttimer = millis();
+    }
 
     mqttclient.loop(); // Check if we have something to read from MQTT
   }
@@ -504,7 +507,7 @@ void loop()
 void getJsonData()
 {
   staticData["gridV"] = mppClient.get.variableData.gridVoltage;
-	staticData["gridHz"] = mppClient.get.variableData.gridFrequency;
+  staticData["gridHz"] = mppClient.get.variableData.gridFrequency;
   staticData["acOutV"] = mppClient.get.variableData.acOutputVoltage;
   staticData["acOutHz"] = mppClient.get.variableData.acOutputFrequency;
   staticData["acOutVa"] = mppClient.get.variableData.acOutputApparentPower;
@@ -519,9 +522,9 @@ void getJsonData()
   staticData["sccBattV"] = mppClient.get.variableData.batteryVoltageFromScc;
   staticData["solarV"] = mppClient.get.variableData.pvInputVoltage[0];
   staticData["solarA"] = mppClient.get.variableData.pvInputCurrent[0];
-  staticData["solarW"] = mppClient.get.variableData.pvChargingPower; //not realy?
+  staticData["solarW"] = mppClient.get.variableData.pvChargingPower; // not realy?
   staticData["iv_mode"] = mppClient.get.variableData.operationMode;
-	staticData["device_name"] = settings.data.deviceName;
+  staticData["device_name"] = settings.data.deviceName;
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
@@ -590,7 +593,7 @@ bool sendtoMQTT()
     firstPublish = false;
     return false;
   }
-  //DEBUG_PRINT(F("Info: Data sent to MQTT Server... "));
+  // DEBUG_PRINT(F("Info: Data sent to MQTT Server... "));
   DEBUG_PRINTLN(F("Info: Data sent to MQTT Server... "));
   DEBUG_WEBLN(F("Info: Data sent to MQTT Server... "));
 
@@ -727,8 +730,8 @@ bool sendtoMQTT()
 void mqttcallback(char *top, unsigned char *payload, unsigned int length)
 {
   char buff[256];
-  //if (!publishFirst)
-  //  return;
+  // if (!publishFirst)
+  //   return;
   String messageTemp;
   for (unsigned int i = 0; i < length; i++)
   {
@@ -765,7 +768,7 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
     DEBUG_PRINTLN(messageTemp);
     DEBUG_WEB(F("Send Command message recived: "));
     DEBUG_WEBLN(messageTemp);
- 
+
     commandFromMqtt = messageTemp;
     mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), customResponse.c_str());
     valChange = true;
