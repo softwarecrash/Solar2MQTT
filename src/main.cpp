@@ -47,6 +47,8 @@ AsyncWebSocketClient *wsClient;
 DNSServer dns;
 Settings settings;
 
+#include "status-LED.h"
+
 // new importetd
 char mqttClientId[80];
 ADC_MODE(ADC_VCC);
@@ -492,7 +494,7 @@ void loop()
 
       mqtttimer = millis();
     }
-
+    notificationLED(); // notification LED routine
     mqttclient.loop(); // Check if we have something to read from MQTT
   }
 
