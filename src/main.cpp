@@ -266,7 +266,7 @@ void setup()
     settings.data.mqttRefresh = atoi(custom_mqtt_refresh.getValue());
     settings.save();
     settings.load();
-    //ESP.restart();
+    // ESP.restart();
   }
 
   mqttclient.setServer(settings.data.mqttServer, settings.data.mqttPort);
@@ -349,21 +349,21 @@ void setup()
               {
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_SETTINGS, htmlProcessor);
                 request->send(response); });
-/*
-    server.on("/settingsjson", HTTP_GET, [](AsyncWebServerRequest *request)
-              {
-                AsyncResponseStream *response = request->beginResponseStream("application/json");
-                DynamicJsonDocument SettingsJson(256);
-                SettingsJson["device_name"] = settings.data.deviceName;
-                SettingsJson["mqtt_server"] = settings.data.mqttServer;
-                SettingsJson["mqtt_port"] = settings.data.mqttPort;
-                SettingsJson["mqtt_topic"] = settings.data.mqttTopic;
-                SettingsJson["mqtt_user"] = settings.data.mqttUser;
-                SettingsJson["mqtt_password"] = settings.data.mqttPassword;
-                SettingsJson["mqtt_refresh"] = settings.data.mqttRefresh;
-                serializeJson(SettingsJson, *response);
-                request->send(response); });
-*/
+    /*
+        server.on("/settingsjson", HTTP_GET, [](AsyncWebServerRequest *request)
+                  {
+                    AsyncResponseStream *response = request->beginResponseStream("application/json");
+                    DynamicJsonDocument SettingsJson(256);
+                    SettingsJson["device_name"] = settings.data.deviceName;
+                    SettingsJson["mqtt_server"] = settings.data.mqttServer;
+                    SettingsJson["mqtt_port"] = settings.data.mqttPort;
+                    SettingsJson["mqtt_topic"] = settings.data.mqttTopic;
+                    SettingsJson["mqtt_user"] = settings.data.mqttUser;
+                    SettingsJson["mqtt_password"] = settings.data.mqttPassword;
+                    SettingsJson["mqtt_refresh"] = settings.data.mqttRefresh;
+                    serializeJson(SettingsJson, *response);
+                    request->send(response); });
+    */
     server.on("/settingssave", HTTP_POST, [](AsyncWebServerRequest *request)
               {
                 strncpy(settings.data.mqttServer, request->arg("post_mqttServer").c_str(), 40);
@@ -474,16 +474,17 @@ void loop()
       valChange = false;
     }
 
+    if (!askInverterOnce)
+    {
+      mppClient.getStaticeData();
+      askInverterOnce = true;
+    }
     mppClient.getVariableData();
 
-    if (millis() >= (requestTimer + (3 * 1000)) /*&& wsClient != nullptr && wsClient->canSend()*/)
+    if (millis() >= (requestTimer + (3 * 1000)) && wsClient != nullptr && wsClient->canSend())
     {
       // mppClient.getVariableData();
-      if (!askInverterOnce)
-      {
-        mppClient.getStaticeData();
-        askInverterOnce = true;
-      }
+
       notifyClients();
       requestTimer = millis();
     }
@@ -491,9 +492,9 @@ void loop()
     {
 
       sendtoMQTT(); // Update data to MQTT server if we should
-                    //        getJsonDevice();
+      // getJsonDevice();
       getJsonData();
-      //notifyClients();
+      // notifyClients();
 
       mqtttimer = millis();
     }
