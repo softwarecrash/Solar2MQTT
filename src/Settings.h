@@ -61,23 +61,23 @@ private:
 
   void sanitycheck()
   {
-    if (strlen(data.deviceName) == 0 || strlen(data.deviceName) >= 40)
+    if (strlen(data.deviceName) == 0 || strlen(data.deviceName) > 40)
     {
       strcpy(data.deviceName, "Solar2MQTT");
     }
-    if (strlen(data.mqttServer) == 0 || strlen(data.mqttServer) >= 40)
+    if (strlen(data.mqttServer) == 0 || strlen(data.mqttServer) > 40)
     {
       strcpy(data.mqttServer, "-1");
     }
-    if (strlen(data.mqttUser) == 0 || strlen(data.mqttUser) >= 40)
+    if (strlen(data.mqttUser) == 0 || strlen(data.mqttUser) > 40)
     {
       strcpy(data.mqttUser, "");
     }
-    if (strlen(data.mqttPassword) == 0 || strlen(data.mqttPassword) >= 40)
+    if (strlen(data.mqttPassword) == 0 || strlen(data.mqttPassword) > 40)
     {
       strcpy(data.mqttPassword, "");
     }
-    if (strlen(data.mqttTopic) == 0 || strlen(data.mqttTopic) >= 40)
+    if (strlen(data.mqttTopic) == 0 || strlen(data.mqttTopic) > 40)
     {
       strcpy(data.mqttTopic, "Solar2MQTT");
     }
