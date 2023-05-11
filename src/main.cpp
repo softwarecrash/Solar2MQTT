@@ -349,7 +349,7 @@ void setup()
               {
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_SETTINGS, htmlProcessor);
                 request->send(response); });
-
+/*
     server.on("/settingsjson", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                 AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -363,7 +363,7 @@ void setup()
                 SettingsJson["mqtt_refresh"] = settings.data.mqttRefresh;
                 serializeJson(SettingsJson, *response);
                 request->send(response); });
-
+*/
     server.on("/settingssave", HTTP_POST, [](AsyncWebServerRequest *request)
               {
                 strncpy(settings.data.mqttServer, request->arg("post_mqttServer").c_str(), 40);
