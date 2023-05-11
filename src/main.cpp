@@ -484,14 +484,16 @@ void loop()
         mppClient.getStaticeData();
         askInverterOnce = true;
       }
+      notifyClients();
       requestTimer = millis();
     }
     if (millis() >= (mqtttimer + (settings.data.mqttRefresh * 1000)))
     {
+
       sendtoMQTT(); // Update data to MQTT server if we should
                     //        getJsonDevice();
       getJsonData();
-      notifyClients();
+      //notifyClients();
 
       mqtttimer = millis();
     }
