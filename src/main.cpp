@@ -265,7 +265,8 @@ void setup()
     strncpy(settings.data.mqttTopic, custom_mqtt_topic.getValue(), 40);
     settings.data.mqttRefresh = atoi(custom_mqtt_refresh.getValue());
     settings.save();
-    ESP.restart();
+    settings.load();
+    //ESP.restart();
   }
 
   mqttclient.setServer(settings.data.mqttServer, settings.data.mqttPort);
