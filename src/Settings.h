@@ -37,7 +37,7 @@ public:
     EEPROM.begin(EEPROM_SIZE);
     EEPROM.get(0, data);
     EEPROM.end();
-    coVersCheck();
+//    coVersCheck();
     sanitycheck();
   }
 
@@ -79,7 +79,7 @@ private:
     }
     if (strlen(data.mqttTopic) == 0 || strlen(data.mqttTopic) > 40)
     {
-      strcpy(data.mqttTopic, "Solar2MQTT");
+      strcpy(data.mqttTopic, "Solar01");
     }
     if (data.mqttPort <= 0 || data.mqttPort >= 65530)
     {

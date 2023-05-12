@@ -47,17 +47,17 @@ bool PI_Serial::setProtocol(int protocolID)
     {
         protocolType = protocolID;
 
-        PI_DEBUG_PRINT("Match protocol number: ");
+        PI_DEBUG_PRINT("<setProtocol> Match protocol number: ");
         PI_DEBUG_PRINTLN(protocolType);
-        PI_DEBUG_WEB("Match protocol number: ");
+        PI_DEBUG_WEB("<setProtocol> Match protocol number: ");
         PI_DEBUG_WEBLN(protocolType);
         return true;
     }
     else
     {
-        PI_DEBUG_PRINT("protocol number: ");
+        PI_DEBUG_PRINT("<setProtocol> Protocol number: ");
         PI_DEBUG_PRINTLN(protocolType);
-        PI_DEBUG_WEB("protocol number: ");
+        PI_DEBUG_WEB("<setProtocol> Protocol number: ");
         PI_DEBUG_WEBLN(protocolType);
         return false;
     }
@@ -195,9 +195,9 @@ unsigned int PI_Serial::autoDetect() // function for autodetect the inverter typ
                  ))
             {
                 protocolType = PIXX;
-                PI_DEBUG_PRINT("Match protocol number: ");
+                PI_DEBUG_PRINT("<Autodetect> Match protocol number: ");
                 PI_DEBUG_PRINTLN(protocolType);
-                PI_DEBUG_WEB("Match protocol number: ");
+                PI_DEBUG_WEB("<Autodetect> Match protocol number: ");
                 PI_DEBUG_WEBLN(protocolType);
             }
             this->my_serialIntf->end();

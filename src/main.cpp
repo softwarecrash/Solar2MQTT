@@ -195,6 +195,16 @@ void setup()
   AsyncWiFiManager wm(&server, &dns);
   sprintf(mqttClientId, "%s-%06X", settings.data.deviceName, ESP.getChipId());
 
+  #ifdef DEBUG
+    wm.setDebugOutput(true);       // enable wifimanager debug output
+  #else
+    wm.setDebugOutput(false);       // disable wifimanager debug output
+  #endif
+  wm.setMinimumSignalQuality(20); // filter weak wifi signals
+  wm.setConnectTimeout(15);       // how long to try to connect for before continuing
+  wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
+  wm.setSaveConfigCallback(saveConfigCallback);
+
   DEBUG_PRINTLN();
   DEBUG_PRINTF("Device Name:\t");
   DEBUG_PRINTLN(settings.data.deviceName);
@@ -248,12 +258,17 @@ void setup()
   wm.addParameter(&custom_device_name);
 
   bool apRunning = wm.autoConnect("Solar2MQTT-AP");
-  wm.setDebugOutput(false);       // disable wifimanager debug output
+/*
+  #ifdef DEBUG
+    wm.setDebugOutput(true);       // enable wifimanager debug output
+  #else
+    wm.setDebugOutput(false);       // disable wifimanager debug output
+  #endif
   wm.setMinimumSignalQuality(20); // filter weak wifi signals
   wm.setConnectTimeout(15);       // how long to try to connect for before continuing
   wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
   wm.setSaveConfigCallback(saveConfigCallback);
-
+*/
   // save settings if wifi setup is fire up
   if (shouldSaveConfig)
   {
@@ -265,11 +280,14 @@ void setup()
     strncpy(settings.data.mqttTopic, custom_mqtt_topic.getValue(), 40);
     settings.data.mqttRefresh = atoi(custom_mqtt_refresh.getValue());
     settings.save();
-    settings.load();
-    // ESP.restart();
+//    settings.load();
+    ESP.restart();
   }
 
   mqttclient.setServer(settings.data.mqttServer, settings.data.mqttPort);
+  DEBUG_PRINTLN(F("MQTT Server config Loaded"));
+  DEBUG_WEBLN(F("MQTT Server config Loaded"));
+
   mqttclient.setCallback(mqttcallback);
   mqttclient.setBufferSize(MQTT_BUFFER);
 
