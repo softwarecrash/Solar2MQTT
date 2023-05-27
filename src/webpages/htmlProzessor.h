@@ -27,7 +27,7 @@ String htmlProcessor(const String &var)
         return (settings.data.mqttTopic);
     if (var == F("MQTT_REFRESH"))
         return (String(settings.data.mqttRefresh).c_str());
-//    if (var == F("MQTT_JSON"))
-//        return (settings.data.mqttJson ? "checked":"");
+    if (var == F("MQTT_JSON"))
+        return (settings.data.mqttJson ? "checked":"");
     return String();
 }

@@ -333,6 +333,7 @@ void setup()
                 liveJson["iv_mode"] = mppClient.get.variableData.operationMode;
 
                 liveJson["device_name"] = settings.data.deviceName;
+
                 serializeJson(liveJson, *response);
                 request->send(response); });
 
@@ -367,21 +368,7 @@ void setup()
               {
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_SETTINGS, htmlProcessor);
                 request->send(response); });
-    /*
-        server.on("/settingsjson", HTTP_GET, [](AsyncWebServerRequest *request)
-                  {
-                    AsyncResponseStream *response = request->beginResponseStream("application/json");
-                    DynamicJsonDocument SettingsJson(256);
-                    SettingsJson["device_name"] = settings.data.deviceName;
-                    SettingsJson["mqtt_server"] = settings.data.mqttServer;
-                    SettingsJson["mqtt_port"] = settings.data.mqttPort;
-                    SettingsJson["mqtt_topic"] = settings.data.mqttTopic;
-                    SettingsJson["mqtt_user"] = settings.data.mqttUser;
-                    SettingsJson["mqtt_password"] = settings.data.mqttPassword;
-                    SettingsJson["mqtt_refresh"] = settings.data.mqttRefresh;
-                    serializeJson(SettingsJson, *response);
-                    request->send(response); });
-    */
+
     server.on("/settingssave", HTTP_POST, [](AsyncWebServerRequest *request)
               {
                 strncpy(settings.data.mqttServer, request->arg("post_mqttServer").c_str(), 40);
@@ -391,6 +378,7 @@ void setup()
                 strncpy(settings.data.mqttTopic, request->arg("post_mqttTopic").c_str(), 40);
                 settings.data.mqttRefresh = request->arg("post_mqttRefresh").toInt() < 1 ? 1 : request->arg("post_mqttRefresh").toInt(); // prevent lower numbers
                 strncpy(settings.data.deviceName, request->arg("post_deviceName").c_str(), 40);
+                settings.data.mqttJson = (request->arg("post_mqttjson") == "true") ? true : false;
                 settings.save();
                 request->redirect("/reboot"); });
 
@@ -718,6 +706,7 @@ bool sendtoMQTT()
       mqttclient.publish(topicBuilder(buff, "Device_Data/Battery_bulk_voltage"), dtostrf(mppClient.get.staticData.batteryBulkVoltage, 4, 1, msgBuffer));
     if (mppClient.get.staticData.batteryFloatVoltage != -1)
       mqttclient.publish(topicBuilder(buff, "Device_Data/Battery_float_voltage"), dtostrf(mppClient.get.staticData.batteryFloatVoltage, 4, 1, msgBuffer));
+    
     if (strcmp(mppClient.get.staticData.batterytype, "") != 0)
       mqttclient.publish(topicBuilder(buff, "Device_Data/Battery_type"), mppClient.get.staticData.batterytype);
     if (mppClient.get.staticData.currentMaxAcChargingCurrent != -1)

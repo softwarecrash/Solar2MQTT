@@ -75,21 +75,21 @@ public:
             float batteryUnderVoltage = -1;         // The units is V.
             float batteryBulkVoltage = -1;          // The units is V.
             float batteryFloatVoltage = -1;         // The units is V.
-            char *batterytype;                 // 0: AGM 1: Flooded 2: User
+            const char *batterytype = "";                 // 0: AGM 1: Flooded 2: User
             short currentMaxAcChargingCurrent = -1; // The units is A.
             short currentMaxChargingCurrent = -1;   // The units is A.
-            char *inputVoltageRange;           // 0: Appliance 1: UPS
-            char *outputSourcePriority;        // 0: Utility first 1: Solar first 2: SBU first
-            char *chargerSourcePriority;       // 0: Utility first 1: Solar first 2: Solar + Utility 3: Only solar charging permitted
+            const char *inputVoltageRange;           // 0: Appliance 1: UPS
+            const char *outputSourcePriority;        // 0: Utility first 1: Solar first 2: SBU first
+            const char *chargerSourcePriority;       // 0: Utility first 1: Solar first 2: Solar + Utility 3: Only solar charging permitted
             short parallelMaxNumber = -1;           // max parallel inverter / Charger
-            char *machineType;                 // 00: Grid tie; 01: Off Grid; 10: Hybrid.
+            const char *machineType;                 // 00: Grid tie; 01: Off Grid; 10: Hybrid.
             bool topolgy;                           // 0: transformerless 1: transformer
-            char *outputMode;                  // 00: single machine output 01: parallel output 02: Phase 1 of 3 Phase output 03: Phase 2 of 3 Phase output 04: Phase 3 of 3 Phase output
+            const char *outputMode;                  // 00: single machine output 01: parallel output 02: Phase 1 of 3 Phase output 03: Phase 2 of 3 Phase output 04: Phase 3 of 3 Phase output
             float batteryReDischargeVoltage = -1;   // The unit is V.
             bool pvOkConditionForParallel;          // 0: As long as one unit of inverters has connect PV, parallel system will consider PV OK; 1: Only All of inverters have connect PV, parallel system will consider PV OK
             bool pvPowerBalance;                    // 0: PV input max current will be the max charged current; 1: PV input max power will be the sum of the max charged power and loads power.
             short maxChargingTimeAtCvStage = -1;    // Y is an Integer ranging from 0 to 9. The unit is minute. (Only for PIP-MK )
-            char *operationLogik;              // 0: Automatically 1: On-line mode 2: ECO mode (Only for PIP-MK )
+            const char *operationLogik;              // 0: Automatically 1: On-line mode 2: ECO mode (Only for PIP-MK )
         } staticData;
         // grid charge and solar charge array data
         struct
@@ -124,7 +124,7 @@ public:
             short pvGenerationDay = -1;                 // The unit is WH
             short pvGenerationSum = -1;                 // The unit is KWH
 
-            char *operationMode;
+            const char *operationMode = "";
         } variableData;
         struct
         {
