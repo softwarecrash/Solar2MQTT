@@ -70,29 +70,28 @@ bool PI_Serial::loop()
         switch (requestCounter)
         {
         case 0:
-            if (qAvaible.qpigs)
+            if (qAvaible.qpigs && PIXX_QPIGS())
             {
-                PIXX_QPIGS();
                 previousTime = millis();
+                requestCounter++;
             }
-            requestCounter++;
 
             break;
         case 1:
-            if (qAvaible.qall)
+            if (qAvaible.qall && PIXX_QALL())
             {
-                PIXX_QALL();
                 previousTime = millis();
+                requestCounter++;
             }
-            requestCounter++;
+
             break;
         case 2:
-            if (qAvaible.qmod)
+            if (qAvaible.qmod && PIXX_QMOD())
             {
-                PIXX_QMOD();
                 previousTime = millis();
+                requestCounter++;
             }
-            requestCounter++;
+
             break;
 
         case 3:
@@ -151,8 +150,8 @@ void PI_Serial::callback(std::function<void()> func)
 String PI_Serial::sendCommand(String command)
 {
 
-    if(command == "")//untestet
-    return command;
+    if (command == "") // untestet
+        return command;
 
     // for testing
     while (this->my_serialIntf->available() > 0)

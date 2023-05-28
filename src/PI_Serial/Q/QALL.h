@@ -9,7 +9,8 @@ bool PI_Serial::PIXX_QALL()
     qAvaible.qall = false; // if recived NAK, set the command avaible to false and never aks again until reboot
     return false;
   }
-  else if (commandAnswer.length() == 79 // Revo Qall
+  else if (commandAnswer.length() == 79 ||
+           commandAnswer.length() == 83 // Revo Qall
   )
   {
     get.raw.qall = commandAnswer;
