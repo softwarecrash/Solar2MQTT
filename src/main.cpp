@@ -427,10 +427,9 @@ void loop()
   {                      // No use going to next step unless WIFI is up and running.
     ws.cleanupClients(); // clean unused client connections
     MDNS.update();
-
-    notificationLED(); // notification LED routine
     mqttclient.loop(); // Check if we have something to read from MQTT
     mppClient.loop();  // Call the PI Serial Library loop
+    notificationLED(); // notification LED routine
   }
 
   if (restartNow && millis() >= (RestartTimer + 500))
