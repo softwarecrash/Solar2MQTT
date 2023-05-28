@@ -208,7 +208,7 @@ private:
     unsigned int serialIntfBaud;
 
     unsigned int previousTime = 0;
-    unsigned int  delayTime = 150;
+    unsigned int  delayTime = 50;
     byte requestCounter = 0;
 
     struct
