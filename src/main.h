@@ -97,6 +97,12 @@ void getJsonData();
  */
 void mqttcallback(char *top, unsigned char *payload, unsigned int length);
 
+/**
+ * @brief 
+ * 
+ */
+void prozessData();
+
 /** later
 
  * @brief callback functions for debug

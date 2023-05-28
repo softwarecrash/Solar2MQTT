@@ -1,4 +1,4 @@
-//#define isDEBUG
+// #define isDEBUG
 
 #include "PI_Serial.h"
 SoftwareSerial myPort;
@@ -63,8 +63,45 @@ bool PI_Serial::setProtocol(int protocolID)
     }
 }
 
-bool PI_Serial::update()
+bool PI_Serial::loop()
 {
+    if (millis() - previousTime >= delayTime)
+    {
+        switch (requestCounter)
+        {
+        case 0:
+            if (qAvaible.qpigs)
+            {
+                PIXX_QPIGS();
+                previousTime = millis();
+            }
+            requestCounter++;
+
+            break;
+        case 1:
+            if (qAvaible.qall)
+            {
+                PIXX_QALL();
+                previousTime = millis();
+            }
+            requestCounter++;
+            break;
+        case 2:
+            if (qAvaible.qmod)
+            {
+                PIXX_QMOD();
+                previousTime = millis();
+            }
+            requestCounter++;
+            break;
+
+        case 3:
+            PI_DEBUG_PRINT("update finish, call callback function");
+            requestCallback();
+            requestCounter = 0;
+            break;
+        }
+    }
     // kommt später
     return true;
 }
@@ -251,7 +288,7 @@ String PI_Serial::requestData(String command)
     PI_DEBUG_PRINTLN("<");
     PI_DEBUG_WEBLN("<");
     */
-   
+
     // for testing
     if (command == "QALL")
     {

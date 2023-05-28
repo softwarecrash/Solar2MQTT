@@ -17,13 +17,14 @@
 // QPIGS: MMM.M CBBBBB HH.H CZZZ.Z LLL.L MMMMM NN.N QQQ.Q DDD KKK.K VVV.V SSS.S RRR.R XXX PPPPP EEEEE OOOOO UUU.U WWW.W YYY.Y TTT.T 00000000     PI30 Infinisolar
 // QPIGS: AAA.A BBBBBB CC.C DDDD.D EEE.E FFFFF GG.G HHH.H III JJJ.J KKK.K LLL.L MMM.M NNN OOOOO PPPPP QQQQQ RRR.R SSS.S TTT.T UUU.U V WWWWWWWWW  PI16
 
-void PI_Serial::PIXX_QPIGS()
+bool PI_Serial::PIXX_QPIGS()
 {
   String commandAnswer = this->requestData("QPIGS");
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer == "NAK")
   {
-    qAvaible.qpiri = false; // if recived NAK, set the command avaible to false and never aks again until reboot
+    qAvaible.qpigs = false; // if recived NAK, set the command avaible to false and never aks again until reboot
+    return false;
   }
   else if (commandAnswer.length() == 90 ||  // Revo MSX
            commandAnswer.length() == 105 || // PIP special for samson71
@@ -68,4 +69,5 @@ void PI_Serial::PIXX_QPIGS()
 
     get.variableData.batteryLoad = (get.variableData.batteryChargingCurrent - get.variableData.batteryDischargeCurrent);
   }
+  return true;
 }

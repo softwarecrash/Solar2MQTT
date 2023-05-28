@@ -236,8 +236,7 @@ void setup()
   DEBUG_WEBF("Mqtt Topic:\t");
   DEBUG_WEBLN(settings.data.mqttTopic);
 
-  mppClient.setProtocol(100); // manual set the protocol
-  mppClient.Init();           // init the PI_serial Library
+
 
   // create custom wifimanager fields
 
@@ -280,7 +279,6 @@ void setup()
     strncpy(settings.data.mqttTopic, custom_mqtt_topic.getValue(), 40);
     settings.data.mqttRefresh = atoi(custom_mqtt_refresh.getValue());
     settings.save();
-//    settings.load();
     ESP.restart();
   }
 
@@ -441,6 +439,11 @@ void setup()
     WebSerial.onMessage(recvMsg);
 #endif
     server.begin();
+
+
+  mppClient.setProtocol(100); // manual set the protocol
+  mppClient.Init();           // init the PI_serial Library
+  mppClient.callback(prozessData);
   }
 }
 
@@ -482,16 +485,16 @@ void loop()
 
     if (!askInverterOnce)
     {
-      mppClient.getStaticeData();
+      //mppClient.getStaticeData();
       askInverterOnce = true;
     }
-    mppClient.getVariableData();
+    //mppClient.getVariableData();
 
     if (millis() >= (requestTimer + (3 * 1000)) && wsClient != nullptr && wsClient->canSend())
     {
       // mppClient.getVariableData();
 
-      notifyClients();
+     // notifyClients();
       requestTimer = millis();
     }
     if (millis() >= (mqtttimer + (settings.data.mqttRefresh * 1000)))
@@ -504,8 +507,14 @@ void loop()
 
       mqtttimer = millis();
     }
+
+
+
     notificationLED(); // notification LED routine
     mqttclient.loop(); // Check if we have something to read from MQTT
+
+
+    mppClient.loop();
   }
 
   if (restartNow && millis() >= (RestartTimer + 500))
@@ -514,6 +523,12 @@ void loop()
     DEBUG_WEBLN("Restart");
     ESP.restart();
   }
+}
+
+void prozessData()
+{
+  DEBUG_PRINTLN("ProzessData called");
+  notifyClients();
 }
 
 void getJsonData()

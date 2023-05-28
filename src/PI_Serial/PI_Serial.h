@@ -178,7 +178,7 @@ public:
     /**
      * @brief Updating the Data from the BMS
      */
-    bool update();
+    bool loop();
 
     /**
      * @brief fetching the Variable data
@@ -206,6 +206,10 @@ private:
     unsigned int soft_tx;
     unsigned int soft_rx;
     unsigned int serialIntfBaud;
+
+    unsigned int previousTime = 0;
+    unsigned int  delayTime = 150;
+    byte requestCounter = 0;
 
     struct
     {
@@ -270,7 +274,7 @@ private:
      */
     SoftwareSerial *my_serialIntf;
 
-    void PIXX_QPIGS();
+    bool PIXX_QPIGS();
     void PIXX_QALL();
     void PIXX_QMOD();
     void PIXX_QPIRI();
