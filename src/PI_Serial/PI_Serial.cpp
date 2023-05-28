@@ -152,7 +152,7 @@ String PI_Serial::sendCommand(String command)
 {
 
     if(command == "")//untestet
-    return;
+    return command;
 
     // for testing
     while (this->my_serialIntf->available() > 0)
