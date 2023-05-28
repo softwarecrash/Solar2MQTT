@@ -70,36 +70,24 @@ bool PI_Serial::loop()
         switch (requestCounter)
         {
         case 0:
-            if (qAvaible.qpigs && PIXX_QPIGS())
-            {
-                previousTime = millis();
-                requestCounter++;
-            }
-
+            requestCounter = PIXX_QPIGS() ? (requestCounter+1) : 0;
             break;
         case 1:
-            if (qAvaible.qall && PIXX_QALL())
-            {
-                previousTime = millis();
-                requestCounter++;
-            }
-
+            requestCounter = PIXX_QALL() ? (requestCounter+1) : 0;
             break;
         case 2:
-            if (qAvaible.qmod && PIXX_QMOD())
-            {
-                previousTime = millis();
-                requestCounter++;
-            }
-
+            requestCounter = PIXX_QMOD() ? (requestCounter+1) : 0;
             break;
-
         case 3:
+            requestCounter = PIXX_QPIRI() ? (requestCounter+1) : 0;
+            break;
+        case 4:
             PI_DEBUG_PRINT("update finish, call callback function");
             requestCallback();
             requestCounter = 0;
             break;
         }
+    previousTime = millis();
     }
     return true;
 }

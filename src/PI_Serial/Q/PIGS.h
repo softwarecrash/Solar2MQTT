@@ -24,7 +24,7 @@ bool PI_Serial::PIXX_QPIGS()
   if (commandAnswer == "NAK")
   {
     qAvaible.qpigs = false; // if recived NAK, set the command avaible to false and never aks again until reboot
-    return false;
+    return true;
   }
   else if (commandAnswer.length() == 90 ||  // Revo MSX
            commandAnswer.length() == 105 || // PIP special for samson71

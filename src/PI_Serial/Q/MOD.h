@@ -5,7 +5,7 @@ bool PI_Serial::PIXX_QMOD()
   if(commandAnswer == "NAK")
   {
     qAvaible.qmod = false; //if recived NAK, set the command avaible to false and never aks again until reboot
-    return false;
+    return true;
   } else
   if (commandAnswer.length() == 1)
   {
