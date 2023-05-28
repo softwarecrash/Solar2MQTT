@@ -117,6 +117,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
     break;
   case WS_EVT_DISCONNECT:
     wsClient = nullptr;
+    ws.cleanupClients(); // clean unused client connections
     break;
   case WS_EVT_DATA:
     // bmstimer = millis();
@@ -125,6 +126,8 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
     break;
   case WS_EVT_PONG:
   case WS_EVT_ERROR:
+      wsClient = nullptr;
+    ws.cleanupClients(); // clean unused client connections
     break;
   }
 }
@@ -305,8 +308,7 @@ void setup()
               {
                 AsyncResponseStream *response = request->beginResponseStream("application/json");
                 serializeJson(Json, *response);
-                request->send(response);
-              });
+                request->send(response); });
 
     server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest *request)
               {
@@ -444,7 +446,8 @@ void prozessData()
 {
   DEBUG_PRINTLN("ProzessData called");
   getJsonData();
-  notifyClients();
+  if (wsClient != nullptr && wsClient->canSend())
+    notifyClients();
   if (millis() >= (mqtttimer + (settings.data.mqttRefresh * 1000)))
   {
     sendtoMQTT(); // Update data to MQTT server if we should
@@ -501,7 +504,7 @@ void getJsonData()
   liveData["solarW"] = mppClient.get.variableData.pvChargingPower; // not realy?
   liveData["iv_mode"] = mppClient.get.variableData.operationMode;
 
-staticData["gridmaxirgendwas"] = mppClient.get.variableData.operationMode;
+  staticData["gridmaxirgendwas"] = mppClient.get.variableData.operationMode;
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
