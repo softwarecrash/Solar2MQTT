@@ -14,13 +14,14 @@
 // QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X YYY                                     PI41 / LV5048
 // QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X YYY Z CCC                               PI30 Max
 
-void PI_Serial::PIXX_QPIRI()
+bool PI_Serial::PIXX_QPIRI()
 {
   String commandAnswer = this->requestData("QPIRI");
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer == "NAK")
   {
     qAvaible.qpiri = false; // if recived NAK, set the command avaible to false and never aks again until reboot
+    return false;
   }
   else if (commandAnswer.length() == 83 || // Revo
            commandAnswer.length() == 94 || // PIP MSX
@@ -116,5 +117,9 @@ void PI_Serial::PIXX_QPIRI()
       get.staticData.topolgy = "Otransformer";
       break;
     }
+    return true;
+  } else
+  {
+    return false;
   }
 }

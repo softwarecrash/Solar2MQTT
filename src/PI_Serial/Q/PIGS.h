@@ -70,6 +70,9 @@ bool PI_Serial::PIXX_QPIGS()
     get.deviceStatus.dustproofInstalled = getNextBit(commandAnswer, index);     // b8
 
     get.variableData.batteryLoad = (get.variableData.batteryChargingCurrent - get.variableData.batteryDischargeCurrent);
+    return true;
+  } else
+  {
+    return false;
   }
-  return true;
 }
