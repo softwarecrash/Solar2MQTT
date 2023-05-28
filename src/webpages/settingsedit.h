@@ -45,6 +45,7 @@ const char HTML_SETTINGS_EDIT[] PROGMEM = R"rawliteral(
             <input type="checkbox" class="form-check-input form control" aria-describedby="mqttjsondesc"
                 role="switch" id="mqttjson" name="post_mqttjson" value="true" %MQTT_JSON%>
         </div>
+    </div>
     <div class="d-grid gap-2">
         <input class="btn btn-primary" type="submit" value="Save settings">
         <a class="btn btn-primary" href="/settings" role="button">Back</a>

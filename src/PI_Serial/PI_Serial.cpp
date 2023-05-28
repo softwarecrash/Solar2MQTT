@@ -150,6 +150,10 @@ void PI_Serial::callback(std::function<void()> func)
 
 String PI_Serial::sendCommand(String command)
 {
+
+    if(command == "")//untestet
+    return;
+
     // for testing
     while (this->my_serialIntf->available() > 0)
     {

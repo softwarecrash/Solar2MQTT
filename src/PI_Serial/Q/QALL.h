@@ -1,12 +1,13 @@
 
 // QALL: BBB CC.C DDD EE.E FFFF GGG HH.H III JJJ KKK LLL MM.M NNNN OOOOOO PPPPPP Q KK SS - PI30 Revo
-void PI_Serial::PIXX_QALL()
+bool PI_Serial::PIXX_QALL()
 {
   String commandAnswer = this->requestData("QALL");
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer == "NAK")
   {
     qAvaible.qall = false; // if recived NAK, set the command avaible to false and never aks again until reboot
+    return false;
   }
   else if (commandAnswer.length() == 79 // Revo Qall
   )
@@ -30,5 +31,9 @@ void PI_Serial::PIXX_QALL()
     get.variableData.pvGenerationSum = getNextLong(commandAnswer, index);           // PPPPPP
     get.variableData.operationMode = getModeDesc(commandAnswer[index]); // Q
     get.variableData.batteryLoad = (get.variableData.batteryChargingCurrent - get.variableData.batteryDischargeCurrent);
+    return true;
+  } else
+  {
+    return false;
   }
 }

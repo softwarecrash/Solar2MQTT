@@ -14,13 +14,14 @@
 // QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X YYY                                     PI41 / LV5048
 // QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X YYY Z CCC                               PI30 Max
 
-void PI_Serial::PIXX_QPIRI()
+bool PI_Serial::PIXX_QPIRI()
 {
   String commandAnswer = this->requestData("QPIRI");
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer == "NAK")
   {
     qAvaible.qpiri = false; // if recived NAK, set the command avaible to false and never aks again until reboot
+    return false;
   }
   else if (commandAnswer.length() == 83 || // Revo
            commandAnswer.length() == 94 || // PIP MSX
@@ -46,13 +47,13 @@ void PI_Serial::PIXX_QPIRI()
     switch ((byte)getNextLong(commandAnswer, index)) // O
     {
     case 0:
-      get.staticData.batterytype = (char *)"AGM";
+      get.staticData.batterytype = "AGM";
       break;
     case 1:
-      get.staticData.batterytype = (char *)"Flooded";
+      get.staticData.batterytype = "Flooded";
       break;
     case 2:
-      get.staticData.batterytype = (char *)"User";
+      get.staticData.batterytype = "User";
       break;
     }
     get.staticData.currentMaxAcChargingCurrent = getNextLong(commandAnswer, index); // PP
@@ -61,60 +62,64 @@ void PI_Serial::PIXX_QPIRI()
     switch ((byte)getNextLong(commandAnswer, index)) // o
     {
     case 0:
-      get.staticData.inputVoltageRange = (char *)"Appliance";
+      get.staticData.inputVoltageRange = "Appliance";
       break;
     case 1:
-      get.staticData.inputVoltageRange = (char *)"UPS";
+      get.staticData.inputVoltageRange = "UPS";
       break;
     }
     switch ((byte)getNextLong(commandAnswer, index)) // P
     {
     case 0:
-      get.staticData.outputSourcePriority = (char *)"Utility first";
+      get.staticData.outputSourcePriority = "Utility first";
       break;
     case 1:
-      get.staticData.outputSourcePriority = (char *)"Solar first";
+      get.staticData.outputSourcePriority = "Solar first";
       break;
     case 2:
-      get.staticData.outputSourcePriority = (char *)"SBU first";
+      get.staticData.outputSourcePriority = "SBU first";
       break;
     }
     switch ((byte)getNextLong(commandAnswer, index)) // Q
     {
     case 0:
-      get.staticData.chargerSourcePriority = (char *)"Utility first";
+      get.staticData.chargerSourcePriority = "Utility first";
       break;
     case 1:
-      get.staticData.chargerSourcePriority = (char *)"Solar first";
+      get.staticData.chargerSourcePriority = "Solar first";
       break;
     case 2:
-      get.staticData.chargerSourcePriority = (char *)"Solar + Utility";
+      get.staticData.chargerSourcePriority = "Solar + Utility";
       break;
     case 3:
-      get.staticData.chargerSourcePriority = (char *)"Only solar charging permitted";
+      get.staticData.chargerSourcePriority = "Only solar charging permitted";
       break;
     }
     get.staticData.parallelMaxNumber = getNextLong(commandAnswer, index); // R
     switch ((byte)getNextLong(commandAnswer, index))                      // SS
     {
     case 00:
-      get.staticData.machineType = (char *)"Grid tie";
+      get.staticData.machineType = "Grid tie";
       break;
     case 01:
-      get.staticData.machineType = (char *)"Off Grid";
+      get.staticData.machineType = "Off Grid";
       break;
     case 10:
-      get.staticData.machineType = (char *)"Hybrid";
+      get.staticData.machineType = "Hybrid";
       break;
     }
     switch ((byte)getNextLong(commandAnswer, index)) // T
     {
     case 0:
-      get.staticData.topolgy = (char *)"transformerless";
+      get.staticData.topolgy = "transformerless";
       break;
     case 1:
-      get.staticData.topolgy = (char *)"Otransformer";
+      get.staticData.topolgy = "Otransformer";
       break;
     }
+    return true;
+  } else
+  {
+    return false;
   }
 }

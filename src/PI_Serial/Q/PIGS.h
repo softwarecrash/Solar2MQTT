@@ -62,12 +62,17 @@ bool PI_Serial::PIXX_QPIGS()
     get.variableData.batteryVoltageOffsetForFansOn = getNextLong(commandAnswer, index); // QQ
     get.variableData.eepromVersion = getNextLong(commandAnswer, index);                 // VV
     get.variableData.pvChargingPower = getNextLong(commandAnswer, index);               // MMMMM
+    if(get.variableData.pvChargingPower == -1)
+    get.variableData.pvChargingPower = get.variableData.pvInputCurrent[0] * get.variableData.pvInputVoltage[0];
 
     get.deviceStatus.chargingToFloatingMode = getNextBit(commandAnswer, index); // b10
     get.deviceStatus.switchOn = getNextBit(commandAnswer, index);               // b9
     get.deviceStatus.dustproofInstalled = getNextBit(commandAnswer, index);     // b8
 
     get.variableData.batteryLoad = (get.variableData.batteryChargingCurrent - get.variableData.batteryDischargeCurrent);
+    return true;
+  } else
+  {
+    return false;
   }
-  return true;
 }
