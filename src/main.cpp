@@ -72,7 +72,7 @@ bool firstPublish;
 StaticJsonDocument<JSON_BUFFER> Json;                          // main Json
 JsonObject deviceJson = Json.createNestedObject("Device");     // basic device data
 JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
-JsonObject liveData = Json.createNestedObject("liveData");     // battery package data
+JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
 //----------------------------------------------------------------------
 void saveConfigCallback()
 {
@@ -195,11 +195,11 @@ void setup()
   AsyncWiFiManager wm(&server, &dns);
   sprintf(mqttClientId, "%s-%06X", settings.data.deviceName, ESP.getChipId());
 
-  #ifdef DEBUG
-    wm.setDebugOutput(true);       // enable wifimanager debug output
-  #else
-    wm.setDebugOutput(false);       // disable wifimanager debug output
-  #endif
+#ifdef DEBUG
+  wm.setDebugOutput(true); // enable wifimanager debug output
+#else
+  wm.setDebugOutput(false); // disable wifimanager debug output
+#endif
   wm.setMinimumSignalQuality(20); // filter weak wifi signals
   wm.setConnectTimeout(15);       // how long to try to connect for before continuing
   wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
@@ -236,8 +236,6 @@ void setup()
   DEBUG_WEBF("Mqtt Topic:\t");
   DEBUG_WEBLN(settings.data.mqttTopic);
 
-
-
   // create custom wifimanager fields
 
   AsyncWiFiManagerParameter custom_mqtt_server("mqtt_server", "MQTT server", NULL, 40);
@@ -257,17 +255,17 @@ void setup()
   wm.addParameter(&custom_device_name);
 
   bool apRunning = wm.autoConnect("Solar2MQTT-AP");
-/*
-  #ifdef DEBUG
-    wm.setDebugOutput(true);       // enable wifimanager debug output
-  #else
-    wm.setDebugOutput(false);       // disable wifimanager debug output
-  #endif
-  wm.setMinimumSignalQuality(20); // filter weak wifi signals
-  wm.setConnectTimeout(15);       // how long to try to connect for before continuing
-  wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
-  wm.setSaveConfigCallback(saveConfigCallback);
-*/
+  /*
+    #ifdef DEBUG
+      wm.setDebugOutput(true);       // enable wifimanager debug output
+    #else
+      wm.setDebugOutput(false);       // disable wifimanager debug output
+    #endif
+    wm.setMinimumSignalQuality(20); // filter weak wifi signals
+    wm.setConnectTimeout(15);       // how long to try to connect for before continuing
+    wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
+    wm.setSaveConfigCallback(saveConfigCallback);
+  */
   // save settings if wifi setup is fire up
   if (shouldSaveConfig)
   {
@@ -306,34 +304,9 @@ void setup()
     server.on("/livejson", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                 AsyncResponseStream *response = request->beginResponseStream("application/json");
-                DynamicJsonDocument liveJson(1024);
-                
-                liveJson["gridV"] = mppClient.get.variableData.gridVoltage;
-                
-                liveJson["gridHz"] = mppClient.get.variableData.gridFrequency;
-                liveJson["acOutV"] = mppClient.get.variableData.acOutputVoltage;
-                liveJson["acOutHz"] = mppClient.get.variableData.acOutputFrequency;
-                
-                liveJson["acOutVa"] = mppClient.get.variableData.acOutputApparentPower;
-                
-                liveJson["acOutW"] = mppClient.get.variableData.acOutputActivePower;
-                liveJson["acOutPercent"] = mppClient.get.variableData.outputLoadPercent;
-                liveJson["busV"] = mppClient.get.variableData.busVoltage;
-                liveJson["heatSinkDegC"] = mppClient.get.variableData.inverterHeatSinkTemperature;
-                liveJson["battV"] = mppClient.get.variableData.batteryVoltage;
-                liveJson["battPercent"] = mppClient.get.variableData.batteryCapacity;
-                liveJson["battChargeA"] = mppClient.get.variableData.batteryChargingCurrent;
-                liveJson["battDischargeA"] = mppClient.get.variableData.batteryDischargeCurrent;
-                liveJson["sccBattV"] = mppClient.get.variableData.batteryVoltageFromScc;
-                liveJson["solarV"] = mppClient.get.variableData.pvInputVoltage[0];
-                liveJson["solarA"] = mppClient.get.variableData.pvInputCurrent[0];
-                liveJson["solarW"] = mppClient.get.variableData.pvChargingPower; //not realy?
-                liveJson["iv_mode"] = mppClient.get.variableData.operationMode;
-
-                liveJson["device_name"] = settings.data.deviceName;
-
-                serializeJson(liveJson, *response);
-                request->send(response); });
+                serializeJson(Json, *response);
+                request->send(response);
+              });
 
     server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest *request)
               {
@@ -440,10 +413,9 @@ void setup()
 #endif
     server.begin();
 
-
-  mppClient.setProtocol(100); // manual set the protocol
-  mppClient.Init();           // init the PI_serial Library
-  mppClient.callback(prozessData);
+    mppClient.setProtocol(100); // manual set the protocol
+    mppClient.Init();           // init the PI_serial Library
+    mppClient.callback(prozessData);
   }
 }
 
@@ -458,7 +430,7 @@ void loop()
 
     notificationLED(); // notification LED routine
     mqttclient.loop(); // Check if we have something to read from MQTT
-    mppClient.loop(); // Call the PI Serial Library loop
+    mppClient.loop();  // Call the PI Serial Library loop
   }
 
   if (restartNow && millis() >= (RestartTimer + 500))
@@ -471,64 +443,66 @@ void loop()
 
 void prozessData()
 {
-    DEBUG_PRINTLN("ProzessData called");
-      notifyClients();
-    if (millis() >= (mqtttimer + (settings.data.mqttRefresh * 1000)))
-    {
-      sendtoMQTT(); // Update data to MQTT server if we should
-      getJsonData();
-      mqtttimer = millis();
-    }
+  DEBUG_PRINTLN("ProzessData called");
+  getJsonData();
+  notifyClients();
+  if (millis() >= (mqtttimer + (settings.data.mqttRefresh * 1000)))
+  {
+    sendtoMQTT(); // Update data to MQTT server if we should
+    mqtttimer = millis();
+  }
 
-
-        if (valChange)
+  if (valChange)
+  {
+    if (commandFromWeb != "")
     {
-      if (commandFromWeb != "")
-      {
-        DEBUG_PRINTLN(commandFromWeb);
-        DEBUG_WEBLN(commandFromWeb);
-        String tmp = mppClient.sendCommand(commandFromWeb); // send a custom command to the device
-        DEBUG_PRINTLN(tmp);
-        DEBUG_WEBLN(tmp);
-        commandFromWeb = "";
-      }
-      if (commandFromMqtt != "")
-      {
-        DEBUG_PRINTLN(commandFromMqtt);
-        DEBUG_WEBLN(commandFromMqtt);
-        String customResponse = mppClient.sendCommand(commandFromMqtt); // send a custom command to the device
-        DEBUG_PRINTLN(customResponse);
-        DEBUG_WEBLN(customResponse);
-        commandFromMqtt = "";
-        mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (customResponse).c_str());
-      }
-      mqtttimer = 0;
-      requestTimer = 0;
-      valChange = false;
+      DEBUG_PRINTLN(commandFromWeb);
+      DEBUG_WEBLN(commandFromWeb);
+      String tmp = mppClient.sendCommand(commandFromWeb); // send a custom command to the device
+      DEBUG_PRINTLN(tmp);
+      DEBUG_WEBLN(tmp);
+      commandFromWeb = "";
     }
+    if (commandFromMqtt != "")
+    {
+      DEBUG_PRINTLN(commandFromMqtt);
+      DEBUG_WEBLN(commandFromMqtt);
+      String customResponse = mppClient.sendCommand(commandFromMqtt); // send a custom command to the device
+      DEBUG_PRINTLN(customResponse);
+      DEBUG_WEBLN(customResponse);
+      commandFromMqtt = "";
+      mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (customResponse).c_str());
+    }
+    mqtttimer = 0;
+    requestTimer = 0;
+    valChange = false;
+  }
 }
 
 void getJsonData()
 {
-  staticData["gridV"] = mppClient.get.variableData.gridVoltage;
-  staticData["gridHz"] = mppClient.get.variableData.gridFrequency;
-  staticData["acOutV"] = mppClient.get.variableData.acOutputVoltage;
-  staticData["acOutHz"] = mppClient.get.variableData.acOutputFrequency;
-  staticData["acOutVa"] = mppClient.get.variableData.acOutputApparentPower;
-  staticData["acOutW"] = mppClient.get.variableData.acOutputActivePower;
-  staticData["acOutPercent"] = mppClient.get.variableData.outputLoadPercent;
-  staticData["busV"] = mppClient.get.variableData.busVoltage;
-  staticData["heatSinkDegC"] = mppClient.get.variableData.inverterHeatSinkTemperature;
-  staticData["battV"] = mppClient.get.variableData.batteryVoltage;
-  staticData["battPercent"] = mppClient.get.variableData.batteryCapacity;
-  staticData["battChargeA"] = mppClient.get.variableData.batteryChargingCurrent;
-  staticData["battDischargeA"] = mppClient.get.variableData.batteryDischargeCurrent;
-  staticData["sccBattV"] = mppClient.get.variableData.batteryVoltageFromScc;
-  staticData["solarV"] = mppClient.get.variableData.pvInputVoltage[0];
-  staticData["solarA"] = mppClient.get.variableData.pvInputCurrent[0];
-  staticData["solarW"] = mppClient.get.variableData.pvChargingPower; // not realy?
-  staticData["iv_mode"] = mppClient.get.variableData.operationMode;
-  staticData["device_name"] = settings.data.deviceName;
+  deviceJson["device_name"] = settings.data.deviceName;
+
+  liveData["gridV"] = mppClient.get.variableData.gridVoltage;
+  liveData["gridHz"] = mppClient.get.variableData.gridFrequency;
+  liveData["acOutV"] = mppClient.get.variableData.acOutputVoltage;
+  liveData["acOutHz"] = mppClient.get.variableData.acOutputFrequency;
+  liveData["acOutVa"] = mppClient.get.variableData.acOutputApparentPower;
+  liveData["acOutW"] = mppClient.get.variableData.acOutputActivePower;
+  liveData["acOutPercent"] = mppClient.get.variableData.outputLoadPercent;
+  liveData["busV"] = mppClient.get.variableData.busVoltage;
+  liveData["heatSinkDegC"] = mppClient.get.variableData.inverterHeatSinkTemperature;
+  liveData["battV"] = mppClient.get.variableData.batteryVoltage;
+  liveData["battPercent"] = mppClient.get.variableData.batteryCapacity;
+  liveData["battChargeA"] = mppClient.get.variableData.batteryChargingCurrent;
+  liveData["battDischargeA"] = mppClient.get.variableData.batteryDischargeCurrent;
+  liveData["sccBattV"] = mppClient.get.variableData.batteryVoltageFromScc;
+  liveData["solarV"] = mppClient.get.variableData.pvInputVoltage[0];
+  liveData["solarA"] = mppClient.get.variableData.pvInputCurrent[0];
+  liveData["solarW"] = mppClient.get.variableData.pvChargingPower; // not realy?
+  liveData["iv_mode"] = mppClient.get.variableData.operationMode;
+
+staticData["gridmaxirgendwas"] = mppClient.get.variableData.operationMode;
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
@@ -698,7 +672,7 @@ bool sendtoMQTT()
       mqttclient.publish(topicBuilder(buff, "Device_Data/Battery_bulk_voltage"), dtostrf(mppClient.get.staticData.batteryBulkVoltage, 4, 1, msgBuffer));
     if (mppClient.get.staticData.batteryFloatVoltage != -1)
       mqttclient.publish(topicBuilder(buff, "Device_Data/Battery_float_voltage"), dtostrf(mppClient.get.staticData.batteryFloatVoltage, 4, 1, msgBuffer));
-    
+
     if (strcmp(mppClient.get.staticData.batterytype, "") != 0)
       mqttclient.publish(topicBuilder(buff, "Device_Data/Battery_type"), mppClient.get.staticData.batterytype);
     if (mppClient.get.staticData.currentMaxAcChargingCurrent != -1)

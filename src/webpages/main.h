@@ -100,25 +100,25 @@ $(document).ready(function () {
     }
     function onMessage(event) {
         var data = JSON.parse(event.data);
-        document.getElementById("solarV").innerHTML = data.DeviceData.solarV+'V ';
-        document.getElementById("solarA").innerHTML = data.DeviceData.solarA+'A  ';
-        document.getElementById("solarW").innerHTML = data.DeviceData.solarW+'W';
-        document.getElementById("gridV").innerHTML = data.DeviceData.gridV+'V ';
-        document.getElementById("gridHz").innerHTML = data.DeviceData.gridHz+'Hz ';
-        document.getElementById("acOutV").innerHTML = data.DeviceData.acOutV+'V ';
-        document.getElementById("acOutHz").innerHTML = data.DeviceData.acOutHz+'Hz ';
-        document.getElementById("acOutVa").innerHTML = data.DeviceData.acOutVa+'Va ';
-        document.getElementById("acOutW").innerHTML = data.DeviceData.acOutW+'W ';
-        document.getElementById("acOutPercent").innerHTML = data.DeviceData.acOutPercent+'%%';
-        document.getElementById("busV").innerHTML = data.DeviceData.busV+'V ';
-        document.getElementById("heatSinkDegC").innerHTML = data.DeviceData.heatSinkDegC+'°C ';
-        document.getElementById("battV").innerHTML = data.DeviceData.battV+'V ';
-        document.getElementById("battPercent").innerHTML = data.DeviceData.battPercent+'%% ';
-        document.getElementById("battChargeA").innerHTML = data.DeviceData.battChargeA+'A ';
-        document.getElementById("battDischargeA").innerHTML = data.DeviceData.battDischargeA+'A ';
-        document.getElementById("sccBattV").innerHTML = data.DeviceData.sccBattV+'V ';
-        document.getElementById("ivmode").innerHTML = data.DeviceData.iv_mode;
-        document.getElementById("devicename").innerHTML = data.DeviceData.device_name;
+        document.getElementById("solarV").innerHTML = data.LiveData.solarV+'V ';
+        document.getElementById("solarA").innerHTML = data.LiveData.solarA+'A  ';
+        document.getElementById("solarW").innerHTML = data.LiveData.solarW+'W';
+        document.getElementById("gridV").innerHTML = data.LiveData.gridV+'V ';
+        document.getElementById("gridHz").innerHTML = data.LiveData.gridHz+'Hz ';
+        document.getElementById("acOutV").innerHTML = data.LiveData.acOutV+'V ';
+        document.getElementById("acOutHz").innerHTML = data.LiveData.acOutHz+'Hz ';
+        document.getElementById("acOutVa").innerHTML = data.LiveData.acOutVa+'Va ';
+        document.getElementById("acOutW").innerHTML = data.LiveData.acOutW+'W ';
+        document.getElementById("acOutPercent").innerHTML = data.LiveData.acOutPercent+'%%';
+        document.getElementById("busV").innerHTML = data.LiveData.busV+'V ';
+        document.getElementById("heatSinkDegC").innerHTML = data.LiveData.heatSinkDegC+'°C ';
+        document.getElementById("battV").innerHTML = data.LiveData.battV+'V ';
+        document.getElementById("battPercent").innerHTML = data.LiveData.battPercent+'%% ';
+        document.getElementById("battChargeA").innerHTML = data.LiveData.battChargeA+'A ';
+        document.getElementById("battDischargeA").innerHTML = data.LiveData.battDischargeA+'A ';
+        document.getElementById("sccBattV").innerHTML = data.LiveData.sccBattV+'V ';
+        document.getElementById("ivmode").innerHTML = data.LiveData.iv_mode;
+        document.getElementById("devicename").innerHTML = data.Device.device_name;
     }
 
 </script>
