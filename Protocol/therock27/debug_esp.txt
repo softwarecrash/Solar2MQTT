@@ -1,0 +1,1335 @@
+-7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: EF93      Rx: EF93
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.40 000 100 0026 0020 209.0 53.40 00000 00010101 00 00 00020 010
+Command Length: 106
+
+Sending:        QALL    Calc: 66EE      Rx: 30A3
+Recived:        (229 49.9 229 49.9 0801 014 53.4 100 000 015 209 00.1 0020 778446 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: D0F0      Rx: D0F0
+Recived:        (229.0 49.9 230.0 49.9 0000 0782 014 401 53.40 000 100 0026 0041 209.0 53.40 00000 00010110 00 00 00041 010
+Command Length: 106
+
+Sending:        QALL    Calc: 97E2      Rx: 30B3
+Recived:        (229 49.9 229 49.9 0778 014 53.4 100 000 014 209 00.2 0041 778446 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: F270      Rx: F270
+Recived:        (229.0 49.9 230.0 49.9 0000 0782 014 401 26.70 000 100 0026 1846 000.0 26.70 00000 00010110 00 00 01846 010
+Command Length: 106
+
+Sending:        QALL    Calc: FBF7      Rx: 30A6
+Recived:        (229 49.9 230 49.9 0805 014 53.4 100 000 014 209 00.3 0062 778446 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: A255      Rx: A255
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.40 000 100 0026 0062 209.0 53.40 00000 00010110 00 00 00062 010
+Command Length: 106
+
+Sending:        QALL    Calc: DBF6      Rx: 30A1
+Recived:        (229 49.9 230 49.9 0805 014 53.4 100 000 014 209 00.3 0062 778446 009306 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: D61D      Rx: D61D
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.40 000 100 0026 0083 209.0 53.40 00000 00010110 00 00 00083 010
+Command Length: 106
+
+Sending:        QALL    Calc: B5D3      Rx: 30AD
+Recived:        (229 49.9 229 49.9 0801 014 53.4 100 000 013 209 00.4 0083 778446 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: AA68      Rx: AA68
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.40 000 100 0026 0104 209.0 53.40 00000 00010110 00 00 00104 010
+Command Length: 106
+
+Sending:        QALL    Calc: 801A      Rx: 30A5
+Recived:        (229 49.9 229 49.9 0801 014 53.4 100 000 013 209 00.5 0104 058625 077781 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: AA68      Rx: AA68
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.40 000 100 0026 0104 209.0 53.40 00000 00010110 00 00 00104 010
+Command Length: 106
+
+Sending:        QALL    Calc: 9EA4      Rx: 30A8
+Recived:        (229 49.9 229 49.9 0801 014 53.4 100 000 013 209 00.5 0104 778446 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 74F2      Rx: 74F2
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.40 000 100 0026 0125 209.0 53.40 00000 00010110 00 00 00125 010
+Command Length: 106
+
+Sending:        QALL    Calc: F164      Rx: 309E
+Recived:        (229 49.9 229 49.9 0801 014 53.4 100 000 012 209 00.7 0146 205056 080376 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: DAFE      Rx: DAFE
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.40 000 100 0026 0166 208.0 53.40 00000 00010110 00 00 00166 010
+Command Length: 106
+
+Sending:        QALL    Calc: 90C6      Rx: 30B1
+Recived:        (229 49.9 229 49.9 0801 014 53.4 100 000 012 208 00.8 0166 778446 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: DAFE      Rx: DAFE
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.40 000 100 0026 0166 208.0 53.40 00000 00010110 00 00 00166 010
+Command Length: 106
+
+Sending:        QALL    Calc: 1CCD      Rx: 30B2
+Recived:        (229 49.9 229 49.9 0801 014 53.4 100 000 011 208 00.8 0166 065536 526779 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: DDDB      Rx: DDDB
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.40 000 100 0026 0228 208.0 53.40 00000 00010110 00 00 00228 010
+Command Length: 106
+
+Sending:        QALL    Calc: F413      Rx: 30AA
+Recived:        (229 49.9 229 49.9 0801 014 53.4 100 000 011 208 01.1 0228 778447 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 6EC6      Rx: 6EC6
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.40 000 100 0026 0432 499.0 53.40 00000 00010101 00 00 00432 010
+Command Length: 106
+
+Sending:        QALL    Calc: DD52      Rx: 30A9
+Recived:        (229 49.9 229 49.9 0801 014 53.4 100 000 010 208 01.1 0228 778447 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: DDDB      Rx: DDDB
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.40 000 100 0026 0228 208.0 53.40 00000 00010110 00 00 00228 010
+Command Length: 106
+
+Sending:        QALL    Calc: 156       Rx: 30B4
+Recived:        (229 49.9 229 49.9 0801 014 53.5 100 000 007 208 01.2 0249 778447 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+Info: Data sent to MQTT Server...
+Done
+
+Sending:        QPIGS   Calc: 8A8E      Rx: 8A8E
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 000 100 0026 0515 206.0 53.70 00000 00010110 00 00 00515 010
+Command Length: 106
+
+Sending:        QALL    Calc: 84CD      Rx: 30B1
+Recived:        (229 49.9 229 49.9 0801 014 53.7 100 000 000 205 03.2 0656 778448 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: ED24      Rx: ED24
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 000 100 0026 0754 204.0 53.70 00000 00010110 00 00 00754 010
+Command Length: 106
+
+Sending:        QALL    Calc: F8F7      Rx: 30A6
+Recived:        (229 49.9 230 49.9 0782 014 26.8 100 000 000 204 03.9 0795 431168 842110 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: CD2F      Rx: CD2F
+Recived:        (229.0 49.9 230.0 49.9 0000 0782 014 401 53.70 000 100 0026 0795 204.0 53.70 00000 00010110 00 00 00795 010
+Command Length: 106
+
+Sending:        QALL    Calc: 3E94      Rx: 30C9
+Recived:        (229 49.9 229 49.9 0778 014 53.7 100 000 000 204 03.9 0795 778449 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: B491      Rx: B491
+Recived:        (229.0 49.9 229.0 49.9 0000 0778 014 401 53.70 000 100 0026 0795 204.0 53.70 00000 00010110 00 00 00795 010
+Command Length: 106
+
+Sending:        QALL    Calc: 831C      Rx: 30B5
+Recived:        (229 49.9 230 49.9 0782 014 53.8 100 000 000 204 04.0 0816 994947 234881 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 8B5A      Rx: 8B5A
+Recived:        (229.0 49.9 230.0 49.9 0000 0782 014 401 53.80 000 100 0026 0816 204.0 53.80 00000 00010110 00 00 00816 010
+Command Length: 106
+
+Sending:        QALL    Calc: 46CB      Rx: 30A3
+Recived:        (229 49.9 230 49.9 0805 014 53.8 100 000 000 204 04.0 0816 778450 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 867F      Rx: 867F
+Recived:        (229.0 49.9 230.0 49.9 0000 0805 014 401 53.80 000 100 0026 0816 204.0 53.80 00000 00010110 00 00 00816 010
+Command Length: 106
+
+Sending:        QALL    Calc: 2593      Rx: 3095
+Recived:        (229 49.9 229 49.9 0801 014 53.8 100 000 000 204 04.0 0816 000256 005963 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: EC3E      Rx: EC3E
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.80 000 100 0026 0816 204.0 53.80 00000 00010110 00 00 00816 010
+Command Length: 106
+
+Sending:        QALL    Calc: 291E      Rx: 30A8
+Recived:        (229 49.9 229 49.9 0801 014 53.8 100 000 000 204 04.0 0816 778451 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 3A59      Rx: 3A59
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.80 000 100 0026 4873 229.0 53.80 00000 00010101 00 00 04873 010
+Command Length: 106
+
+Sending:        QALL    Calc: B12       Rx: 30A5
+Recived:        (229 49.9 230 49.9 0805 014 53.8 100 000 000 204 04.0 0816 778452 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: EC3E      Rx: EC3E
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.80 000 100 0026 0816 204.0 53.80 00000 00010110 00 00 00816 010
+Command Length: 106
+
+Sending:        QALL    Calc: 64C7      Rx: 30AA
+Recived:        (229 49.9 229 49.9 0801 014 53.8 100 000 000 204 04.0 0816 778453 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 361B      Rx: 361B
+Recived:        (229.0 49.9 229.0 49.9 0000 0910 014 401 53.80 000 100 0026 4815 499.0 53.80 00000 00010101 00 00 04815 010
+Command Length: 106
+
+Sending:        QALL    Calc: A5EE      Rx: 30A6
+Recived:        (229 49.9 230 49.9 0805 014 53.8 100 000 000 204 04.0 0816 778453 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: EC3E      Rx: EC3E
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.80 000 100 0026 0816 204.0 53.80 00000 00010110 00 00 00816 010
+Command Length: 106
+
+Sending:        QALL    Calc: 8D4F      Rx: 3095
+Recived:        (229 49.9 230 49.9 0805 014 53.8 100 000 000 204 04.0 0816 008243 035258 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: EC3E      Rx: EC3E
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.80 000 100 0026 0816 204.0 53.80 00000 00010110 00 00 00816 010
+Command Length: 106
+
+Sending:        QALL    Calc: 7385      Rx: 30A8
+Recived:        (229 49.9 230 49.9 0805 014 53.8 100 000 000 204 04.0 0816 778455 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: EC3E      Rx: EC3E
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.80 000 100 0026 0816 204.0 53.80 00000 00010110 00 00 00816 010
+Command Length: 106
+
+Sending:        QALL    Calc: 177E      Rx: 30A0
+Recived:        (229 49.9 229 49.9 0801 014 53.8 100 000 000 204 04.0 0816 706048 621346 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: EC3E      Rx: EC3E
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.80 000 100 0026 0816 204.0 53.80 00000 00010110 00 00 00816 010
+Command Length: 106
+
+Sending:        QALL    Calc: 90A0      Rx: 30A9
+Recived:        (229 49.9 230 49.9 0805 014 53.8 100 000 000 204 04.0 0816 778456 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 841E      Rx: 841E
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 000 100 0026 0836 204.0 53.70 00000 00010110 00 00 00836 010
+Command Length: 106
+
+Sending:        QALL    Calc: AE41      Rx: 30AC
+Recived:        (229 49.9 229 49.9 0801 014 53.8 100 000 000 204 04.1 0836 104896 016777 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: DF19      Rx: DF19
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.80 000 100 0026 0836 204.0 53.80 00000 00010110 00 00 00836 010
+Command Length: 106
+
+Sending:        QALL    Calc: B30F      Rx: 30B0
+Recived:        (229 49.9 229 49.9 0801 014 53.7 100 000 000 204 04.1 0836 778457 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 8588      Rx: 8588
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 000 100 0026 3251 142.0 53.70 00000 00010110 00 00 03251 010
+Command Length: 106
+
+Sending:        QALL    Calc: ECDD      Rx: 30B1
+Recived:        (229 49.9 229 49.9 0801 014 53.7 100 000 000 204 04.1 0836 778458 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 841E      Rx: 841E
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 000 100 0026 0836 204.0 53.70 00000 00010110 00 00 00836 010
+Command Length: 106
+
+Sending:        QALL    Calc: 4221      Rx: 30B2
+Recived:        (229 49.9 229 49.9 0801 014 53.7 100 000 000 204 04.1 0836 778459 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 883F      Rx: 883F
+Recived:        (229.0 49.9 230.0 49.9 0000 0805 014 401 53.70 000 100 0026 0128 280.0 53.70 00000 00010000 00 00 00128 010
+Command Length: 106
+
+Sending:        QALL    Calc: 23D5      Rx: 30AA
+Recived:        (229 49.9 229 49.9 0801 014 53.7 100 000 000 204 04.1 0836 778460 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 841E      Rx: 841E
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 000 100 0026 0836 204.0 53.70 00000 00010110 00 00 00836 010
+Command Length: 106
+
+Sending:        QALL    Calc: B8D7      Rx: 3093
+Recived:        (229 49.9 229 49.9 0801 014 53.7 100 000 000 204 04.1 0836 306341 032703 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+Info: Data sent to MQTT Server...
+Done
+
+Sending:        QPIGS   Calc: D177      Rx: D177
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 000 100 0026 0856 204.0 53.70 00000 00010110 00 00 00856 010
+Command Length: 106
+
+Sending:        QALL    Calc: FC98      Rx: 30AE
+Recived:        (229 49.9 229 49.9 0801 014 53.7 100 000 000 204 04.2 0856 778461 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: D177      Rx: D177
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 000 100 0026 0856 204.0 53.70 00000 00010110 00 00 00856 010
+Command Length: 106
+
+Sending:        QALL    Calc: 833C      Rx: 30A5
+Recived:        (229 49.9 230 49.9 0805 014 53.7 100 000 000 203 04.3 0872 887438 002427 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: CDF9      Rx: CDF9
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 000 100 0026 0872 203.0 53.70 00000 00010110 00 00 00872 010
+Command Length: 106
+
+Sending:        QALL    Calc: DE94      Rx: 30AB
+Recived:        (229 49.9 230 49.9 0805 014 53.7 100 000 000 204 04.2 0856 778462 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: FEDE      Rx: FEDE
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 000 100 0026 0852 203.0 53.70 00000 00010110 00 00 00852 010
+Command Length: 106
+
+Sending:        QALL    Calc: A439      Rx: 30B5
+Recived:        (229 49.9 229 49.9 0801 014 53.7 100 000 000 204 04.2 0856 648129 083886 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: BB36      Rx: BB36
+Recived:        (229.0 49.9 230.0 49.9 0000 0805 014 401 53.70 000 100 0026 0856 204.0 53.70 00000 00010110 00 00 00856 010
+Command Length: 106
+
+Sending:        QALL    Calc: 99        Rx: 30AC
+Recived:        (229 49.9 230 49.9 0805 014 53.7 100 001 000 203 04.3 0872 778464 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: D03D      Rx: D03D
+Recived:        (229.0 49.9 230.0 49.9 0000 0805 014 401 53.70 001 100 0026 0872 203.0 53.70 00000 00010101 00 00 00872 010
+Command Length: 106
+
+Sending:        QALL    Calc: AE65      Rx: 30AD
+Recived:        (229 49.9 230 49.9 0805 014 53.7 100 001 000 203 04.3 0872 778465 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 5AAF      Rx: 5AAF
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 001 100 0026 0872 203.0 53.70 00000 00010110 00 00 00872 010
+Command Length: 106
+
+Sending:        QALL    Calc: 6F4C      Rx: 30B1
+Recived:        (229 49.9 229 49.9 0801 014 53.7 100 001 000 203 04.3 0872 778465 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 5FF0      Rx: 5FF0
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 001 100 0026 0644 537.0 53.70 00000 00010000 00 00 00644 010
+Command Length: 106
+
+Sending:        QALL    Calc: 8C69      Rx: 30B2
+Recived:        (229 49.9 229 49.9 0801 014 53.7 100 001 000 203 04.3 0872 778466 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 30EE      Rx: 30EE
+Recived:        (229.0 49.9 230.0 49.9 0000 0805 014 401 53.70 001 100 0026 0872 203.0 53.70 00000 00010110 00 00 00872 010
+Command Length: 106
+
+Sending:        QALL    Calc: 61F8      Rx: 30B5
+Recived:        (229 49.9 229 49.9 0801 014 53.7 100 001 000 203 04.4 0893 778466 382423 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 44A6      Rx: 44A6
+Recived:        (229.0 49.9 230.0 49.9 0000 0805 014 401 53.70 001 100 0026 0893 203.0 53.70 00000 00010110 00 00 00893 010
+Command Length: 106
+
+Sending:        QALL    Calc: 735F      Rx: 30B7
+Recived:        (229 49.9 229 49.9 0801 014 53.7 100 001 000 203 04.4 0893 778467 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 2EE7      Rx: 2EE7
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 001 100 0026 0893 203.0 53.70 00000 00010110 00 00 00893 010
+Command Length: 106
+
+Sending:        QALL    Calc: 8DAC      Rx: 30A4
+Recived:        (229 49.9 229 49.9 0801 014 53.7 100 001 000 203 04.4 0893 192845 015008 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 44A6      Rx: 44A6
+Recived:        (229.0 49.9 230.0 49.9 0000 0805 014 401 53.70 001 100 0026 0893 203.0 53.70 00000 00010110 00 00 00893 010
+Command Length: 106
+
+Sending:        QALL    Calc: 8271      Rx: 30B9
+Recived:        (229 49.9 229 49.9 0801 014 53.7 100 001 000 203 04.4 0893 778469 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: F2E3      Rx: F2E3
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 001 100 0026 0913 203.0 53.70 00000 00010110 00 00 00913 010
+Command Length: 106
+
+Sending:        QALL    Calc: 42A       Rx: 30BC
+Recived:        (229 49.9 229 49.9 0801 014 53.7 100 001 000 203 04.5 0913 994947 553648 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: F2E3      Rx: F2E3
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 001 100 0026 0913 203.0 53.70 00000 00010110 00 00 00913 010
+Command Length: 106
+
+Sending:        QALL    Calc: 589B      Rx: 30A7
+Recived:        (229 49.9 230 49.9 0805 014 53.7 100 001 000 203 04.5 0913 778470 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: F2E3      Rx: F2E3
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 001 100 0026 0913 203.0 53.70 00000 00010110 00 00 00913 010
+Command Length: 106
+
+Sending:        QALL    Calc: 7BAA      Rx: 3097
+Recived:        (229 49.9 229 49.9 0801 014 53.7 100 001 000 203 04.5 0913 000256 005963 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: F2E3      Rx: F2E3
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 001 100 0026 0913 203.0 53.70 00000 00010110 00 00 00913 010
+Command Length: 106
+
+Sending:        QALL    Calc: 4761      Rx: 30AE
+Recived:        (229 49.9 229 49.9 0801 014 53.8 100 001 000 203 04.5 0913 778472 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 1397      Rx: 1397
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.70 001 100 0026 0581 499.0 53.70 00000 00010101 00 00 00581 010
+Command Length: 106
+
+Sending:        QALL    Calc: 1C21      Rx: 30B2
+Recived:        (229 49.9 229 49.9 0801 014 53.8 100 001 000 203 04.6 0933 778473 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 3318      Rx: 3318
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.80 002 100 0026 0933 203.0 53.80 00000 00010110 00 00 00933 010
+Command Length: 106
+
+Sending:        QALL    Calc: 3FEC      Rx: 30B3
+Recived:        (229 49.9 229 49.9 0801 014 53.8 100 002 000 203 04.6 0933 778473 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: BA9C      Rx: BA9C
+Recived:        (229.0 49.9 229.0 49.9 0000 0910 014 401 53.80 002 100 0026 4738 499.0 53.80 00000 00010101 00 00 04738 010
+Command Length: 106
+
+Sending:        QALL    Calc: A607      Rx: 30B3
+Recived:        (228 49.9 229 49.9 0801 014 53.8 100 002 000 203 04.6 0933 778474 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: ABC5      Rx: ABC5
+Recived:        (228.0 49.9 230.0 49.9 0000 0805 014 401 53.80 002 100 0026 0954 203.0 53.80 00000 00010110 00 00 00954 010
+Command Length: 106
+
+Sending:        QALL    Calc: 36A6      Rx: 3093
+Recived:        (229 49.9 229 49.9 0801 014 53.8 100 002 000 203 04.7 0954 703002 001442 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+Info: Data sent to MQTT Server...
+Done
+
+Sending:        QPIGS   Calc: C600      Rx: C600
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.80 002 100 0026 0954 203.0 53.80 00000 00010110 00 00 00954 010
+Command Length: 106
+
+Sending:        QALL    Calc: 40F6      Rx: 30BA
+Recived:        (229 49.9 229 49.9 0801 014 53.8 100 002 000 203 04.7 0954 778476 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: C600      Rx: C600
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.80 002 100 0026 0954 203.0 53.80 00000 00010110 00 00 00954 010
+Command Length: 106
+
+Sending:        QALL    Calc: D0F4      Rx: 309E
+Recived:        (229 49.9 229 49.9 0801 014 26.9 100 002 000 203 04.8 0974 427136 000205 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: FC25      Rx: FC25
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.80 002 100 0026 0969 202.0 53.80 00000 00010110 00 00 00969 010
+Command Length: 106
+
+Sending:        QALL    Calc: 4D69      Rx: 30C1
+Recived:        (229 49.9 229 49.9 0801 014 53.8 100 002 000 202 04.8 0969 778477 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: FC25      Rx: FC25
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.80 002 100 0026 0969 202.0 53.80 00000 00010110 00 00 00969 010
+Command Length: 106
+
+Sending:        QALL    Calc: 16CF      Rx: 30A2
+Recived:        (229 49.9 230 49.9 0805 014 53.8 100 002 000 202 04.8 0969 000256 005963 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: FBA1      Rx: FBA1
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.80 002 100 0026 0969 202.0 53.80 00000 00010110 00 00 00969 010
+Command Length: 106
+
+Sending:        QALL    Calc: FF01      Rx: 30C6
+Recived:        (229 49.9 229 49.9 0801 014 53.8 100 002 000 202 04.9 0989 778479 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: BB28      Rx: BB29
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.80 002 100 0026 0307 202.0 53.80 00000 00010101 00 00 00307 010
+ERCRC
+RAW: >(228.0 49.9 229.0 49.9 0000 0801 014 401 53.80 002 100 0026 0307 202.0 53.80 00000 00010101 00 00 00307 010▒)<
+
+Sending:        QALL    Calc: 7A        Rx: 30BE
+Recived:        (228 49.9 229 49.9 0801 014 53.8 100 003 000 202 04.9 0989 778480 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 4142      Rx: 4142
+Recived:        (229.0 49.9 229.0 49.9 0000 0801 014 401 53.80 003 100 0026 1010 202.0 53.80 00000 00010110 00 00 01010 010
+Command Length: 106
+
+Sending:        QALL    Calc: E31B      Rx: 309E
+Recived:        (228 49.9 229 49.9 0801 014 53.8 100 003 000 202 05.0 1010 152577 077781 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 46C6      Rx: 46C6
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.80 003 100 0026 1010 202.0 53.80 00000 00010110 00 00 01010 010
+Command Length: 106
+
+Sending:        QALL    Calc: 74F3      Rx: 309F
+Recived:        (228 49.9 229 49.9 0801 014 53.8 100 003 000 202 05.0 1010 778481 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: A120      Rx: A120
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.80 004 100 0026 1030 202.0 53.80 00000 00010110 00 00 01030 010
+Command Length: 106
+
+Sending:        QALL    Calc: 99C9      Rx: 3087
+Recived:        (228 49.9 229 49.9 0801 014 53.8 100 004 000 202 05.1 1030 205056 000066 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: A120      Rx: A120
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.80 004 100 0026 1030 202.0 53.80 00000 00010110 00 00 01030 010
+Command Length: 106
+
+Sending:        QALL    Calc: 4F64      Rx: 30A5
+Recived:        (228 49.9 229 49.9 0801 014 53.8 100 004 000 202 05.1 1030 778483 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: A120      Rx: A120
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.80 004 100 0026 1030 202.0 53.80 00000 00010110 00 00 01030 010
+Command Length: 106
+
+Sending:        QALL    Calc: 46F2      Rx: 3090
+Recived:        (228 49.9 229 49.9 0801 014 53.8 100 004 000 202 05.2 1050 000256 005963 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: F449      Rx: F449
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.80 004 100 0026 1050 202.0 53.80 00000 00010110 00 00 01050 010
+Command Length: 106
+
+Sending:        QALL    Calc: E8BE      Rx: 30AA
+Recived:        (228 49.9 229 49.9 0801 014 53.8 100 004 000 202 05.2 1050 778485 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: F2C2      Rx: F2C2
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.80 004 100 0026 4787 369.0 53.80 00000 00010000 00 00 04787 010
+Command Length: 106
+
+Sending:        QALL    Calc: D4EB      Rx: 30AE
+Recived:        (228 49.9 229 49.9 0801 014 53.8 100 004 000 202 05.3 1070 778486 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: C76E      Rx: C76E
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.80 004 100 0026 1070 202.0 53.80 00000 00010110 00 00 01070 010
+Command Length: 106
+
+Sending:        QALL    Calc: 15C2      Rx: 30AA
+Recived:        (228 49.9 230 49.9 0805 014 53.8 100 004 000 202 05.3 1070 778486 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: A873      Rx: A873
+Recived:        (228.0 49.9 229.0 49.9 0000 6352 014 401 53.80 004 100 0026 0514 222.0 53.80 00000 00010000 00 00 00514 010
+Command Length: 106
+
+Sending:        QALL    Calc: 19D7      Rx: 30B3
+Recived:        (228 49.9 229 49.9 0801 014 53.8 100 004 000 202 05.4 1090 778488 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 5E9B      Rx: 5E9B
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.80 004 100 0026 1090 202.0 53.80 00000 00010110 00 00 01090 010
+Command Length: 106
+
+Sending:        QALL    Calc: 2ACC      Rx: 30A2
+Recived:        (228 49.9 229 49.9 0801 014 53.8 100 005 000 202 05.4 1090 332994 436220 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: A6EC      Rx: A6EC
+Recived:        (228.0 49.9 230.0 49.9 0000 0805 014 401 53.80 005 100 0026 1105 201.0 53.80 00000 00010110 00 00 01105 010
+Command Length: 106
+
+Sending:        QALL    Calc: C92D      Rx: 30B1
+Recived:        (228 49.9 229 49.9 0801 014 53.8 100 004 000 201 05.5 1105 778489 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 528D      Rx: 528D
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.90 005 100 0026 1105 201.0 53.90 00000 00010110 00 00 01105 010
+Command Length: 106
+
+Sending:        QALL    Calc: 8859      Rx: 30A7
+Recived:        (228 49.9 230 49.9 0805 014 53.9 100 005 000 201 05.6 1125 781029 150994 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: FF8A      Rx: FF8A
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.80 005 100 0026 1125 201.0 53.80 00000 00010110 00 00 01125 010
+Command Length: 106
+
+Sending:        QALL    Calc: B7B5      Rx: 30AF
+Recived:        (228 49.9 229 49.9 0801 014 53.9 100 005 000 201 05.6 1125 778491 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 401E      Rx: 401E
+Recived:        (228.0 49.9 229.0 49.9 0000 0847 015 401 53.90 005 100 0026 1125 201.0 53.90 00000 00010110 00 00 01125 010
+Command Length: 106
+
+Sending:        QALL    Calc: 2A77      Rx: 30B1
+Recived:        (228 49.9 230 49.9 0828 015 53.9 100 005 000 201 05.7 1145 104896 016777 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+Info: Data sent to MQTT Server...
+Done
+
+Sending:        QPIGS   Calc: 5213      Rx: 5213
+Recived:        (228.0 49.9 229.0 49.9 0000 0824 014 401 53.90 005 100 0026 1145 201.0 53.90 00000 00010110 00 00 01145 010
+Command Length: 106
+
+Sending:        QALL    Calc: A5C2      Rx: 30B9
+Recived:        (228 49.9 230 49.9 0828 015 53.9 100 005 000 201 05.8 1165 778493 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 5CE       Rx: 5CE
+Recived:        (228.0 49.9 230.0 49.9 0000 0828 015 401 53.90 005 100 0026 4823 228.0 53.90 00000 00010101 00 00 04823 010
+Command Length: 106
+
+Sending:        QALL    Calc: 2C2C      Rx: 30BD
+Recived:        (228 49.9 229 49.9 0824 014 53.9 100 005 000 201 05.8 1165 778494 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: A1F1      Rx: A1F1
+Recived:        (228.0 49.9 228.0 49.9 0000 0820 014 401 53.90 006 100 0026 1165 201.0 53.90 00000 00010110 00 00 01165 010
+Command Length: 106
+
+Sending:        QALL    Calc: E25B      Rx: 30C2
+Recived:        (228 49.9 229 49.9 0824 014 53.9 100 006 000 201 05.9 1185 778495 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 54BC      Rx: 54BC
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.90 006 100 0026 4923 230.0 53.90 00000 00010101 00 00 04923 010
+Command Length: 106
+
+Sending:        QALL    Calc: 3EE9      Rx: 30BA
+Recived:        (228 49.9 230 49.9 0805 014 53.9 100 006 000 201 05.9 1185 778496 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: EC18      Rx: EC18
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.90 006 100 0026 1206 201.0 53.90 00000 00010110 00 00 01206 010
+Command Length: 106
+
+Sending:        QALL    Calc: ABCA      Rx: 308F
+Recived:        (228 49.9 230 49.9 0805 014 53.9 100 006 000 200 06.0 1200 423297 077001 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 1616      Rx: 1616
+Recived:        (228.0 49.9 230.0 49.9 0000 0805 014 401 53.90 006 100 0026 1220 200.0 53.90 00000 00010110 00 00 01220 010
+Command Length: 106
+
+Sending:        QALL    Calc: 7D0B      Rx: 30AA
+Recived:        (228 49.9 230 49.9 0805 014 53.9 100 006 000 200 06.1 1220 778498 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 1616      Rx: 1616
+Recived:        (228.0 49.9 230.0 49.9 0000 0805 014 401 53.90 006 100 0026 1220 200.0 53.90 00000 00010110 00 00 01220 010
+Command Length: 106
+
+Sending:        QALL    Calc: 82C4      Rx: 3083
+Recived:        (228 49.9 229 49.9 0801 014 53.9 100 006 000 200 06.1 1220 110222 002427 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 293E      Rx: 293E
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.90 006 100 0026 1240 200.0 53.90 00000 00010110 00 00 01240 010
+Command Length: 106
+
+Sending:        QALL    Calc: 4395      Rx: 30A1
+Recived:        (228 49.9 229 49.9 0801 014 53.9 100 006 000 200 06.2 1240 778500 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 437F      Rx: 437F
+Recived:        (228.0 49.9 230.0 49.9 0000 0805 014 401 53.90 006 100 0026 1240 200.0 53.90 00000 00010110 00 00 01240 010
+Command Length: 106
+
+Sending:        QALL    Calc: 6591      Rx: 30AE
+Recived:        (228 49.9 229 49.9 0801 014 53.9 100 006 000 200 06.2 1240 648129 083886 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: A0B2      Rx: A0B2
+Recived:        (228.0 49.9 229.0 49.9 0000 0778 014 401 53.90 007 100 0026 1240 200.0 53.90 00000 00010110 00 00 01240 010
+Command Length: 106
+
+Sending:        QALL    Calc: FEB1      Rx: 30A3
+Recived:        (228 49.9 230 49.9 0805 014 53.9 100 007 000 200 06.3 1260 778502 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 6D9C      Rx: 6D9C
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.90 007 100 0026 1260 200.0 53.90 00000 00010101 00 00 01260 010
+Command Length: 106
+
+Sending:        QALL    Calc: 6C5F      Rx: 30A7
+Recived:        (228 49.9 230 49.9 0805 014 53.9 100 007 000 200 06.4 1280 778503 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 14BA      Rx: 14BA
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 53.90 007 100 0026 1280 200.0 53.90 00000 00010110 00 00 01280 010
+Command Length: 106
+
+Sending:        QALL    Calc: 2E96      Rx: 30A2
+Recived:        (228 49.9 230 49.9 0805 014 53.9 100 007 000 200 06.5 1300 778504 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: AE95      Rx: AE95
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 54.00 007 100 0026 4266 540.0 54.00 00000 00010000 00 00 04266 010
+Command Length: 106
+
+Sending:        QALL    Calc: C34B      Rx: 30C9
+Recived:        (228 49.9 229 49.9 0778 014 54.0 100 008 000 199 06.5 1293 778505 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: BF6A      Rx: BF6A
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 54.00 008 100 0026 1313 199.0 54.00 00000 00010110 00 00 01313 010
+Command Length: 106
+
+Sending:        QALL    Calc: 89AA      Rx: 30B2
+Recived:        (228 49.9 230 49.9 0805 014 54.0 100 008 000 199 06.6 1313 778506 382423 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 8C4D      Rx: 8C4D
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 54.00 008 100 0026 1333 199.0 54.00 00000 00010110 00 00 01333 010
+Command Length: 106
+
+Sending:        QALL    Calc: 447D      Rx: 30B7
+Recived:        (228 49.9 230 49.9 0805 014 54.0 100 008 000 199 06.7 1333 778507 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: C07A      Rx: C07A
+Recived:        (229.0 49.9 229.0 49.9 0000 0778 014 401 54.00 008 100 0026 1353 199.0 54.00 00000 00010110 00 00 01353 010
+Command Length: 106
+
+Sending:        QALL    Calc: BC0A      Rx: 30AF
+Recived:        (229 49.9 230 49.9 0805 014 54.0 100 008 000 199 06.7 1333 389525 015073 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: C7FE      Rx: C7FE
+Recived:        (228.0 49.9 229.0 49.9 0000 0778 014 401 54.00 008 100 0026 1353 199.0 54.00 00000 00010110 00 00 01353 010
+Command Length: 106
+
+Sending:        QALL    Calc: FB63      Rx: 30C0
+Recived:        (228 49.9 229 49.9 0801 014 54.0 100 008 000 199 06.8 1353 778509 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: F4D9      Rx: F4D9
+Recived:        (228.0 49.9 229.0 49.9 0000 0778 014 401 54.00 008 100 0026 1373 199.0 54.00 00000 00010110 00 00 01373 010
+Command Length: 106
+
+Sending:        QALL    Calc: 183B      Rx: 30C1
+Recived:        (228 49.9 230 49.9 0782 014 54.0 100 008 000 199 06.9 1373 346816 050987 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: F4D9      Rx: F4D9
+Recived:        (228.0 49.9 229.0 49.9 0000 0778 014 401 54.00 008 100 0026 1373 199.0 54.00 00000 00010110 00 00 01373 010
+Command Length: 106
+
+Sending:        QALL    Calc: 9C6F      Rx: 30B3
+Recived:        (228 49.9 230 49.9 0805 014 54.0 100 009 000 199 07.0 1393 778511 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: E4A0      Rx: E4A0
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 54.00 009 100 0026 1393 199.0 54.00 00000 00010110 00 00 01393 010
+Command Length: 106
+
+Sending:        QALL    Calc: 5DF       Rx: 30B4
+Recived:        (228 49.9 229 49.9 0778 014 54.0 100 009 000 199 07.0 1393 000256 005963 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+Info: Data sent to MQTT Server...
+Done
+
+Sending:        QPIGS   Calc: 691F      Rx: 691F
+Recived:        (228.0 49.9 229.0 49.9 0000 0801 014 401 54.00 009 100 0026 1405 198.0 54.00 00000 00010110 00 00 01405 010
+Command Length: 106
+
+Sending:        QALL    Calc: 9475      Rx: 30B3
+Recived:        (228 49.9 230 49.9 0805 014 54.0 100 009 000 198 07.2 1425 778514 001778 B 00 0
+skip crc for QALL
+Command Length: 79
+
+Sending:        QMOD    Calc: E7C9      Rx: E7C9
+Recived:        (B
+Command Length: 1
+update finish, call callback functionProzessData called
+
+Sending:        QPIGS   Calc: 2FDC      Rx: 2FDC
+Recived:        (228.0 49.9 229.0 49.9 0000 0778 014 401 54.10 009 100 0026 1484 210.0 54.10 00000 00010000 00 00 01484 010
+Command Length: 106
