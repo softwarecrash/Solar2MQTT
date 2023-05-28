@@ -456,7 +456,32 @@ void loop()
     ws.cleanupClients(); // clean unused client connections
     MDNS.update();
 
-    if (valChange)
+    notificationLED(); // notification LED routine
+    mqttclient.loop(); // Check if we have something to read from MQTT
+    mppClient.loop(); // Call the PI Serial Library loop
+  }
+
+  if (restartNow && millis() >= (RestartTimer + 500))
+  {
+    DEBUG_PRINTLN("Restart");
+    DEBUG_WEBLN("Restart");
+    ESP.restart();
+  }
+}
+
+void prozessData()
+{
+    DEBUG_PRINTLN("ProzessData called");
+      notifyClients();
+    if (millis() >= (mqtttimer + (settings.data.mqttRefresh * 1000)))
+    {
+      sendtoMQTT(); // Update data to MQTT server if we should
+      getJsonData();
+      mqtttimer = millis();
+    }
+
+
+        if (valChange)
     {
       if (commandFromWeb != "")
       {
@@ -477,58 +502,10 @@ void loop()
         commandFromMqtt = "";
         mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (customResponse).c_str());
       }
-      mppClient.getStaticeData();
       mqtttimer = 0;
       requestTimer = 0;
       valChange = false;
     }
-
-    if (!askInverterOnce)
-    {
-      //mppClient.getStaticeData();
-      askInverterOnce = true;
-    }
-    //mppClient.getVariableData();
-
-    if (millis() >= (requestTimer + (3 * 1000)) && wsClient != nullptr && wsClient->canSend())
-    {
-      // mppClient.getVariableData();
-
-     // notifyClients();
-      requestTimer = millis();
-    }
-    if (millis() >= (mqtttimer + (settings.data.mqttRefresh * 1000)))
-    {
-
-      sendtoMQTT(); // Update data to MQTT server if we should
-      // getJsonDevice();
-      getJsonData();
-      // notifyClients();
-
-      mqtttimer = millis();
-    }
-
-
-
-    notificationLED(); // notification LED routine
-    mqttclient.loop(); // Check if we have something to read from MQTT
-
-
-    mppClient.loop();
-  }
-
-  if (restartNow && millis() >= (RestartTimer + 500))
-  {
-    DEBUG_PRINTLN("Restart");
-    DEBUG_WEBLN("Restart");
-    ESP.restart();
-  }
-}
-
-void prozessData()
-{
-  DEBUG_PRINTLN("ProzessData called");
-  notifyClients();
 }
 
 void getJsonData()
