@@ -102,10 +102,9 @@ bool PI_Serial::loop()
             break;
         }
     }
-    // kommt später
     return true;
 }
-
+/*
 bool PI_Serial::getVariableData() // request the variable data
 {
     String commandAnswer;
@@ -142,7 +141,7 @@ bool PI_Serial::getStaticeData() // request static data
     }
     return true;
 }
-
+*/
 // start up save config callback
 void PI_Serial::callback(std::function<void()> func)
 {
