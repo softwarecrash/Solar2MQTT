@@ -256,6 +256,7 @@ String PI_Serial::requestData(String command)
     PI_DEBUG_PRINTLN(256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1], HEX);
     PI_DEBUG_PRINT(F("Recived:\t"));
     PI_DEBUG_PRINTLN(commandBuffer.substring(0, commandBuffer.length() - 2).c_str());
+    /*
     PI_DEBUG_WEBLN();
     PI_DEBUG_WEB(F("Sending:\t"));
     PI_DEBUG_WEB(command);
@@ -265,6 +266,7 @@ String PI_Serial::requestData(String command)
     PI_DEBUG_WEBLN(256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1], HEX);
     PI_DEBUG_WEB(F("Recived:\t"));
     PI_DEBUG_WEBLN(commandBuffer.substring(0, commandBuffer.length() - 2).c_str());
+    */
 
     /* only for debug
     PI_DEBUG_PRINT("RAW HEX: >");
