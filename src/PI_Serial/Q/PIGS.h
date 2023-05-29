@@ -17,8 +17,7 @@
 // QPIGS: MMM.M CBBBBB HH.H CZZZ.Z LLL.L MMMMM NN.N QQQ.Q DDD KKK.K VVV.V SSS.S RRR.R XXX PPPPP EEEEE OOOOO UUU.U WWW.W YYY.Y TTT.T 00000000     PI30 Infinisolar
 // QPIGS: AAA.A BBBBBB CC.C DDDD.D EEE.E FFFFF GG.G HHH.H III JJJ.J KKK.K LLL.L MMM.M NNN OOOOO PPPPP QQQQQ RRR.R SSS.S TTT.T UUU.U V WWWWWWWWW  PI16
 
-
-//000.0 00.0 229.9 50.0 0137 0082 004 403 29.23 001 100 0026 0004 081.5 29.17 00000 00110110 00 00 00131 110 neu ausgelesen von crash. watt werden nicht angezeigt
+// 000.0 00.0 229.9 50.0 0137 0082 004 403 29.23 001 100 0026 0004 081.5 29.17 00000 00110110 00 00 00131 110 neu ausgelesen von crash. watt werden nicht angezeigt
 bool PI_Serial::PIXX_QPIGS()
 {
   String commandAnswer = this->requestData("QPIGS");
@@ -36,44 +35,43 @@ bool PI_Serial::PIXX_QPIGS()
   {
     get.raw.qpigs = commandAnswer;
     int index = 0;
-    get.variableData.gridVoltage = getNextFloat(commandAnswer, index);                // BBB.B
-    get.variableData.gridFrequency = getNextFloat(commandAnswer, index);              // CC.C
-    get.variableData.acOutputVoltage = getNextFloat(commandAnswer, index);            // DDD.D
-    get.variableData.acOutputFrequency = getNextFloat(commandAnswer, index);          // EE.E
-    get.variableData.acOutputApparentPower = getNextFloat(commandAnswer, index);      // FFFF
-    get.variableData.acOutputActivePower = getNextLong(commandAnswer, index);         // GGGG
-    get.variableData.outputLoadPercent = getNextLong(commandAnswer, index);           // HHH
-    get.variableData.busVoltage = getNextLong(commandAnswer, index);                  // III
-    get.variableData.batteryVoltage = getNextFloat(commandAnswer, index);             // JJ.JJ
-    get.variableData.batteryChargingCurrent = getNextLong(commandAnswer, index);      // KKK
-    get.variableData.batteryCapacity = getNextLong(commandAnswer, index);             // OOO
-    get.variableData.inverterHeatSinkTemperature = getNextLong(commandAnswer, index); // TTTT
-    get.variableData.pvInputCurrent[0] = getNextFloat(commandAnswer, index);          // EE.E
-    get.variableData.pvInputVoltage[0] = getNextFloat(commandAnswer, index);          // UUU.U
-    get.variableData.batteryVoltageFromScc = getNextFloat(commandAnswer, index);      // WW.WW
-    get.variableData.batteryDischargeCurrent = getNextLong(commandAnswer, index);     // PPPP
-
-    get.deviceStatus.pvOrAcFeedTheLoad = getNextBit(commandAnswer, index);        // b7
-    get.deviceStatus.configurationStatus = getNextBit(commandAnswer, index);      // b6
-    get.deviceStatus.sccFirmwareVersionChange = getNextBit(commandAnswer, index); // b5
-    get.deviceStatus.loadStatus = getNextBit(commandAnswer, index);               // b4
-    get.deviceStatus.chargingStatus = getNextBit(commandAnswer, index);           // b3
-    get.deviceStatus.sccChargingStatus = getNextBit(commandAnswer, index);        // b2
-    get.deviceStatus.acChargingStatus = getNextBit(commandAnswer, index);         // b1
-
+    get.variableData.gridVoltage = getNextFloat(commandAnswer, index);                  // BBB.B
+    get.variableData.gridFrequency = getNextFloat(commandAnswer, index);                // CC.C
+    get.variableData.acOutputVoltage = getNextFloat(commandAnswer, index);              // DDD.D
+    get.variableData.acOutputFrequency = getNextFloat(commandAnswer, index);            // EE.E
+    get.variableData.acOutputApparentPower = getNextFloat(commandAnswer, index);        // FFFF
+    get.variableData.acOutputActivePower = getNextLong(commandAnswer, index);           // GGGG
+    get.variableData.outputLoadPercent = getNextLong(commandAnswer, index);             // HHH
+    get.variableData.busVoltage = getNextLong(commandAnswer, index);                    // III
+    get.variableData.batteryVoltage = getNextFloat(commandAnswer, index);               // JJ.JJ
+    get.variableData.batteryChargingCurrent = getNextLong(commandAnswer, index);        // KKK
+    get.variableData.batteryCapacity = getNextLong(commandAnswer, index);               // OOO
+    get.variableData.inverterHeatSinkTemperature = getNextLong(commandAnswer, index);   // TTTT
+    get.variableData.pvInputCurrent[0] = getNextFloat(commandAnswer, index);            // EE.E
+    get.variableData.pvInputVoltage[0] = getNextFloat(commandAnswer, index);            // UUU.U
+    get.variableData.batteryVoltageFromScc = getNextFloat(commandAnswer, index);        // WW.WW
+    get.variableData.batteryDischargeCurrent = getNextLong(commandAnswer, index);       // PPPP
+    get.deviceStatus.pvOrAcFeedTheLoad = getNextBit(commandAnswer, index);              // b7
+    get.deviceStatus.configurationStatus = getNextBit(commandAnswer, index);            // b6
+    get.deviceStatus.sccFirmwareVersionChange = getNextBit(commandAnswer, index);       // b5
+    get.deviceStatus.loadStatus = getNextBit(commandAnswer, index);                     // b4
+    get.deviceStatus.reservedB3 = getNextBit(commandAnswer, index);                     // B3
+    get.deviceStatus.chargingStatus = getNextBit(commandAnswer, index);                 // b2
+    get.deviceStatus.sccChargingStatus = getNextBit(commandAnswer, index);              // b1
+    get.deviceStatus.acChargingStatus = getNextBit(commandAnswer, index);               // b0
+    index++;                                                                            // jump to next dataset after bit reading
     get.variableData.batteryVoltageOffsetForFansOn = getNextLong(commandAnswer, index); // QQ
     get.variableData.eepromVersion = getNextLong(commandAnswer, index);                 // VV
     get.variableData.pvChargingPower = getNextLong(commandAnswer, index);               // MMMMM
-    if(get.variableData.pvChargingPower == -1)
-    get.variableData.pvChargingPower = get.variableData.pvInputCurrent[0] * get.variableData.pvInputVoltage[0];
-
+    if (get.variableData.pvChargingPower == -1)
+      get.variableData.pvChargingPower = get.variableData.pvInputCurrent[0] * get.variableData.pvInputVoltage[0];
     get.deviceStatus.chargingToFloatingMode = getNextBit(commandAnswer, index); // b10
     get.deviceStatus.switchOn = getNextBit(commandAnswer, index);               // b9
     get.deviceStatus.dustproofInstalled = getNextBit(commandAnswer, index);     // b8
-
     get.variableData.batteryLoad = (get.variableData.batteryChargingCurrent - get.variableData.batteryDischargeCurrent);
     return true;
-  } else
+  }
+  else
   {
     return false;
   }

@@ -133,6 +133,7 @@ public:
             bool configurationStatus;      // configuration status: 1:Change 0:unchanged
             bool sccFirmwareVersionChange; // SCC firmware version 1: Updated 0:unchanged
             bool loadStatus;               // Load status: 0: Load off 1:Load on
+            bool reservedB3;                 // unused bit
             bool chargingStatus;           // Charging status( Charging on/off)
             bool sccChargingStatus;        // Charging status( SCC charging on/off)
             bool acChargingStatus;         // Charging status(AC charging on/off)
