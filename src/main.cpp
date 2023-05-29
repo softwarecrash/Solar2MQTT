@@ -62,6 +62,7 @@ char mqtt_server[40];
 bool restartNow = false;
 bool valChange = false;
 bool askInverterOnce = false;
+bool fwUpdateRunning = false;
 bool publishFirst = false;
 String commandFromWeb;
 String commandFromMqtt;
@@ -126,7 +127,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
     break;
   case WS_EVT_PONG:
   case WS_EVT_ERROR:
-      wsClient = nullptr;
+    wsClient = nullptr;
     ws.cleanupClients(); // clean unused client connections
     break;
   }
@@ -389,6 +390,7 @@ void setup()
     server.on(
         "/update", HTTP_POST, [](AsyncWebServerRequest *request)
         {
+          fwUpdateRunning = true;
           Serial.end();
           ws.enable(false);
           ws.closeAll(); },
@@ -429,9 +431,10 @@ void loop()
   {                      // No use going to next step unless WIFI is up and running.
     ws.cleanupClients(); // clean unused client connections
     MDNS.update();
-    mqttclient.loop(); // Check if we have something to read from MQTT
-    mppClient.loop();  // Call the PI Serial Library loop
-    notificationLED(); // notification LED routine
+    if (!fwUpdateRunning)
+      mppClient.loop(); // Call the PI Serial Library loop
+    mqttclient.loop();  // Check if we have something to read from MQTT
+    notificationLED();  // notification LED routine
   }
 
   if (restartNow && millis() >= (RestartTimer + 500))

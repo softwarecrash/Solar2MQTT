@@ -65,6 +65,7 @@ bool PI_Serial::loop()
 {
     if (millis() - previousTime >= delayTime)
     {
+        
         if (requestStaticData && requestCounter == 0) // if data changed start request static data, else jump to live data
         {
             requestStaticData = false;
@@ -73,6 +74,7 @@ bool PI_Serial::loop()
         {
             requestCounter = 1; //jump to live data
         }
+        
         switch (requestCounter)
         {
         case 0:
@@ -90,6 +92,7 @@ bool PI_Serial::loop()
 
         case 4:
             PI_DEBUG_PRINT("update finish, call callback function");
+            PI_DEBUG_WEBLN("update finish, call callback function");
             requestCallback();
             requestCounter = 0;
             break;
@@ -264,17 +267,17 @@ String PI_Serial::requestData(String command)
     PI_DEBUG_PRINTLN(256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1], HEX);
     PI_DEBUG_PRINT(F("Recived:\t"));
     PI_DEBUG_PRINTLN(commandBuffer.substring(0, commandBuffer.length() - 2).c_str());
-    /*
-    PI_DEBUG_WEBLN();
-    PI_DEBUG_WEB(F("Sending:\t"));
-    PI_DEBUG_WEB(command);
-    PI_DEBUG_WEB(F("\tCalc: "));
-    PI_DEBUG_WEB(getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)), HEX);
-    PI_DEBUG_WEB(F("\tRx: "));
-    PI_DEBUG_WEBLN(256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1], HEX);
-    PI_DEBUG_WEB(F("Recived:\t"));
-    PI_DEBUG_WEBLN(commandBuffer.substring(0, commandBuffer.length() - 2).c_str());
-    */
+    
+    //PI_DEBUG_WEBLN();
+    //PI_DEBUG_WEB(F("Sending:\t"));
+    PI_DEBUG_WEBLN("[C:" + command +"][L:" + (commandBuffer.length() - 3) + "]");
+    //PI_DEBUG_WEB(F("\tCalc: "));
+    //PI_DEBUG_WEB(getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)), HEX);
+    //PI_DEBUG_WEB(F("\tRx: "));
+    //PI_DEBUG_WEBLN(256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1], HEX);
+    //PI_DEBUG_WEB(F("Recived:\t"));
+    //PI_DEBUG_WEBLN(commandBuffer.substring(0, commandBuffer.length() - 2).c_str());
+    
 
     /* only for debug
     PI_DEBUG_PRINT("RAW HEX: >");
@@ -294,7 +297,7 @@ String PI_Serial::requestData(String command)
     {
         PI_DEBUG_PRINTLN("skip crc for QALL");
         PI_DEBUG_WEBLN("skip crc for QALL");
-        commandBuffer.remove(commandBuffer.length() - 1); // remove the crc
+        commandBuffer.remove(commandBuffer.length() - 2); // remove the crc
         commandBuffer.remove(0, strlen(startChar));       // remove the start character
         PI_DEBUG_PRINT("Command Length: ");
         PI_DEBUG_PRINTLN(commandBuffer.length());
