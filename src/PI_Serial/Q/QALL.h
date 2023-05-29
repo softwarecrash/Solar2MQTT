@@ -4,7 +4,7 @@ bool PI_Serial::PIXX_QALL()
 {
   String commandAnswer = this->requestData("QALL");
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
-  if (commandAnswer == "NAK")
+  if (commandAnswer.substring(0,3) == "NAK")
   {
     qAvaible.qall = false; // if recived NAK, set the command avaible to false and never aks again until reboot
     return true;

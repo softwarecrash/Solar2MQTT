@@ -297,7 +297,7 @@ String PI_Serial::requestData(String command)
     {
         PI_DEBUG_PRINTLN("skip crc for QALL");
         PI_DEBUG_WEBLN("skip crc for QALL");
-        commandBuffer.remove(commandBuffer.length() - 2); // remove the crc
+        commandBuffer.remove(commandBuffer.length() - 1); // remove the crc
         commandBuffer.remove(0, strlen(startChar));       // remove the start character
         PI_DEBUG_PRINT("Command Length: ");
         PI_DEBUG_PRINTLN(commandBuffer.length());
