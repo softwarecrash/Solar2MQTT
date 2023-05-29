@@ -65,10 +65,13 @@ bool PI_Serial::loop()
 {
     if (millis() - previousTime >= delayTime)
     {
-        if (requestStaticData) // if data changed start request static data, else jump to live data
+        if (requestStaticData && requestCounter == 0) // if data changed start request static data, else jump to live data
         {
-            requestCounter = 1;
             requestStaticData = false;
+        }
+        else if(!requestStaticData && requestCounter == 0)
+        {
+            requestCounter = 1; //jump to live data
         }
         switch (requestCounter)
         {
