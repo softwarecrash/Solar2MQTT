@@ -27,7 +27,7 @@ bool PI_Serial::PIXX_QALL()
     get.variableData.batteryDischargeCurrent = getNextLong(commandAnswer, index);   // KKK
     get.variableData.pvInputVoltage[0] = getNextFloat(commandAnswer, index);        // LLL
     get.variableData.pvInputCurrent[0] = getNextFloat(commandAnswer, index);        // MM.M
-    get.variableData.pvChargingPower = getNextLong(commandAnswer, index);           // NNNN
+    get.variableData.pvChargingPower[0] = getNextLong(commandAnswer, index);           // NNNN
     get.variableData.pvGenerationDay = getNextLong(commandAnswer, index);           // OOOOOO
     get.variableData.pvGenerationSum = getNextLong(commandAnswer, index);           // PPPPPP
     get.variableData.operationMode = getModeDesc(commandAnswer[index]); // Q

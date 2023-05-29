@@ -504,7 +504,7 @@ void getJsonData()
   liveData["sccBattV"] = mppClient.get.variableData.batteryVoltageFromScc;
   liveData["solarV"] = mppClient.get.variableData.pvInputVoltage[0];
   liveData["solarA"] = mppClient.get.variableData.pvInputCurrent[0];
-  liveData["solarW"] = mppClient.get.variableData.pvChargingPower; // not realy?
+  liveData["solarW"] = mppClient.get.variableData.pvChargingPower[0];
   liveData["iv_mode"] = mppClient.get.variableData.operationMode;
 
   staticData["gridmaxirgendwas"] = mppClient.get.variableData.operationMode;
@@ -639,8 +639,19 @@ bool sendtoMQTT()
         mqttclient.publish(topicBuilder(buff, "PV_A"), String(mppClient.get.variableData.pvInputCurrent[0]).c_str());
     }
 
-    if (mppClient.get.variableData.pvChargingPower != -1)
-      mqttclient.publish(topicBuilder(buff, "PV_Watt"), String(mppClient.get.variableData.pvChargingPower).c_str());
+if (mppClient.get.variableData.pvChargingPower[1] != -1)
+    {
+      for (size_t i : mppClient.get.variableData.pvChargingPower)
+      {
+        if (mppClient.get.variableData.pvChargingPower[i] != -1)
+          mqttclient.publish(topicBuilder(buff, "PV_Watt" + i), String(mppClient.get.variableData.pvChargingPower[i]).c_str());
+      }
+    }
+    else if (mppClient.get.variableData.pvChargingPower[0] != -1)
+    {
+      if (mppClient.get.variableData.pvChargingPower[0] != -1)
+        mqttclient.publish(topicBuilder(buff, "PV_Watt"), String(mppClient.get.variableData.pvChargingPower[0]).c_str());
+    }
 
     // QMOD
     if (strcmp(mppClient.get.variableData.operationMode, "") != 0)

@@ -3,8 +3,6 @@
 #ifndef PI_SERIAL_H
 #define PI_SERIAL_H
 
-
-
 // DON'T edit DEBUG here, edit build_type in platformio.ini !!!
 #ifdef isDEBUG
 #define DEBUG_SERIAL Serial
@@ -75,21 +73,21 @@ public:
             float batteryUnderVoltage = -1;         // The units is V.
             float batteryBulkVoltage = -1;          // The units is V.
             float batteryFloatVoltage = -1;         // The units is V.
-            const char *batterytype = "";                 // 0: AGM 1: Flooded 2: User
+            const char *batterytype = "";           // 0: AGM 1: Flooded 2: User
             short currentMaxAcChargingCurrent = -1; // The units is A.
             short currentMaxChargingCurrent = -1;   // The units is A.
-            const char *inputVoltageRange;           // 0: Appliance 1: UPS
-            const char *outputSourcePriority;        // 0: Utility first 1: Solar first 2: SBU first
-            const char *chargerSourcePriority;       // 0: Utility first 1: Solar first 2: Solar + Utility 3: Only solar charging permitted
+            const char *inputVoltageRange;          // 0: Appliance 1: UPS
+            const char *outputSourcePriority;       // 0: Utility first 1: Solar first 2: SBU first
+            const char *chargerSourcePriority;      // 0: Utility first 1: Solar first 2: Solar + Utility 3: Only solar charging permitted
             short parallelMaxNumber = -1;           // max parallel inverter / Charger
-            const char *machineType;                 // 00: Grid tie; 01: Off Grid; 10: Hybrid.
+            const char *machineType;                // 00: Grid tie; 01: Off Grid; 10: Hybrid.
             bool topolgy;                           // 0: transformerless 1: transformer
-            const char *outputMode;                  // 00: single machine output 01: parallel output 02: Phase 1 of 3 Phase output 03: Phase 2 of 3 Phase output 04: Phase 3 of 3 Phase output
+            const char *outputMode;                 // 00: single machine output 01: parallel output 02: Phase 1 of 3 Phase output 03: Phase 2 of 3 Phase output 04: Phase 3 of 3 Phase output
             float batteryReDischargeVoltage = -1;   // The unit is V.
             bool pvOkConditionForParallel;          // 0: As long as one unit of inverters has connect PV, parallel system will consider PV OK; 1: Only All of inverters have connect PV, parallel system will consider PV OK
             bool pvPowerBalance;                    // 0: PV input max current will be the max charged current; 1: PV input max power will be the sum of the max charged power and loads power.
             short maxChargingTimeAtCvStage = -1;    // Y is an Integer ranging from 0 to 9. The unit is minute. (Only for PIP-MK )
-            const char *operationLogik;              // 0: Automatically 1: On-line mode 2: ECO mode (Only for PIP-MK )
+            const char *operationLogik;             // 0: Automatically 1: On-line mode 2: ECO mode (Only for PIP-MK )
         } staticData;
         // grid charge and solar charge array data
         struct
@@ -100,29 +98,29 @@ public:
         struct
         {
             //----------------------------QPIGS----------------------------
-            float gridVoltage = -1;                     // The units is V.
-            float gridFrequency = -1;                   // The units is Hz.
-            float acOutputVoltage = -1;                 // The units is V.
-            float acOutputFrequency = -1;               // The units is Hz.
-            short acOutputApparentPower = -1;           // The units is VA.
-            short acOutputActivePower = -1;             // The units is W.
-            short outputLoadPercent = -1;               // The units is %.
-            short busVoltage = -1;                      // The units is V.
-            float batteryVoltage = -1;                  // The units is V.
-            short batteryChargingCurrent = -1;          // The units is A.
-            short batteryCapacity = -1;                 // The units is %.
-            short inverterHeatSinkTemperature = -1;     // The units is ℃
-            float pvInputCurrent[4] = {-1, -1, -1, -1}; // The units is A.
-            float pvInputVoltage[4] = {-1, -1, -1, -1}; // The unitsis V.
-            float batteryVoltageFromScc = -1;           // The units is V.
-            short batteryDischargeCurrent = -1;         // The units is A.
-            short batteryVoltageOffsetForFansOn = -1;   // The unit is 10mV.
-            short batteryLoad = -1;                     // The units is A. - Combined charge and discharge
-            short eepromVersion = -1;                   // version info
-            short pvChargingPower = -1;                 // The unit is watt.
+            float gridVoltage = -1;                      // The units is V.
+            float gridFrequency = -1;                    // The units is Hz.
+            float acOutputVoltage = -1;                  // The units is V.
+            float acOutputFrequency = -1;                // The units is Hz.
+            short acOutputApparentPower = -1;            // The units is VA.
+            short acOutputActivePower = -1;              // The units is W.
+            short outputLoadPercent = -1;                // The units is %.
+            short busVoltage = -1;                       // The units is V.
+            float batteryVoltage = -1;                   // The units is V.
+            short batteryChargingCurrent = -1;           // The units is A.
+            short batteryCapacity = -1;                  // The units is %.
+            short inverterHeatSinkTemperature = -1;      // The units is ℃
+            float pvInputCurrent[4] = {-1, -1, -1, -1};  // The units is A.
+            float pvInputVoltage[4] = {-1, -1, -1, -1};  // The unitsis V.
+            float batteryVoltageFromScc = -1;            // The units is V.
+            short batteryDischargeCurrent = -1;          // The units is A.
+            short batteryVoltageOffsetForFansOn = -1;    // The unit is 10mV.
+            short batteryLoad = -1;                      // The units is A. - Combined charge and discharge
+            short eepromVersion = -1;                    // version info
+            short pvChargingPower[4] = {-1, -1, -1, -1}; // The unit is watt.
             //-------------------extra values from QALL-----------------------
-            short pvGenerationDay = -1;                 // The unit is WH
-            short pvGenerationSum = -1;                 // The unit is KWH
+            short pvGenerationDay = -1; // The unit is WH
+            short pvGenerationSum = -1; // The unit is KWH
 
             const char *operationMode = "";
         } variableData;
@@ -133,7 +131,7 @@ public:
             bool configurationStatus;      // configuration status: 1:Change 0:unchanged
             bool sccFirmwareVersionChange; // SCC firmware version 1: Updated 0:unchanged
             bool loadStatus;               // Load status: 0: Load off 1:Load on
-            bool reservedB3;                 // unused bit
+            bool reservedB3;               // unused bit
             bool chargingStatus;           // Charging status( Charging on/off)
             bool sccChargingStatus;        // Charging status( SCC charging on/off)
             bool acChargingStatus;         // Charging status(AC charging on/off)
@@ -209,7 +207,7 @@ private:
     unsigned int serialIntfBaud;
 
     unsigned int previousTime = 0;
-    unsigned int  delayTime = 100;
+    unsigned int delayTime = 100;
     byte requestCounter = 0;
 
     struct
