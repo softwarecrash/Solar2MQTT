@@ -40,8 +40,8 @@
 class PI_Serial
 {
 public:
-    // unsigned int previousTime = 0;
-    // byte requestCounter = 0;
+    const char *startChar = "("; // move later to changeable
+    bool requestStaticData = true;
 
     enum protocolType
     {

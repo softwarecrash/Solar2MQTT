@@ -10,8 +10,6 @@ CRC16 crc;
 #include "Q/MOD.h"
 #include "Q/QALL.h"
 
-const char *startChar = "("; // move later to changeable
-
 //----------------------------------------------------------------------
 // Public Functions
 //----------------------------------------------------------------------
@@ -67,27 +65,33 @@ bool PI_Serial::loop()
 {
     if (millis() - previousTime >= delayTime)
     {
+        if (requestStaticData) // if data changed start request static data, else jump to live data
+        {
+            requestCounter = 1;
+            requestStaticData = false;
+        }
         switch (requestCounter)
         {
         case 0:
-            requestCounter = PIXX_QPIGS() ? (requestCounter+1) : 0;
+            requestCounter = PIXX_QPIRI() ? (requestCounter + 1) : 0;
             break;
         case 1:
-            requestCounter = PIXX_QALL() ? (requestCounter+1) : 0;
+            requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
             break;
         case 2:
-            requestCounter = PIXX_QMOD() ? (requestCounter+1) : 0;
+            requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
             break;
         case 3:
-            requestCounter = PIXX_QPIRI() ? (requestCounter+1) : 0;
+            requestCounter = PIXX_QMOD() ? (requestCounter + 1) : 0;
             break;
+
         case 4:
             PI_DEBUG_PRINT("update finish, call callback function");
             requestCallback();
             requestCounter = 0;
             break;
         }
-    previousTime = millis();
+        previousTime = millis();
     }
     return true;
 }
@@ -179,6 +183,7 @@ String PI_Serial::sendCommand(String command)
     PI_DEBUG_PRINTLN(commandBuffer.length());
     PI_DEBUG_WEB("Command Length: ");
     PI_DEBUG_WEBLN(commandBuffer.length());
+    requestStaticData = true;
     return commandBuffer;
 }
 //----------------------------------------------------------------------
