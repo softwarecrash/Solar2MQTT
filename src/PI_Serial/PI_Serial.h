@@ -225,6 +225,11 @@ private:
      */
     uint16_t getCRC(String data);
 
+        /**
+     * @brief get the crc from a string
+     */
+    byte getCHK(String data);
+
     /**
      * @brief append the calcualted crc to the given string and return it
      */

@@ -101,44 +101,6 @@ bool PI_Serial::loop()
     }
     return true;
 }
-/*
-bool PI_Serial::getVariableData() // request the variable data
-{
-    String commandAnswer;
-    switch (protocolType)
-    {
-    case PIXX:
-
-        if (qAvaible.qpigs)
-            PIXX_QPIGS();
-        if (qAvaible.qall)
-            PIXX_QALL();
-        // PIXX_QPIGS2();
-        // PIXX_QALL();
-        if (qAvaible.qmod)
-            PIXX_QMOD();
-        break;
-    default:
-        break;
-    }
-    return true;
-}
-
-bool PI_Serial::getStaticeData() // request static data
-{
-    String commandAnswer;
-    switch (protocolType)
-    {
-    case PIXX:
-        if (qAvaible.qpiri)
-            PIXX_QPIRI();
-        break;
-    default:
-        break;
-    }
-    return true;
-}
-*/
 // start up save config callback
 void PI_Serial::callback(std::function<void()> func)
 {
@@ -251,6 +213,7 @@ unsigned int PI_Serial::autoDetect() // function for autodetect the inverter typ
 
 String PI_Serial::requestData(String command)
 {
+    String Debugbuff = "[S:]"+command;
     String commandBuffer = "";
 
     this->my_serialIntf->print(appendCRC(command));
@@ -260,23 +223,25 @@ String PI_Serial::requestData(String command)
 
     PI_DEBUG_PRINTLN();
     PI_DEBUG_PRINT(F("Sending:\t"));
-    PI_DEBUG_PRINT(command);
+    PI_DEBUG_PRINTLN(command);
+    /*
     PI_DEBUG_PRINT(F("\tCalc: "));
     PI_DEBUG_PRINT(getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)), HEX);
     PI_DEBUG_PRINT(F("\tRx: "));
     PI_DEBUG_PRINTLN(256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1], HEX);
     PI_DEBUG_PRINT(F("Recived:\t"));
     PI_DEBUG_PRINTLN(commandBuffer.substring(0, commandBuffer.length() - 2).c_str());
+
     
-    //PI_DEBUG_WEBLN();
-    //PI_DEBUG_WEB(F("Sending:\t"));
+    PI_DEBUG_WEBLN();
+    PI_DEBUG_WEB(F("Sending:\t"));
     PI_DEBUG_WEBLN("[C:" + command +"][L:" + (commandBuffer.length() - 3) + "]");
-    //PI_DEBUG_WEB(F("\tCalc: "));
-    //PI_DEBUG_WEB(getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)), HEX);
-    //PI_DEBUG_WEB(F("\tRx: "));
-    //PI_DEBUG_WEBLN(256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1], HEX);
-    //PI_DEBUG_WEB(F("Recived:\t"));
-    //PI_DEBUG_WEBLN(commandBuffer.substring(0, commandBuffer.length() - 2).c_str());
+    PI_DEBUG_WEB(F("\tCalc: "));
+    PI_DEBUG_WEB(getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)), HEX);
+    PI_DEBUG_WEB(F("\tRx: "));
+    PI_DEBUG_WEBLN(256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1], HEX);
+    PI_DEBUG_WEB(F("Recived:\t"));
+    PI_DEBUG_WEBLN(commandBuffer.substring(0, commandBuffer.length() - 2).c_str());
     
 
     /* only for debug
@@ -293,6 +258,7 @@ String PI_Serial::requestData(String command)
     */
 
     // for testing
+    /*
     if (command == "QALL")
     {
         PI_DEBUG_PRINTLN("skip crc for QALL");
@@ -305,26 +271,68 @@ String PI_Serial::requestData(String command)
         PI_DEBUG_WEBLN(commandBuffer.length());
         return commandBuffer;
     }
-    if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) != 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1])
+    */
+   //PI_DEBUG_PRINTLN(command);
+    if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) == 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1])
     {
-        PI_DEBUG_PRINTLN("ERCRC");
-        PI_DEBUG_PRINT("RAW: >");
-        PI_DEBUG_PRINT(commandBuffer);
-        PI_DEBUG_PRINTLN("<");
-        PI_DEBUG_WEBLN("ERCRC");
-        PI_DEBUG_WEB("RAW: >");
-        PI_DEBUG_WEB(commandBuffer);
-        PI_DEBUG_WEBLN("<");
-        return commandBuffer = "ERCRC";
-    }
     commandBuffer.remove(commandBuffer.length() - 2); // remove the crc
     commandBuffer.remove(0, strlen(startChar));       // remove the start character
-    PI_DEBUG_PRINT("Command Length: ");
-    PI_DEBUG_PRINTLN(commandBuffer.length());
-    PI_DEBUG_WEB("Command Length: ");
-    PI_DEBUG_WEBLN(commandBuffer.length());
-    return commandBuffer;
+    PI_DEBUG_PRINTLN("CRC OK");
+    PI_DEBUG_PRINTLN(commandBuffer);
+    //Debugbuff.concat("[CACRC:]"+ getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)));
+    //Debugbuff.concat("[RECRC:]"+ (256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1]));
+    //Debugbuff += "[REDAT:]"+ commandBuffer.substring(0, commandBuffer.length() - 2);
+
+    //PI_DEBUG_PRINTLN(commandBuffer.substring(0, commandBuffer.length() - 1));
+    //Debugbuff += "[LENGT:]"+commandBuffer.length();
+
+    } else if(getCHK(commandBuffer.substring(0, commandBuffer.length() -1))+1 == commandBuffer[commandBuffer.length() - 1]) // CHK for QALL
+    {
+    commandBuffer.remove(commandBuffer.length() - 1); // remove the crc
+    commandBuffer.remove(0, strlen(startChar));       // remove the start character
+    PI_DEBUG_PRINTLN("CHK OK");
+    PI_DEBUG_PRINTLN(commandBuffer);
+
+    //PI_DEBUG_PRINTLN();
+    //PI_DEBUG_PRINT(F("Sending:\t"));
+   // PI_DEBUG_PRINT(command);
+    //PI_DEBUG_PRINT(F("\tCalc: "));
+   // PI_DEBUG_PRINT(getCRC(commandBuffer.substring(0, commandBuffer.length() - 1)), HEX);
+    //PI_DEBUG_PRINT(F("\tRx: "));
+    //PI_DEBUG_PRINTLN(256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1], HEX);
+    //PI_DEBUG_PRINT(F("Recived:\t"));
+    //PI_DEBUG_PRINTLN(commandBuffer.substring(0, commandBuffer.length() - 1).c_str());
+
+    //Debugbuff += "[CACRC:]"+ (getCRC(commandBuffer.substring(0, commandBuffer.length() - 1)));
+    //Debugbuff += "[RECRC:]"+ (256U * (uint8_t)commandBuffer[commandBuffer.length() - 1] + (uint8_t)commandBuffer[commandBuffer.length() - 1]);
+    //Debugbuff += "[REDAT:]"+ commandBuffer.substring(0, commandBuffer.length() - 1);
+
+
+    //PI_DEBUG_PRINTLN(commandBuffer);
+    //Debugbuff += "[LENGT:]"+ commandBuffer.length();
+
+    //return commandBuffer;
+    } else 
+    {
+    //PI_DEBUG_PRINT(F("Sending:\t"));
+    //PI_DEBUG_PRINT(command);
+    //PI_DEBUG_PRINT(F("\tCalc: "));
+    //PI_DEBUG_PRINT(getCRC(commandBuffer.substring(0, commandBuffer.length() - 1)), HEX);
+    //PI_DEBUG_PRINT(F("\tRx: "));
+    //PI_DEBUG_PRINTLN(256U * (uint8_t)commandBuffer[commandBuffer.length() - 1] + (uint8_t)commandBuffer[commandBuffer.length() - 1], HEX);
+    //PI_DEBUG_PRINT(F("Recived:\t"));
+    //PI_DEBUG_PRINTLN(commandBuffer.substring(0, commandBuffer.length() - 1).c_str());
+
+    PI_DEBUG_PRINT(F("CRC Error:\t"));
+    PI_DEBUG_PRINTLN(commandBuffer);
+ Debugbuff = "[ERCRC:]"+ commandBuffer;
+ commandBuffer = "ERCRC";
+    }
+//PI_DEBUG_PRINTLN(Debugbuff);
+//PI_DEBUG_WEBLN(Debugbuff);
+ return commandBuffer;
 }
+
 void PI_Serial::clearGet(void)
 {
     /*
@@ -399,6 +407,16 @@ uint16_t PI_Serial::getCRC(String data) // get a calculated crc from a string
     crc.setPolynome(0x1021);
     crc.add((uint8_t *)data.c_str(), data.length());
     return crc.getCRC(); // here comes the crc;
+}
+
+byte PI_Serial::getCHK(String data) // get a calculatedt CHK 
+{
+       byte chk = 0;
+for ( unsigned int i=0; i<data.length(); i++)
+{
+chk += data[i];
+}
+    return chk;
 }
 
 float PI_Serial::getNextFloat(String &command, int &index) // Parses out the next long number
