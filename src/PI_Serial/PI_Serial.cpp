@@ -224,7 +224,7 @@ String PI_Serial::requestData(String command)
         commandBuffer = "ERCRC";
     }
     char debugBuff[128];
-    sprintf(debugBuff, "[C: %5S][CR: %X][CC: %X]", (const wchar_t*)command.c_str(), crcRecive, crcCalc);
+    sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X]", (const wchar_t*)command.c_str(), crcRecive, crcCalc);
     PI_DEBUG_PRINTLN(debugBuff);
     PI_DEBUG_WEBLN(debugBuff);
     return commandBuffer;
