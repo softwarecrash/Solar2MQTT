@@ -191,9 +191,9 @@ String PI_Serial::requestData(String command)
     PI_DEBUG_PRINTLN();
     PI_DEBUG_WEBLN();
     PI_DEBUG_PRINT("SEND:");
-    PI_DEBUG_PRINT(commandBuffer);
+    PI_DEBUG_PRINT(command);
     PI_DEBUG_WEB("SEND");
-    PI_DEBUG_WEB(commandBuffer);
+    PI_DEBUG_WEB(command);
     this->my_serialIntf->print(appendCRC(command));
     this->my_serialIntf->print("\r");
 
