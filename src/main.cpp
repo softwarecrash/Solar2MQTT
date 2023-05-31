@@ -582,6 +582,8 @@ bool sendtoMQTT()
 
   if (!settings.data.mqttJson)
   {
+    //testing
+    mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), mppClient.get.raw.commandAnswer.c_str());
     // QPIGS
     if (mppClient.get.variableData.gridVoltage != -1)
       mqttclient.publish(topicBuilder(buff, "Grid_Voltage"), dtostrf(mppClient.get.variableData.gridVoltage, 5, 1, msgBuffer));
@@ -765,7 +767,8 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
     DEBUG_WEBLN(messageTemp);
 
     commandFromMqtt = messageTemp;
-    mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), customResponse.c_str());
+    //not needed anymore, we make a callback with the raw mqtt point
+    //mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), customResponse.c_str());
     valChange = true;
   }
 }

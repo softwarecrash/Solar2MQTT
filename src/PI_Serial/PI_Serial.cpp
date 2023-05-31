@@ -110,9 +110,11 @@ void PI_Serial::callback(std::function<void()> func)
 
 String PI_Serial::sendCommand(String command)
 {
-    if (command == "") // untestet
+    if (command == "")
+    {
         return command;
-        customCommandBuffer = command;
+    }
+    customCommandBuffer = command;
     return command;
 }
 //----------------------------------------------------------------------
