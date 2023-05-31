@@ -577,8 +577,8 @@ bool sendtoMQTT()
     return false;
   }
   // DEBUG_PRINT(F("Info: Data sent to MQTT Server... "));
-  DEBUG_PRINTLN(F("Info: Data sent to MQTT Server... "));
-  DEBUG_WEBLN(F("Info: Data sent to MQTT Server... "));
+  DEBUG_PRINT(F("Info: Data sent to MQTT Server... "));
+  DEBUG_WEB(F("Info: Data sent to MQTT Server... "));
 
   if (!settings.data.mqttJson)
   {

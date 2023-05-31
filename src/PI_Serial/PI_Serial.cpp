@@ -84,7 +84,7 @@ bool PI_Serial::loop()
             requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
             break;
         case 2:
-        //wenn qall nicht verfügbar dann abschalten, logik ausdenken!
+            // wenn qall nicht verfügbar dann abschalten, logik ausdenken!
             requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
             break;
         case 3:
@@ -93,8 +93,8 @@ bool PI_Serial::loop()
 
         case 4:
             sendCustomCommand();
-            PI_DEBUG_PRINT("update finish, call callback function");
-            PI_DEBUG_WEBLN("update finish, call callback function");
+            //PI_DEBUG_PRINT("update finish, call callback function");
+            //PI_DEBUG_WEBLN("update finish, call callback function");
             requestCallback();
             requestCounter = 0;
             break;
@@ -188,17 +188,11 @@ bool PI_Serial::sendCustomCommand()
 String PI_Serial::requestData(String command)
 {
     String commandBuffer = "";
-    PI_DEBUG_PRINTLN();
-    PI_DEBUG_WEBLN();
-    PI_DEBUG_PRINT("SEND:");
-    PI_DEBUG_PRINT(command);
-    PI_DEBUG_WEB("SEND");
-    PI_DEBUG_WEB(command);
+    uint16_t crcCalc = 0;
+    uint16_t crcRecive = 0;
     this->my_serialIntf->print(appendCRC(command));
     this->my_serialIntf->print("\r");
-
     commandBuffer = this->my_serialIntf->readStringUntil('\r');
-
     /* only for debug
     PI_DEBUG_PRINT("RAW HEX: >");
     for (size_t i = 0; i < commandBuffer.length(); i++)
@@ -213,30 +207,26 @@ String PI_Serial::requestData(String command)
     */
     if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) == 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1])
     {
+        crcCalc = 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1];
+        crcRecive = getCRC(commandBuffer.substring(0, commandBuffer.length() - 2));
         commandBuffer.remove(commandBuffer.length() - 2); // remove the crc
         commandBuffer.remove(0, strlen(startChar));       // remove the start character
-        PI_DEBUG_PRINT(" CRC OK ");
-        PI_DEBUG_PRINT(commandBuffer);
-        PI_DEBUG_WEB(" CRC OK ");
-        PI_DEBUG_WEB(commandBuffer);
     }
     else if (getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 == commandBuffer[commandBuffer.length() - 1]) // CHK for QALL
     {
+        crcCalc = getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1;
+        crcRecive = commandBuffer[commandBuffer.length() - 1];
         commandBuffer.remove(commandBuffer.length() - 1); // remove the crc
         commandBuffer.remove(0, strlen(startChar));       // remove the start character
-        PI_DEBUG_PRINT(" CRC OK ");
-        PI_DEBUG_PRINT(commandBuffer);
-        PI_DEBUG_WEB(" CRC OK ");
-        PI_DEBUG_WEB(commandBuffer);
     }
     else
     {
         commandBuffer = "ERCRC";
-        PI_DEBUG_PRINT(" CRC ERR ");
-        PI_DEBUG_PRINTLN(commandBuffer);
-        PI_DEBUG_WEB(" CRC ERR ");
-        PI_DEBUG_WEBLN(commandBuffer);
     }
+    char debugBuff[128];
+    sprintf(debugBuff, "[C: %S][CR: %X][CC: %X]", (const wchar_t*)command.c_str(), crcRecive, crcCalc);
+    PI_DEBUG_PRINTLN(debugBuff);
+    PI_DEBUG_WEBLN(debugBuff);
     return commandBuffer;
 }
 
