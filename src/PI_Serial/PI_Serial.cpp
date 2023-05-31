@@ -65,7 +65,6 @@ bool PI_Serial::loop()
 {
     if (millis() - previousTime >= delayTime)
     {
-
         if (requestStaticData && requestCounter == 0) // if data changed start request static data, else jump to live data
         {
             requestStaticData = false;
@@ -84,7 +83,6 @@ bool PI_Serial::loop()
             requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
             break;
         case 2:
-            // wenn qall nicht verfügbar dann abschalten, logik ausdenken!
             requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
             break;
         case 3:
@@ -93,8 +91,6 @@ bool PI_Serial::loop()
 
         case 4:
             sendCustomCommand();
-            //PI_DEBUG_PRINT("update finish, call callback function");
-            //PI_DEBUG_WEBLN("update finish, call callback function");
             requestCallback();
             requestCounter = 0;
             break;
