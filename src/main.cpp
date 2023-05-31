@@ -476,7 +476,7 @@ void prozessData()
       DEBUG_PRINTLN(customResponse);
       DEBUG_WEBLN(customResponse);
       commandFromMqtt = "";
-      mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (customResponse).c_str());
+      //mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (customResponse).c_str());
     }
     mqtttimer = 0;
     requestTimer = 0;
