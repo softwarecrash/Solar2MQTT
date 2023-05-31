@@ -147,6 +147,7 @@ public:
             String qall;
             String qpiri;
             String qmod;
+            String commandAnswer;
         } raw;
 
     } get;
@@ -195,6 +196,12 @@ public:
     String sendCommand(String command);
 
     /**
+     * @brief 
+     * 
+     */
+    bool sendCustomCommand();
+
+    /**
      * @brief callback function
      *
      */
@@ -209,6 +216,7 @@ private:
     unsigned int previousTime = 0;
     unsigned int delayTime = 100;
     byte requestCounter = 0;
+    String customCommandBuffer;
 
     struct
     {
