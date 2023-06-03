@@ -4,7 +4,7 @@ bool PI_Serial::PIXX_QMOD()
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if(commandAnswer == "NAK")
   {
-    qAvaible.qmod = false; //if recived NAK, set the command avaible to false and never aks again until reboot
+    //qAvaible.qmod = false; //if recived NAK, set the command avaible to false and never aks again until reboot
     return true;
   } else
   if (commandAnswer.length() == 1)

@@ -201,14 +201,16 @@ String PI_Serial::requestData(String command)
     PI_DEBUG_PRINTLN("<");
     PI_DEBUG_WEBLN("<");
     */
-    if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) == 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1])
+    if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) == 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1] &&
+    getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) != 0 && 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1] != 0)
     {
         crcCalc = 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1];
         crcRecive = getCRC(commandBuffer.substring(0, commandBuffer.length() - 2));
         commandBuffer.remove(commandBuffer.length() - 2); // remove the crc
         commandBuffer.remove(0, strlen(startChar));       // remove the start character
     }
-    else if (getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 == commandBuffer[commandBuffer.length() - 1]) // CHK for QALL
+    else if (getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 == commandBuffer[commandBuffer.length() - 1] &&
+    getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 != 0 && commandBuffer[commandBuffer.length() - 1] != 0) // CHK for QALL
     {
         crcCalc = getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1;
         crcRecive = commandBuffer[commandBuffer.length() - 1];
@@ -220,7 +222,7 @@ String PI_Serial::requestData(String command)
         commandBuffer = "ERCRC";
     }
     char debugBuff[128];
-    sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X]", (const wchar_t*)command.c_str(), crcRecive, crcCalc);
+    sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X]\n[D: %S]", (const wchar_t*)command.c_str(), crcRecive, crcCalc, (const wchar_t*)commandBuffer.c_str());
     PI_DEBUG_PRINTLN(debugBuff);
     PI_DEBUG_WEBLN(debugBuff);
     return commandBuffer;
