@@ -86,8 +86,8 @@ void notifyClients()
 {
   if (wsClient != nullptr && wsClient->canSend())
   {
-    DEBUG_PRINT(F("Info: Data sent to WebSocket... "));
-    DEBUG_WEB(F("Info: Data sent to WebSocket... "));
+    DEBUG_PRINT(F("Data sent to WebSocket... "));
+    DEBUG_WEB(F("Data sent to WebSocket... "));
     char data[JSON_BUFFER];
     size_t len = serializeJson(Json, data);
     wsClient->text(data, len);
@@ -528,12 +528,12 @@ bool connectMQTT()
   if (!mqttclient.connected())
   {
     firstPublish = false;
-    DEBUG_PRINT(F("Info: MQTT Client State is: "));
+    DEBUG_PRINT(F("MQTT Client State is: "));
     DEBUG_PRINTLN(mqttclient.state());
-    DEBUG_PRINT(F("Info: establish MQTT Connection... "));
-    DEBUG_WEB(F("Info: MQTT Client State is: "));
+    DEBUG_PRINT(F("establish MQTT Connection... "));
+    DEBUG_WEB(F("MQTT Client State is: "));
     DEBUG_WEBLN(mqttclient.state());
-    DEBUG_WEB(F("Info: establish MQTT Connection... "));
+    DEBUG_WEB(F("establish MQTT Connection... "));
 
     if (mqttclient.connect(mqttClientId, settings.data.mqttUser, settings.data.mqttPassword, (topicBuilder(buff, "alive")), 0, true, "false", true))
     {
@@ -576,9 +576,8 @@ bool sendtoMQTT()
     firstPublish = false;
     return false;
   }
-  // DEBUG_PRINT(F("Info: Data sent to MQTT Server... "));
-  DEBUG_PRINT(F("Info: Data sent to MQTT Server... "));
-  DEBUG_WEB(F("Info: Data sent to MQTT Server... "));
+  DEBUG_PRINT(F("Data sent to MQTT Server... "));
+  DEBUG_WEB(F("Data sent to MQTT Server... "));
 
   if (!settings.data.mqttJson)
   {
