@@ -7,6 +7,7 @@ SoftwareSerial myPort;
 CRC16 crc;
 #include "Q/PIGS.h"
 #include "Q/PIRI.h"
+#include "Q/PI.h"
 #include "Q/MOD.h"
 #include "Q/ALL.h"
 
@@ -72,11 +73,11 @@ bool PI_Serial::loop()
             {
             case 0:
                 requestCounter = PIXX_QPIRI() ? (requestCounter + 1) : 0;
-                requestCounter = 0;        // move to the end after build the other static functions
-                requestStaticData = false; // move to the end after build the other static functions
                 break;
             case 1:
-                // requestCounter = PIXX_qmuchchrg() ? (requestCounter + 1) : 0;
+                requestCounter = PIXX_QPI() ? (requestCounter + 1) : 0;
+                requestCounter = 0;        // move to the end after build the other static functions
+                requestStaticData = false; // move to the end after build the other static functions
                 break;
             case 2:
                 // requestCounter = PIXX_qmuchgr() ? (requestCounter + 1) : 0;
@@ -198,12 +199,12 @@ String PI_Serial::requestData(String command)
     String commandBuffer = "";
     uint16_t crcCalc = 0;
     uint16_t crcRecive = 0;
-   // if(command == "QALL")
-   // {
-    //this->my_serialIntf->print(appendCHK(command));
-   // }else{
-   // this->my_serialIntf->print(appendCRC(command));
-   // }
+    // if(command == "QALL")
+    // {
+    // this->my_serialIntf->print(appendCHK(command));
+    // }else{
+    // this->my_serialIntf->print(appendCRC(command));
+    // }
     this->my_serialIntf->print(appendCRC(command));
     this->my_serialIntf->print("\r");
     commandBuffer = this->my_serialIntf->readStringUntil('\r');

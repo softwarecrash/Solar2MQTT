@@ -703,6 +703,8 @@ if (mppClient.get.variableData.pvChargingPower[1] != -1)
       mqttclient.publish(topicBuilder(buff, "RAW/QPIGS"), (mppClient.get.raw.qpigs).c_str());
     if (mppClient.get.raw.qpiri != "")
       mqttclient.publish(topicBuilder(buff, "RAW/QPIRI"), (mppClient.get.raw.qpiri).c_str());
+    if (mppClient.get.raw.qpi != "")
+      mqttclient.publish(topicBuilder(buff, "RAW/QPI"), (mppClient.get.raw.qpi).c_str());
     if (mppClient.get.raw.qmod != "")
       mqttclient.publish(topicBuilder(buff, "RAW/QMOD"), (mppClient.get.raw.qmod).c_str());
     if (mppClient.get.raw.qall != "")

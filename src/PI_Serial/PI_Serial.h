@@ -146,6 +146,7 @@ public:
             String qpigs;
             String qall;
             String qpiri;
+            String qpi;
             String qmod;
             String commandAnswer;
         } raw;
@@ -224,6 +225,7 @@ private:
         bool qpigs2 = true;
         bool qall = true;
         bool qpiri = true;
+        bool qpi = true;
         bool qmod = true;
     } qAvaible;
 
@@ -290,11 +292,13 @@ private:
      * @details This is set in the constructor
      */
     SoftwareSerial *my_serialIntf;
-
+    //dynamic requests
     bool PIXX_QPIGS();
     bool PIXX_QALL();
     bool PIXX_QMOD();
+    //static reqeuests
     bool PIXX_QPIRI();
+    bool PIXX_QPI();
 };
 
 #endif
