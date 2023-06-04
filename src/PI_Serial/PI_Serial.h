@@ -243,6 +243,11 @@ private:
      */
     String appendCRC(String data);
 
+        /**
+     * @brief append the calcualted crc to the given string and return it
+     */
+    String appendCHK(String data);
+
     /**
      * @brief Parses out the float
      */
@@ -290,10 +295,6 @@ private:
     bool PIXX_QALL();
     bool PIXX_QMOD();
     bool PIXX_QPIRI();
-
-    // void PI30_PIP_QPIGS(); // example
-    // void PI30_PIP_QMOD();  // example
-    // void PI30_PIP_QPIRI(); // example
 };
 
 #endif

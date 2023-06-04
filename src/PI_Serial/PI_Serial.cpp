@@ -8,7 +8,7 @@ CRC16 crc;
 #include "Q/PIGS.h"
 #include "Q/PIRI.h"
 #include "Q/MOD.h"
-#include "Q/QALL.h"
+#include "Q/ALL.h"
 
 //----------------------------------------------------------------------
 // Public Functions
@@ -65,36 +65,48 @@ bool PI_Serial::loop()
 {
     if (millis() - previousTime >= delayTime)
     {
-        if (requestStaticData && requestCounter == 0) // if data changed start request static data, else jump to live data
+        switch (requestStaticData)
         {
-            requestStaticData = false;
-        }
-        else if (!requestStaticData && requestCounter == 0)
-        {
-            requestCounter = 1; // jump to live data
+        case true:
+            switch (requestCounter)
+            {
+            case 0:
+                requestCounter = PIXX_QPIRI() ? (requestCounter + 1) : 0;
+                requestCounter = 0;        // move to the end after build the other static functions
+                requestStaticData = false; // move to the end after build the other static functions
+                break;
+            case 1:
+                // requestCounter = PIXX_qmuchchrg() ? (requestCounter + 1) : 0;
+                break;
+            case 2:
+                // requestCounter = PIXX_qmuchgr() ? (requestCounter + 1) : 0;
+                break;
+            case 3:
+                // requestCounter = PIXX_usw...() ? (requestCounter + 1) : 0;
+                break;
+            }
+            break;
+        case false:
+            switch (requestCounter)
+            {
+            case 0:
+                requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
+                break;
+            case 1:
+                requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
+                break;
+            case 2:
+                requestCounter = PIXX_QMOD() ? (requestCounter + 1) : 0;
+                break;
+            case 3:
+                sendCustomCommand();
+                requestCallback();
+                requestCounter = 0;
+                break;
+            }
+            break;
         }
 
-        switch (requestCounter)
-        {
-        case 0:
-            requestCounter = PIXX_QPIRI() ? (requestCounter + 1) : 0;
-            break;
-        case 1:
-            requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
-            break;
-        case 2:
-            requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
-            break;
-        case 3:
-            requestCounter = PIXX_QMOD() ? (requestCounter + 1) : 0;
-            break;
-
-        case 4:
-            sendCustomCommand();
-            requestCallback();
-            requestCounter = 0;
-            break;
-        }
         previousTime = millis();
     }
     return true;
@@ -186,6 +198,12 @@ String PI_Serial::requestData(String command)
     String commandBuffer = "";
     uint16_t crcCalc = 0;
     uint16_t crcRecive = 0;
+   // if(command == "QALL")
+   // {
+    //this->my_serialIntf->print(appendCHK(command));
+   // }else{
+   // this->my_serialIntf->print(appendCRC(command));
+   // }
     this->my_serialIntf->print(appendCRC(command));
     this->my_serialIntf->print("\r");
     commandBuffer = this->my_serialIntf->readStringUntil('\r');
@@ -202,7 +220,7 @@ String PI_Serial::requestData(String command)
     PI_DEBUG_WEBLN("<");
     */
     if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) == 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1] &&
-    getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) != 0 && 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1] != 0)
+        getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) != 0 && 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1] != 0)
     {
         crcCalc = 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1];
         crcRecive = getCRC(commandBuffer.substring(0, commandBuffer.length() - 2));
@@ -210,7 +228,7 @@ String PI_Serial::requestData(String command)
         commandBuffer.remove(0, strlen(startChar));       // remove the start character
     }
     else if (getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 == commandBuffer[commandBuffer.length() - 1] &&
-    getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 != 0 && commandBuffer[commandBuffer.length() - 1] != 0) // CHK for QALL
+             getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 != 0 && commandBuffer[commandBuffer.length() - 1] != 0) // CHK for QALL
     {
         crcCalc = getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1;
         crcRecive = commandBuffer[commandBuffer.length() - 1];
@@ -222,7 +240,7 @@ String PI_Serial::requestData(String command)
         commandBuffer = "ERCRC";
     }
     char debugBuff[128];
-    sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X]\n[D: %S]", (const wchar_t*)command.c_str(), crcRecive, crcCalc, (const wchar_t*)commandBuffer.c_str());
+    sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, (const wchar_t *)commandBuffer.c_str());
     PI_DEBUG_PRINTLN(debugBuff);
     PI_DEBUG_WEBLN(debugBuff);
     return commandBuffer;
@@ -293,6 +311,17 @@ String PI_Serial::appendCRC(String data) // calculate and add the crc to the str
     data.concat(v.cH);
     data.concat(v.cL);
 
+    return data;
+}
+
+String PI_Serial::appendCHK(String data) // calculate and add the crc to the string
+{
+    byte chk = 0;
+    for (unsigned int i = 0; i < data.length(); i++)
+    {
+        chk += data[i];
+    }
+    data.concat(chk);
     return data;
 }
 
