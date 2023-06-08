@@ -5,14 +5,15 @@ bool PI_Serial::PIXX_QALL()
   if (!qAvaible.qall)
     return true;
   String commandAnswer = this->requestData("QALL");
+  byte commandAnswerLength = commandAnswer.length();
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer == "NAK")
   {
     //qAvaible.qall = false; // if recived NAK, set the command avaible to false and never aks again until reboot
     return true;
   }
-  else if (commandAnswer.length() == 79 ||
-           commandAnswer.length() == 83 // Revo Qall
+  else if (commandAnswerLength == 79 ||
+           commandAnswerLength == 83 // Revo Qall
   )
   {
     get.raw.qall = commandAnswer;

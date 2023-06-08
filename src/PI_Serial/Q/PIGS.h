@@ -23,16 +23,17 @@ bool PI_Serial::PIXX_QPIGS()
   if (!qAvaible.qpigs)
     return true;
   String commandAnswer = this->requestData("QPIGS");
+  byte commandAnswerLength = commandAnswer.length();
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer == "NAK")
   {
     //qAvaible.qpigs = false; // if recived NAK, set the command avaible to false and never aks again until reboot
     return true;
   }
-  else if (commandAnswer.length() == 90 ||  // Revo MSX
-           commandAnswer.length() == 105 || // PIP special for samson71
-           commandAnswer.length() == 106 || // PIP PI41
-           commandAnswer.length() == 118    // PI30MAX
+  else if (commandAnswerLength == 90 ||  // Revo MSX
+           commandAnswerLength == 105 || // PIP special for samson71
+           commandAnswerLength == 106 || // PIP PI41
+           commandAnswerLength == 118    // PI30MAX
   )
   {
     get.raw.qpigs = commandAnswer;
