@@ -106,7 +106,7 @@ bool PI_Serial::loop()
     }
     return true;
 }
-// start up save config callback
+
 void PI_Serial::callback(std::function<void()> func)
 {
     requestCallback = func;
