@@ -57,6 +57,12 @@
 void saveConfigCallback();
 
 /**
+ * @brief callback function for data
+ * 
+ */
+void prozessData();
+
+/**
  * @brief fires up the websocket and send data to the clients
  * 
  */
