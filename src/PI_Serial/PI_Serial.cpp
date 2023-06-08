@@ -76,14 +76,8 @@ bool PI_Serial::loop()
                 break;
             case 1:
                 requestCounter = PIXX_QPI() ? (requestCounter + 1) : 0;
-                requestCounter = 0;        // move to the end after build the other static functions
-                requestStaticData = false; // move to the end after build the other static functions
-                break;
-            case 2:
-                // requestCounter = PIXX_qmuchgr() ? (requestCounter + 1) : 0;
-                break;
-            case 3:
-                // requestCounter = PIXX_usw...() ? (requestCounter + 1) : 0;
+                requestCounter = 0;
+                requestStaticData = false;
                 break;
             }
             break;
@@ -225,16 +219,16 @@ String PI_Serial::requestData(String command)
     {
         crcCalc = 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1];
         crcRecive = getCRC(commandBuffer.substring(0, commandBuffer.length() - 2));
-        commandBuffer.remove(commandBuffer.length() - 2); // remove the crc
-        commandBuffer.remove(0, strlen(startChar));       // remove the start character
+        commandBuffer.remove(commandBuffer.length() - 2);
+        commandBuffer.remove(0, strlen(startChar));
     }
     else if (getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 == commandBuffer[commandBuffer.length() - 1] &&
              getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 != 0 && commandBuffer[commandBuffer.length() - 1] != 0) // CHK for QALL
     {
         crcCalc = getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1;
         crcRecive = commandBuffer[commandBuffer.length() - 1];
-        commandBuffer.remove(commandBuffer.length() - 1); // remove the crc
-        commandBuffer.remove(0, strlen(startChar));       // remove the start character
+        commandBuffer.remove(commandBuffer.length() - 1);
+        commandBuffer.remove(0, strlen(startChar));
     }
     else
     {
