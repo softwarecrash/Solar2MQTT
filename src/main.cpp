@@ -581,16 +581,18 @@ bool sendtoMQTT()
 
   if (!settings.data.mqttJson)
   {
-    const char* testarr[5][2] =
+    const char* testarr[6][2] =
     {
       "text", "hello world",
       "char", "A",
       "int", "123",
       "float", "1.23",
-      "bool", "false"
+      "bool", "false",
+      "dontsend", ""
     };
     for (size_t i = 0; i < sizeof testarr / sizeof testarr[0]; i++)
     {
+      if(strcmp(testarr[i][1], "") != 0)
       mqttclient.publish(topicBuilder(buff, testarr[i][0]), testarr[i][1]);
     }
     
