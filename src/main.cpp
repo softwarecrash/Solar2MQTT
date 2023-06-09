@@ -581,6 +581,20 @@ bool sendtoMQTT()
 
   if (!settings.data.mqttJson)
   {
+    const char* testarr[5][2] =
+    {
+      "text", "hello world",
+      "char", "A",
+      "int", "123",
+      "float", "1.23",
+      "bool", "false"
+    };
+    for (size_t i = 0; i < sizeof testarr / sizeof testarr[0]; i++)
+    {
+      mqttclient.publish(topicBuilder(buff, testarr[i][0]), testarr[i][1]);
+    }
+    
+
     //testing
     mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), mppClient.get.raw.commandAnswer.c_str());
     // QPIGS
