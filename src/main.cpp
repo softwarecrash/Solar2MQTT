@@ -597,7 +597,7 @@ bool sendtoMQTT()
       mqttclient.publish(topicBuilder(buff, "Inverter_Bus_Temperature"), itoa(mppClient.get.variableData.inverterHeatSinkTemperature, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "Battery_Voltage"), dtostrf(mppClient.get.variableData.batteryVoltage, 4, 1, msgBuffer));
       mqttclient.publish(topicBuilder(buff, "Battery_Percent"), itoa(mppClient.get.variableData.batteryCapacity, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Battery_Charge_A"), itoa(mppClient.get.variableData.batteryChargingCurrent, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Battery_Load"), itoa(mppClient.get.variableData.batteryLoad, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "Battery_SCC_Volt"), dtostrf(mppClient.get.variableData.batteryVoltageFromScc, 4, 1, msgBuffer));
 
       if (mppClient.get.variableData.pvInputVoltage[1] != -1)
