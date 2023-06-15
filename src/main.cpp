@@ -40,7 +40,7 @@ char mqttClientId[80];
 ADC_MODE(ADC_VCC);
 
 // flag for saving data
-unsigned long mqtttimer = 0;
+long mqtttimer = 0;
 unsigned long requestTimer = 0;
 unsigned long RestartTimer = 0;
 bool shouldSaveConfig = false;
@@ -406,6 +406,8 @@ void setup()
     mppClient.setProtocol(100); // manual set the protocol
     mppClient.Init();           // init the PI_serial Library
     mppClient.callback(prozessData);
+
+    mqtttimer = (settings.data.mqttRefresh * 1000)*(-1);
   }
 }
 
@@ -437,7 +439,7 @@ void prozessData()
   getJsonData();
   if (wsClient != nullptr && wsClient->canSend())
     notifyClients();
-  if (millis() >= (mqtttimer + (settings.data.mqttRefresh * 1000)))
+  if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
   {
     sendtoMQTT(); // Update data to MQTT server if we should
     mqtttimer = millis();
