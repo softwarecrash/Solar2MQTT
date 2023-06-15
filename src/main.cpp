@@ -590,10 +590,10 @@ bool sendtoMQTT()
     // Q1
     if (mppClient.qAvaible.q1)
     {
-      mqttclient.publish(topicBuilder(buff, "Temperature_Module_Tracker"), itoa(mppClient.get.variableData.trackertemp, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Temperature_Module_Inverter"), itoa(mppClient.get.variableData.InverterTemp, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Temperature_Module_Battery"), itoa(mppClient.get.variableData.batteryTemp, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Temperature_Module_Transformer"), itoa(mppClient.get.variableData.transformerTemp, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Inverter_Tracker_Temperature"), itoa(mppClient.get.variableData.trackertemp, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Inverter_Inverter_Temperature"), itoa(mppClient.get.variableData.InverterTemp, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Inverter_Battery_Temperature"), itoa(mppClient.get.variableData.batteryTemp, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Inverter_Transformer_Temperature"), itoa(mppClient.get.variableData.transformerTemp, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "Inverter_FAN_Speed"), itoa(mppClient.get.variableData.fanSpeed, msgBuffer, 10));
       // mqttclient.publish(topicBuilder(buff, "Q1/SCC Charge Power"), itoa(mppClient.get.variableData.sccChargePower, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "Battery_Charger_Status"), mppClient.get.variableData.inverterChargeStatus);
@@ -601,15 +601,15 @@ bool sendtoMQTT()
     // QPIGS
     if (mppClient.qAvaible.qpigs)
     {
-      mqttclient.publish(topicBuilder(buff, "Grid_Voltage"), dtostrf(mppClient.get.variableData.gridVoltage, 5, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "Grid_Frequenz"), dtostrf(mppClient.get.variableData.gridFrequency, 4, 1, msgBuffer));
+      mqttclient.publish(topicBuilder(buff, "AC_in_Voltage"), dtostrf(mppClient.get.variableData.gridVoltage, 5, 1, msgBuffer));
+      mqttclient.publish(topicBuilder(buff, "AC_in_Frequenz"), dtostrf(mppClient.get.variableData.gridFrequency, 4, 1, msgBuffer));
       mqttclient.publish(topicBuilder(buff, "AC_out_Voltage"), dtostrf(mppClient.get.variableData.acOutputVoltage, 5, 1, msgBuffer));
       mqttclient.publish(topicBuilder(buff, "AC_out_Frequenz"), dtostrf(mppClient.get.variableData.acOutputFrequency, 4, 1, msgBuffer));
       mqttclient.publish(topicBuilder(buff, "AC_out_VA"), itoa(mppClient.get.variableData.acOutputApparentPower, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "AC_out_Watt"), itoa(mppClient.get.variableData.acOutputActivePower, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "AC_out_percent"), itoa(mppClient.get.variableData.outputLoadPercent, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Bus_Volt"), itoa(mppClient.get.variableData.busVoltage, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Bus_Temp"), itoa(mppClient.get.variableData.inverterHeatSinkTemperature, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Inverter_Bus_Voltage"), itoa(mppClient.get.variableData.busVoltage, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Inverter_Bus_Temperature"), itoa(mppClient.get.variableData.inverterHeatSinkTemperature, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "Battery_Voltage"), dtostrf(mppClient.get.variableData.batteryVoltage, 4, 1, msgBuffer));
       mqttclient.publish(topicBuilder(buff, "Battery_Percent"), itoa(mppClient.get.variableData.batteryCapacity, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "Battery_Charge_A"), itoa(mppClient.get.variableData.batteryChargingCurrent, msgBuffer, 10));
@@ -670,13 +670,13 @@ bool sendtoMQTT()
     // QPIRI
     if (mppClient.qAvaible.qpiri)
     {
-      mqttclient.publish(topicBuilder(buff, "Device_Data/Grid_rating_voltage"), dtostrf(mppClient.get.staticData.gridRatingVoltage, 5, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/Grid_rating_current"), dtostrf(mppClient.get.staticData.gridRatingCurrent, 4, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_output_rating_voltage"), dtostrf(mppClient.get.staticData.acOutputRatingVoltage, 5, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_output_rating_frequency"), dtostrf(mppClient.get.staticData.acOutputRatingFrquency, 4, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_output_rating_current"), dtostrf(mppClient.get.staticData.acoutputRatingCurrent, 4, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_output_rating_apparent_power"), itoa(mppClient.get.staticData.acOutputRatingApparentPower, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_output_rating_active_power"), itoa(mppClient.get.staticData.acOutputRatingActivePower, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_in_rating_voltage"), dtostrf(mppClient.get.staticData.gridRatingVoltage, 5, 1, msgBuffer));
+      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_in_rating_current"), dtostrf(mppClient.get.staticData.gridRatingCurrent, 4, 1, msgBuffer));
+      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_out_rating_voltage"), dtostrf(mppClient.get.staticData.acOutputRatingVoltage, 5, 1, msgBuffer));
+      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_out_rating_frequency"), dtostrf(mppClient.get.staticData.acOutputRatingFrquency, 4, 1, msgBuffer));
+      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_out_rating_current"), dtostrf(mppClient.get.staticData.acoutputRatingCurrent, 4, 1, msgBuffer));
+      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_out_rating_apparent_power"), itoa(mppClient.get.staticData.acOutputRatingApparentPower, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_out_rating_active_power"), itoa(mppClient.get.staticData.acOutputRatingActivePower, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "Device_Data/Battery_rating_voltage"), dtostrf(mppClient.get.staticData.batteryRatingVoltage, 4, 1, msgBuffer));
       mqttclient.publish(topicBuilder(buff, "Device_Data/Battery_re-charge_voltage"), dtostrf(mppClient.get.staticData.batteryReChargeVoltage, 4, 1, msgBuffer));
       mqttclient.publish(topicBuilder(buff, "Device_Data/Battery_under_voltage"), dtostrf(mppClient.get.staticData.batteryUnderVoltage, 4, 1, msgBuffer));
