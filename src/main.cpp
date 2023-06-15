@@ -581,14 +581,14 @@ bool sendtoMQTT()
 
   if (!settings.data.mqttJson)
   {
-    const char* testarr[6][2] =
+    const char* testarr[6][3] =
     {
-      "text", "hello world",
-      "char", "A",
-      "int", "123",
-      "float", "1.23",
-      "bool", "false",
-      "dontsend", ""
+      {"text", "hello world", "string"},
+      {"char", "A", "char"},
+      {"int", "123", "int"},
+      {"float", "1.23", "float"},
+      {"bool", "false", "bool"},
+      {"dontsend", "", "string"},
     };
     for (size_t i = 0; i < sizeof testarr / sizeof testarr[0]; i++)
     {

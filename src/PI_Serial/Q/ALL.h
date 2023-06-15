@@ -9,7 +9,7 @@ bool PI_Serial::PIXX_QALL()
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer == "NAK")
   {
-    //qAvaible.qall = false; // if recived NAK, set the command avaible to false and never aks again until reboot
+    qAvaible.qall = false; // if recived NAK, set the command avaible to false and never aks again until reboot
     return true;
   }
   else if (commandAnswerLength == 79 ||
