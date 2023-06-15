@@ -67,7 +67,7 @@ bool PI_Serial::PIXX_QPIGS()
     get.variableData.eepromVersion = getNextLong(commandAnswer, index);                 // VV
     get.variableData.pvChargingPower[0] = getNextLong(commandAnswer, index);            // MMMMM
     // if (get.variableData.pvChargingPower[0] == -1)
-    //   get.variableData.pvChargingPower[0] = get.variableData.pvInputCurrent[0] * get.variableData.pvInputVoltage[0];
+    get.variableData.pvInputWatt[0] = get.variableData.pvInputCurrent[0] * get.variableData.pvInputVoltage[0];
     get.deviceStatus.chargingToFloatingMode = getNextBit(commandAnswer, index); // b10
     get.deviceStatus.switchOn = getNextBit(commandAnswer, index);               // b9
     get.deviceStatus.dustproofInstalled = getNextBit(commandAnswer, index);     // b8

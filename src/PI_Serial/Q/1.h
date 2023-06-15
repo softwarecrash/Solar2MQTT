@@ -1,7 +1,7 @@
 
 bool PI_Serial::PIXX_Q1()
 {
-    if (!qAvaible.qall)
+    if (!qAvaible.q1)
         return true;
     String commandAnswer = this->requestData("Q1");
     byte commandAnswerLength = commandAnswer.length();
@@ -27,25 +27,25 @@ bool PI_Serial::PIXX_Q1()
         get.variableData.dontKnow2 = getNextLong(commandAnswer, index);
         get.variableData.dontKnow3 = getNextLong(commandAnswer, index);
         get.variableData.fanSpeed = getNextLong(commandAnswer, index);
-        get.variableData.sccChargePower = getNextLong(commandAnswer, index) / 100; // divided by 100
-                                              //"10": "nocharging", "11": "bulk stage", "12": "absorb", "13": "float"
-        unsigned int mode = getNextLong(commandAnswer, index);
+        get.variableData.sccChargePower = (getNextLong(commandAnswer, index) / 10); // divided by 100 //not needed, we get in on qpigs allways
+                                                             
+        short mode = getNextInt(commandAnswer, index);
         switch (mode)
         {
         default:
-            get.variableData.inverterChargeStatus = ("Undefined, Origin: " + mode);
+            get.variableData.inverterChargeStatus = (char *)"no data";
             break;
         case 10:
-            get.variableData.inverterChargeStatus = "no charging";
+            get.variableData.inverterChargeStatus = (char *)"no charging";
             break;
         case 11:
-            get.variableData.inverterChargeStatus = "bulk stage";
+            get.variableData.inverterChargeStatus = (char *)"bulk stage";
             break;
         case 12:
-            get.variableData.inverterChargeStatus = "absorb";
+            get.variableData.inverterChargeStatus = (char *)"absorb";
             break;
         case 13:
-            get.variableData.inverterChargeStatus = "float";
+            get.variableData.inverterChargeStatus = (char *)"float";
             break;
         }
 

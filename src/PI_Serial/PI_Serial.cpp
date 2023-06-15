@@ -239,7 +239,7 @@ String PI_Serial::requestData(String command)
         commandBuffer = "ERCRC";
     }
     char debugBuff[128];
-    sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, (const wchar_t *)commandBuffer.c_str());
+    sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc,commandBuffer.length(), (const wchar_t *)commandBuffer.c_str());
     PI_DEBUG_PRINTLN(debugBuff);
     PI_DEBUG_WEBLN(debugBuff);
     return commandBuffer;
@@ -371,6 +371,26 @@ long PI_Serial::getNextLong(String &command, int &index) // Parses out the next 
         ++index;
 
         if ((c == '.') || ((c >= '0') && (c <= '9')))
+        {
+            term += c;
+        }
+        else
+        {
+            return term.toInt();
+        }
+    }
+    return -1; // befor it was return 0
+}
+
+int PI_Serial::getNextInt(String &command, int &index) // Parses out the next number in the command string, starting at index
+{
+    String term = "";
+    while (index <= (int)command.length())
+    {
+        char c = command[index];
+        ++index;
+
+        if (((c >= '0') && (c <= '9')))
         {
             term += c;
         }

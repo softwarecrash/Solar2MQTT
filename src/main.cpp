@@ -600,18 +600,15 @@ bool sendtoMQTT()
     //testing
     mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), mppClient.get.raw.commandAnswer.c_str());
     //Q1
-    if (mppClient.get.variableData.trackertemp != -1)
-      mqttclient.publish(topicBuilder(buff, "Tracker Temperature"), itoa(mppClient.get.variableData.trackertemp, msgBuffer, 10));
-          if (mppClient.get.variableData.InverterTemp != -1)
-      mqttclient.publish(topicBuilder(buff, "Inverter Temperature"), itoa(mppClient.get.variableData.InverterTemp, msgBuffer, 10));
-          if (mppClient.get.variableData.batteryTemp != -1)
-      mqttclient.publish(topicBuilder(buff, "Battery Temperature"), itoa(mppClient.get.variableData.batteryTemp, msgBuffer, 10));
-          if (mppClient.get.variableData.transformerTemp != -1)
-      mqttclient.publish(topicBuilder(buff, "Transformer temperature"), itoa(mppClient.get.variableData.transformerTemp, msgBuffer, 10));
-          if (mppClient.get.variableData.fanSpeed != -1)
-      mqttclient.publish(topicBuilder(buff, "FAN Speed"), itoa(mppClient.get.variableData.fanSpeed, msgBuffer, 10));
-          if (mppClient.get.variableData.sccChargePower != -1)
-      mqttclient.publish(topicBuilder(buff, "SCC Charge Power"), itoa(mppClient.get.variableData.sccChargePower, msgBuffer, 10));
+    if(mppClient.qAvaible.q1){
+      mqttclient.publish(topicBuilder(buff, "Q1/Tracker Temperature"), itoa(mppClient.get.variableData.trackertemp, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Q1/Inverter Temperature"), itoa(mppClient.get.variableData.InverterTemp, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Q1/Battery Temperature"), itoa(mppClient.get.variableData.batteryTemp, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Q1/Transformer temperature"), itoa(mppClient.get.variableData.transformerTemp, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Q1/FAN Speed"), itoa(mppClient.get.variableData.fanSpeed, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Q1/SCC Charge Power"), itoa(mppClient.get.variableData.sccChargePower, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Q1/Charger Status"), mppClient.get.variableData.inverterChargeStatus);
+  }
     // QPIGS
     if (mppClient.get.variableData.gridVoltage != -1)
       mqttclient.publish(topicBuilder(buff, "Grid_Voltage"), dtostrf(mppClient.get.variableData.gridVoltage, 5, 1, msgBuffer));
@@ -682,7 +679,21 @@ if (mppClient.get.variableData.pvChargingPower[1] != -1)
       if (mppClient.get.variableData.pvChargingPower[0] != -1)
         mqttclient.publish(topicBuilder(buff, "PV_Watt"), String(mppClient.get.variableData.pvChargingPower[0]).c_str());
     }
-
+/*
+if (mppClient.get.variableData.pvInputWatt[1] != -1)
+    {
+      for (size_t i : mppClient.get.variableData.pvInputWatt)
+      {
+        if (mppClient.get.variableData.pvInputWatt[i] != -1)
+          mqttclient.publish(topicBuilder(buff, "PV_Watt" + i), String(mppClient.get.variableData.pvInputWatt[i]).c_str());
+      }
+    }
+    else if (mppClient.get.variableData.pvInputWatt[0] != -1)
+    {
+      if (mppClient.get.variableData.pvInputWatt[0] != -1)
+        mqttclient.publish(topicBuilder(buff, "PV_Watt"), String(mppClient.get.variableData.pvInputWatt[0]).c_str());
+    }
+*/
     // QMOD
     if (strcmp(mppClient.get.variableData.operationMode, "") != 0)
       mqttclient.publish(topicBuilder(buff, "Inverter_Operation_Mode"), mppClient.get.variableData.operationMode);

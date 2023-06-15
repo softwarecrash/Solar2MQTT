@@ -111,7 +111,7 @@ public:
             short dontKnow3 = -1;
             short fanSpeed = -1;
             short sccChargePower = -1;  // divided by 100
-            const char * inverterChargeStatus;   //"10": "nocharging", "11": "bulk stage", "12": "absorb", "13": "float"
+            const char * inverterChargeStatus;   //10:nocharging, 11:bulk stage, 12:absorb, 13:float
             //----------------------------QPIGS----------------------------
             float gridVoltage = -1;                      // The units is V.
             float gridFrequency = -1;                    // The units is Hz.
@@ -133,6 +133,7 @@ public:
             short batteryLoad = -1;                      // The units is A. - Combined charge and discharge
             short eepromVersion = -1;                    // version info
             short pvChargingPower[4] = {-1, -1, -1, -1}; // The unit is watt.
+            short pvInputWatt[4] = {-1, -1, -1, -1}; // The unit is watt.
             //-------------------extra values from QALL-----------------------
             short pvGenerationDay = -1; // The unit is WH
             short pvGenerationSum = -1; // The unit is KWH
@@ -225,17 +226,7 @@ public:
     void callback(std::function<void()> func);
     std::function<void()> requestCallback;
 
-private:
-    unsigned int soft_tx;
-    unsigned int soft_rx;
-    unsigned int serialIntfBaud;
-
-    unsigned int previousTime = 0;
-    unsigned int delayTime = 100;
-    byte requestCounter = 0;
-    String customCommandBuffer;
-
-    struct
+        struct
     {
         bool q1 = true;
         bool qpigs = true;
@@ -245,6 +236,16 @@ private:
         bool qpi = true;
         bool qmod = true;
     } qAvaible;
+
+private:
+    unsigned int soft_tx;
+    unsigned int soft_rx;
+    unsigned int serialIntfBaud;
+
+    unsigned int previousTime = 0;
+    unsigned int delayTime = 50;
+    byte requestCounter = 0;
+    String customCommandBuffer;
 
     unsigned int protocolType = 100;
     /**
@@ -276,6 +277,12 @@ private:
      * @brief Parses out the long
      */
     long getNextLong(String &command, int &index);
+
+    /**
+     * @brief Parses out the long
+     */
+    int getNextInt(String &command, int &index);
+
     /**
      * @brief // Gets if the next character is '1'
      */
