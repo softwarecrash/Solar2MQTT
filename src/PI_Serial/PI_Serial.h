@@ -97,6 +97,21 @@ public:
         } chargeValues;
         struct
         {
+            //----------------------------Q1-------------------------------
+            //01 01 00 035 022 023 025 00 00 000 0100 9290 11
+            short timeUntilAbsorbCharge = -1;
+            short timeUntilfloatCharge = -1;
+            short dontKnow0 = -1;
+            short trackertemp = -1;
+            short InverterTemp = -1;
+            short batteryTemp = -1;
+            short transformerTemp = -1;
+            short dontKnow1 = -1;
+            short dontKnow2 = -1;
+            short dontKnow3 = -1;
+            short fanSpeed = -1;
+            short sccChargePower = -1;  // divided by 100
+            const char * inverterChargeStatus;   //"10": "nocharging", "11": "bulk stage", "12": "absorb", "13": "float"
             //----------------------------QPIGS----------------------------
             float gridVoltage = -1;                      // The units is V.
             float gridFrequency = -1;                    // The units is Hz.
@@ -143,6 +158,7 @@ public:
 
         struct
         {
+            String q1;
             String qpigs;
             String qall;
             String qpiri;
@@ -221,6 +237,7 @@ private:
 
     struct
     {
+        bool q1 = true;
         bool qpigs = true;
         bool qpigs2 = true;
         bool qall = true;
@@ -293,6 +310,7 @@ private:
      */
     SoftwareSerial *my_serialIntf;
     //dynamic requests
+    bool PIXX_Q1();
     bool PIXX_QPIGS();
     bool PIXX_QALL();
     bool PIXX_QMOD();
