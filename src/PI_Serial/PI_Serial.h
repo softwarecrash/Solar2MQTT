@@ -60,6 +60,11 @@ public:
     {
         struct
         {
+            //----------------QPI----------------------
+            const char *deviceProtocol;
+            //----------------QMN----------------------
+            const char *modelName;
+
             //----------------QPIRI--------------------
             float gridRatingVoltage = -1;           // The units is V.
             float gridRatingCurrent = -1;           // The units is A.
@@ -98,7 +103,7 @@ public:
         struct
         {
             //----------------------------Q1-------------------------------
-            //01 01 00 035 022 023 025 00 00 000 0100 9290 11
+            // 01 01 00 035 022 023 025 00 00 000 0100 9290 11
             short timeUntilAbsorbCharge = -1;
             short timeUntilfloatCharge = -1;
             short dontKnow0 = -1;
@@ -110,8 +115,8 @@ public:
             short dontKnow2 = -1;
             short dontKnow3 = -1;
             short fanSpeed = -1;
-            short sccChargePower = -1;  // divided by 100
-            const char * inverterChargeStatus;   //10:nocharging, 11:bulk stage, 12:absorb, 13:float
+            short sccChargePower = -1;        // divided by 100
+            const char *inverterChargeStatus; // 10:nocharging, 11:bulk stage, 12:absorb, 13:float
             //----------------------------QPIGS----------------------------
             float gridVoltage = -1;                      // The units is V.
             float gridFrequency = -1;                    // The units is Hz.
@@ -133,7 +138,7 @@ public:
             short batteryLoad = -1;                      // The units is A. - Combined charge and discharge
             short eepromVersion = -1;                    // version info
             short pvChargingPower[4] = {-1, -1, -1, -1}; // The unit is watt.
-            short pvInputWatt[4] = {-1, -1, -1, -1}; // The unit is watt.
+            short pvInputWatt[4] = {-1, -1, -1, -1};     // The unit is watt.
             //-------------------extra values from QALL-----------------------
             short pvGenerationDay = -1; // The unit is WH
             short pvGenerationSum = -1; // The unit is KWH
@@ -159,11 +164,14 @@ public:
 
         struct
         {
-            String q1;
-            String qpigs;
+            // static
+            String qpi;
             String qall;
             String qpiri;
-            String qpi;
+            String qmn;
+            // dynamic
+            String q1;
+            String qpigs;
             String qmod;
             String commandAnswer;
         } raw;
@@ -214,8 +222,8 @@ public:
     String sendCommand(String command);
 
     /**
-     * @brief 
-     * 
+     * @brief
+     *
      */
     bool sendCustomCommand();
 
@@ -226,15 +234,19 @@ public:
     void callback(std::function<void()> func);
     std::function<void()> requestCallback;
 
-        struct
+    struct
     {
+        // dynamic
         bool q1 = true;
         bool qpigs = true;
         bool qpigs2 = true;
         bool qall = true;
+        bool qmod = true;
+        // static
+        bool qmn = true;
         bool qpiri = true;
         bool qpi = true;
-        bool qmod = true;
+
     } qAvaible;
 
 private:
@@ -253,7 +265,7 @@ private:
      */
     uint16_t getCRC(String data);
 
-        /**
+    /**
      * @brief get the crc from a string
      */
     byte getCHK(String data);
@@ -263,7 +275,7 @@ private:
      */
     String appendCRC(String data);
 
-        /**
+    /**
      * @brief append the calcualted crc to the given string and return it
      */
     String appendCHK(String data);
@@ -316,14 +328,15 @@ private:
      * @details This is set in the constructor
      */
     SoftwareSerial *my_serialIntf;
-    //dynamic requests
+    // dynamic requests
     bool PIXX_Q1();
     bool PIXX_QPIGS();
     bool PIXX_QALL();
     bool PIXX_QMOD();
-    //static reqeuests
+    // static reqeuests
     bool PIXX_QPIRI();
     bool PIXX_QPI();
+    bool PIXX_QMN();
 };
 
 #endif

@@ -476,7 +476,7 @@ void prozessData()
       DEBUG_PRINTLN(customResponse);
       DEBUG_WEBLN(customResponse);
       commandFromMqtt = "";
-      //mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (customResponse).c_str());
+      // mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (customResponse).c_str());
     }
     mqtttimer = 0;
     requestTimer = 0;
@@ -581,26 +581,26 @@ bool sendtoMQTT()
 
   if (!settings.data.mqttJson)
   {
-    const char* testarr[6][3] =
-    {
-      {"text", "hello world", "string"},
-      {"char", "A", "char"},
-      {"int", "123", "int"},
-      {"float", "1.23", "float"},
-      {"bool", "false", "bool"},
-      {"dontsend", "", "string"},
-    };
+    const char *testarr[6][3] =
+        {
+            {"text", "hello world", "string"},
+            {"char", "A", "char"},
+            {"int", "123", "int"},
+            {"float", "1.23", "float"},
+            {"bool", "false", "bool"},
+            {"dontsend", "", "string"},
+        };
     for (size_t i = 0; i < sizeof testarr / sizeof testarr[0]; i++)
     {
-      if(strcmp(testarr[i][1], "") != 0)
-      mqttclient.publish(topicBuilder(buff, testarr[i][0]), testarr[i][1]);
+      if (strcmp(testarr[i][1], "") != 0)
+        mqttclient.publish(topicBuilder(buff, testarr[i][0]), testarr[i][1]);
     }
-    
 
-    //testing
+    // testing
     mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), mppClient.get.raw.commandAnswer.c_str());
-    //Q1
-    if(mppClient.qAvaible.q1){
+    // Q1
+    if (mppClient.qAvaible.q1)
+    {
       mqttclient.publish(topicBuilder(buff, "Q1/Tracker Temperature"), itoa(mppClient.get.variableData.trackertemp, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "Q1/Inverter Temperature"), itoa(mppClient.get.variableData.InverterTemp, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "Q1/Battery Temperature"), itoa(mppClient.get.variableData.batteryTemp, msgBuffer, 10));
@@ -608,9 +608,10 @@ bool sendtoMQTT()
       mqttclient.publish(topicBuilder(buff, "Q1/FAN Speed"), itoa(mppClient.get.variableData.fanSpeed, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "Q1/SCC Charge Power"), itoa(mppClient.get.variableData.sccChargePower, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "Q1/Charger Status"), mppClient.get.variableData.inverterChargeStatus);
-  }
+    }
     // QPIGS
-    if(mppClient.qAvaible.qpigs){
+    if (mppClient.qAvaible.qpigs)
+    {
       mqttclient.publish(topicBuilder(buff, "Grid_Voltage"), dtostrf(mppClient.get.variableData.gridVoltage, 5, 1, msgBuffer));
       mqttclient.publish(topicBuilder(buff, "Grid_Frequenz"), dtostrf(mppClient.get.variableData.gridFrequency, 4, 1, msgBuffer));
       mqttclient.publish(topicBuilder(buff, "AC_out_Voltage"), dtostrf(mppClient.get.variableData.acOutputVoltage, 5, 1, msgBuffer));
@@ -625,61 +626,61 @@ bool sendtoMQTT()
       mqttclient.publish(topicBuilder(buff, "Battery_Charge_A"), itoa(mppClient.get.variableData.batteryChargingCurrent, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "Battery_SCC_Volt"), dtostrf(mppClient.get.variableData.batteryVoltageFromScc, 4, 1, msgBuffer));
 
-    if (mppClient.get.variableData.pvInputVoltage[1] != -1)
-    {
-      for (size_t i : mppClient.get.variableData.pvInputVoltage)
+      if (mppClient.get.variableData.pvInputVoltage[1] != -1)
       {
-        if (mppClient.get.variableData.pvInputVoltage[i] != -1)
-          mqttclient.publish(topicBuilder(buff, "PV_Volt_" + i), String(mppClient.get.variableData.pvInputVoltage[i]).c_str());
+        for (size_t i : mppClient.get.variableData.pvInputVoltage)
+        {
+          if (mppClient.get.variableData.pvInputVoltage[i] != -1)
+            mqttclient.publish(topicBuilder(buff, "PV_Volt_" + i), String(mppClient.get.variableData.pvInputVoltage[i]).c_str());
+        }
       }
-    }
-    else if (mppClient.get.variableData.pvInputVoltage[0] != -1)
-    {
-      mqttclient.publish(topicBuilder(buff, "PV_Volt"), String(mppClient.get.variableData.pvInputVoltage[0]).c_str());
-    }
+      else if (mppClient.get.variableData.pvInputVoltage[0] != -1)
+      {
+        mqttclient.publish(topicBuilder(buff, "PV_Volt"), String(mppClient.get.variableData.pvInputVoltage[0]).c_str());
+      }
 
-    if (mppClient.get.variableData.pvInputCurrent[1] != -1)
-    {
-      for (size_t i : mppClient.get.variableData.pvInputCurrent)
+      if (mppClient.get.variableData.pvInputCurrent[1] != -1)
       {
-        if (mppClient.get.variableData.pvInputCurrent[i] != -1)
-          mqttclient.publish(topicBuilder(buff, "PV_A_" + i), String(mppClient.get.variableData.pvInputCurrent[i]).c_str());
+        for (size_t i : mppClient.get.variableData.pvInputCurrent)
+        {
+          if (mppClient.get.variableData.pvInputCurrent[i] != -1)
+            mqttclient.publish(topicBuilder(buff, "PV_A_" + i), String(mppClient.get.variableData.pvInputCurrent[i]).c_str());
+        }
       }
-    }
-    else if (mppClient.get.variableData.pvInputCurrent[0] != -1)
-    {
-      if (mppClient.get.variableData.pvInputCurrent[0] != -1)
-        mqttclient.publish(topicBuilder(buff, "PV_A"), String(mppClient.get.variableData.pvInputCurrent[0]).c_str());
-    }
+      else if (mppClient.get.variableData.pvInputCurrent[0] != -1)
+      {
+        if (mppClient.get.variableData.pvInputCurrent[0] != -1)
+          mqttclient.publish(topicBuilder(buff, "PV_A"), String(mppClient.get.variableData.pvInputCurrent[0]).c_str());
+      }
 
-if (mppClient.get.variableData.pvChargingPower[1] != -1)
-    {
-      for (size_t i : mppClient.get.variableData.pvChargingPower)
+      if (mppClient.get.variableData.pvChargingPower[1] != -1)
       {
-        if (mppClient.get.variableData.pvChargingPower[i] != -1)
-          mqttclient.publish(topicBuilder(buff, "PV_Watt" + i), String(mppClient.get.variableData.pvChargingPower[i]).c_str());
+        for (size_t i : mppClient.get.variableData.pvChargingPower)
+        {
+          if (mppClient.get.variableData.pvChargingPower[i] != -1)
+            mqttclient.publish(topicBuilder(buff, "PV_Watt" + i), String(mppClient.get.variableData.pvChargingPower[i]).c_str());
+        }
       }
-    }
-    else if (mppClient.get.variableData.pvChargingPower[0] != -1)
-    {
-      if (mppClient.get.variableData.pvChargingPower[0] != -1)
-        mqttclient.publish(topicBuilder(buff, "PV_Watt"), String(mppClient.get.variableData.pvChargingPower[0]).c_str());
-    }
-/*
-if (mppClient.get.variableData.pvInputWatt[1] != -1)
-    {
-      for (size_t i : mppClient.get.variableData.pvInputWatt)
+      else if (mppClient.get.variableData.pvChargingPower[0] != -1)
       {
-        if (mppClient.get.variableData.pvInputWatt[i] != -1)
-          mqttclient.publish(topicBuilder(buff, "PV_Watt" + i), String(mppClient.get.variableData.pvInputWatt[i]).c_str());
+        if (mppClient.get.variableData.pvChargingPower[0] != -1)
+          mqttclient.publish(topicBuilder(buff, "PV_Watt"), String(mppClient.get.variableData.pvChargingPower[0]).c_str());
       }
-    }
-    else if (mppClient.get.variableData.pvInputWatt[0] != -1)
-    {
-      if (mppClient.get.variableData.pvInputWatt[0] != -1)
-        mqttclient.publish(topicBuilder(buff, "PV_Watt"), String(mppClient.get.variableData.pvInputWatt[0]).c_str());
-    }
-*/
+      /*
+      if (mppClient.get.variableData.pvInputWatt[1] != -1)
+          {
+            for (size_t i : mppClient.get.variableData.pvInputWatt)
+            {
+              if (mppClient.get.variableData.pvInputWatt[i] != -1)
+                mqttclient.publish(topicBuilder(buff, "PV_Watt" + i), String(mppClient.get.variableData.pvInputWatt[i]).c_str());
+            }
+          }
+          else if (mppClient.get.variableData.pvInputWatt[0] != -1)
+          {
+            if (mppClient.get.variableData.pvInputWatt[0] != -1)
+              mqttclient.publish(topicBuilder(buff, "PV_Watt"), String(mppClient.get.variableData.pvInputWatt[0]).c_str());
+          }
+      */
     }
     // QMOD
     if (strcmp(mppClient.get.variableData.operationMode, "") != 0)
@@ -692,7 +693,8 @@ if (mppClient.get.variableData.pvInputWatt[1] != -1)
       mqttclient.publish(topicBuilder(buff, "PV_generation_sum"), itoa(mppClient.get.variableData.pvGenerationSum, msgBuffer, 10));
 
     // QPIRI
-      if(mppClient.qAvaible.qpiri){
+    if (mppClient.qAvaible.qpiri)
+    {
       mqttclient.publish(topicBuilder(buff, "Device_Data/Grid_rating_voltage"), dtostrf(mppClient.get.staticData.gridRatingVoltage, 5, 1, msgBuffer));
       mqttclient.publish(topicBuilder(buff, "Device_Data/Grid_rating_current"), dtostrf(mppClient.get.staticData.gridRatingCurrent, 4, 1, msgBuffer));
       mqttclient.publish(topicBuilder(buff, "Device_Data/AC_output_rating_voltage"), dtostrf(mppClient.get.staticData.acOutputRatingVoltage, 5, 1, msgBuffer));
@@ -709,7 +711,17 @@ if (mppClient.get.variableData.pvInputWatt[1] != -1)
       mqttclient.publish(topicBuilder(buff, "Device_Data/Battery_type"), mppClient.get.staticData.batterytype);
       mqttclient.publish(topicBuilder(buff, "Device_Data/Current_max_AC_charging_current"), itoa(mppClient.get.staticData.currentMaxAcChargingCurrent, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "Device_Data/Current_max_charging_current"), itoa(mppClient.get.staticData.currentMaxChargingCurrent, msgBuffer, 10));
-      }
+    }
+    // QPI
+    if (mppClient.qAvaible.qpi)
+    {
+      mqttclient.publish(topicBuilder(buff, "Device_Data/Protocol_ID"), mppClient.get.staticData.batterytype);
+    }
+    // QMN
+    if (mppClient.qAvaible.qmn)
+    {
+      mqttclient.publish(topicBuilder(buff, "Device_Data/Device_Model"), mppClient.get.staticData.batterytype);
+    }
 // RAW
 #ifdef DEBUG
     if (mppClient.get.raw.qpigs != "")
@@ -781,8 +793,8 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
     DEBUG_WEBLN(messageTemp);
 
     commandFromMqtt = messageTemp;
-    //not needed anymore, we make a callback with the raw mqtt point
-    //mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), customResponse.c_str());
+    // not needed anymore, we make a callback with the raw mqtt point
+    // mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), customResponse.c_str());
     valChange = true;
   }
 }

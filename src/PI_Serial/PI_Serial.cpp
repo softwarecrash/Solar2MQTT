@@ -5,10 +5,13 @@ SoftwareSerial myPort;
 #include "CRC16.h"
 #include "CRC.h"
 CRC16 crc;
+//static
+#include "Q/PI.h"
+#include "Q/PIRI.h"
+#include "Q/MN.h"
+//variable
 #include "Q/1.h"
 #include "Q/PIGS.h"
-#include "Q/PIRI.h"
-#include "Q/PI.h"
 #include "Q/MOD.h"
 #include "Q/ALL.h"
 
@@ -76,6 +79,9 @@ bool PI_Serial::loop()
                 requestCounter = PIXX_QPIRI() ? (requestCounter + 1) : 0;
                 break;
             case 1:
+                requestCounter = PIXX_QMN() ? (requestCounter + 1) : 0;
+                break;
+            case 2:
                 requestCounter = PIXX_QPI() ? (requestCounter + 1) : 0;
                 requestCounter = 0;
                 requestStaticData = false;
