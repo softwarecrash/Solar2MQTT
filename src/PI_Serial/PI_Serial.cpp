@@ -95,6 +95,9 @@ bool PI_Serial::loop()
                 requestCounter = PIXX_QMOD() ? (requestCounter + 1) : 0;
                 break;
             case 3:
+                requestCounter = PIXX_Q1() ? (requestCounter + 1) : 0;
+                break;
+            case 4:
                 sendCustomCommand();
                 requestCallback();
                 requestCounter = 0;
