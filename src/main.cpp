@@ -1,21 +1,7 @@
+
 /*
 Solar2MQTT Project
 https://github.com/softwarecrash/Solar2MQTT
-This code is free for use without any waranty.
-when copy code or reuse make a note where the codes comes from.
-
-
-Dear programmer:
-When I wrote this code, only god and
-I knew how it worked.
-Now, only god knows it!
-
-Therefore, if you are trying to optimize
-this routine and it fails (most surely),
-please increase this counter as a
-warning for the next person:
-
-total_hours_wasted_here = 254
 */
 
 #include "main.h"
@@ -601,13 +587,13 @@ bool sendtoMQTT()
     // Q1
     if (mppClient.qAvaible.q1)
     {
-      mqttclient.publish(topicBuilder(buff, "Q1/Tracker Temperature"), itoa(mppClient.get.variableData.trackertemp, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Q1/Inverter Temperature"), itoa(mppClient.get.variableData.InverterTemp, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Q1/Battery Temperature"), itoa(mppClient.get.variableData.batteryTemp, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Q1/Transformer temperature"), itoa(mppClient.get.variableData.transformerTemp, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Q1/FAN Speed"), itoa(mppClient.get.variableData.fanSpeed, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Q1/SCC Charge Power"), itoa(mppClient.get.variableData.sccChargePower, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Q1/Charger Status"), mppClient.get.variableData.inverterChargeStatus);
+      mqttclient.publish(topicBuilder(buff, "Tracker_Temperature"), itoa(mppClient.get.variableData.trackertemp, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Inverter_Temperature"), itoa(mppClient.get.variableData.InverterTemp, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Battery_Temperature"), itoa(mppClient.get.variableData.batteryTemp, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Transformer_Temperature"), itoa(mppClient.get.variableData.transformerTemp, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "FAN_Speed"), itoa(mppClient.get.variableData.fanSpeed, msgBuffer, 10));
+      // mqttclient.publish(topicBuilder(buff, "Q1/SCC Charge Power"), itoa(mppClient.get.variableData.sccChargePower, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Charger_Status"), mppClient.get.variableData.inverterChargeStatus);
     }
     // QPIGS
     if (mppClient.qAvaible.qpigs)
@@ -666,32 +652,18 @@ bool sendtoMQTT()
         if (mppClient.get.variableData.pvChargingPower[0] != -1)
           mqttclient.publish(topicBuilder(buff, "PV_Watt"), String(mppClient.get.variableData.pvChargingPower[0]).c_str());
       }
-      /*
-      if (mppClient.get.variableData.pvInputWatt[1] != -1)
-          {
-            for (size_t i : mppClient.get.variableData.pvInputWatt)
-            {
-              if (mppClient.get.variableData.pvInputWatt[i] != -1)
-                mqttclient.publish(topicBuilder(buff, "PV_Watt" + i), String(mppClient.get.variableData.pvInputWatt[i]).c_str());
-            }
-          }
-          else if (mppClient.get.variableData.pvInputWatt[0] != -1)
-          {
-            if (mppClient.get.variableData.pvInputWatt[0] != -1)
-              mqttclient.publish(topicBuilder(buff, "PV_Watt"), String(mppClient.get.variableData.pvInputWatt[0]).c_str());
-          }
-      */
     }
     // QMOD
-    if (strcmp(mppClient.get.variableData.operationMode, "") != 0)
+    if (mppClient.qAvaible.qmod)
+    {
       mqttclient.publish(topicBuilder(buff, "Inverter_Operation_Mode"), mppClient.get.variableData.operationMode);
-
+    }
     // QALL
-    if (mppClient.get.variableData.pvGenerationDay != -1)
+    if (mppClient.qAvaible.qall)
+    {
       mqttclient.publish(topicBuilder(buff, "PV_generation_day"), itoa(mppClient.get.variableData.pvGenerationDay, msgBuffer, 10));
-    if (mppClient.get.variableData.pvGenerationSum != -1)
       mqttclient.publish(topicBuilder(buff, "PV_generation_sum"), itoa(mppClient.get.variableData.pvGenerationSum, msgBuffer, 10));
-
+    }
     // QPIRI
     if (mppClient.qAvaible.qpiri)
     {
@@ -715,21 +687,21 @@ bool sendtoMQTT()
     // QPI
     if (mppClient.qAvaible.qpi)
     {
-      mqttclient.publish(topicBuilder(buff, "Device_Data/Protocol_ID"), mppClient.get.staticData.deviceProtocol);
+      mqttclient.publish(topicBuilder(buff, "Device_Data/Protocol_ID"), mppClient.get.staticData.deviceProtocol.c_str());
     }
     // QMN
     if (mppClient.qAvaible.qmn)
     {
-      mqttclient.publish(topicBuilder(buff, "Device_Data/Device_Model"), mppClient.get.staticData.modelName);
+      mqttclient.publish(topicBuilder(buff, "Device_Data/Device_Model"), mppClient.get.staticData.modelName.c_str());
     }
 // RAW
 #ifdef DEBUG
-      mqttclient.publish(topicBuilder(buff, "RAW/QPIGS"), (mppClient.get.raw.qpigs).c_str());
-      mqttclient.publish(topicBuilder(buff, "RAW/QPIRI"), (mppClient.get.raw.qpiri).c_str());
-      mqttclient.publish(topicBuilder(buff, "RAW/QPI"), (mppClient.get.raw.qpi).c_str());
-      mqttclient.publish(topicBuilder(buff, "RAW/QMOD"), (mppClient.get.raw.qmod).c_str());
-      mqttclient.publish(topicBuilder(buff, "RAW/QALL"), (mppClient.get.raw.qall).c_str());
-      mqttclient.publish(topicBuilder(buff, "RAW/QMN"), (mppClient.get.raw.qmn).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QPIGS"), (mppClient.get.raw.qpigs).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QPIRI"), (mppClient.get.raw.qpiri).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QPI"), (mppClient.get.raw.qpi).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QMOD"), (mppClient.get.raw.qmod).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QALL"), (mppClient.get.raw.qall).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QMN"), (mppClient.get.raw.qmn).c_str());
 #endif
   }
   else

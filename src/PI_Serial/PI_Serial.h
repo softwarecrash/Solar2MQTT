@@ -1,5 +1,4 @@
 #include "SoftwareSerial.h"
-// #include "devices/PI30_HS_MS_MSX.h"
 #ifndef PI_SERIAL_H
 #define PI_SERIAL_H
 
@@ -61,9 +60,9 @@ public:
         struct
         {
             //----------------QPI----------------------
-            const char *deviceProtocol;
+            String deviceProtocol;
             //----------------QMN----------------------
-            const char *modelName;
+            String modelName;
 
             //----------------QPIRI--------------------
             float gridRatingVoltage = -1;           // The units is V.
@@ -115,7 +114,7 @@ public:
             short dontKnow2 = -1;
             short dontKnow3 = -1;
             short fanSpeed = -1;
-            short sccChargePower = -1;        // divided by 100
+            short sccChargePower = -1;        // divided by 10
             const char *inverterChargeStatus; // 10:nocharging, 11:bulk stage, 12:absorb, 13:float
             //----------------------------QPIGS----------------------------
             float gridVoltage = -1;                      // The units is V.
@@ -260,6 +259,7 @@ private:
     String customCommandBuffer;
 
     unsigned int protocolType = 100;
+
     /**
      * @brief get the crc from a string
      */
