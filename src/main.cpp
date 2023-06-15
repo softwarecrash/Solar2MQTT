@@ -715,12 +715,12 @@ bool sendtoMQTT()
     // QPI
     if (mppClient.qAvaible.qpi)
     {
-      mqttclient.publish(topicBuilder(buff, "Device_Data/Protocol_ID"), mppClient.get.staticData.batterytype);
+      mqttclient.publish(topicBuilder(buff, "Device_Data/Protocol_ID"), mppClient.get.staticData.deviceProtocol);
     }
     // QMN
     if (mppClient.qAvaible.qmn)
     {
-      mqttclient.publish(topicBuilder(buff, "Device_Data/Device_Model"), mppClient.get.staticData.batterytype);
+      mqttclient.publish(topicBuilder(buff, "Device_Data/Device_Model"), mppClient.get.staticData.modelName);
     }
 // RAW
 #ifdef DEBUG

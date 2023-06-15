@@ -7,7 +7,7 @@ bool PI_Serial::PIXX_QMN()
     qAvaible.qmn = false; //if recived NAK, set the command avaible to false and never aks again until reboot
     return true;
   } else
-  if (commandAnswer.length() > 1 && commandAnswer.length() < 50)
+  if (commandAnswer.length() > 3 && commandAnswer.length() < 50)
   {
     get.raw.qmn = commandAnswer;
     get.staticData.modelName = commandAnswer.c_str();
