@@ -7,6 +7,6 @@ bool PI_Serial::PIXX_QPI()
     return true;
   }
     get.raw.qpi = commandAnswer;
-    get.staticData.deviceProtocol = commandAnswer.c_str();
+    get.staticData.deviceProtocol = (commandAnswer).c_str();
     return true;
 }
