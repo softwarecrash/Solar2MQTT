@@ -590,10 +590,10 @@ bool sendtoMQTT()
     // Q1
     if (mppClient.qAvaible.q1)
     {
-      mqttclient.publish(topicBuilder(buff, "Tracker_Temperature"), itoa(mppClient.get.variableData.trackertemp, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Inverter_Temperature"), itoa(mppClient.get.variableData.InverterTemp, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Battery_Temperature"), itoa(mppClient.get.variableData.batteryTemp, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Transformer_Temperature"), itoa(mppClient.get.variableData.transformerTemp, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Temperature_Module_Tracker"), itoa(mppClient.get.variableData.trackertemp, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Temperature_Module_Inverter"), itoa(mppClient.get.variableData.InverterTemp, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Temperature_Module_Battery"), itoa(mppClient.get.variableData.batteryTemp, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Temperature_Module_Transformer"), itoa(mppClient.get.variableData.transformerTemp, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "FAN_Speed"), itoa(mppClient.get.variableData.fanSpeed, msgBuffer, 10));
       // mqttclient.publish(topicBuilder(buff, "Q1/SCC Charge Power"), itoa(mppClient.get.variableData.sccChargePower, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "Charger_Status"), mppClient.get.variableData.inverterChargeStatus);
