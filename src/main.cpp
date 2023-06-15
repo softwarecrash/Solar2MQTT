@@ -570,21 +570,6 @@ bool sendtoMQTT()
 
   if (!settings.data.mqttJson)
   {
-    const char *testarr[6][3] =
-        {
-            {"text", "hello world", "string"},
-            {"char", "A", "char"},
-            {"int", "123", "int"},
-            {"float", "1.23", "float"},
-            {"bool", "false", "bool"},
-            {"dontsend", "", "string"},
-        };
-    for (size_t i = 0; i < sizeof testarr / sizeof testarr[0]; i++)
-    {
-      if (strcmp(testarr[i][1], "") != 0)
-        mqttclient.publish(topicBuilder(buff, testarr[i][0]), testarr[i][1]);
-    }
-
     // testing
     mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), mppClient.get.raw.commandAnswer.c_str());
     // Q1
