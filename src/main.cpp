@@ -594,9 +594,9 @@ bool sendtoMQTT()
       mqttclient.publish(topicBuilder(buff, "Temperature_Module_Inverter"), itoa(mppClient.get.variableData.InverterTemp, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "Temperature_Module_Battery"), itoa(mppClient.get.variableData.batteryTemp, msgBuffer, 10));
       mqttclient.publish(topicBuilder(buff, "Temperature_Module_Transformer"), itoa(mppClient.get.variableData.transformerTemp, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "FAN_Speed"), itoa(mppClient.get.variableData.fanSpeed, msgBuffer, 10));
+      mqttclient.publish(topicBuilder(buff, "Inverter_FAN_Speed"), itoa(mppClient.get.variableData.fanSpeed, msgBuffer, 10));
       // mqttclient.publish(topicBuilder(buff, "Q1/SCC Charge Power"), itoa(mppClient.get.variableData.sccChargePower, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Charger_Status"), mppClient.get.variableData.inverterChargeStatus);
+      mqttclient.publish(topicBuilder(buff, "Battery_Charger_Status"), mppClient.get.variableData.inverterChargeStatus);
     }
     // QPIGS
     if (mppClient.qAvaible.qpigs)
