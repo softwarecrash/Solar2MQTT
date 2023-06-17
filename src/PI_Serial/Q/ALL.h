@@ -2,8 +2,8 @@
 // QALL: BBB CC.C DDD EE.E FFFF GGG HH.H III JJJ KKK LLL MM.M NNNN OOOOOO PPPPPP Q KK SS - PI30 Revo
 bool PI_Serial::PIXX_QALL()
 {
-  if (!qAvaible.qall)
-    return true;
+ // if (!qAvaible.qall)
+  //  return true;
   String commandAnswer = this->requestData("QALL");
   byte commandAnswerLength = commandAnswer.length();
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
