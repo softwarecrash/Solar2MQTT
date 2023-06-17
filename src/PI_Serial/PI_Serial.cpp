@@ -315,6 +315,13 @@ String PI_Serial::appendCRC(String data) // calculate and add the crc to the str
     v.u = crc.getCRC();
     data.concat(v.cH);
     data.concat(v.cL);
+    /*
+        uint16_t crc = crc.getCRC();
+        uint16_t value;
+      ((uint8_t*)&value)[1] = crc[0];
+      ((uint8_t*)&value)[0] = crc[1];
+      data.concat(value);
+      */
 
     return data;
 }
