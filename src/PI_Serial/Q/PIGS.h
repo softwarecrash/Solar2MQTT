@@ -27,7 +27,7 @@ bool PI_Serial::PIXX_QPIGS()
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer == "NAK")
   {
-    //qAvaible.qpigs = false; // if recived NAK, set the command avaible to false and never aks again until reboot
+    qAvaible.qpigs = false; // if recived NAK, set the command avaible to false and never aks again until reboot
     return true;
   }
   else if (commandAnswerLength == 90 ||  // Revo MSX
@@ -36,6 +36,7 @@ bool PI_Serial::PIXX_QPIGS()
            commandAnswerLength == 118    // PI30MAX
   )
   {
+    qAvaible.qpigs = true;
     get.raw.qpigs = commandAnswer;
     int index = 0;
     get.variableData.gridVoltage = getNextFloat(commandAnswer, index);                  // BBB.B

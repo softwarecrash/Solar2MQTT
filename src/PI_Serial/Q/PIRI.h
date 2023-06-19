@@ -29,6 +29,7 @@ bool PI_Serial::PIXX_QPIRI()
            commandAnswer.length() == 104   // PI30 MAX
   )
   {
+    qAvaible.qpiri = true;
     get.raw.qpiri = commandAnswer;
     int index = 0;
     get.staticData.gridRatingVoltage = getNextFloat(commandAnswer, index);          // BBB.B

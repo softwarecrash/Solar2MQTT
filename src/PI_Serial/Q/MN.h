@@ -9,6 +9,7 @@ bool PI_Serial::PIXX_QMN()
   } else
   if (commandAnswer.length() > 3 && commandAnswer.length() < 50)
   {
+    qAvaible.qmn = true;
     get.raw.qmn = commandAnswer;
     get.staticData.modelName = commandAnswer;
     return true;

@@ -16,6 +16,7 @@ bool PI_Serial::PIXX_QALL()
            commandAnswerLength == 83 // Revo Qall
   )
   {
+    qAvaible.qall = true;
     get.raw.qall = commandAnswer;
     int index = 0;
     get.variableData.gridVoltage = getNextFloat(commandAnswer, index);            // BBB.B

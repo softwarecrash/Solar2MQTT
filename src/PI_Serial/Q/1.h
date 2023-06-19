@@ -13,6 +13,7 @@ bool PI_Serial::PIXX_Q1()
     }
     else if (commandAnswerLength == 47)
     {
+        qAvaible.q1 = true;
         get.raw.q1 = commandAnswer;
         int index = 0;
         // 01 01 00 035 022 023 025 00 00 000 0100 9290 11
