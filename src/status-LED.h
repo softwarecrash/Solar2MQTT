@@ -24,7 +24,7 @@ void notificationLED()
   {
     if (WiFi.status() != WL_CONNECTED)
       ledState = 4;
-    else if (!mqttclient.connected())
+    else if (!mqttclient.connected() && strcmp(settings.data.mqttServer, "") != 0)
       ledState = 3;
     //else if (strcmp(bms.get.chargeDischargeStatus, "offline") == 0)
 //    else if (!bms.getState())
