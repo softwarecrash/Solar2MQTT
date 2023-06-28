@@ -60,11 +60,13 @@ Most of the parts can be bought as modules, it's usually cheaper that way.
 
 # Completely assembled and tested PCB's
 
-For a donation you are welcome to get fully stocked and tested PCB's. These are then already loaded with the lastest firmware.
+You are welcome to get fully stocked and tested PCB's. These are then already loaded with the lastest firmware.
 
 ![Solar-MQTT-PCB](https://user-images.githubusercontent.com/17761850/233859179-cc9c9075-b88a-4f38-b804-bc0f409cf8ce.png)
 
-If interested see [here](https://all-solutions.github.io/PCBs/solar2mqtt.html)
+If interested see [here](https://all-solutions.store/?apply_coupon=NEWSHOP)
+
+Until 15.07. there is also a discount of 5€ per PCB.
 
 #
 Questions?
