@@ -134,7 +134,7 @@ public:
             float batteryVoltageFromScc = -1;            // The units is V.
             short batteryDischargeCurrent = -1;          // The units is A.
             short batteryVoltageOffsetForFansOn = -1;    // The unit is 10mV.
-            short batteryLoad = -1;                      // The units is A. - Combined charge and discharge
+            short batteryLoad;                      // The units is A. - Combined charge and discharge
             short eepromVersion = -1;                    // version info
             short pvChargingPower[4] = {-1, -1, -1, -1}; // The unit is watt.
             short pvInputWatt[4] = {-1, -1, -1, -1};     // The unit is watt.
