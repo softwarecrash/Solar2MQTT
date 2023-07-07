@@ -1,5 +1,9 @@
+/*
+Solar2MQTT Project
+https://github.com/softwarecrash/Solar2MQTT
+*/
 const char HTML_REBOOT[] PROGMEM = R"rawliteral(
-    %HEAD_TEMPLATE%
+%HEAD_TEMPLATE%
 <figure class="text-center"><h1>Rebooting </h1><h2 id="wait">.</h2></figure>
 <div class="d-grid gap-2">
 <a class="btn btn-primary" href="/" role="button">Main</a>
