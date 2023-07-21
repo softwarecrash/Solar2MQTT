@@ -96,7 +96,7 @@ bool PI_Serial::PIXX_QPIRI()
       get.staticData.chargerSourcePriority = "Only solar charging permitted";
       break;
     }
-    get.staticData.parallelMaxNumber = getNextInt(commandAnswer, index); // R
+    get.staticData.parallelMaxNumber = getNextLong(commandAnswer, index); // R
     switch ((byte)getNextLong(commandAnswer, index))                      // SS
     {
     case 00:
