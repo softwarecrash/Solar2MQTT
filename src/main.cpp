@@ -475,7 +475,18 @@ void prozessData()
 
 void getJsonData()
 {
-  deviceJson["device_name"] = settings.data.deviceName;
+  deviceJson[F("device_name")] = settings.data.deviceName;
+  deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
+  deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
+  deviceJson[F("sw_version")] = SOFTWARE_VERSION;
+  deviceJson[F("Flash_Size")] = ESP.getFlashChipSize();
+  deviceJson[F("Sketch_Size")] = ESP.getSketchSize();
+  deviceJson[F("Free_Sketch_Space")] = ESP.getFreeSketchSpace();
+  deviceJson[F("CPU_Frequency")] = ESP.getCpuFreqMHz();
+  deviceJson[F("Real_Flash_Size")] = ESP.getFlashChipRealSize();
+  deviceJson[F("Free_Heap")] = ESP.getFreeHeap();
+  deviceJson[F("HEAP_Fragmentation")] = ESP.getHeapFragmentation();
+  deviceJson[F("Free_BlockSize")] = ESP.getMaxFreeBlockSize();
 
   liveData["gridV"] = mppClient.get.variableData.gridVoltage;
   liveData["gridHz"] = mppClient.get.variableData.gridFrequency;
@@ -496,7 +507,40 @@ void getJsonData()
   liveData["solarW"] = mppClient.get.variableData.pvChargingPower[0];
   liveData["iv_mode"] = mppClient.get.variableData.operationMode;
 
-  staticData["gridmaxirgendwas"] = mppClient.get.variableData.operationMode;
+//  staticData["gridmaxirgendwas"] = mppClient.get.variableData.operationMode;
+
+    if (mppClient.qAvaible.qpiri)
+    {
+      staticData["AC_in_rating_voltage"] = mppClient.get.staticData.gridRatingVoltage;
+      staticData["AC_in_rating_current"] = mppClient.get.staticData.gridRatingCurrent;
+      staticData["AC_out_rating_voltage"] = mppClient.get.staticData.acOutputRatingVoltage;
+      staticData["AC_out_rating_frequency"] = mppClient.get.staticData.acOutputRatingFrquency;
+      staticData["AC_out_rating_current"] = mppClient.get.staticData.acoutputRatingCurrent;
+      staticData["AC_out_rating_apparent_power"] = mppClient.get.staticData.acOutputRatingApparentPower;
+      staticData["AC_out_rating_active_power"] = mppClient.get.staticData.acOutputRatingActivePower;
+      staticData["Battery_rating_voltage"] = mppClient.get.staticData.batteryRatingVoltage;
+      staticData["Battery_re-charge_voltage"] = mppClient.get.staticData.batteryReChargeVoltage;
+      staticData["Battery_under_voltage"] = mppClient.get.staticData.batteryUnderVoltage;
+      staticData["Battery_bulk_voltage"] = mppClient.get.staticData.batteryBulkVoltage;
+      staticData["Battery_float_voltage"] = mppClient.get.staticData.batteryFloatVoltage;
+
+      staticData["Battery_type"] = mppClient.get.staticData.batterytype;
+      staticData["Current_max_AC_charging_current"] = mppClient.get.staticData.currentMaxAcChargingCurrent;
+      staticData["Current_max_charging_current"] = mppClient.get.staticData.currentMaxChargingCurrent;
+    }
+    // QPI
+    if (mppClient.qAvaible.qpi)
+    {
+      staticData["Protocol_ID"] = mppClient.get.staticData.deviceProtocol;
+    }
+    // QMN
+    if (mppClient.qAvaible.qmn)
+    {
+      staticData["Device_Model"] = mppClient.get.staticData.modelName;
+    }
+
+
+
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
