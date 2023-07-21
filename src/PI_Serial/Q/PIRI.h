@@ -13,7 +13,7 @@
 // QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X                                         PI30 PIP
 // QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X YYY                                     PI41 / LV5048
 // QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X YYY Z CCC                               PI30 Max
-
+// QPIRI: 230.0 01.3 230.0 50.0 01.3 3000 2400 24.0 24.5 21.0 29.2 27.0 1 20 040 0 2 1 - 01 1 0 27.5 0 0
 bool PI_Serial::PIXX_QPIRI()
 {
   String commandAnswer = this->requestData("QPIRI");
@@ -96,7 +96,7 @@ bool PI_Serial::PIXX_QPIRI()
       get.staticData.chargerSourcePriority = "Only solar charging permitted";
       break;
     }
-    get.staticData.parallelMaxNumber = getNextLong(commandAnswer, index); // R
+    get.staticData.parallelMaxNumber = getNextInt(commandAnswer, index); // R
     switch ((byte)getNextLong(commandAnswer, index))                      // SS
     {
     case 00:

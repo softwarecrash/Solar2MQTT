@@ -55,8 +55,8 @@ String commandFromMqtt;
 String customResponse;
 
 bool firstPublish;
-
-StaticJsonDocument<JSON_BUFFER> Json;                          // main Json
+DynamicJsonDocument Json(JSON_BUFFER);
+//StaticJsonDocument<JSON_BUFFER> Json;                          // main Json
 JsonObject deviceJson = Json.createNestedObject("Device");     // basic device data
 JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
 JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
@@ -507,6 +507,9 @@ void getJsonData()
   liveData["solarW"] = mppClient.get.variableData.pvChargingPower[0];
   liveData["iv_mode"] = mppClient.get.variableData.operationMode;
 
+  liveData["notWorking"] = 12345;
+  liveData["Working"] = "12345";
+
 //  staticData["gridmaxirgendwas"] = mppClient.get.variableData.operationMode;
 
     if (mppClient.qAvaible.qpiri)
@@ -614,6 +617,17 @@ bool sendtoMQTT()
 
   if (!settings.data.mqttJson)
   {
+
+DEBUG_PRINTLN(F("json pair test:"));
+
+for (JsonPair kv : liveData) {
+    DEBUG_PRINT(kv.key().c_str());
+    DEBUG_PRINT(": ");
+    DEBUG_PRINTLN(kv.value().as<const char*>());
+
+}
+
+
     // testing
     mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), mppClient.get.raw.commandAnswer.c_str());
     // Q1
