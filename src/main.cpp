@@ -623,11 +623,24 @@ for (JsonPair kv : liveData) {
     //https://github.com/bblanchon/ArduinoJson/issues/913
 
     //https://github.com/bblanchon/ArduinoJson/issues/1655
-    mqttclient.publish(topicBuilder(buff, kv.key().c_str()), kv.value().as<String>().c_str());
+    //mqttclient.publish(topicBuilder(buff, kv.key().c_str()), kv.value().as<String>().c_str());
 }
 
-
-
+for (JsonPair  k : Json.as<JsonObject>()) {
+  //DEBUG_PRINT(k.key().c_str());
+  DEBUG_PRINTLN(k.value().as<String>());
+ // for(JsonPair k : i.value().as<JsonObject>()) {
+    
+   // DEBUG_PRINT(k.key().c_str());
+   // DEBUG_PRINT(": ");
+   // DEBUG_PRINTLN(k.value().as<String>());
+ // }
+}
+for(JsonPair i : Json.as<JsonObject>()) {
+  for(JsonPair k : i.value().as<JsonObject>()) {
+    mqttclient.publish(i.key().c_str() +"/"+ k.key().c_str()), k.value().as<String>().c_str());
+  }
+}
 
 
     // testing
