@@ -500,6 +500,8 @@ void getJsonData()
   liveData["Working"] = "12345";
 
   staticData["gridmaxirgendwas"] = mppClient.get.variableData.operationMode;
+
+  
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
@@ -579,8 +581,8 @@ DEBUG_PRINTLN(F("json pair test:"));
 for (JsonPair kv : liveData) {
     DEBUG_PRINT(kv.key().c_str());
     DEBUG_PRINT(": ");
-    DEBUG_PRINTLN(kv.value().as<const char*>());
-
+    DEBUG_PRINTLN(kv.value().as<String>());
+    mqttclient.publish(topicBuilder(buff, kv.key().c_str()), kv.value().as<String>().c_str());
 }
 
 

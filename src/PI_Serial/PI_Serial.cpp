@@ -15,6 +15,11 @@ CRC16 crc;
 #include "Q/MOD.h"
 #include "Q/ALL.h"
 
+//#include <ArduinoJson.h>
+//extern DynamicJsonDocument Json;
+//extern JsonObject deviceJson; 
+//extern JsonObject staticData;
+//extern JsonObject liveData;
 //----------------------------------------------------------------------
 // Public Functions
 //----------------------------------------------------------------------

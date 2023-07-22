@@ -20,6 +20,7 @@
 // 000.0 00.0 229.9 50.0 0137 0082 004 403 29.23 001 100 0026 0004 081.5 29.17 00000 00110110 00 00 00131 110 neu ausgelesen von crash. watt werden nicht angezeigt
 bool PI_Serial::PIXX_QPIGS()
 {
+
  // if (!qAvaible.qpigs)
  //   return true;
   String commandAnswer = this->requestData("QPIGS");
@@ -39,6 +40,7 @@ bool PI_Serial::PIXX_QPIGS()
     qAvaible.qpigs = true;
     get.raw.qpigs = commandAnswer;
     int index = 0;
+    liveData["qpigs-test"] = 13579;
     get.variableData.gridVoltage = getNextFloat(commandAnswer, index);                  // BBB.B
     get.variableData.gridFrequency = getNextFloat(commandAnswer, index);                // CC.C
     get.variableData.acOutputVoltage = getNextFloat(commandAnswer, index);              // DDD.D
