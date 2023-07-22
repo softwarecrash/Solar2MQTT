@@ -621,6 +621,8 @@ for (JsonPair kv : liveData) {
     DEBUG_PRINTLN(kv.value().as<String>());
     //topicbuilder need rework, and the jsonpair need expand to iterate over every nested object
     //https://github.com/bblanchon/ArduinoJson/issues/913
+
+    //https://github.com/bblanchon/ArduinoJson/issues/1655
     mqttclient.publish(topicBuilder(buff, kv.key().c_str()), kv.value().as<String>().c_str());
 }
 
