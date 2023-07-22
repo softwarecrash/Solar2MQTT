@@ -507,11 +507,6 @@ void getJsonData()
   liveData["solarW"] = mppClient.get.variableData.pvChargingPower[0];
   liveData["iv_mode"] = mppClient.get.variableData.operationMode;
 
-  liveData["notWorking"] = 12345;
-  liveData["Working"] = "12345";
-
-//  staticData["gridmaxirgendwas"] = mppClient.get.variableData.operationMode;
-
     if (mppClient.qAvaible.qpiri)
     {
       staticData["AC_in_rating_voltage"] = mppClient.get.staticData.gridRatingVoltage;
