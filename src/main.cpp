@@ -56,10 +56,14 @@ String customResponse;
 
 bool firstPublish;
 DynamicJsonDocument Json(JSON_BUFFER);
-//StaticJsonDocument<JSON_BUFFER> Json;                          // main Json
+// StaticJsonDocument<JSON_BUFFER> Json;                          // main Json
 JsonObject deviceJson = Json.createNestedObject("Device");     // basic device data
 JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
 JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
+
+StaticJsonDocument<512> root;
+JsonObject nest1 = root.createNestedObject("nest1");
+JsonObject nest2 = root.createNestedObject("nest2");
 //----------------------------------------------------------------------
 void saveConfigCallback()
 {
@@ -176,6 +180,15 @@ void recvMsg(uint8_t *data, size_t len)
 
 void setup()
 {
+
+  nest1["nest1_1"] = 1;
+  nest1["nest1_2"] = 2;
+  nest1["nest1_3"] = 3;
+
+  nest2["nest2_1"] = 1;
+  nest2["nest2_2"] = 2;
+  nest2["nest2_3"] = 3;
+
 #ifdef DEBUG
   DEBUG_BEGIN(9600); // Debugging towards UART1
 #endif
@@ -407,7 +420,7 @@ void setup()
     mppClient.Init();           // init the PI_serial Library
     mppClient.callback(prozessData);
 
-    mqtttimer = (settings.data.mqttRefresh * 1000)*(-1);
+    mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
   }
 }
 
@@ -466,8 +479,8 @@ void prozessData()
       commandFromMqtt = "";
       // mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (customResponse).c_str());
     }
-    //mqtttimer = 0;
-    mqtttimer = (settings.data.mqttRefresh * 1000)*(-1);
+    // mqtttimer = 0;
+    mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
     requestTimer = 0;
     valChange = false;
   }
@@ -507,38 +520,35 @@ void getJsonData()
   liveData["solarW"] = mppClient.get.variableData.pvChargingPower[0];
   liveData["iv_mode"] = mppClient.get.variableData.operationMode;
 
-    if (mppClient.qAvaible.qpiri)
-    {
-      staticData["AC_in_rating_voltage"] = mppClient.get.staticData.gridRatingVoltage;
-      staticData["AC_in_rating_current"] = mppClient.get.staticData.gridRatingCurrent;
-      staticData["AC_out_rating_voltage"] = mppClient.get.staticData.acOutputRatingVoltage;
-      staticData["AC_out_rating_frequency"] = mppClient.get.staticData.acOutputRatingFrquency;
-      staticData["AC_out_rating_current"] = mppClient.get.staticData.acoutputRatingCurrent;
-      staticData["AC_out_rating_apparent_power"] = mppClient.get.staticData.acOutputRatingApparentPower;
-      staticData["AC_out_rating_active_power"] = mppClient.get.staticData.acOutputRatingActivePower;
-      staticData["Battery_rating_voltage"] = mppClient.get.staticData.batteryRatingVoltage;
-      staticData["Battery_re-charge_voltage"] = mppClient.get.staticData.batteryReChargeVoltage;
-      staticData["Battery_under_voltage"] = mppClient.get.staticData.batteryUnderVoltage;
-      staticData["Battery_bulk_voltage"] = mppClient.get.staticData.batteryBulkVoltage;
-      staticData["Battery_float_voltage"] = mppClient.get.staticData.batteryFloatVoltage;
+  if (mppClient.qAvaible.qpiri)
+  {
+    staticData["AC_in_rating_voltage"] = mppClient.get.staticData.gridRatingVoltage;
+    staticData["AC_in_rating_current"] = mppClient.get.staticData.gridRatingCurrent;
+    staticData["AC_out_rating_voltage"] = mppClient.get.staticData.acOutputRatingVoltage;
+    staticData["AC_out_rating_frequency"] = mppClient.get.staticData.acOutputRatingFrquency;
+    staticData["AC_out_rating_current"] = mppClient.get.staticData.acoutputRatingCurrent;
+    staticData["AC_out_rating_apparent_power"] = mppClient.get.staticData.acOutputRatingApparentPower;
+    staticData["AC_out_rating_active_power"] = mppClient.get.staticData.acOutputRatingActivePower;
+    staticData["Battery_rating_voltage"] = mppClient.get.staticData.batteryRatingVoltage;
+    staticData["Battery_re-charge_voltage"] = mppClient.get.staticData.batteryReChargeVoltage;
+    staticData["Battery_under_voltage"] = mppClient.get.staticData.batteryUnderVoltage;
+    staticData["Battery_bulk_voltage"] = mppClient.get.staticData.batteryBulkVoltage;
+    staticData["Battery_float_voltage"] = mppClient.get.staticData.batteryFloatVoltage;
 
-      staticData["Battery_type"] = mppClient.get.staticData.batterytype;
-      staticData["Current_max_AC_charging_current"] = mppClient.get.staticData.currentMaxAcChargingCurrent;
-      staticData["Current_max_charging_current"] = mppClient.get.staticData.currentMaxChargingCurrent;
-    }
-    // QPI
-    if (mppClient.qAvaible.qpi)
-    {
-      staticData["Protocol_ID"] = mppClient.get.staticData.deviceProtocol;
-    }
-    // QMN
-    if (mppClient.qAvaible.qmn)
-    {
-      staticData["Device_Model"] = mppClient.get.staticData.modelName;
-    }
-
-
-
+    staticData["Battery_type"] = mppClient.get.staticData.batterytype;
+    staticData["Current_max_AC_charging_current"] = mppClient.get.staticData.currentMaxAcChargingCurrent;
+    staticData["Current_max_charging_current"] = mppClient.get.staticData.currentMaxChargingCurrent;
+  }
+  // QPI
+  if (mppClient.qAvaible.qpi)
+  {
+    staticData["Protocol_ID"] = mppClient.get.staticData.deviceProtocol;
+  }
+  // QMN
+  if (mppClient.qAvaible.qmn)
+  {
+    staticData["Device_Model"] = mppClient.get.staticData.modelName;
+  }
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
@@ -596,6 +606,17 @@ bool connectMQTT()
   return true;
 }
 
+char *topicBuilder1(char *buffer, char const *path0, char const *path1)
+{                                                  // buffer, topic
+  const char *mainTopic = settings.data.mqttTopic; // get the main topic path
+  strcpy(buffer, mainTopic);
+  strcat(buffer, "/");
+  strcat(buffer, path0);
+  strcat(buffer, "/");
+  strcat(buffer, path1);
+  return buffer;
+}
+
 bool sendtoMQTT()
 {
   char msgBuffer[32];
@@ -613,36 +634,25 @@ bool sendtoMQTT()
   if (!settings.data.mqttJson)
   {
 
-DEBUG_PRINTLN(F("json pair test:"));
+    DEBUG_PRINTLN(F("json pair test:"));
 
-for (JsonPair kv : liveData) {
-    DEBUG_PRINT(kv.key().c_str());
-    DEBUG_PRINT(": ");
-    DEBUG_PRINTLN(kv.value().as<String>());
-    //topicbuilder need rework, and the jsonpair need expand to iterate over every nested object
-    //https://github.com/bblanchon/ArduinoJson/issues/913
+    for (JsonPair i : root.as<JsonObject>())
+    {
+      //DEBUG_PRINTLN(i.key().c_str());
+      for (JsonPair k : i.value().as<JsonObject>())
+      {
+        //DEBUG_PRINT(k.key().c_str());
+        //DEBUG_PRINT(": ");
+        //DEBUG_PRINTLN(k.value().as<String>());
+        //char msgBuffer1[256];
+        //sprintf(msgBuffer1, "%s/%s/%s",settings.data.mqttTopic, i.key().c_str(), k.key().c_str());
+        //DEBUG_PRINTLN(msgBuffer1);
+        //mqttclient.publish(msgBuffer1, k.value().as<const char *>());
+        //msgBuffer1 = "0";
+      }
+    }
 
-    //https://github.com/bblanchon/ArduinoJson/issues/1655
-    //mqttclient.publish(topicBuilder(buff, kv.key().c_str()), kv.value().as<String>().c_str());
-}
-
-for (JsonPair  k : Json.as<JsonObject>()) {
-  //DEBUG_PRINT(k.key().c_str());
-  DEBUG_PRINTLN(k.value().as<String>());
- // for(JsonPair k : i.value().as<JsonObject>()) {
-    
-   // DEBUG_PRINT(k.key().c_str());
-   // DEBUG_PRINT(": ");
-   // DEBUG_PRINTLN(k.value().as<String>());
- // }
-}
-for(JsonPair i : Json.as<JsonObject>()) {
-  for(JsonPair k : i.value().as<JsonObject>()) {
-    mqttclient.publish(i.key().c_str() +"/"+ k.key().c_str()), k.value().as<String>().c_str());
-  }
-}
-
-
+/*
     // testing
     mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), mppClient.get.raw.commandAnswer.c_str());
     // Q1
@@ -755,6 +765,7 @@ for(JsonPair i : Json.as<JsonObject>()) {
     {
       mqttclient.publish(topicBuilder(buff, "Device_Data/Device_Model"), mppClient.get.staticData.modelName.c_str());
     }
+    */
 // RAW
 #ifdef DEBUG
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS"), (mppClient.get.raw.qpigs).c_str());

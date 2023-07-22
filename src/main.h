@@ -10,7 +10,7 @@
 
 #define LED_PIN 02 //D4 with the LED on Wemos D1 Mini
 
-#define JSON_BUFFER 2048
+#define JSON_BUFFER 4096
 #define MQTT_BUFFER 512
 
 // DON'T edit version here, place version number in platformio.ini (custom_prog_version) !!!
