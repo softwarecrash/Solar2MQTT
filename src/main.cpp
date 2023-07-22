@@ -619,6 +619,7 @@ for (JsonPair kv : liveData) {
     DEBUG_PRINT(kv.key().c_str());
     DEBUG_PRINT(": ");
     DEBUG_PRINTLN(kv.value().as<String>());
+    //topicbuilder need rework, and the jsonpair need expand to iterate over every nested object
     mqttclient.publish(topicBuilder(buff, kv.key().c_str()), kv.value().as<String>().c_str());
 }
 
