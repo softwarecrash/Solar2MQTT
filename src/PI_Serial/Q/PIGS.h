@@ -40,7 +40,7 @@ bool PI_Serial::PIXX_QPIGS()
     qAvaible.qpigs = true;
     get.raw.qpigs = commandAnswer;
     int index = 0;
-    liveData["qpigs-test"] = 13579;
+    liveData["qpigs-test"] = 13579; //now we can change all data structures to the json variables, save a lot of memory, take care that json is large enugh
     get.variableData.gridVoltage = getNextFloat(commandAnswer, index);                  // BBB.B
     get.variableData.gridFrequency = getNextFloat(commandAnswer, index);                // CC.C
     get.variableData.acOutputVoltage = getNextFloat(commandAnswer, index);              // DDD.D
