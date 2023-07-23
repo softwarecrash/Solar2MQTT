@@ -66,7 +66,9 @@ You are welcome to get fully stocked and tested PCB's. These are then already lo
 
 If interested see [here](https://all-solutions.store)
 
-
 #
 Questions?
 [Join the Discord Channel (German / English)](https://discord.gg/zUQuTtcKuQ)
+
+#
+[<img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"/>](https://donate.softwarecrash.de)
