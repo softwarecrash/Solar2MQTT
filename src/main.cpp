@@ -641,9 +641,9 @@ bool sendtoMQTT()
       //DEBUG_PRINTLN(i.key().c_str());
       for (JsonPair k : i.value().as<JsonObject>())
       {
-        //DEBUG_PRINT(k.key().c_str());
-        //DEBUG_PRINT(": ");
-        //DEBUG_PRINTLN(k.value().as<String>());
+        DEBUG_PRINT(k.key().c_str());
+        DEBUG_PRINT(": ");
+        DEBUG_PRINTLN(k.value().as<String>());
         //char msgBuffer1[256];
         //sprintf(msgBuffer1, "%s/%s/%s",settings.data.mqttTopic, i.key().c_str(), k.key().c_str());
         //DEBUG_PRINTLN(msgBuffer1);
