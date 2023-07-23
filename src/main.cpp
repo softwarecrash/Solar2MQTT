@@ -61,7 +61,7 @@ JsonObject deviceJson = Json.createNestedObject("Device");     // basic device d
 JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
 JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
 
-StaticJsonDocument<512> root;
+DynamicJsonDocument root(1024);
 JsonObject nest1 = root.createNestedObject("nest1");
 JsonObject nest2 = root.createNestedObject("nest2");
 //----------------------------------------------------------------------
