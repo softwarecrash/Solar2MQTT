@@ -46,8 +46,8 @@ struct QpigsMessage
   byte battChargeA;
   byte battPercent;
   float heatSinkDegC;
-  byte solarA;
-  byte solarV;
+  float solarA;
+  float solarV;
   float sccBattV;
   byte battDischargeA;
   short solarW;
