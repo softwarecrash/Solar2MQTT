@@ -181,12 +181,12 @@ void recvMsg(uint8_t *data, size_t len)
 void setup()
 {
 
-  nest1["nest1_1"] = 1;
-  nest1["nest1_2"] = 2;
+  nest1["nest1_1"] = "hello";
+  nest1["nest1_2"] = "nest";
   nest1["nest1_3"] = 3;
 
-  nest2["nest2_1"] = 1;
-  nest2["nest2_2"] = 2;
+  nest2["nest2_1"] = "second";
+  nest2["nest2_2"] = "nestnumber";
   nest2["nest2_3"] = 3;
 
 #ifdef DEBUG
@@ -639,14 +639,20 @@ bool sendtoMQTT()
     for (JsonPair i : root.as<JsonObject>())
     {
       //DEBUG_PRINTLN(i.key().c_str());
+      String subTopicOne = i.value().as<String>();
       for (JsonPair k : i.value().as<JsonObject>())
       {
         DEBUG_PRINT(k.key().c_str());
         DEBUG_PRINT(": ");
         DEBUG_PRINTLN(k.value().as<String>());
-        //char msgBuffer1[256];
-        //sprintf(msgBuffer1, "%s/%s/%s",settings.data.mqttTopic, i.key().c_str(), k.key().c_str());
-        //DEBUG_PRINTLN(msgBuffer1);
+        const char * subTopicTwo = k.value().as<const char*>();
+        char msgBuffer1[512];
+        //sprintf(msgBuffer1, "%s/%p/%p",settings.data.mqttTopic, subTopicOne, subTopicTwo);
+        DEBUG_PRINTLN(msgBuffer1);
+        DEBUG_PRINT(subTopicOne);
+        DEBUG_PRINT("/");
+        DEBUG_PRINTLN(subTopicTwo);
+
         //mqttclient.publish(msgBuffer1, k.value().as<const char *>());
         //msgBuffer1 = "0";
       }
