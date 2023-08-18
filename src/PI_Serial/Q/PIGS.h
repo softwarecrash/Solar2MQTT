@@ -18,6 +18,7 @@
 // QPIGS: AAA.A BBBBBB CC.C DDDD.D EEE.E FFFFF GG.G HHH.H III JJJ.J KKK.K LLL.L MMM.M NNN OOOOO PPPPP QQQQQ RRR.R SSS.S TTT.T UUU.U V WWWWWWWWW  PI16
 
 // 000.0 00.0 229.9 50.0 0137 0082 004 403 29.23 001 100 0026 0004 081.5 29.17 00000 00110110 00 00 00131 110 neu ausgelesen von crash. watt werden nicht angezeigt
+
 bool PI_Serial::PIXX_QPIGS()
 {
 
@@ -40,7 +41,7 @@ bool PI_Serial::PIXX_QPIGS()
     qAvaible.qpigs = true;
     get.raw.qpigs = commandAnswer;
     int index = 0;
-    liveData["qpigs-test"] = 13579; //now we can change all data structures to the json variables, save a lot of memory, take care that json is large enugh
+    Json["test"]["qpigs-test"] = 13579; //now we can change all data structures to the json variables, save a lot of memory, take care that json is large enugh
     get.variableData.gridVoltage = getNextFloat(commandAnswer, index);                  // BBB.B
     get.variableData.gridFrequency = getNextFloat(commandAnswer, index);                // CC.C
     get.variableData.acOutputVoltage = getNextFloat(commandAnswer, index);              // DDD.D

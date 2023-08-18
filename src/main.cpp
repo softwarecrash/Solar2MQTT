@@ -14,12 +14,8 @@ https://github.com/softwarecrash/Solar2MQTT
 
 #include "Settings.h"
 
-#include "webpages/htmlCase.h"      //The HTML Konstructor
-#include "webpages/main.h"          //landing page with menu
-#include "webpages/settings.h"      //settings page
-#include "webpages/settingsedit.h"  //mqtt settings page
-#include "webpages/reboot.h"        // Reboot Page
-#include "webpages/htmlProzessor.h" // The html Prozessor
+#include "html.h"
+#include "htmlProzessor.h"
 
 #include "PI_Serial/PI_Serial.h"
 
@@ -55,11 +51,10 @@ String commandFromMqtt;
 String customResponse;
 
 bool firstPublish;
-DynamicJsonDocument Json(JSON_BUFFER);
-// StaticJsonDocument<JSON_BUFFER> Json;                          // main Json
-JsonObject deviceJson = Json.createNestedObject("Device");     // basic device data
-JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
-JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
+DynamicJsonDocument Json(JSON_BUFFER);                       // main Json
+//JsonObject ivJson = Json.createNestedObject("Device");     // basic device data
+//JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
+//JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
 
 DynamicJsonDocument root(1024);
 JsonObject nest1 = root.createNestedObject("nest1");
@@ -78,9 +73,13 @@ void notifyClients()
   {
     DEBUG_PRINT(F("Data sent to WebSocket... "));
     DEBUG_WEB(F("Data sent to WebSocket... "));
-    char data[JSON_BUFFER];
-    size_t len = serializeJson(Json, data);
-    wsClient->text(data, len);
+    size_t len = measureJson(Json);
+    AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
+    if (buffer)
+    {
+      serializeJson(Json, (char *)buffer->get(), len + 1);
+      wsClient->text(buffer);
+    }
     DEBUG_PRINTLN(F("Done"));
     DEBUG_WEBLN(F("Done"));
   }
@@ -288,7 +287,7 @@ void setup()
   DEBUG_WEBLN(F("MQTT Server config Loaded"));
 
   mqttclient.setCallback(mqttcallback);
-  mqttclient.setBufferSize(MQTT_BUFFER);
+  //mqttclient.setBufferSize(MQTT_BUFFER);
 
   // check is WiFi connected
   if (!apRunning)
@@ -454,7 +453,7 @@ void prozessData()
     notifyClients();
   if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
   {
-    sendtoMQTT(); // Update data to MQTT server if we should
+    //sendtoMQTT(); // Update data to MQTT server if we should
     mqtttimer = millis();
   }
 
@@ -488,6 +487,14 @@ void prozessData()
 
 void getJsonData()
 {
+
+Json["test"]["test1"] = "hallowelt";
+serializeJson(Json, Serial);
+
+//Json["EP_"]["LiveData"]["CONNECTION"] = 123;
+
+
+  /*
   deviceJson[F("device_name")] = settings.data.deviceName;
   deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
   deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
@@ -549,6 +556,7 @@ void getJsonData()
   {
     staticData["Device_Model"] = mppClient.get.staticData.modelName;
   }
+  */
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
@@ -585,9 +593,6 @@ bool connectMQTT()
         mqttclient.publish(topicBuilder(buff, "alive"), "true", true); // LWT online message must be retained!
         mqttclient.publish(topicBuilder(buff, "Device_IP"), (const char *)(WiFi.localIP().toString()).c_str(), true);
         mqttclient.subscribe(topicBuilder(buff, "Device_Control/Set_Command"));
-
-        if (settings.data.relaisFunction == 4)
-          mqttclient.subscribe(topicBuilder(buff, "Device_Control/Relais"));
       }
       else
       {
@@ -633,7 +638,7 @@ bool sendtoMQTT()
 
   if (!settings.data.mqttJson)
   {
-
+/*
     DEBUG_PRINTLN(F("json pair test:"));
 
     for (JsonPair i : root.as<JsonObject>())
@@ -657,7 +662,7 @@ bool sendtoMQTT()
         //msgBuffer1 = "0";
       }
     }
-
+*/
 /*
     // testing
     mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), mppClient.get.raw.commandAnswer.c_str());
@@ -784,10 +789,9 @@ bool sendtoMQTT()
   }
   else
   {
-    char data[JSON_BUFFER];
-    serializeJson(Json, data);
-    mqttclient.setBufferSize(JSON_BUFFER + 100);
-    mqttclient.publish(topicBuilder(buff, "Data"), data, false);
+    mqttclient.beginPublish(topicBuilder(buff, "Data"), measureJson(Json), false);
+    serializeJson(Json, mqttclient);
+    mqttclient.endPublish();
   }
   DEBUG_PRINTLN(F("Done"));
   DEBUG_WEBLN(F("Done"));
