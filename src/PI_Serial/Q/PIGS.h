@@ -22,8 +22,8 @@
 bool PI_Serial::PIXX_QPIGS()
 {
 
- // if (!qAvaible.qpigs)
- //   return true;
+  // if (!qAvaible.qpigs)
+  //   return true;
   String commandAnswer = this->requestData("QPIGS");
   byte commandAnswerLength = commandAnswer.length();
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
@@ -41,7 +41,83 @@ bool PI_Serial::PIXX_QPIGS()
     qAvaible.qpigs = true;
     get.raw.qpigs = commandAnswer;
     int index = 0;
-    Json["test"]["qpigs-test"] = 13579; //now we can change all data structures to the json variables, save a lot of memory, take care that json is large enugh
+
+static const char* const dataList[] = 
+{
+  "AC_in_Voltage",
+  "AC_in_Frequenz",
+  "AC_out_Voltage",
+};
+
+String strs[30];
+  // Split the string into substrings
+  int StringCount = 0;
+  while (commandAnswer.length() > 0)
+  {
+    int index = commandAnswer.indexOf(' ');
+    if (index == -1) // No space found
+    {
+      strs[StringCount++] = commandAnswer;
+      break;
+    }
+    else
+    {
+      strs[StringCount++] = commandAnswer.substring(0, index);
+      commandAnswer = commandAnswer.substring(index+1);
+    }
+  }
+
+for (unsigned int i=0; i < sizeof dataList / sizeof dataList[0]; i++)
+{
+  //char char1[8];
+  //strs[i].toCharArray(char1, strs[i].length() +1); 
+  //liveData[dataList[i]] = float(atof(char1));
+
+  //return (int)(value * 100 + 0.5) / 100.0
+  liveData[dataList[i]] = (int)(atof(strs[i].c_str()) * 100 + 0.5) / 100.0;
+  
+  //liveData[dataList[i]] = atof(strs[i].c_str());
+}
+/*
+    liveData["AC_in_Voltage"] = getNextFloat(commandAnswer, index);                               // BBB.B
+    liveData["AC_in_Frequenz"] = getNextFloat(commandAnswer, index);                              // CC.C
+    liveData["AC_out_Voltage"] = getNextFloat(commandAnswer, index);                              // DDD.D
+    liveData["AC_out_Frequenz"] = getNextFloat(commandAnswer, index);                             // EE.E
+    liveData["AC_out_VA"] = getNextFloat(commandAnswer, index);                                   // FFFF
+    liveData["AC_out_Watt"] = getNextLong(commandAnswer, index);                                  // GGGG
+    liveData["AC_out_percent"] = getNextLong(commandAnswer, index);                               // HHH
+    liveData["Inverter_Bus_Voltage"] = getNextLong(commandAnswer, index);                         // III
+    liveData["Battery_Voltage"] = getNextFloat(commandAnswer, index);                             // JJ.JJ
+    liveData["Battery_Charge_Current"] = getNextLong(commandAnswer, index);                       // KKK
+    liveData["Battery_Percent"] = getNextLong(commandAnswer, index);                              // OOO
+    liveData["Inverter_Bus_Temperature"] = getNextLong(commandAnswer, index);                     // TTTT
+    liveData["PV_Input_Current"] = getNextFloat(commandAnswer, index);                            // EE.E
+    liveData["PV_Input_Voltage"] = getNextFloat(commandAnswer, index);                            // UUU.U
+    liveData["Battery_SCC_Volt"] = getNextFloat(commandAnswer, index);                            // WW.WW
+    liveData["Battery_Discharge_Current"] = getNextLong(commandAnswer, index);                    // PPPP
+    liveData["Load_Feed"] = getNextBit(commandAnswer, index) ? "PV" : "Line";                     // b7
+    liveData["Configruation_Status"] = getNextBit(commandAnswer, index) ? "Change" : "No Change"; // b7
+    get.deviceStatus.sccFirmwareVersionChange = getNextBit(commandAnswer, index);                 // b5
+    get.deviceStatus.loadStatus = getNextBit(commandAnswer, index);                               // b4
+    get.deviceStatus.reservedB3 = getNextBit(commandAnswer, index);                               // B3
+    get.deviceStatus.chargingStatus = getNextBit(commandAnswer, index);                           // b2
+    get.deviceStatus.sccChargingStatus = getNextBit(commandAnswer, index);                        // b1
+    get.deviceStatus.acChargingStatus = getNextBit(commandAnswer, index);                         // b0
+    index++;                                                                                      // jump to next dataset after bit reading
+    get.variableData.batteryVoltageOffsetForFansOn = getNextLong(commandAnswer, index);           // QQ
+    get.variableData.eepromVersion = getNextLong(commandAnswer, index);                           // VV
+    get.variableData.pvChargingPower[0] = getNextLong(commandAnswer, index);                      // MMMMM
+    get.deviceStatus.chargingToFloatingMode = getNextBit(commandAnswer, index);                   // b10
+    get.deviceStatus.switchOn = getNextBit(commandAnswer, index);                                 // b9
+    get.deviceStatus.dustproofInstalled = getNextBit(commandAnswer, index);                       // b8
+    get.variableData.batteryLoad = (get.variableData.batteryChargingCurrent - get.variableData.batteryDischargeCurrent);
+    liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
+*/
+
+
+
+
+    /*
     get.variableData.gridVoltage = getNextFloat(commandAnswer, index);                  // BBB.B
     get.variableData.gridFrequency = getNextFloat(commandAnswer, index);                // CC.C
     get.variableData.acOutputVoltage = getNextFloat(commandAnswer, index);              // DDD.D
@@ -76,6 +152,7 @@ bool PI_Serial::PIXX_QPIGS()
     get.deviceStatus.switchOn = getNextBit(commandAnswer, index);               // b9
     get.deviceStatus.dustproofInstalled = getNextBit(commandAnswer, index);     // b8
     get.variableData.batteryLoad = (get.variableData.batteryChargingCurrent - get.variableData.batteryDischargeCurrent);
+    */
     return true;
   }
   else

@@ -51,14 +51,11 @@ String commandFromMqtt;
 String customResponse;
 
 bool firstPublish;
-DynamicJsonDocument Json(JSON_BUFFER);                       // main Json
-//JsonObject ivJson = Json.createNestedObject("Device");     // basic device data
-//JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
-//JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
+DynamicJsonDocument Json(JSON_BUFFER);                         // main Json
+JsonObject ivJson = Json.createNestedObject("Device");         // basic device data
+JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
+JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
 
-DynamicJsonDocument root(1024);
-JsonObject nest1 = root.createNestedObject("nest1");
-JsonObject nest2 = root.createNestedObject("nest2");
 //----------------------------------------------------------------------
 void saveConfigCallback()
 {
@@ -180,14 +177,6 @@ void recvMsg(uint8_t *data, size_t len)
 void setup()
 {
 
-  nest1["nest1_1"] = "hello";
-  nest1["nest1_2"] = "nest";
-  nest1["nest1_3"] = 3;
-
-  nest2["nest2_1"] = "second";
-  nest2["nest2_2"] = "nestnumber";
-  nest2["nest2_3"] = 3;
-
 #ifdef DEBUG
   DEBUG_BEGIN(9600); // Debugging towards UART1
 #endif
@@ -287,7 +276,7 @@ void setup()
   DEBUG_WEBLN(F("MQTT Server config Loaded"));
 
   mqttclient.setCallback(mqttcallback);
-  //mqttclient.setBufferSize(MQTT_BUFFER);
+  // mqttclient.setBufferSize(MQTT_BUFFER);
 
   // check is WiFi connected
   if (!apRunning)
@@ -351,6 +340,8 @@ void setup()
                 settings.data.mqttRefresh = request->arg("post_mqttRefresh").toInt() < 1 ? 1 : request->arg("post_mqttRefresh").toInt(); // prevent lower numbers
                 strncpy(settings.data.deviceName, request->arg("post_deviceName").c_str(), 40);
                 settings.data.mqttJson = (request->arg("post_mqttjson") == "true") ? true : false;
+                strncpy(settings.data.mqttTriggerPath, request->arg("post_mqtttrigger").c_str(), 80);
+                settings.data.webUIdarkmode = (request->arg("post_webuicolormode") == "true") ? true : false;
                 settings.save();
                 request->redirect("/reboot"); });
 
@@ -453,7 +444,7 @@ void prozessData()
     notifyClients();
   if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
   {
-    //sendtoMQTT(); // Update data to MQTT server if we should
+    sendtoMQTT(); // Update data to MQTT server if we should
     mqtttimer = millis();
   }
 
@@ -488,11 +479,11 @@ void prozessData()
 void getJsonData()
 {
 
-Json["test"]["test1"] = "hallowelt";
-serializeJson(Json, Serial);
+  Json["test"]["test1"] = "hallowelt";
+  Json["test"]["test2"] = 10.00;
+  serializeJson(Json, Serial);
 
-//Json["EP_"]["LiveData"]["CONNECTION"] = 123;
-
+  // Json["EP_"]["LiveData"]["CONNECTION"] = 123;
 
   /*
   deviceJson[F("device_name")] = settings.data.deviceName;
@@ -591,8 +582,13 @@ bool connectMQTT()
         DEBUG_PRINTLN(F("Done"));
         DEBUG_WEBLN(F("Done"));
         mqttclient.publish(topicBuilder(buff, "alive"), "true", true); // LWT online message must be retained!
-        mqttclient.publish(topicBuilder(buff, "Device_IP"), (const char *)(WiFi.localIP().toString()).c_str(), true);
+        mqttclient.publish(topicBuilder(buff, "IP"), (const char *)(WiFi.localIP().toString()).c_str(), true);
         mqttclient.subscribe(topicBuilder(buff, "Device_Control/Set_Command"));
+        if (strlen(settings.data.mqttTriggerPath) > 0)
+        {
+          DEBUG_WEBLN("MQTT Data Trigger Subscribed");
+          mqttclient.subscribe(settings.data.mqttTriggerPath);
+        }
       }
       else
       {
@@ -624,7 +620,6 @@ char *topicBuilder1(char *buffer, char const *path0, char const *path1)
 
 bool sendtoMQTT()
 {
-  char msgBuffer[32];
   char buff[256]; // temp buffer for the topic string
   if (!connectMQTT())
   {
@@ -635,34 +630,21 @@ bool sendtoMQTT()
   }
   DEBUG_PRINT(F("Data sent to MQTT Server... "));
   DEBUG_WEB(F("Data sent to MQTT Server... "));
-
+  mqttclient.publish(topicBuilder(buff, "alive"), "true", true); // LWT online message must be retained!
   if (!settings.data.mqttJson)
   {
-/*
-    DEBUG_PRINTLN(F("json pair test:"));
 
-    for (JsonPair i : root.as<JsonObject>())
+    for (JsonPair jsonDev : Json.as<JsonObject>())
     {
-      //DEBUG_PRINTLN(i.key().c_str());
-      String subTopicOne = i.value().as<String>();
-      for (JsonPair k : i.value().as<JsonObject>())
+      for (JsonPair jsondat : jsonDev.value().as<JsonObject>())
       {
-        DEBUG_PRINT(k.key().c_str());
-        DEBUG_PRINT(": ");
-        DEBUG_PRINTLN(k.value().as<String>());
-        const char * subTopicTwo = k.value().as<const char*>();
-        char msgBuffer1[512];
-        //sprintf(msgBuffer1, "%s/%p/%p",settings.data.mqttTopic, subTopicOne, subTopicTwo);
+        char msgBuffer1[200];
+        sprintf(msgBuffer1, "%s/%s/%s", settings.data.mqttTopic, jsonDev.key().c_str(), jsondat.key().c_str());
         DEBUG_PRINTLN(msgBuffer1);
-        DEBUG_PRINT(subTopicOne);
-        DEBUG_PRINT("/");
-        DEBUG_PRINTLN(subTopicTwo);
-
-        //mqttclient.publish(msgBuffer1, k.value().as<const char *>());
-        //msgBuffer1 = "0";
+        mqttclient.publish(msgBuffer1, jsondat.value().as<String>().c_str());
       }
     }
-*/
+
 /*
     // testing
     mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), mppClient.get.raw.commandAnswer.c_str());
@@ -849,15 +831,3 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
   }
 }
 
-/* later
-void DEBUG_PRINT(const __FlashStringHelper *logmessage)
-{
-  DEBUG_PRINT(logmessage);
-  DEBUG_WEB(logmessage);
-}
-void DEBUG_PRINTLN(const __FlashStringHelper *logmessage)
-{
-  DEBUG_PRINTLN(logmessage);
-  DEBUG_WEBLN(logmessage);
-}
-*/
