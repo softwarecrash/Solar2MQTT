@@ -321,11 +321,6 @@ private:
     String requestData(String command);
 
     /**
-     * @brief accept a achar and get back the operation mode as string
-     */
-    char *getModeDesc(char mode);
-
-    /**
      * @brief Clear all data from the Get struct
      * @details when wrong or missing data comes in it need sto be cleared
      */

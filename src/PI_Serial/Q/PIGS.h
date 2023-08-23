@@ -116,7 +116,7 @@ bool PI_Serial::PIXX_QPIGS()
 
     for (unsigned int i = 0; i < sizeof qpigsList[protocolNum] / sizeof qpigsList[protocolNum][0]; i++)
     {
-      if (!strs[i].isEmpty())
+      if (!strs[i].isEmpty() && strcmp(qpigsList[protocolNum][i], "") != 0)
         liveData[qpigsList[protocolNum][i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
     }
     // make some things pretty

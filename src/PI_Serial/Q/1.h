@@ -42,7 +42,7 @@ bool PI_Serial::PIXX_Q1()
 
         for (unsigned int i = 0; i < sizeof q1List / sizeof q1List[0]; i++)
         {
-            if (!strs[i].isEmpty())
+            if (!strs[i].isEmpty() && strcmp(q1List[i], "") != 0)
                 liveData[q1List[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
         }
 
