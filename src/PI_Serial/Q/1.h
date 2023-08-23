@@ -49,7 +49,7 @@ bool PI_Serial::PIXX_Q1()
         // https://arduinojson.org/v6/api/jsonobject/containskey/
         if ((const char *)liveData["Inverter_charge_state"])
         {
-            switch (liveData["Inverter_charge_state"].as<unsigned short>())
+            switch (liveData["Inverter_charge_state"].as<unsigned int>())
             {
             default:
                 liveData["Inverter_charge_state"] = (char *)"no data";
