@@ -49,23 +49,27 @@ bool PI_Serial::PIXX_Q1()
                 liveData[q1List[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
         }
 
-        switch (liveData["Inverter_charge_state"].as<unsigned short>())
+        // https://arduinojson.org/v6/api/jsonobject/containskey/
+        if ((const char *)liveData["Inverter_charge_state"])
         {
-        default:
-            liveData["Inverter_charge_state"] = (char *)"no data";
-            break;
-        case 10:
-            liveData["Inverter_charge_state"] = (char *)"no charging";
-            break;
-        case 11:
-            liveData["Inverter_charge_state"] = (char *)"bulk stage";
-            break;
-        case 12:
-            liveData["Inverter_charge_state"] = (char *)"absorb";
-            break;
-        case 13:
-            liveData["Inverter_charge_state"] = (char *)"float";
-            break;
+            switch (liveData["Inverter_charge_state"].as<unsigned short>())
+            {
+            default:
+                liveData["Inverter_charge_state"] = (char *)"no data";
+                break;
+            case 10:
+                liveData["Inverter_charge_state"] = (char *)"no charging";
+                break;
+            case 11:
+                liveData["Inverter_charge_state"] = (char *)"bulk stage";
+                break;
+            case 12:
+                liveData["Inverter_charge_state"] = (char *)"absorb";
+                break;
+            case 13:
+                liveData["Inverter_charge_state"] = (char *)"float";
+                break;
+            }
         }
     }
     return true;
