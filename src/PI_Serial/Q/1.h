@@ -15,11 +15,8 @@ static const char *const q1List[] = {
 };
 bool PI_Serial::PIXX_Q1()
 {
-    // if (!qAvaible.q1)
-    //     return true;
     String commandAnswer = this->requestData("Q1");
     byte commandAnswerLength = commandAnswer.length();
-    // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
 
     if (commandAnswerLength == 47)
     {
