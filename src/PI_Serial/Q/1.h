@@ -52,7 +52,7 @@ bool PI_Serial::PIXX_Q1()
             switch (liveData["Inverter_charge_state"].as<unsigned int>())
             {
             default:
-                liveData["Inverter_charge_state"] = (char *)"no data";
+                //liveData["Inverter_charge_state"] = (char *)"no data";
                 break;
             case 10:
                 liveData["Inverter_charge_state"] = (char *)"no charging";
