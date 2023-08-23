@@ -76,9 +76,6 @@ static const char *const qpigsList[][30] = {
 
 bool PI_Serial::PIXX_QPIGS()
 {
-
-  // if (!qAvaible.qpigs)
-  //   return true;
   String commandAnswer = this->requestData("QPIGS");
   byte commandAnswerLength = commandAnswer.length();
   byte protocolNum = 0;
