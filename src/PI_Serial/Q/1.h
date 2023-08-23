@@ -48,24 +48,24 @@ bool PI_Serial::PIXX_Q1()
         }
 
         // https://arduinojson.org/v6/api/jsonobject/containskey/
-        if ((const char *)liveData["Inverter_charge_state"])
+        if (liveData.containsKey("Inverter_charge_state"))
         {
-            switch (liveData["Inverter_charge_state"].as<unsigned int>())
+            switch ((int)liveData["Inverter_charge_state"].as<unsigned int>())
             {
             default:
                 //liveData["Inverter_charge_state"] = "no data";
                 break;
             case 10:
-                liveData["Inverter_charge_state"] = "no charging";
+                liveData["Inverter_charge_state"] = "No charging";
                 break;
             case 11:
-                liveData["Inverter_charge_state"] = "bulk stage";
+                liveData["Inverter_charge_state"] = "Bulk stage";
                 break;
             case 12:
-                liveData["Inverter_charge_state"] = "absorb";
+                liveData["Inverter_charge_state"] = "Absorb";
                 break;
             case 13:
-                liveData["Inverter_charge_state"] = "float";
+                liveData["Inverter_charge_state"] = "Float";
                 break;
             }
         }

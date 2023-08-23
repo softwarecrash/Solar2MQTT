@@ -94,7 +94,8 @@ bool PI_Serial::PIXX_QPIGS()
     {
       protocolNum = 1;
     }
-    rawData["QPIGS"] = commandAnswer;
+  
+    rawData["QPIGS"] = commandAnswer; // sometimes it writes null, why?
 
     String strs[30];
     // Split the string into substrings

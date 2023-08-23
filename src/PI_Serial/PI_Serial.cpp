@@ -311,7 +311,7 @@ String PI_Serial::appendCRC(String data) // calculate and add the crc to the str
         uint16_t u;
     } cu_t;
     cu_t v;
-    v.u = crc.getCRC();
+    v.u = crc.calc();
     data.concat(v.cH);
     data.concat(v.cL);
     /*
@@ -341,7 +341,7 @@ uint16_t PI_Serial::getCRC(String data) // get a calculated crc from a string
     crc.reset();
     crc.setPolynome(0x1021);
     crc.add((uint8_t *)data.c_str(), data.length());
-    return crc.getCRC(); // here comes the crc;
+    return crc.calc(); // here comes the crc;
 }
 
 byte PI_Serial::getCHK(String data) // get a calculatedt CHK

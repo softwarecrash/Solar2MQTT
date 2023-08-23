@@ -52,7 +52,8 @@ String customResponse;
 
 bool firstPublish;
 DynamicJsonDocument Json(JSON_BUFFER);                         // main Json
-JsonObject ivJson = Json.createNestedObject("Device");         // basic device data
+//StaticJsonDocument <JSON_BUFFER>Json;
+//JsonObject ivJson = Json.createNestedObject("Device");         // basic device data
 JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
 JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
 JsonObject rawData = Json.createNestedObject("RawData");       // battery package data

@@ -35,7 +35,7 @@
 #endif
 
 #include <ArduinoJson.h>
-extern DynamicJsonDocument Json;
+//extern DynamicJsonDocument Json;
 extern JsonObject deviceJson; 
 extern JsonObject staticData;
 extern JsonObject liveData;
