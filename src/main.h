@@ -13,7 +13,7 @@
 #define JSON_BUFFER 4096
 
 #define ESP01
-#define FlashSize ESP.getFlashChipSize()
+#define FlashSize ESP.getFreeSketchSpace()
 #ifdef ARDUINO_ESP8266_ESP01
 #undef EPEVER_DE_RE
 #define EPEVER_DE_RE 0  // ESP01 

@@ -1,6 +1,7 @@
 static const char *const q1List[] = {
     // [PI34 / MPPT-3000], [PI30 HS MS MSX], [PI30 Revo], [PI30 PIP], [PI41 / LV5048]
     "Time_until_absorb_charge",
+    "Time_until_float_charge",
     "",
     "Tracker_temperature",
     "Inverter_temperature",
@@ -52,19 +53,19 @@ bool PI_Serial::PIXX_Q1()
             switch (liveData["Inverter_charge_state"].as<unsigned int>())
             {
             default:
-                //liveData["Inverter_charge_state"] = (char *)"no data";
+                //liveData["Inverter_charge_state"] = "no data";
                 break;
             case 10:
-                liveData["Inverter_charge_state"] = (char *)"no charging";
+                liveData["Inverter_charge_state"] = "no charging";
                 break;
             case 11:
-                liveData["Inverter_charge_state"] = (char *)"bulk stage";
+                liveData["Inverter_charge_state"] = "bulk stage";
                 break;
             case 12:
-                liveData["Inverter_charge_state"] = (char *)"absorb";
+                liveData["Inverter_charge_state"] = "absorb";
                 break;
             case 13:
-                liveData["Inverter_charge_state"] = (char *)"float";
+                liveData["Inverter_charge_state"] = "float";
                 break;
             }
         }
