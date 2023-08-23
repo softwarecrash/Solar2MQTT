@@ -39,7 +39,7 @@
 extern JsonObject deviceJson; 
 extern JsonObject staticData;
 extern JsonObject liveData;
-extern JsonObject rawData;
+//extern JsonObject rawData;
 
 
 class PI_Serial
@@ -262,7 +262,7 @@ private:
     unsigned int serialIntfBaud;
 
     unsigned int previousTime = 0;
-    unsigned int delayTime = 50;
+    unsigned int delayTime = 500;
     byte requestCounter = 0;
     String customCommandBuffer;
 

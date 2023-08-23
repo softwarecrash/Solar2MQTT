@@ -56,7 +56,7 @@ DynamicJsonDocument Json(JSON_BUFFER);                         // main Json
 //JsonObject ivJson = Json.createNestedObject("Device");         // basic device data
 JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
 JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
-JsonObject rawData = Json.createNestedObject("RawData");       // battery package data
+//JsonObject rawData = Json.createNestedObject("RawData");       // battery package data
 
 //----------------------------------------------------------------------
 void saveConfigCallback()
@@ -72,11 +72,11 @@ void notifyClients()
   {
     DEBUG_PRINT(F("Data sent to WebSocket... "));
     DEBUG_WEB(F("Data sent to WebSocket... "));
-    size_t len = measureJson(Json);
+    size_t len = measureJson(liveData);
     AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
     if (buffer)
     {
-      serializeJson(Json, (char *)buffer->get(), len + 1);
+      serializeJson(liveData, (char *)buffer->get(), len + 1);
       wsClient->text(buffer);
     }
     DEBUG_PRINTLN(F("Done"));

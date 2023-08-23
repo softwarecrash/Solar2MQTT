@@ -83,7 +83,6 @@ bool PI_Serial::PIXX_QPIGS()
   byte commandAnswerLength = commandAnswer.length();
   byte protocolNum = 0;
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
-
   if (commandAnswerLength >= 60 && commandAnswerLength <= 140)
   {
     if (commandAnswerLength <= 116)
@@ -94,8 +93,8 @@ bool PI_Serial::PIXX_QPIGS()
     {
       protocolNum = 1;
     }
-  
-    rawData["QPIGS"] = commandAnswer; // sometimes it writes null, why?
+  get.raw.qpigs = commandAnswer;
+   // rawData["QPIGS"] = commandAnswer; // sometimes it writes null, why?
 
     String strs[30];
     // Split the string into substrings

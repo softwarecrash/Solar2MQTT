@@ -3,7 +3,8 @@ bool PI_Serial::PIXX_QMOD()
   String commandAnswer = this->requestData("QMOD");
   if (commandAnswer.length() == 1)
   {
-    rawData["QMOD"] = commandAnswer;
+    get.raw.qmod = commandAnswer;
+    //rawData["QMOD"] = commandAnswer;
 
     char *modeString;
     switch ((char)commandAnswer.charAt(0))

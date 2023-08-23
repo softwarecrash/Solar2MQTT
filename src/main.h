@@ -3,7 +3,7 @@
 #include <WebSerialLite.h>
 #endif
 #define ARDUINOJSON_USE_DOUBLE 1
-#define ARDUINOJSON_USE_LONG_LONG 0
+#define ARDUINOJSON_USE_LONG_LONG 1
 
 #define INVERTER_TX 13
 #define INVERTER_RX 12
