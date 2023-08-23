@@ -2,7 +2,7 @@
 
 #include <Arduino.h>  // PROGMEM
 
-const char HTML_CONFIRM_RESET[] PROGMEM = R"rawliteral(%pre_head_template%
+static const char HTML_CONFIRM_RESET[] PROGMEM = R"rawliteral(%pre_head_template%
 
 <figure class="text-center"><h1>Erase all Data?</h1></figure>
 <div class="d-grid gap-2">
@@ -12,7 +12,7 @@ const char HTML_CONFIRM_RESET[] PROGMEM = R"rawliteral(%pre_head_template%
 
 %pre_foot_template%
 <p hidden></p> )rawliteral";
-const char HTML_FOOT[] PROGMEM = R"rawliteral(<figure class="text-center">
+static const char HTML_FOOT[] PROGMEM = R"rawliteral(<figure class="text-center">
     Solar2MQTT <a id="software_version">%pre_software_version%</a> By <a href="https://github.com/softwarecrash/Solar2MQTT"
         target="_blank">Softwarecrash</a>
     <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank"><img
@@ -53,7 +53,7 @@ const char HTML_FOOT[] PROGMEM = R"rawliteral(<figure class="text-center">
 </body>
 
 </html>)rawliteral";
-const char HTML_HEAD[] PROGMEM = R"rawliteral(<!DOCTYPE html>
+static const char HTML_HEAD[] PROGMEM = R"rawliteral(<!DOCTYPE html>
 <html lang="en" xml:lang="en" data-bs-theme="%pre_darkmode%">
 
 <head>
@@ -80,7 +80,7 @@ const char HTML_HEAD[] PROGMEM = R"rawliteral(<!DOCTYPE html>
             continue.</strong>
     </noscript>
     <div class="container-md col-md-4">)rawliteral";
-const char HTML_MAIN[] PROGMEM = R"rawliteral(%pre_head_template%
+static const char HTML_MAIN[] PROGMEM = R"rawliteral(%pre_head_template%
 
 <figure class="text-center">
     <h2 id="devicename"></h2>
@@ -438,7 +438,7 @@ const char HTML_MAIN[] PROGMEM = R"rawliteral(%pre_head_template%
 
 %pre_foot_template%
 <p hidden></p>)rawliteral";
-const char HTML_REBOOT[] PROGMEM = R"rawliteral(%pre_head_template%
+static const char HTML_REBOOT[] PROGMEM = R"rawliteral(%pre_head_template%
 
 <figure class="text-center">
   <h1>Rebooting </h1>
@@ -484,7 +484,7 @@ const char HTML_REBOOT[] PROGMEM = R"rawliteral(%pre_head_template%
 
 %pre_foot_template%
 <p hidden></p>)rawliteral";
-const char HTML_SETTINGS[] PROGMEM = R"rawliteral(%pre_head_template%
+static const char HTML_SETTINGS[] PROGMEM = R"rawliteral(%pre_head_template%
 
 <figure class="text-center">
   <h1>Settings</h1>
@@ -565,7 +565,7 @@ const char HTML_SETTINGS[] PROGMEM = R"rawliteral(%pre_head_template%
 
 %pre_foot_template%
 <p hidden></p>)rawliteral";
-const char HTML_SETTINGS_EDIT[] PROGMEM = R"rawliteral(%pre_head_template%
+static const char HTML_SETTINGS_EDIT[] PROGMEM = R"rawliteral(%pre_head_template%
 
 <figure class="text-center">
     <h1>Edit Configuration</h1>

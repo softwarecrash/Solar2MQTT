@@ -55,6 +55,7 @@ DynamicJsonDocument Json(JSON_BUFFER);                         // main Json
 JsonObject ivJson = Json.createNestedObject("Device");         // basic device data
 JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
 JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
+JsonObject rawData = Json.createNestedObject("RawData");     // battery package data
 
 //----------------------------------------------------------------------
 void saveConfigCallback()
@@ -178,7 +179,7 @@ void setup()
 {
 
 #ifdef DEBUG
-  DEBUG_BEGIN(9600); // Debugging towards UART1
+  DEBUG_BEGIN(DEBUG_BAUD); // Debugging towards UART1
 #endif
   settings.load();
   WiFi.persistent(true); // fix wifi save bug

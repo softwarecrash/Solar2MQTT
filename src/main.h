@@ -2,7 +2,7 @@
 #define DEBUG Serial // Uncomment the below #define to enable debugging print statements.
 #include <WebSerialLite.h>
 #endif
-#define ARDUINOJSON_USE_DOUBLE 0
+#define ARDUINOJSON_USE_DOUBLE 1
 #define ARDUINOJSON_USE_LONG_LONG 0
 
 #define INVERTER_TX 13
@@ -11,7 +11,6 @@
 #define LED_PIN 02 //D4 with the LED on Wemos D1 Mini
 
 #define JSON_BUFFER 4096
-//#define MQTT_BUFFER 512
 
 #define ESP01
 #define FlashSize ESP.getFlashChipSize()
@@ -31,7 +30,7 @@
 #define SOFTWARE_VERSION SWVERSION " " HWBOARD " " __DATE__ " " __TIME__
 #endif
 
-
+#define DEBUG_BAUD 115200
 #ifdef DEBUG
 #define DEBUG_BEGIN(...) DEBUG.begin(__VA_ARGS__)
 #define DEBUG_PRINT(...) DEBUG.print(__VA_ARGS__)

@@ -39,6 +39,7 @@ extern DynamicJsonDocument Json;
 extern JsonObject deviceJson; 
 extern JsonObject staticData;
 extern JsonObject liveData;
+extern JsonObject rawData;
 
 
 class PI_Serial
