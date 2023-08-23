@@ -112,10 +112,10 @@ bool PI_Serial::PIXX_QPIRI()
     switch ((byte)getNextLong(commandAnswer, index)) // T
     {
     case 0:
-      get.staticData.topolgy = "transformerless";
+      get.staticData.topolgy = "Transformerless";
       break;
     case 1:
-      get.staticData.topolgy = "Otransformer";
+      get.staticData.topolgy = "Transformer";
       break;
     }
     return true;
