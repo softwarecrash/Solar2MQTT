@@ -79,6 +79,10 @@ bool PI_Serial::PIXX_QPIGS()
   String commandAnswer = this->requestData("QPIGS");
   byte commandAnswerLength = commandAnswer.length();
   byte protocolNum = 0;
+    if (commandAnswer == "NAK")
+  {
+    return true;
+  }
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswerLength >= 60 && commandAnswerLength <= 140)
   {

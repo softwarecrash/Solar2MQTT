@@ -18,7 +18,10 @@ bool PI_Serial::PIXX_Q1()
 {
     String commandAnswer = this->requestData("Q1");
     byte commandAnswerLength = commandAnswer.length();
-
+  if (commandAnswer == "NAK")
+  {
+    return true;
+  }
     if (commandAnswerLength == 47)
     {
         get.raw.q1 = commandAnswer;
