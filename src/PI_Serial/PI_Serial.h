@@ -35,12 +35,11 @@
 #endif
 
 #include <ArduinoJson.h>
-//extern DynamicJsonDocument Json;
-extern JsonObject deviceJson; 
+// extern DynamicJsonDocument Json;
+extern JsonObject deviceJson;
 extern JsonObject staticData;
 extern JsonObject liveData;
-//extern JsonObject rawData;
-
+// extern JsonObject rawData;
 
 class PI_Serial
 {
@@ -142,7 +141,7 @@ public:
             float batteryVoltageFromScc = -1;            // The units is V.
             short batteryDischargeCurrent = -1;          // The units is A.
             short batteryVoltageOffsetForFansOn = -1;    // The unit is 10mV.
-            short batteryLoad;                      // The units is A. - Combined charge and discharge
+            short batteryLoad;                           // The units is A. - Combined charge and discharge
             short eepromVersion = -1;                    // version info
             short pvChargingPower[4] = {-1, -1, -1, -1}; // The unit is watt.
             short pvInputWatt[4] = {-1, -1, -1, -1};     // The unit is watt.
@@ -325,6 +324,11 @@ private:
      * @details when wrong or missing data comes in it need sto be cleared
      */
     void clearGet();
+
+    /**
+     * @brief accept a achar and get back the operation mode as string
+     */
+    char *getModeDesc(char mode);
 
     /**
      * @brief Serial interface used for communication

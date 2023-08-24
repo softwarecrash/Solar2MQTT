@@ -1,45 +1,71 @@
 
 // QALL: BBB CC.C DDD EE.E FFFF GGG HH.H III JJJ KKK LLL MM.M NNNN OOOOOO PPPPPP Q KK SS - PI30 Revo
+static const char *const qallList[] =
+    // [PI30 Revo]
+    {
+        "AC_in_Voltage",             // BBB.B
+        "AC_in_Frequenz",            // CC.C
+        "AC_out_Voltage",            // DDD.D
+        "AC_out_Frequenz",           // EE.E
+        "AC_out_VA",                 // FFFF
+        "AC_out_percent",            // GGG
+        "Battery_Voltage",           // HH.H
+        "Battery_Percent",           // III
+        "Battery_Charge_Current",    // JJJ
+        "Battery_Discharge_Current", // KKK
+        "PV_Input_Voltage",          // LLL
+        "PV_Input_Current",          // MM.M
+        "PV_Charging_Power",         // NNNN
+        "PV_generation_day",         // OOOOOO
+        "PV_generation_sum",         // PPPPPP
+        "Inverter_Operation_Mode",   // Q
+        "Warning_Code",              // KK
+        "Fault_code",                // SS
+};
 bool PI_Serial::PIXX_QALL()
 {
- // if (!qAvaible.qall)
+  // if (!qAvaible.qall)
   //  return true;
   String commandAnswer = this->requestData("QALL");
   byte commandAnswerLength = commandAnswer.length();
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer == "NAK")
   {
-    qAvaible.qall = false; // if recived NAK, set the command avaible to false and never aks again until reboot
     return true;
   }
-  else if (commandAnswerLength == 79 ||
-           commandAnswerLength == 83 // Revo Qall
+  if (commandAnswerLength == 79 ||
+      commandAnswerLength == 83 // Revo Qall
   )
   {
-    qAvaible.qall = true;
     get.raw.qall = commandAnswer;
-    int index = 0;
-    get.variableData.gridVoltage = getNextFloat(commandAnswer, index);            // BBB.B
-    get.variableData.gridFrequency = getNextFloat(commandAnswer, index);          // CC.C
-    get.variableData.acOutputVoltage = getNextFloat(commandAnswer, index);        // DDD.D
-    get.variableData.acOutputFrequency = getNextFloat(commandAnswer, index);      // EE.E
-    get.variableData.acOutputActivePower = getNextLong(commandAnswer, index);     // FFFF
-    get.variableData.outputLoadPercent = getNextLong(commandAnswer, index);       // GGG
-    get.variableData.batteryVoltage = getNextFloat(commandAnswer, index);         // HH.H
-    get.variableData.batteryCapacity = getNextLong(commandAnswer, index);         // III
-    get.variableData.batteryChargingCurrent = getNextLong(commandAnswer, index);  // JJJ
-    get.variableData.batteryDischargeCurrent = getNextLong(commandAnswer, index); // KKK
-    get.variableData.pvInputVoltage[0] = getNextFloat(commandAnswer, index);      // LLL
-    get.variableData.pvInputCurrent[0] = getNextFloat(commandAnswer, index);      // MM.M
-    get.variableData.pvChargingPower[0] = getNextLong(commandAnswer, index);      // NNNN
-    get.variableData.pvGenerationDay = getNextLong(commandAnswer, index);         // OOOOOO
-    get.variableData.pvGenerationSum = getNextLong(commandAnswer, index);         // PPPPPP
-   // get.variableData.operationMode = getModeDesc(commandAnswer[index]);           // Q // getmodedesc nicht mehr da, entfernen
-    get.variableData.batteryLoad = (get.variableData.batteryChargingCurrent - get.variableData.batteryDischargeCurrent);
+
+    String strs[30];
+    // Split the string into substrings
+    int StringCount = 0;
+    while (commandAnswer.length() > 0)
+    {
+      int index = commandAnswer.indexOf(' ');
+      if (index == -1) // No space found
+      {
+        strs[StringCount++] = commandAnswer;
+        break;
+      }
+      else
+      {
+        strs[StringCount++] = commandAnswer.substring(0, index);
+        commandAnswer = commandAnswer.substring(index + 1);
+      }
+    }
+
+    for (unsigned int i = 0; i < sizeof qpigsList / sizeof qpigsList[0]; i++)
+    {
+      if (!strs[i].isEmpty() && strcmp(qallList[i], "") != 0)
+        liveData[qallList[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
+    }
+    liveData["Inverter_Operation_Mode"] = getModeDesc((char)liveData["Inverter_Operation_Mode"].as<String>().charAt(0));
+    liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
+
     return true;
   }
-  else
-  {
-    return false;
-  }
+  return false;
 }

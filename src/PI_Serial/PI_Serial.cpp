@@ -91,7 +91,8 @@ bool PI_Serial::loop()
             switch (requestCounter)
             {
             case 0:
-                requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
+                //requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
+                requestCounter ++;
                 break;
             case 1:
                 requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
@@ -424,4 +425,46 @@ bool PI_Serial::getNextBit(String &command, int &index) // Gets if the next char
         return c == '1';
     }
     return NAN; // before it was return false
+}
+
+char *PI_Serial::getModeDesc(char mode) // get the char from QMOD and make readable things
+{
+    char *modeString;
+    switch (mode)
+    {
+    default:
+        modeString = (char *)("Undefined, Origin: " + mode);
+        break;
+    case 'P':
+        modeString = (char *)"Power On";
+        break;
+    case 'S':
+        modeString = (char *)"Standby";
+        break;
+    case 'Y':
+        modeString = (char *)"Bypass";
+        break;
+    case 'L':
+        modeString = (char *)"Line";
+        break;
+    case 'B':
+        modeString = (char *)"Battery";
+        break;
+    case 'T':
+        modeString = (char *)"Battery Test";
+        break;
+    case 'F':
+        modeString = (char *)"Fault";
+        break;
+    case 'D':
+        modeString = (char *)"Shutdown";
+        break;
+    case 'G':
+        modeString = (char *)"Grid";
+        break;
+    case 'C':
+        modeString = (char *)"Charge";
+        break;
+    }
+    return modeString;
 }
