@@ -6,14 +6,14 @@ SoftwareSerial myPort;
 #include "CRC.h"
 CRC16 crc;
 //static
-#include "Q/PI.h"
-#include "Q/PIRI.h"
-#include "Q/MN.h"
+#include "QPI.h"
+#include "QPIRI.h"
+#include "QMN.h"
 //variable
-#include "Q/1.h"
-#include "Q/PIGS.h"
-#include "Q/MOD.h"
-#include "Q/ALL.h"
+#include "Q1.h"
+#include "QPIGS.h"
+#include "QMOD.h"
+#include "QALL.h"
 //----------------------------------------------------------------------
 // Public Functions
 //----------------------------------------------------------------------

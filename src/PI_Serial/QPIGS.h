@@ -120,6 +120,7 @@ bool PI_Serial::PIXX_QPIGS()
     }
     // make some things pretty
     liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
+    liveData["PV_Input_Power"] = (liveData["PV_Input_Voltage"].as<unsigned short>() * liveData["PV_Input_Current"].as<unsigned short>());
   }
   return true;
 }
