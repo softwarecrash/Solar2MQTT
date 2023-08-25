@@ -1,11 +1,4 @@
-// QPIRI: 230.0 21.7 230.0 50.0 21.7 5000 5000 48.0 48.0 46.0 56.4 56.4 2 02 060 0 2 1 9 01 0 0 52.0 0 1 300                                     loosi (PI41 / LV5048)
-// QPIRI: 230.0 13.0 230.0 50.0 13.0 3000 3000 24.0 22.0 21.9 29.2 29.2 2 02 040 1 1 3 1 01 0 0 25.0 0 1                                         crash seine
-
-// QPIRI: 230.0 13.0 230.0 50.0 13.0 3000 3000 24.0 22.0 21.0 29.2 27.0 1 25 60 1 1 1 - 01 1 0 27.0 0 0                                          // issue/27
-
 // QPIRI: AAA.A BB.B CCC.C DDD.D EEE.E FF.F GGG.G H II J        not correct letters equal to other documents                                     PI16
-// QPIRI: BBB.B FF.F III.I EEE.E DDD.D AA.A GGG.G R MM T                                                                                         PI00
-// QPIRI: BBB.B FF.F III.I EEE.E DDD.D AA.A GGG.G R MM T                                                                                         PI30 Infinisolar
 
 // QPIRI: BBBB CC DD.D EE.EE FF.FF GG HH II.I JJ KKKK L MM.MM N                                                                                  PI34 / MPPT-3000
 // QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O P0 QQ0 O P Q R SS T                                                    PI30 Revo
@@ -13,7 +6,70 @@
 // QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X                                         PI30 PIP
 // QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X YYY                                     PI41 / LV5048
 // QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X YYY Z CCC                               PI30 Max
-// QPIRI: 230.0 01.3 230.0 50.0 01.3 3000 2400 24.0 24.5 21.0 29.2 27.0 1 20 040 0 2 1 - 01 1 0 27.5 0 0
+static const char *const qpiriList[][30] = {
+    // [PI34 / MPPT-3000], [PI30 HS MS MSX], [PI30 Revo], [PI30 PIP], [PI41 / LV5048]
+    {
+        "AC_in_rating_voltage",            // BBB.B
+        "AC_in_rating_current",            // CC.C
+        "AC_out_rating_voltage",           // DDD.D
+        "AC_out_rating_frequency",         // EE.E
+        "AC_out_rating_current",           // FF.F
+        "AC_out_rating_apparent_power",    // HHHH
+        "AC_out_rating_active_power",      // IIII
+        "Battery_rating_voltage",          // JJ.J
+        "Battery_re-charge_voltage",       // KK.K
+        "Battery_under_voltage",           // JJ.J
+        "Battery_bulk_voltage",            // KK.K
+        "Battery_float_voltage",           // LL.L
+        "Battery_type",                    // O
+        "Current_max_AC_charging_current", // PP
+        "Current_max_charging_current",    // QQ0
+        "Input_voltage_range",             // O
+        "Output_source_priority",          // P
+        "Charger_source_priority",         // Q
+        "Parallel_max_num",                // R
+        "Machine_type",                    // SS
+        "Topology",                        // T
+        "Output_mode",                     // U
+        "Battery_re-discharge_voltage",    // VV.V
+        "PV_OK_condition_for_parallel",    // W
+        "PV_power_balance",                // X
+        "Max_charging_time_at_CV_stage",   // YYY
+        "Operation_Logic",                 // Z
+        "Max_discharging_current",         // CCC
+    },
+    // [PI16]
+    {
+        "AC_in_rating_voltage",            // BBB.B
+        "AC_in_rating_current",            // CC.C
+        "AC_out_rating_voltage",           // DDD.D
+        "AC_out_rating_frequency",         // EE.E
+        "AC_out_rating_current",           // FF.F
+        "AC_out_rating_apparent_power",    // HHHH
+        "AC_out_rating_active_power",      // IIII
+        "Battery_rating_voltage",          // JJ.J
+        "Battery_re-charge_voltage",       // KK.K
+        "Battery_under_voltage",           // JJ.J
+        "Battery_bulk_voltage",            // KK.K
+        "Battery_float_voltage",           // LL.L
+        "Battery_type",                    // O
+        "Current_max_AC_charging_current", // PP
+        "Current_max_charging_current",    // QQ0
+        "Input_voltage_range",             // O
+        "Output_source_priority",          // P
+        "Charger_source_priority",         // Q
+        "Parallel_max_num",                // R
+        "Machine_type",                    // SS
+        "Topology",                        // T
+        "Output_mode",                     // U
+        "Battery_re-discharge_voltage",    // VV.V
+        "PV_OK_condition_for_parallel",    // W
+        "PV_power_balance",                // X
+        "Max_charging_time_at_CV_stage",   // YYY
+        "Operation_Logic",                 // Z
+        "Max_discharging_current",         // CCC
+    },
+};
 bool PI_Serial::PIXX_QPIRI()
 {
   String commandAnswer = this->requestData("QPIRI");
@@ -23,103 +79,38 @@ bool PI_Serial::PIXX_QPIRI()
     qAvaible.qpiri = false; // if recived NAK, set the command avaible to false and never aks again until reboot
     return true;
   }
-  else if (commandAnswer.length() == 83 || // Revo
-           commandAnswer.length() == 94 || // PIP MSX
-           commandAnswer.length() == 98 || // LV5048
-           commandAnswer.length() == 104   // PI30 MAX
-  )
+  else if (commandAnswer.length() > 80 &&
+           commandAnswer.length() < 105)
   {
-    qAvaible.qpiri = true;
     get.raw.qpiri = commandAnswer;
-    int index = 0;
-    get.staticData.gridRatingVoltage = getNextFloat(commandAnswer, index);          // BBB.B
-    get.staticData.gridRatingCurrent = getNextFloat(commandAnswer, index);          // CC.C
-    get.staticData.acOutputRatingVoltage = getNextFloat(commandAnswer, index);      // DDD.D
-    get.staticData.acOutputRatingFrquency = getNextFloat(commandAnswer, index);     // EE.E
-    get.staticData.acoutputRatingCurrent = getNextFloat(commandAnswer, index);      // FF.F
-    get.staticData.acOutputRatingApparentPower = getNextLong(commandAnswer, index); // HHHH
-    get.staticData.acOutputRatingActivePower = getNextLong(commandAnswer, index);   // IIII
-    get.staticData.batteryRatingVoltage = getNextFloat(commandAnswer, index);       // JJ.J
-    get.staticData.batteryReChargeVoltage = getNextFloat(commandAnswer, index);     // KK.K
-    get.staticData.batteryUnderVoltage = getNextFloat(commandAnswer, index);        // JJ.J
-    get.staticData.batteryBulkVoltage = getNextFloat(commandAnswer, index);         // KK.K
-    get.staticData.batteryFloatVoltage = getNextFloat(commandAnswer, index);        // LL.L
+    byte protocolNum = 0;
+    String strs[30];
+    // Split the string into substrings
+    int StringCount = 0;
+    while (commandAnswer.length() > 0)
+    {
+      int index = commandAnswer.indexOf(' ');
+      if (index == -1) // No space found
+      {
+        strs[StringCount++] = commandAnswer;
+        break;
+      }
+      else
+      {
+        strs[StringCount++] = commandAnswer.substring(0, index);
+        commandAnswer = commandAnswer.substring(index + 1);
+      }
+    }
 
-    switch ((byte)getNextLong(commandAnswer, index)) // O
+    for (unsigned int i = 0; i < sizeof qpiriList[protocolNum] / sizeof qpiriList[protocolNum][0]; i++)
     {
-    case 0:
-      get.staticData.batterytype = "AGM";
-      break;
-    case 1:
-      get.staticData.batterytype = "Flooded";
-      break;
-    case 2:
-      get.staticData.batterytype = "User";
-      break;
+      if (!strs[i].isEmpty() && strcmp(qpiriList[protocolNum][i], "") != 0)
+        staticData[qpiriList[protocolNum][i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
     }
-    get.staticData.currentMaxAcChargingCurrent = getNextLong(commandAnswer, index); // PP
-    get.staticData.currentMaxChargingCurrent = getNextLong(commandAnswer, index);   // QQ0
 
-    switch ((byte)getNextLong(commandAnswer, index)) // o
-    {
-    case 0:
-      get.staticData.inputVoltageRange = "Appliance";
-      break;
-    case 1:
-      get.staticData.inputVoltageRange = "UPS";
-      break;
-    }
-    switch ((byte)getNextLong(commandAnswer, index)) // P
-    {
-    case 0:
-      get.staticData.outputSourcePriority = "Utility first";
-      break;
-    case 1:
-      get.staticData.outputSourcePriority = "Solar first";
-      break;
-    case 2:
-      get.staticData.outputSourcePriority = "SBU first";
-      break;
-    }
-    switch ((byte)getNextLong(commandAnswer, index)) // Q
-    {
-    case 0:
-      get.staticData.chargerSourcePriority = "Utility first";
-      break;
-    case 1:
-      get.staticData.chargerSourcePriority = "Solar first";
-      break;
-    case 2:
-      get.staticData.chargerSourcePriority = "Solar + Utility";
-      break;
-    case 3:
-      get.staticData.chargerSourcePriority = "Only solar charging permitted";
-      break;
-    }
-    get.staticData.parallelMaxNumber = getNextLong(commandAnswer, index); // R
-    switch ((byte)getNextLong(commandAnswer, index))                      // SS
-    {
-    case 00:
-      get.staticData.machineType = "Grid tie";
-      break;
-    case 01:
-      get.staticData.machineType = "Off Grid";
-      break;
-    case 10:
-      get.staticData.machineType = "Hybrid";
-      break;
-    }
-    switch ((byte)getNextLong(commandAnswer, index)) // T
-    {
-    case 0:
-      get.staticData.topolgy = "Transformerless";
-      break;
-    case 1:
-      get.staticData.topolgy = "Transformer";
-      break;
-    }
     return true;
-  } else
+  }
+  else
   {
     return false;
   }

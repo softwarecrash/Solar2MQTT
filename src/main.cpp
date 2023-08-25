@@ -51,12 +51,12 @@ String commandFromMqtt;
 String customResponse;
 
 bool firstPublish;
-DynamicJsonDocument Json(JSON_BUFFER);                         // main Json
-//StaticJsonDocument <JSON_BUFFER>Json;
-//JsonObject ivJson = Json.createNestedObject("Device");         // basic device data
+DynamicJsonDocument Json(JSON_BUFFER); // main Json
+// StaticJsonDocument <JSON_BUFFER>Json;
+// JsonObject ivJson = Json.createNestedObject("Device");         // basic device data
 JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
 JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
-//JsonObject rawData = Json.createNestedObject("RawData");       // battery package data
+// JsonObject rawData = Json.createNestedObject("RawData");       // battery package data
 
 //----------------------------------------------------------------------
 void saveConfigCallback()
@@ -457,7 +457,7 @@ void prozessData()
       DEBUG_PRINTLN(commandFromWeb);
       DEBUG_WEBLN(commandFromWeb);
       String tmp = mppClient.sendCommand(commandFromWeb); // send a custom command to the device
-      //mppClient.requestStaticData = true;
+      // mppClient.requestStaticData = true;
       DEBUG_PRINTLN(tmp);
       DEBUG_WEBLN(tmp);
       commandFromWeb = "";
@@ -467,11 +467,11 @@ void prozessData()
       DEBUG_PRINTLN(commandFromMqtt);
       DEBUG_WEBLN(commandFromMqtt);
       String customResponse = mppClient.sendCommand(commandFromMqtt); // send a custom command to the device
-      //mppClient.requestStaticData = true;
+      // mppClient.requestStaticData = true;
       DEBUG_PRINTLN(customResponse);
       DEBUG_WEBLN(customResponse);
       commandFromMqtt = "";
-      // mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (customResponse).c_str());
+      // mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (mppClient.get.raw.commandAnswer).c_str());
     }
     // mqtttimer = 0;
     mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
@@ -643,7 +643,7 @@ bool sendtoMQTT()
         mqttclient.publish(msgBuffer1, jsondat.value().as<String>().c_str());
       }
     }
-
+    mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (mppClient.get.raw.commandAnswer).c_str());
 /*
     // testing
     mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), mppClient.get.raw.commandAnswer.c_str());
