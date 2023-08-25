@@ -53,7 +53,7 @@ String customResponse;
 bool firstPublish;
 DynamicJsonDocument Json(JSON_BUFFER); // main Json
 // StaticJsonDocument <JSON_BUFFER>Json;
-// JsonObject ivJson = Json.createNestedObject("Device");         // basic device data
+JsonObject deviceJson = Json.createNestedObject("EspData");         // basic device data
 JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
 JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
 // JsonObject rawData = Json.createNestedObject("RawData");       // battery package data
@@ -463,20 +463,22 @@ void getJsonData()
 {
   // Json["EP_"]["LiveData"]["CONNECTION"] = 123;
 
-  /*
+  
   deviceJson[F("device_name")] = settings.data.deviceName;
   deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
   deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
   deviceJson[F("sw_version")] = SOFTWARE_VERSION;
+  //for debug
+  /*
   deviceJson[F("Flash_Size")] = ESP.getFlashChipSize();
   deviceJson[F("Sketch_Size")] = ESP.getSketchSize();
   deviceJson[F("Free_Sketch_Space")] = ESP.getFreeSketchSpace();
-  deviceJson[F("CPU_Frequency")] = ESP.getCpuFreqMHz();
   deviceJson[F("Real_Flash_Size")] = ESP.getFlashChipRealSize();
   deviceJson[F("Free_Heap")] = ESP.getFreeHeap();
   deviceJson[F("HEAP_Fragmentation")] = ESP.getHeapFragmentation();
   deviceJson[F("Free_BlockSize")] = ESP.getMaxFreeBlockSize();
-
+  */
+/*
   liveData["gridV"] = mppClient.get.variableData.gridVoltage;
   liveData["gridHz"] = mppClient.get.variableData.gridFrequency;
   liveData["acOutV"] = mppClient.get.variableData.acOutputVoltage;
