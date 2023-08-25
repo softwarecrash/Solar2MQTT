@@ -91,8 +91,7 @@ bool PI_Serial::loop()
             switch (requestCounter)
             {
             case 0:
-                //requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
-                requestCounter ++;
+                requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
                 break;
             case 1:
                 requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;

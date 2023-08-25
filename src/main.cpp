@@ -457,6 +457,7 @@ void prozessData()
       DEBUG_PRINTLN(commandFromWeb);
       DEBUG_WEBLN(commandFromWeb);
       String tmp = mppClient.sendCommand(commandFromWeb); // send a custom command to the device
+      //mppClient.requestStaticData = true;
       DEBUG_PRINTLN(tmp);
       DEBUG_WEBLN(tmp);
       commandFromWeb = "";
@@ -466,6 +467,7 @@ void prozessData()
       DEBUG_PRINTLN(commandFromMqtt);
       DEBUG_WEBLN(commandFromMqtt);
       String customResponse = mppClient.sendCommand(commandFromMqtt); // send a custom command to the device
+      //mppClient.requestStaticData = true;
       DEBUG_PRINTLN(customResponse);
       DEBUG_WEBLN(customResponse);
       commandFromMqtt = "";
