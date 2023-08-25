@@ -108,6 +108,89 @@ bool PI_Serial::PIXX_QPIRI()
         staticData[qpiriList[protocolNum][i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
     }
 
+    switch ((byte)staticData["Battery_type"].as<unsigned int>())
+    {
+    case 0:
+      staticData["Battery_type"] = "AGM";
+      break;
+    case 1:
+      staticData["Battery_type"] = "Flooded";
+      break;
+    case 2:
+      staticData["Battery_type"] = "User";
+      break;
+    default:
+      break;
+    }
+    switch ((byte)staticData["Input_voltage_range"].as<unsigned int>())
+    {
+    case 0:
+      staticData["Input_voltage_range"] = "Appliance";
+      break;
+    case 1:
+      staticData["Input_voltage_range"] = "UPS";
+      break;
+    default:
+      break;
+    }
+    switch ((byte)staticData["Output_source_priority"].as<unsigned int>())
+    {
+    case 0:
+      staticData["Output_source_priority"] = "Utility first";
+      break;
+    case 1:
+      staticData["Output_source_priority"] = "Solar first";
+      break;
+    case 2:
+      staticData["Output_source_priority"] = "SBU first";
+      break;
+    default:
+      break;
+    }
+    switch ((byte)staticData["Charger_source_priority"].as<unsigned int>())
+    {
+    case 0:
+      staticData["Charger_source_priority"] = "Utility first";
+      break;
+    case 1:
+      staticData["Charger_source_priority"] = "Solar first";
+      break;
+    case 2:
+      staticData["Charger_source_priority"] = "Solar + Utility";
+      break;
+    case 3:
+      staticData["Charger_source_priority"] = "Only solar charging permitted";
+      break;
+    default:
+      break;
+    }
+    switch ((byte)staticData["Machine_type"].as<unsigned int>())
+    {
+    case 00:
+      staticData["Machine_type"] = "Grid tie";
+      break;
+    case 01:
+      staticData["Machine_type"] = "Off Grid";
+      break;
+    case 10:
+      staticData["Machine_type"] = "Hybrid";
+      break;
+    default:
+      break;
+    }
+    switch ((byte)staticData["Topology"])
+    {
+    case 0:
+      staticData["Topology"] = "transformerless";
+      break;
+    case 1:
+      staticData["Topology"] = "Otransformer";
+      break;
+    default:
+      break;
+      return true;
+    }
+
     return true;
   }
   else
