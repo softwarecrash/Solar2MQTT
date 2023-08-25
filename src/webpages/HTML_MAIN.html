@@ -30,30 +30,44 @@
 </div>
 
 <div class="row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
-    <div class="col">Grid</div>
+    <div class="col">Grid:</div>
     <div class="col dF">
-        <span id="packRes"></span>
+        <span id="grid_volt"></span>
+        <span id="grid_hz"></span>
     </div>
 </div>
 
 <div class="row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
     <div class="col">AC out:</div>
     <div class="col dF">
-        <span id="packCycles"></span>
+        <span id="ac_out_volt"></span>
+        <span id="ac_out_hz"></span>
+        <span id="ac_out_power"></span>
+        <span id="ac_out_percent"></span>
     </div>
 </div>
 
 <div class="row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
-    <div class="col">Load:</div>
+    <div class="col">Temperature:</div>
     <div class="col dF">
-        <span id="packTemp"></span>
+        <span id="heatsink_temp"></span>
     </div>
 </div>
 
 <div class="row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
-    <div class="col">Bus:</div>
+    <div class="col">Battery:</div>
     <div class="col dF">
-        <span id="packTemp"></span>
+        <span id="batt_volt"></span>
+        <span id="batt_percent"></span>
+        <span id="batt_load"></span>
+    </div>
+</div>
+
+<div class="row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
+    <div class="col">Inverter mode:</div>
+    <div class="col dF">
+        <span id="ivmode"></span>
+
     </div>
 </div>
 
@@ -107,23 +121,22 @@
         document.getElementById("pv_current").innerHTML = data.PV_Input_Current + 'A  ';
         document.getElementById("pv_power").innerHTML = Math.round(data.PV_Input_Power) + 'W  ';
 
-        document.getElementById("grid_volt").innerHTML = data.PV_Input_Voltage + 'V ';
-        document.getElementById("grid_hz").innerHTML = data.PV_Input_Current + 'Hz  ';
+        document.getElementById("grid_volt").innerHTML = data.AC_in_Voltage + 'V ';
+        document.getElementById("grid_hz").innerHTML = data.AC_in_Frequenz + 'Hz  ';
 
-               document.getElementById("ac_out_volt").innerHTML = data.acOutV+'V ';
-               document.getElementById("ac_out_hz").innerHTML = data.acOutHz+'Hz ';
-               //document.getElementById("ac_out_va").innerHTML = data.acOutVa+'Va ';
-               document.getElementById("ac_out_power").innerHTML = data.acOutW+'W ';
-               document.getElementById("ac_out_percent").innerHTML = data.acOutPercent+'%%';
+        document.getElementById("ac_out_volt").innerHTML = data.AC_out_Voltage + 'V ';
+        document.getElementById("ac_out_hz").innerHTML = data.AC_out_Frequenz + 'Hz ';
+        //document.getElementById("ac_out_va").innerHTML = data.acOutVa+'Va ';
+        document.getElementById("ac_out_power").innerHTML = data.AC_out_Watt + 'W ';
+        document.getElementById("ac_out_percent").innerHTML = data.AC_out_percent + '%%';
 
-               document.getElementById("heatsink_temp").innerHTML = data.heatSinkDegC+'°C ';
+        document.getElementById("heatsink_temp").innerHTML = data.Inverter_Bus_Temperature + '°C ';
 
-               document.getElementById("batt_volt").innerHTML = data.battV+'V ';
-               document.getElementById("batt_percent").innerHTML = data.battPercent+'%% ';
-               document.getElementById("batt_load").innerHTML = data.battChargeA+'A ';
-               document.getElementById("batt_power").innerHTML = data.battDischargeA+'W ';
+        document.getElementById("batt_volt").innerHTML = data.Battery_Voltage + 'V ';
+        document.getElementById("batt_percent").innerHTML = data.Battery_Percent + '%% ';
+        document.getElementById("batt_load").innerHTML = data.Battery_Load + 'A ';
 
-               document.getElementById("ivmode").innerHTML = data.iv_mode;
+        document.getElementById("ivmode").innerHTML = data.Inverter_Operation_Mode;
 
 
 
@@ -135,14 +148,14 @@
         if (data.Device.ESP_VCC < 2.8) {
             alertListArr.push("ESP Volt to Low");
         }
-       // if (!data.Pack.Fail_Codes.length == 0) {
-       //     var i;
+        // if (!data.Pack.Fail_Codes.length == 0) {
+        //     var i;
         //    var i_list = data.Pack.Fail_Codes.split(',');
-         //   for (var i_index in i_list) {
+        //   for (var i_index in i_list) {
         //        i = i_list[i_index];
-          //      alertListArr.push(i_list[i_index]);
-          //  }
-       // }
+        //      alertListArr.push(i_list[i_index]);
+        //  }
+        // }
         if (alertListArr.length == 0) {
             document.getElementById("alert").style.display = 'none';
         } else {
