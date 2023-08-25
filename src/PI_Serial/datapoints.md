@@ -1,15 +1,28 @@
+
 operation data names:
+
         "Inverter_Operation_Mode"
+
         "Device_Model"
+
         "Protocol_ID"
+
 Live data names:
+
         "AC_in_Voltage",                  // BBB.B
+
         "AC_in_Frequenz",                 // CC.C
+
         "AC_out_Voltage",                 // DDD.D
+
         "AC_out_Frequenz",                // EE.E
+
         "AC_out_VA",                      // FFFF
+
         "AC_out_Watt",                    // GGGG
+
         "AC_out_percent",                 // HHH
+        
         "Inverter_Bus_Voltage",           // III
         "Battery_Voltage",                // JJ.JJ
         "Battery_Charge_Current",         // KKK
