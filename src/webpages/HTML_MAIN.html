@@ -1,7 +1,7 @@
 %pre_head_template%
 
 <figure class="text-center">
-    <h2 id="devicename"></h2>
+    <h2 id="device_name">%pre_device_name%</h2>
 </figure>
 
 <div class="row gx-0 mb-1" id="alert" style="padding-bottom: 0rem;padding-top: 0px; display: none;">
@@ -14,30 +14,47 @@
 <div class="row gx-0 mb-2">
     <div class="col" id="ClickSOC">
         <div class="progress" style="height:1.8rem;">
-            <div id="packSOC" class="progress-bar dF" role="progressbar" style="width:0%;height:1.8rem;" aria-valuenow="0"
-                aria-valuemin="0" aria-valuemax="100"></div>
+            <div id="packSOC" class="progress-bar dF" role="progressbar" style="width:0%;height:1.8rem;"
+                aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
     </div>
 </div>
 
 <div class="row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
-    <div class="col">1</div>
-    <div class="col dF"><span id="packV"></span><span id="packA"></span><span id="packP"></span></div>
+    <div class="col">Solar:</div>
+    <div class="col dF">
+        <span id="pv_volt"></span>
+        <span id="pv_current"></span>
+        <span id="pv_power"></span>
+    </div>
 </div>
 
 <div class="row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
-    <div class="col">2</div>
-    <div class="col dF"><span id="packRes"></span></div>
+    <div class="col">Grid</div>
+    <div class="col dF">
+        <span id="packRes"></span>
+    </div>
 </div>
 
 <div class="row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
-    <div class="col">3</div>
-    <div class="col dF"><span id="packCycles"></span></div>
+    <div class="col">AC out:</div>
+    <div class="col dF">
+        <span id="packCycles"></span>
+    </div>
 </div>
 
 <div class="row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
-    <div class="col">4</div>
-    <div class="col dF"><span id="packTemp"></span></div>
+    <div class="col">Load:</div>
+    <div class="col dF">
+        <span id="packTemp"></span>
+    </div>
+</div>
+
+<div class="row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
+    <div class="col">Bus:</div>
+    <div class="col dF">
+        <span id="packTemp"></span>
+    </div>
 </div>
 
 <div class="d-grid gap-2">
@@ -62,7 +79,7 @@
     var dataFields = document.getElementsByClassName("dF");
 
     function initWebSocket() {
-        console.log('Trying to open a WebSocket connection...');
+        //console.log('Trying to open a WebSocket connection...');
         websocket = new WebSocket(gateway);
         websocket.onopen = onOpen;
         websocket.onclose = onClose;
@@ -73,27 +90,21 @@
         console.log('Connection opened');
     }
     function onClose(event) {
-        document.getElementById("status").innerHTML = 'WS Closed';
+        //document.getElementById("status").innerHTML = 'WS Closed';
         console.log('Connection closed');
         setTimeout(initWebSocket, 3000);
     }
     function onError(event) {
-        document.getElementById("status").innerHTML = 'WS Lost';
+        //document.getElementById("status").innerHTML = 'WS Lost';
         console.log('Connection lost');
     }
     function onMessage(event) {
         var data = JSON.parse(event.data);
-        document.getElementById("devicename").innerHTML = data.Device.Name;
-        document.getElementById("packV").innerHTML = data.Pack.Voltage + 'V ';
-        document.getElementById("packA").innerHTML = data.Pack.Current + 'A  ';
-        document.getElementById("packP").innerHTML = Math.round(data.Pack.Power) + 'W  ';
-        document.getElementById("packSOC").innerHTML = data.Pack.SOC + '%%';
-        $('#packSOC').width(data.Pack.SOC + "%").attr('aria-valuenow', data.Pack.SOC);
-
-
-
-        BarChart(data);
-        alert(data);
+        document.getElementById("pv_volt").innerHTML = data.PV_Input_Voltage + 'V ';
+        document.getElementById("pv_current").innerHTML = data.PV_Input_Current + 'A  ';
+        document.getElementById("pv_power").innerHTML = Math.round(data.PV_Input_Power) + 'W  ';
+        document.getElementById("packSOC").innerHTML = data.Battery_Percent + '%%';
+        $('#packSOC').width(data.Battery_Percent + "%").attr('aria-valuenow', data.Battery_Percent);
 
     }
 
@@ -102,14 +113,14 @@
         if (data.Device.ESP_VCC < 2.8) {
             alertListArr.push("ESP Volt to Low");
         }
-        if (!data.Pack.Fail_Codes.length == 0) {
-            var i;
-            var i_list = data.Pack.Fail_Codes.split(',');
-            for (var i_index in i_list) {
-                i = i_list[i_index];
-                alertListArr.push(i_list[i_index]);
-            }
-        }
+       // if (!data.Pack.Fail_Codes.length == 0) {
+       //     var i;
+        //    var i_list = data.Pack.Fail_Codes.split(',');
+         //   for (var i_index in i_list) {
+        //        i = i_list[i_index];
+          //      alertListArr.push(i_list[i_index]);
+          //  }
+       // }
         if (alertListArr.length == 0) {
             document.getElementById("alert").style.display = 'none';
         } else {

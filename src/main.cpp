@@ -309,27 +309,6 @@ void setup()
     server.on("/set", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                 AsyncWebParameter *p = request->getParam(0);
-                if (p->name() == "maxcharge")
-                {
-                  valChange = true;
-                //  _qpiriMessage.battMaxChrgA = p->value().toInt(); //const string zu int
-                }
-                if (p->name() == "maxaccharge")
-                {
-                  valChange = true;
-                 // _qpiriMessage.battMaxAcChrgA = p->value().toInt(); //const string zu int
-                }
-                if (p->name() == "PCVV")
-                {
-                  valChange = true;
-                 // _qpiriMessage.battBulkV = p->value().toFloat(); //const string zu int
-                }
-                if (p->name() == "PBFT")
-                {
-                  valChange = true;
-                  //_qpiriMessage.battFloatV = p->value().toFloat(); //const string zu int
-                }
-
                 if (p->name() == "CC")
                 {
                   valChange = true;
