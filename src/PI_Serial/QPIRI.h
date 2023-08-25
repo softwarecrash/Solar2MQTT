@@ -181,10 +181,10 @@ bool PI_Serial::PIXX_QPIRI()
     switch ((byte)staticData["Topology"])
     {
     case 0:
-      staticData["Topology"] = "transformerless";
+      staticData["Topology"] = "Transformerless";
       break;
     case 1:
-      staticData["Topology"] = "Otransformer";
+      staticData["Topology"] = "Transformer";
       break;
     default:
       break;

@@ -51,7 +51,6 @@ bool PI_Serial::PIXX_Q1()
                 liveData[q1List[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
         }
 
-        // https://arduinojson.org/v6/api/jsonobject/containskey/
         if (liveData.containsKey("Inverter_charge_state"))
         {
             switch ((int)liveData["Inverter_charge_state"].as<unsigned int>())

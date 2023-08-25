@@ -464,10 +464,10 @@ void getJsonData()
   // Json["EP_"]["LiveData"]["CONNECTION"] = 123;
 
   
-  deviceJson[F("device_name")] = settings.data.deviceName;
+  deviceJson[F("Device_name")] = settings.data.deviceName;
   deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
   deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
-  deviceJson[F("sw_version")] = SOFTWARE_VERSION;
+  deviceJson[F("Version")] = SOFTWARE_VERSION;
   //for debug
   /*
   deviceJson[F("Flash_Size")] = ESP.getFlashChipSize();

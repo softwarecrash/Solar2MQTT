@@ -24,48 +24,40 @@ static const char *const qallList[] =
 };
 bool PI_Serial::PIXX_QALL()
 {
-  // if (!qAvaible.qall)
-  //  return true;
   String commandAnswer = this->requestData("QALL");
-  byte commandAnswerLength = commandAnswer.length();
+  //byte commandAnswerLength = commandAnswer.length();
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer == "NAK")
   {
     return true;
   }
-  if (commandAnswerLength == 79 ||
-      commandAnswerLength == 83 // Revo Qall
-  )
+  get.raw.qall = commandAnswer;
+
+  String strs[30];
+  // Split the string into substrings
+  int StringCount = 0;
+  while (commandAnswer.length() > 0)
   {
-    get.raw.qall = commandAnswer;
-
-    String strs[30];
-    // Split the string into substrings
-    int StringCount = 0;
-    while (commandAnswer.length() > 0)
+    int index = commandAnswer.indexOf(' ');
+    if (index == -1) // No space found
     {
-      int index = commandAnswer.indexOf(' ');
-      if (index == -1) // No space found
-      {
-        strs[StringCount++] = commandAnswer;
-        break;
-      }
-      else
-      {
-        strs[StringCount++] = commandAnswer.substring(0, index);
-        commandAnswer = commandAnswer.substring(index + 1);
-      }
+      strs[StringCount++] = commandAnswer;
+      break;
     }
-
-    for (unsigned int i = 0; i < sizeof qpigsList / sizeof qpigsList[0]; i++)
+    else
     {
-      if (!strs[i].isEmpty() && strcmp(qallList[i], "") != 0)
-        liveData[qallList[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
+      strs[StringCount++] = commandAnswer.substring(0, index);
+      commandAnswer = commandAnswer.substring(index + 1);
     }
-    liveData["Inverter_Operation_Mode"] = getModeDesc((char)liveData["Inverter_Operation_Mode"].as<String>().charAt(0));
-    liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
-
-    return true;
   }
-  return false;
+
+  for (unsigned int i = 0; i < sizeof qpigsList / sizeof qpigsList[0]; i++)
+  {
+    if (!strs[i].isEmpty() && strcmp(qallList[i], "") != 0)
+      liveData[qallList[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
+  }
+  liveData["Inverter_Operation_Mode"] = getModeDesc((char)liveData["Inverter_Operation_Mode"].as<String>().charAt(0));
+  liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
+
+  return true;
 }
