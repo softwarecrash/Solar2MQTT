@@ -31,6 +31,10 @@ bool PI_Serial::PIXX_QALL()
   {
     return true;
   }
+    if(commandAnswer = "ERCRC")
+  {
+    return false;
+  }
   get.raw.qall = commandAnswer;
 
   String strs[30];

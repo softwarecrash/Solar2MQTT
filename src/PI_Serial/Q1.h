@@ -22,6 +22,10 @@ bool PI_Serial::PIXX_Q1()
   {
     return true;
   }
+  if(commandAnswer = "ERCRC")
+  {
+    return false;
+  }
     if (commandAnswerLength == 47)
     {
         get.raw.q1 = commandAnswer;

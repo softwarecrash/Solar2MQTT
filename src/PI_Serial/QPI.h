@@ -5,6 +5,10 @@ bool PI_Serial::PIXX_QPI()
   {
     return true;
   }
+    if(commandAnswer = "ERCRC")
+  {
+    return false;
+  }
   qAvaible.qpi = true;
     get.raw.qpi = commandAnswer;
     //get.staticData.deviceProtocol = commandAnswer;

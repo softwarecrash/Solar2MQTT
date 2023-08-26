@@ -76,8 +76,11 @@ bool PI_Serial::PIXX_QPIRI()
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer == "NAK")
   {
-    qAvaible.qpiri = false; // if recived NAK, set the command avaible to false and never aks again until reboot
     return true;
+  }
+    if(commandAnswer = "ERCRC")
+  {
+    return false;
   }
   else if (commandAnswer.length() > 80 &&
            commandAnswer.length() < 105)

@@ -6,6 +6,10 @@ bool PI_Serial::PIXX_QMN()
   {
     return true;
   }
+    if(commandAnswer = "ERCRC")
+  {
+    return false;
+  }
   if (commandAnswer.length() > 3 && commandAnswer.length() < 50)
   {
     get.raw.qmn = commandAnswer;

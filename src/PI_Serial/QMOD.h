@@ -5,6 +5,10 @@ bool PI_Serial::PIXX_QMOD()
   {
     return true;
   }
+    if(commandAnswer = "ERCRC")
+  {
+    return false;
+  }
   if (commandAnswer.length() == 1)
   {
     get.raw.qmod = commandAnswer;

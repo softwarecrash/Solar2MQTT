@@ -81,6 +81,10 @@ bool PI_Serial::PIXX_QPIGS()
   {
     return true;
   }
+    if(commandAnswer = "ERCRC")
+  {
+    return false;
+  }
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswerLength >= 60 && commandAnswerLength <= 140)
   {
