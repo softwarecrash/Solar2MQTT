@@ -5,7 +5,7 @@ bool PI_Serial::PIXX_QPI()
   {
     return true;
   }
-    if(commandAnswer = "ERCRC")
+    if(commandAnswer == "ERCRC")
   {
     return false;
   }

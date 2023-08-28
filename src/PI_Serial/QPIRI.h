@@ -78,12 +78,12 @@ bool PI_Serial::PIXX_QPIRI()
   {
     return true;
   }
-    if(commandAnswer = "ERCRC")
+  if (commandAnswer == "ERCRC")
   {
     return false;
   }
-  else if (commandAnswer.length() > 80 &&
-           commandAnswer.length() < 105)
+  if (commandAnswer.length() > 80 &&
+      commandAnswer.length() < 105)
   {
     get.raw.qpiri = commandAnswer;
     byte protocolNum = 0;

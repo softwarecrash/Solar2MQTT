@@ -31,7 +31,7 @@ bool PI_Serial::PIXX_QALL()
   {
     return true;
   }
-    if(commandAnswer = "ERCRC")
+    if(commandAnswer == "ERCRC")
   {
     return false;
   }

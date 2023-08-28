@@ -22,7 +22,7 @@ bool PI_Serial::PIXX_Q1()
   {
     return true;
   }
-  if(commandAnswer = "ERCRC")
+  if(commandAnswer == "ERCRC")
   {
     return false;
   }

@@ -6,7 +6,7 @@ bool PI_Serial::PIXX_QMN()
   {
     return true;
   }
-    if(commandAnswer = "ERCRC")
+    if(commandAnswer == "ERCRC")
   {
     return false;
   }

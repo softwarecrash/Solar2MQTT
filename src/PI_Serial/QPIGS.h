@@ -81,7 +81,7 @@ bool PI_Serial::PIXX_QPIGS()
   {
     return true;
   }
-    if(commandAnswer = "ERCRC")
+    if(commandAnswer == "ERCRC")
   {
     return false;
   }
