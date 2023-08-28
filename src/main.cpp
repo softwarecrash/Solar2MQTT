@@ -154,8 +154,8 @@ void setup()
   wm.setDebugOutput(false); // disable wifimanager debug output
 #endif
   wm.setMinimumSignalQuality(20); // filter weak wifi signals
-  wm.setConnectTimeout(15);       // how long to try to connect for before continuing
-  wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
+  //wm.setConnectTimeout(15);       // how long to try to connect for before continuing
+  //wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
   wm.setSaveConfigCallback(saveConfigCallback);
 
   DEBUG_PRINTLN();
