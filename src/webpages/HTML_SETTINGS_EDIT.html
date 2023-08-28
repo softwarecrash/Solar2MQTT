@@ -64,29 +64,6 @@
         <a class="btn btn-primary" href="/settings" role="button">Back</a>
     </div>
 </form>
-<script>
-    $(document).ready(function (load) {
-        $("#relaisfunction").val("%pre_relais_function%");
-        $("#relaiscomparsion").val("%pre_relais_comp%");
-        if (document.getElementById("relaisfunction").value == 4) {
-            RelaisFunctionChange();
-        }
-    });
-    document.getElementById('relaisfunction').addEventListener('change', RelaisFunctionChange);
-    RelaisFunctionChange();
-    function RelaisFunctionChange() {
-        console.log("RelaisFunctionChange()");
-        if (document.getElementById("relaisfunction").value == 4) {
-            relaiscomparsion.setAttribute('disabled', 'disabled');
-            relaissetvalue.setAttribute('disabled', 'disabled');
-            relaishysteresis.setAttribute('disabled', 'disabled');
-        } else {
-            relaiscomparsion.removeAttribute("disabled");
-            relaissetvalue.removeAttribute("disabled");
-            relaishysteresis.removeAttribute("disabled");
-        }
-    }
-</script>
 
 %pre_foot_template%
 <p hidden></p>
