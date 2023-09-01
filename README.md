@@ -6,8 +6,8 @@
 - classic MQTT datapoints or Json string over MQTT
 - get Json over web at /livejson?
 - firmware update over webinterface
-- debug log on Wemos USB (use only if you **don't** supply Wemos from Inverter!!!)
-- [blink codes](https://github.com/softwarecrash/Solar2MQTT/wiki/Blink-Codes) for the current state of the ESP (not supported on ESP-01s)
+- debug log on Wemos USB or Webserial
+- [blink codes](https://github.com/softwarecrash/Solar2MQTT/wiki/Blink-Codes) for the current state of the ESP
 - with Teapod
 
 
@@ -31,7 +31,7 @@
 
 # How to use:
 - flash the bin file to an ESP8266 (recommended Wemos D1 Mini) with [Tasmotizer](https://github.com/tasmota/tasmotizer/releases)
-- connect the ESP like the [wiring diagram](https://github.com/softwarecrash/Daly2MQTT/wiki/Wiring)
+- connect the ESP like the [wiring diagram](https://github.com/softwarecrash/Solar2MQTT/wiki/Wireing-Diagram)
 - search for the wifi ap "Solar2MQTT-AP" and connect to it
 - surf to 192.168.4.1 and set up your wifi and optional MQTT
 - that's it :)
