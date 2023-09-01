@@ -470,7 +470,7 @@ void getJsonData()
 {
   deviceJson[F("Device_name")] = settings.data.deviceName;
   deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
-  deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
+  //deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
   deviceJson[F("Version")] = SOFTWARE_VERSION;
 }
 
@@ -531,17 +531,6 @@ bool connectMQTT()
   return true;
 }
 
-char *topicBuilder1(char *buffer, char const *path0, char const *path1)
-{                                                  // buffer, topic
-  const char *mainTopic = settings.data.mqttTopic; // get the main topic path
-  strcpy(buffer, mainTopic);
-  strcat(buffer, "/");
-  strcat(buffer, path0);
-  strcat(buffer, "/");
-  strcat(buffer, path1);
-  return buffer;
-}
-
 bool sendtoMQTT()
 {
   char buff[256]; // temp buffer for the topic string
@@ -555,6 +544,7 @@ bool sendtoMQTT()
   DEBUG_PRINT(F("Data sent to MQTT Server... "));
   DEBUG_WEB(F("Data sent to MQTT Server... "));
   mqttclient.publish(topicBuilder(buff, "alive"), "true", true); // LWT online message must be retained!
+  mqttclient.publish(topicBuilder(buff, "Wifi_RSSI"), String(WiFi.RSSI()).c_str());
   if (!settings.data.mqttJson)
   {
 
