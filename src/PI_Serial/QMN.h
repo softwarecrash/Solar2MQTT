@@ -1,6 +1,7 @@
 bool PI_Serial::PIXX_QMN()
 {
   String commandAnswer = this->requestData("QMN");
+  get.raw.qmn = commandAnswer;
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if(commandAnswer == "NAK")
   {
@@ -12,7 +13,6 @@ bool PI_Serial::PIXX_QMN()
   }
   if (commandAnswer.length() > 3 && commandAnswer.length() < 50)
   {
-    get.raw.qmn = commandAnswer;
     staticData["Device_Model"] = commandAnswer;
     return true;
   }

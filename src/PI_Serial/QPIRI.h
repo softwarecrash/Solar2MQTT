@@ -73,6 +73,7 @@ static const char *const qpiriList[][30] = {
 bool PI_Serial::PIXX_QPIRI()
 {
   String commandAnswer = this->requestData("QPIRI");
+  get.raw.qpiri = commandAnswer;
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer == "NAK")
   {
@@ -85,7 +86,7 @@ bool PI_Serial::PIXX_QPIRI()
   if (commandAnswer.length() > 80 &&
       commandAnswer.length() < 105)
   {
-    get.raw.qpiri = commandAnswer;
+    
     byte protocolNum = 0;
     String strs[30];
     // Split the string into substrings

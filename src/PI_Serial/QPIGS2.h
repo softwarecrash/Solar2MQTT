@@ -8,6 +8,7 @@ static const char *const qpigs2List[] = {
 bool PI_Serial::PIXX_QPIGS2()
 {
   String commandAnswer = this->requestData("QPIGS2");
+  get.raw.qpigs2 = commandAnswer;
   byte commandAnswerLength = commandAnswer.length();
   String strs[30]; // buffer for string splitting
   if (commandAnswer == "NAK")
@@ -18,7 +19,7 @@ bool PI_Serial::PIXX_QPIGS2()
   {
     return false;
   }
-  get.raw.qpigs2 = commandAnswer;
+  
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswerLength >= 10 && commandAnswerLength <= 20)
   {

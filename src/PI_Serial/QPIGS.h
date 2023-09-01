@@ -75,6 +75,7 @@ static const char *const qpigsList[][30] = {
 bool PI_Serial::PIXX_QPIGS()
 {
   String commandAnswer = this->requestData("QPIGS");
+  get.raw.qpigs = commandAnswer;
   byte commandAnswerLength = commandAnswer.length();
   byte protocolNum = 0; // for future use
   String strs[30];      // buffer for string splitting
@@ -86,7 +87,7 @@ bool PI_Serial::PIXX_QPIGS()
   {
     return false;
   }
-  get.raw.qpigs = commandAnswer;
+  
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswerLength >= 60 && commandAnswerLength <= 140)
   {

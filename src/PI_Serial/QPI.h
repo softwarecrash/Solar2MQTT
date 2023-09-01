@@ -1,6 +1,7 @@
 bool PI_Serial::PIXX_QPI()
 {
   String commandAnswer = this->requestData("QPI");
+  get.raw.qpi = commandAnswer;
   if (commandAnswer == "NAK")
   {
     return true;
@@ -9,7 +10,6 @@ bool PI_Serial::PIXX_QPI()
   {
     return false;
   }
-    get.raw.qpi = commandAnswer;
     staticData["Protocol_ID"] = commandAnswer;
     return true;
 }

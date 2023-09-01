@@ -25,6 +25,7 @@ static const char *const qallList[] =
 bool PI_Serial::PIXX_QALL()
 {
   String commandAnswer = this->requestData("QALL");
+  get.raw.qall = commandAnswer;
   //byte commandAnswerLength = commandAnswer.length();
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer == "NAK")
@@ -35,7 +36,6 @@ bool PI_Serial::PIXX_QALL()
   {
     return false;
   }
-  get.raw.qall = commandAnswer;
 
   String strs[30];
   // Split the string into substrings

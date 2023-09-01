@@ -1,6 +1,7 @@
 bool PI_Serial::PIXX_QMOD()
 {
   String commandAnswer = this->requestData("QMOD");
+  get.raw.qmod = commandAnswer;
     if (commandAnswer == "NAK")
   {
     return true;
@@ -11,7 +12,6 @@ bool PI_Serial::PIXX_QMOD()
   }
   if (commandAnswer.length() == 1)
   {
-    get.raw.qmod = commandAnswer;
     liveData["Inverter_Operation_Mode"] = getModeDesc((char)commandAnswer.charAt(0));
   }
   return true;

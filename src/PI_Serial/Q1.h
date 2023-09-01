@@ -17,6 +17,7 @@ static const char *const q1List[] = {
 bool PI_Serial::PIXX_Q1()
 {
     String commandAnswer = this->requestData("Q1");
+    get.raw.q1 = commandAnswer;
     byte commandAnswerLength = commandAnswer.length();
   if (commandAnswer == "NAK")
   {
@@ -28,8 +29,6 @@ bool PI_Serial::PIXX_Q1()
   }
     if (commandAnswerLength == 47)
     {
-        get.raw.q1 = commandAnswer;
-
         String strs[16];
         // Split the string into substrings
         int StringCount = 0;
