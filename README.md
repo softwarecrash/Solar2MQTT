@@ -1,22 +1,15 @@
 # Features:
-- WiFi Ap with setup
-- All Data over MQTT, Writeable pints for ac Charge and Solar Charge
-- Website with all essential data
-- Web Update, Reset, Restart, Configure
-- Building using Platform.io
-- Live Data over Webpage
+- captive portal for wifi and MQTT config
+- config in webinterface
+- Full Controll with Custom commands
+- get essential data over webinterface, get all data over MQTT
+- classic MQTT datapoints or Json string over MQTT
+- get Json over web at /livejson?
+- firmware update over webinterface
+- debug log on Wemos USB (use only if you **don't** supply Wemos from Inverter!!!)
+- [blink codes](https://github.com/softwarecrash/Solar2MQTT/wiki/Blink-Codes) for the current state of the ESP (not supported on ESP-01s)
+- with Teapod
 
-# Last Added:
-- added configuration page
-- added bootstrap based layout
-- mqtt raw data for QPIGS, QPIRI, QMOD, QID, QPIWS, QFLAG, QPI, QT, QET
-- static device information from the QPIRI command
-- PV power in Watt
-- Inverter Operation Mode
-
-# ToDo: (Need Help)
-- Restruct it to use with command lists of inverters
-- create lists with commands for each protocol id and subprotocol to autoselect the right inverter
 
 **works with**
 - PIP devices
@@ -34,21 +27,17 @@
 ![edit](https://user-images.githubusercontent.com/44615614/139434941-79c6c013-d745-4eb1-adcc-4e0fd89dd4c3.jpg)
 
 
-# Overview
-Based around an ESP8266 WiFi microcontroller.
-
-**PROGRAMMING:** You need to program it before hooking it up to the TTL board! Im using HW Serial since its so buggy using Software Serial and Wifi reliable so its not even worth it.
 
 
-**UART0:** Talks to the inverter at 2400 baud and for programming. DISCONNECT RX before programming
-
-**UART1:** Used for debugging only. Just connect another serial adaptor to D4 with 9600 baud.
+# How to use:
+- flash the bin file to an ESP8266 (recommended Wemos D1 Mini) with [Tasmotizer](https://github.com/tasmota/tasmotizer/releases)
+- connect the ESP like the [wiring diagram](https://github.com/softwarecrash/Daly2MQTT/wiki/Wiring)
+- search for the wifi ap "Solar2MQTT-AP" and connect to it
+- surf to 192.168.4.1 and set up your wifi and optional MQTT
+- that's it :)
 
 
 **POWER:** Using a 3.3V DC Buck Converter that can handle up to 20V or a DC/DC or USB power currently.
-
-**WIFI:** The system defaults to AP mode on first setup. Surf to "Solar-AP" AP and then surf to http://192.168.4.1/ On this page configure WIFI and MQTT.
-
 
 # Parts required to build one
 
