@@ -13,7 +13,6 @@ bool PI_Serial::PIXX_QMN()
   if (commandAnswer.length() > 3 && commandAnswer.length() < 50)
   {
     get.raw.qmn = commandAnswer;
-    //get.staticData.modelName = commandAnswer;
     staticData["Device_Model"] = commandAnswer;
     return true;
   }

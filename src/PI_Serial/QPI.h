@@ -9,9 +9,7 @@ bool PI_Serial::PIXX_QPI()
   {
     return false;
   }
-  qAvaible.qpi = true;
     get.raw.qpi = commandAnswer;
-    //get.staticData.deviceProtocol = commandAnswer;
     staticData["Protocol_ID"] = commandAnswer;
     return true;
 }

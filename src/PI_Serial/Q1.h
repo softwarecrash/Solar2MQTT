@@ -29,7 +29,6 @@ bool PI_Serial::PIXX_Q1()
     if (commandAnswerLength == 47)
     {
         get.raw.q1 = commandAnswer;
-        //rawData["Q1"] = commandAnswer;
 
         String strs[16];
         // Split the string into substrings

@@ -1,9 +1,10 @@
 #ifdef isDEBUG
 #define DEBUG Serial // Uncomment the below #define to enable debugging print statements.
-#include <WebSerialLite.h>
+//#include <WebSerialLite.h>
 #endif
 #define ARDUINOJSON_USE_DOUBLE 1
 #define ARDUINOJSON_USE_LONG_LONG 1
+#include <WebSerialLite.h>
 
 #define INVERTER_TX 13
 #define INVERTER_RX 12

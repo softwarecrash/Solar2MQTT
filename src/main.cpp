@@ -378,12 +378,12 @@ void setup()
     DEBUG_WEBLN(F("mDNS running..."));
     ws.onEvent(onEvent);
     server.addHandler(&ws);
-#ifdef isDEBUG
+//#ifdef isDEBUG
     // WebSerial is accessible at "<IP Address>/webserial" in browser
     WebSerial.begin(&server);
     /* Attach Message Callback */
     WebSerial.onMessage(recvMsg);
-#endif
+//#endif
     server.begin();
 
     mppClient.setProtocol(100); // manual set the protocol
@@ -468,72 +468,10 @@ void prozessData()
 
 void getJsonData()
 {
-  // Json["EP_"]["LiveData"]["CONNECTION"] = 123;
-
   deviceJson[F("Device_name")] = settings.data.deviceName;
   deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
   deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
   deviceJson[F("Version")] = SOFTWARE_VERSION;
-  // for debug
-  /*
-  deviceJson[F("Flash_Size")] = ESP.getFlashChipSize();
-  deviceJson[F("Sketch_Size")] = ESP.getSketchSize();
-  deviceJson[F("Free_Sketch_Space")] = ESP.getFreeSketchSpace();
-  deviceJson[F("Real_Flash_Size")] = ESP.getFlashChipRealSize();
-  deviceJson[F("Free_Heap")] = ESP.getFreeHeap();
-  deviceJson[F("HEAP_Fragmentation")] = ESP.getHeapFragmentation();
-  deviceJson[F("Free_BlockSize")] = ESP.getMaxFreeBlockSize();
-  */
-  /*
-    liveData["gridV"] = mppClient.get.variableData.gridVoltage;
-    liveData["gridHz"] = mppClient.get.variableData.gridFrequency;
-    liveData["acOutV"] = mppClient.get.variableData.acOutputVoltage;
-    liveData["acOutHz"] = mppClient.get.variableData.acOutputFrequency;
-    liveData["acOutVa"] = mppClient.get.variableData.acOutputApparentPower;
-    liveData["acOutW"] = mppClient.get.variableData.acOutputActivePower;
-    liveData["acOutPercent"] = mppClient.get.variableData.outputLoadPercent;
-    liveData["busV"] = mppClient.get.variableData.busVoltage;
-    liveData["heatSinkDegC"] = mppClient.get.variableData.inverterHeatSinkTemperature;
-    liveData["battV"] = mppClient.get.variableData.batteryVoltage;
-    liveData["battPercent"] = mppClient.get.variableData.batteryCapacity;
-    liveData["battChargeA"] = mppClient.get.variableData.batteryChargingCurrent;
-    liveData["battDischargeA"] = mppClient.get.variableData.batteryDischargeCurrent;
-    liveData["sccBattV"] = mppClient.get.variableData.batteryVoltageFromScc;
-    liveData["solarV"] = mppClient.get.variableData.pvInputVoltage[0];
-    liveData["solarA"] = mppClient.get.variableData.pvInputCurrent[0];
-    liveData["solarW"] = mppClient.get.variableData.pvChargingPower[0];
-    liveData["iv_mode"] = mppClient.get.variableData.operationMode;
-
-    if (mppClient.qAvaible.qpiri)
-    {
-      staticData["AC_in_rating_voltage"] = mppClient.get.staticData.gridRatingVoltage;
-      staticData["AC_in_rating_current"] = mppClient.get.staticData.gridRatingCurrent;
-      staticData["AC_out_rating_voltage"] = mppClient.get.staticData.acOutputRatingVoltage;
-      staticData["AC_out_rating_frequency"] = mppClient.get.staticData.acOutputRatingFrquency;
-      staticData["AC_out_rating_current"] = mppClient.get.staticData.acoutputRatingCurrent;
-      staticData["AC_out_rating_apparent_power"] = mppClient.get.staticData.acOutputRatingApparentPower;
-      staticData["AC_out_rating_active_power"] = mppClient.get.staticData.acOutputRatingActivePower;
-      staticData["Battery_rating_voltage"] = mppClient.get.staticData.batteryRatingVoltage;
-      staticData["Battery_re-charge_voltage"] = mppClient.get.staticData.batteryReChargeVoltage;
-      staticData["Battery_under_voltage"] = mppClient.get.staticData.batteryUnderVoltage;
-      staticData["Battery_bulk_voltage"] = mppClient.get.staticData.batteryBulkVoltage;
-      staticData["Battery_float_voltage"] = mppClient.get.staticData.batteryFloatVoltage;
-
-      staticData["Battery_type"] = mppClient.get.staticData.batterytype;
-      staticData["Current_max_AC_charging_current"] = mppClient.get.staticData.currentMaxAcChargingCurrent;
-      staticData["Current_max_charging_current"] = mppClient.get.staticData.currentMaxChargingCurrent;
-    }
-    // QPI
-    if (mppClient.qAvaible.qpi)
-    {
-      staticData["Protocol_ID"] = mppClient.get.staticData.deviceProtocol;
-    }
-    // QMN
-    if (mppClient.qAvaible.qmn)
-    {
-      staticData["Device_Model"] = mppClient.get.staticData.modelName;
-    }
-    */
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
@@ -631,120 +569,7 @@ bool sendtoMQTT()
       }
     }
     mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (mppClient.get.raw.commandAnswer).c_str());
-/*
-    // testing
-    mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), mppClient.get.raw.commandAnswer.c_str());
-    // Q1
-    if (mppClient.qAvaible.q1)
-    {
-      mqttclient.publish(topicBuilder(buff, "Inverter_Tracker_Temperature"), itoa(mppClient.get.variableData.trackertemp, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Inverter_Inverter_Temperature"), itoa(mppClient.get.variableData.InverterTemp, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Inverter_Battery_Temperature"), itoa(mppClient.get.variableData.batteryTemp, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Inverter_Transformer_Temperature"), itoa(mppClient.get.variableData.transformerTemp, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Inverter_FAN_Speed"), itoa(mppClient.get.variableData.fanSpeed, msgBuffer, 10));
-      // mqttclient.publish(topicBuilder(buff, "Q1/SCC Charge Power"), itoa(mppClient.get.variableData.sccChargePower, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Battery_Charger_Status"), mppClient.get.variableData.inverterChargeStatus);
-    }
-    // QPIGS
-    if (mppClient.qAvaible.qpigs)
-    {
-      mqttclient.publish(topicBuilder(buff, "AC_in_Voltage"), dtostrf(mppClient.get.variableData.gridVoltage, 5, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "AC_in_Frequenz"), dtostrf(mppClient.get.variableData.gridFrequency, 4, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "AC_out_Voltage"), dtostrf(mppClient.get.variableData.acOutputVoltage, 5, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "AC_out_Frequenz"), dtostrf(mppClient.get.variableData.acOutputFrequency, 4, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "AC_out_VA"), itoa(mppClient.get.variableData.acOutputApparentPower, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "AC_out_Watt"), itoa(mppClient.get.variableData.acOutputActivePower, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "AC_out_percent"), itoa(mppClient.get.variableData.outputLoadPercent, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Inverter_Bus_Voltage"), itoa(mppClient.get.variableData.busVoltage, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Inverter_Bus_Temperature"), itoa(mppClient.get.variableData.inverterHeatSinkTemperature, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Battery_Voltage"), dtostrf(mppClient.get.variableData.batteryVoltage, 4, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "Battery_Percent"), itoa(mppClient.get.variableData.batteryCapacity, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Battery_Load"), itoa(mppClient.get.variableData.batteryLoad, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Battery_SCC_Volt"), dtostrf(mppClient.get.variableData.batteryVoltageFromScc, 4, 1, msgBuffer));
 
-      if (mppClient.get.variableData.pvInputVoltage[1] != -1)
-      {
-        for (size_t i : mppClient.get.variableData.pvInputVoltage)
-        {
-          if (mppClient.get.variableData.pvInputVoltage[i] != -1)
-            mqttclient.publish(topicBuilder(buff, "PV_Volt_" + i), String(mppClient.get.variableData.pvInputVoltage[i]).c_str());
-        }
-      }
-      else if (mppClient.get.variableData.pvInputVoltage[0] != -1)
-      {
-        mqttclient.publish(topicBuilder(buff, "PV_Volt"), String(mppClient.get.variableData.pvInputVoltage[0]).c_str());
-      }
-
-      if (mppClient.get.variableData.pvInputCurrent[1] != -1)
-      {
-        for (size_t i : mppClient.get.variableData.pvInputCurrent)
-        {
-          if (mppClient.get.variableData.pvInputCurrent[i] != -1)
-            mqttclient.publish(topicBuilder(buff, "PV_A_" + i), String(mppClient.get.variableData.pvInputCurrent[i]).c_str());
-        }
-      }
-      else if (mppClient.get.variableData.pvInputCurrent[0] != -1)
-      {
-        if (mppClient.get.variableData.pvInputCurrent[0] != -1)
-          mqttclient.publish(topicBuilder(buff, "PV_A"), String(mppClient.get.variableData.pvInputCurrent[0]).c_str());
-      }
-
-      if (mppClient.get.variableData.pvChargingPower[1] != -1)
-      {
-        for (size_t i : mppClient.get.variableData.pvChargingPower)
-        {
-          if (mppClient.get.variableData.pvChargingPower[i] != -1)
-            mqttclient.publish(topicBuilder(buff, "PV_Watt" + i), String(mppClient.get.variableData.pvChargingPower[i]).c_str());
-        }
-      }
-      else if (mppClient.get.variableData.pvChargingPower[0] != -1)
-      {
-        if (mppClient.get.variableData.pvChargingPower[0] != -1)
-          mqttclient.publish(topicBuilder(buff, "PV_Watt"), String(mppClient.get.variableData.pvChargingPower[0]).c_str());
-      }
-    }
-    // QMOD
-    if (mppClient.qAvaible.qmod)
-    {
-      mqttclient.publish(topicBuilder(buff, "Inverter_Operation_Mode"), mppClient.get.variableData.operationMode);
-    }
-    // QALL
-    if (mppClient.qAvaible.qall)
-    {
-      mqttclient.publish(topicBuilder(buff, "PV_generation_day"), itoa(mppClient.get.variableData.pvGenerationDay, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "PV_generation_sum"), itoa(mppClient.get.variableData.pvGenerationSum, msgBuffer, 10));
-    }
-    // QPIRI
-    if (mppClient.qAvaible.qpiri)
-    {
-      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_in_rating_voltage"), dtostrf(mppClient.get.staticData.gridRatingVoltage, 5, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_in_rating_current"), dtostrf(mppClient.get.staticData.gridRatingCurrent, 4, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_out_rating_voltage"), dtostrf(mppClient.get.staticData.acOutputRatingVoltage, 5, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_out_rating_frequency"), dtostrf(mppClient.get.staticData.acOutputRatingFrquency, 4, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_out_rating_current"), dtostrf(mppClient.get.staticData.acoutputRatingCurrent, 4, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_out_rating_apparent_power"), itoa(mppClient.get.staticData.acOutputRatingApparentPower, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/AC_out_rating_active_power"), itoa(mppClient.get.staticData.acOutputRatingActivePower, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/Battery_rating_voltage"), dtostrf(mppClient.get.staticData.batteryRatingVoltage, 4, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/Battery_re-charge_voltage"), dtostrf(mppClient.get.staticData.batteryReChargeVoltage, 4, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/Battery_under_voltage"), dtostrf(mppClient.get.staticData.batteryUnderVoltage, 4, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/Battery_bulk_voltage"), dtostrf(mppClient.get.staticData.batteryBulkVoltage, 4, 1, msgBuffer));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/Battery_float_voltage"), dtostrf(mppClient.get.staticData.batteryFloatVoltage, 4, 1, msgBuffer));
-
-      mqttclient.publish(topicBuilder(buff, "Device_Data/Battery_type"), mppClient.get.staticData.batterytype);
-      mqttclient.publish(topicBuilder(buff, "Device_Data/Current_max_AC_charging_current"), itoa(mppClient.get.staticData.currentMaxAcChargingCurrent, msgBuffer, 10));
-      mqttclient.publish(topicBuilder(buff, "Device_Data/Current_max_charging_current"), itoa(mppClient.get.staticData.currentMaxChargingCurrent, msgBuffer, 10));
-    }
-    // QPI
-    if (mppClient.qAvaible.qpi)
-    {
-      mqttclient.publish(topicBuilder(buff, "Device_Data/Protocol_ID"), mppClient.get.staticData.deviceProtocol.c_str());
-    }
-    // QMN
-    if (mppClient.qAvaible.qmn)
-    {
-      mqttclient.publish(topicBuilder(buff, "Device_Data/Device_Model"), mppClient.get.staticData.modelName.c_str());
-    }
-    */
 // RAW
 #ifdef DEBUG
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS"), (mppClient.get.raw.qpigs).c_str());
@@ -780,28 +605,7 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
   }
   if (messageTemp == "NAK" || messageTemp == "(NAK" || messageTemp == "")
     return;
-  /*
-  //modify the max charging current
-  if (strcmp(top, (topic + "/Device_Control/Max_Charge_Current").c_str()) == 0)
-  {
-    DEBUG_PRINTLN("message recived");
-    if (messageTemp.toInt() != _qpiriMessage.battMaxChrgA)
-    {
-      sendMNCHGC(messageTemp.toInt());
-      valChange = true;
-    }
-  }
-  //modify the max ac charging current
-  if (strcmp(top, (topic + "/Device_Control/AC_Max_Charge_Current").c_str()) == 0)
-  {
-    DEBUG_PRINTLN("message recived");
-    if (messageTemp.toInt() != _qpiriMessage.battMaxAcChrgA)
-    {
-      sendMUCHGC(messageTemp.toInt());
-      valChange = true;
-    }
-  }
-  */
+
   // send raw control command
   if (strcmp(top, topicBuilder(buff, "Device_Control/Set_Command")) == 0)
   {
