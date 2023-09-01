@@ -63,7 +63,6 @@ public:
     };
     struct
     {
-
         struct
         {
             // static
@@ -74,7 +73,9 @@ public:
             // dynamic
             String q1;
             String qpigs;
+            String qpigs2;
             String qmod;
+            String qet;
             String commandAnswer;
         } raw;
 
@@ -222,6 +223,7 @@ private:
     bool PIXX_QPIGS2();
     bool PIXX_QALL();
     bool PIXX_QMOD();
+    bool PIXX_QET();
     // static reqeuests
     bool PIXX_QPIRI();
     bool PIXX_QPI();

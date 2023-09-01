@@ -1,15 +1,15 @@
 static const char *const qpigs2List[] = {
     // [PI34 / MPPT-3000], [PI30 HS MS MSX], [PI30 Revo], [PI30 PIP], [PI41 / LV5048]
-        "PV2_Input_Current",                  // BBB.B
-        "PV2_Input_Voltage",                 // CCC.C
-        "PV2_Charging_Power",                 // DDDD
+    "PV2_Input_Current",  // BBB.B
+    "PV2_Input_Voltage",  // CCC.C
+    "PV2_Charging_Power", // DDDD
 };
 
 bool PI_Serial::PIXX_QPIGS2()
 {
   String commandAnswer = this->requestData("QPIGS2");
   byte commandAnswerLength = commandAnswer.length();
-  String strs[30];      // buffer for string splitting
+  String strs[30]; // buffer for string splitting
   if (commandAnswer == "NAK")
   {
     return true;
@@ -18,11 +18,10 @@ bool PI_Serial::PIXX_QPIGS2()
   {
     return false;
   }
-  get.raw.qpigs = commandAnswer;
+  get.raw.qpigs2 = commandAnswer;
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswerLength >= 10 && commandAnswerLength <= 20)
   {
-
 
     // Split the string into substrings
     int StringCount = 0;
