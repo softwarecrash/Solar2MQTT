@@ -46,6 +46,7 @@ bool valChange = false;
 bool askInverterOnce = false;
 bool fwUpdateRunning = false;
 bool publishFirst = false;
+uint32_t bootcount = 0;
 String commandFromWeb;
 String commandFromMqtt;
 String customResponse;
@@ -134,9 +135,50 @@ void recvMsg(uint8_t *data, size_t len)
   WebSerial.println("Sending [" + d + "] to Device");
 }
 
-void setup()
+bool resetCounter(bool count)
 {
 
+  if (count)
+  {
+    if (ESP.getResetInfoPtr()->reason == 6)
+    {
+      ESP.rtcUserMemoryRead(16, &bootcount, sizeof(bootcount));
+
+      if (bootcount >= 10 && bootcount < 20)
+      {
+        // bootcount = 0;
+        // ESP.rtcUserMemoryWrite(16, &bootcount, sizeof(bootcount));
+        settings.reset();
+        ESP.eraseConfig();
+        ESP.reset();
+      }
+      else
+      {
+        bootcount++;
+        ESP.rtcUserMemoryWrite(16, &bootcount, sizeof(bootcount));
+      }
+    }
+    else
+    {
+      bootcount = 0;
+      ESP.rtcUserMemoryWrite(16, &bootcount, sizeof(bootcount));
+    }
+  }
+  else
+  {
+    bootcount = 0;
+    ESP.rtcUserMemoryWrite(16, &bootcount, sizeof(bootcount));
+  }
+  DEBUG_PRINT(F("Bootcount: "));
+  DEBUG_PRINTLN(bootcount);
+  DEBUG_PRINT(F("Reboot reason: "));
+  DEBUG_PRINTLN(ESP.getResetInfoPtr()->reason);
+  return true;
+}
+void setup()
+{
+analogWrite(LED_PIN, 0);
+resetCounter(true);
 #ifdef DEBUG
   DEBUG_BEGIN(DEBUG_BAUD); // Debugging towards UART1
 #endif
@@ -392,6 +434,8 @@ void setup()
 
     mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
   }
+    analogWrite(LED_PIN, 255);
+  resetCounter(false);
 }
 
 void loop()
