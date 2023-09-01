@@ -53,7 +53,7 @@ String customResponse;
 bool firstPublish;
 DynamicJsonDocument Json(JSON_BUFFER); // main Json
 // StaticJsonDocument <JSON_BUFFER>Json;
-JsonObject deviceJson = Json.createNestedObject("EspData");         // basic device data
+JsonObject deviceJson = Json.createNestedObject("EspData");    // basic device data
 JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
 JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
 // JsonObject rawData = Json.createNestedObject("RawData");       // battery package data
@@ -132,7 +132,7 @@ void recvMsg(uint8_t *data, size_t len)
   }
   valChange = true;
   commandFromWeb = (d);
-  WebSerial.println("Sending ["+ d + "] to Device");
+  WebSerial.println("Sending [" + d + "] to Device");
 }
 #endif
 
@@ -154,8 +154,8 @@ void setup()
   wm.setDebugOutput(false); // disable wifimanager debug output
 #endif
   wm.setMinimumSignalQuality(20); // filter weak wifi signals
-  //wm.setConnectTimeout(15);       // how long to try to connect for before continuing
-  //wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
+  // wm.setConnectTimeout(15);       // how long to try to connect for before continuing
+  // wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
   wm.setSaveConfigCallback(saveConfigCallback);
 
   DEBUG_PRINTLN();
@@ -400,14 +400,19 @@ void loop()
 {
 
   // Make sure wifi is in the right mode
-  if (WiFi.status() == WL_CONNECTED)
+  if (WiFi.status() == WL_CONNECTED && !fwUpdateRunning)
   {                      // No use going to next step unless WIFI is up and running.
     ws.cleanupClients(); // clean unused client connections
     MDNS.update();
-    if (!fwUpdateRunning)
-      mppClient.loop(); // Call the PI Serial Library loop
-    mqttclient.loop();  // Check if we have something to read from MQTT
-    notificationLED();  // notification LED routine
+    getJsonData();
+    mppClient.loop();  // Call the PI Serial Library loop
+    mqttclient.loop(); // Check if we have something to read from MQTT
+    notificationLED(); // notification LED routine
+    if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
+    {
+      sendtoMQTT(); // Update data to MQTT server if we should
+      mqtttimer = millis();
+    }
   }
 
   if (restartNow && millis() >= (RestartTimer + 500))
@@ -421,14 +426,17 @@ void loop()
 void prozessData()
 {
   DEBUG_PRINTLN("ProzessData called");
-  getJsonData();
+  // getJsonData();
   if (wsClient != nullptr && wsClient->canSend())
-    notifyClients();
-  if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
   {
-    sendtoMQTT(); // Update data to MQTT server if we should
-    mqtttimer = millis();
+    notifyClients();
   }
+
+  // if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
+  //{
+  //   sendtoMQTT(); // Update data to MQTT server if we should
+  //  mqtttimer = millis();
+  //}
 
   if (valChange)
   {
@@ -464,12 +472,11 @@ void getJsonData()
 {
   // Json["EP_"]["LiveData"]["CONNECTION"] = 123;
 
-  
   deviceJson[F("Device_name")] = settings.data.deviceName;
   deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
   deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
   deviceJson[F("Version")] = SOFTWARE_VERSION;
-  //for debug
+  // for debug
   /*
   deviceJson[F("Flash_Size")] = ESP.getFlashChipSize();
   deviceJson[F("Sketch_Size")] = ESP.getSketchSize();
@@ -479,56 +486,56 @@ void getJsonData()
   deviceJson[F("HEAP_Fragmentation")] = ESP.getHeapFragmentation();
   deviceJson[F("Free_BlockSize")] = ESP.getMaxFreeBlockSize();
   */
-/*
-  liveData["gridV"] = mppClient.get.variableData.gridVoltage;
-  liveData["gridHz"] = mppClient.get.variableData.gridFrequency;
-  liveData["acOutV"] = mppClient.get.variableData.acOutputVoltage;
-  liveData["acOutHz"] = mppClient.get.variableData.acOutputFrequency;
-  liveData["acOutVa"] = mppClient.get.variableData.acOutputApparentPower;
-  liveData["acOutW"] = mppClient.get.variableData.acOutputActivePower;
-  liveData["acOutPercent"] = mppClient.get.variableData.outputLoadPercent;
-  liveData["busV"] = mppClient.get.variableData.busVoltage;
-  liveData["heatSinkDegC"] = mppClient.get.variableData.inverterHeatSinkTemperature;
-  liveData["battV"] = mppClient.get.variableData.batteryVoltage;
-  liveData["battPercent"] = mppClient.get.variableData.batteryCapacity;
-  liveData["battChargeA"] = mppClient.get.variableData.batteryChargingCurrent;
-  liveData["battDischargeA"] = mppClient.get.variableData.batteryDischargeCurrent;
-  liveData["sccBattV"] = mppClient.get.variableData.batteryVoltageFromScc;
-  liveData["solarV"] = mppClient.get.variableData.pvInputVoltage[0];
-  liveData["solarA"] = mppClient.get.variableData.pvInputCurrent[0];
-  liveData["solarW"] = mppClient.get.variableData.pvChargingPower[0];
-  liveData["iv_mode"] = mppClient.get.variableData.operationMode;
+  /*
+    liveData["gridV"] = mppClient.get.variableData.gridVoltage;
+    liveData["gridHz"] = mppClient.get.variableData.gridFrequency;
+    liveData["acOutV"] = mppClient.get.variableData.acOutputVoltage;
+    liveData["acOutHz"] = mppClient.get.variableData.acOutputFrequency;
+    liveData["acOutVa"] = mppClient.get.variableData.acOutputApparentPower;
+    liveData["acOutW"] = mppClient.get.variableData.acOutputActivePower;
+    liveData["acOutPercent"] = mppClient.get.variableData.outputLoadPercent;
+    liveData["busV"] = mppClient.get.variableData.busVoltage;
+    liveData["heatSinkDegC"] = mppClient.get.variableData.inverterHeatSinkTemperature;
+    liveData["battV"] = mppClient.get.variableData.batteryVoltage;
+    liveData["battPercent"] = mppClient.get.variableData.batteryCapacity;
+    liveData["battChargeA"] = mppClient.get.variableData.batteryChargingCurrent;
+    liveData["battDischargeA"] = mppClient.get.variableData.batteryDischargeCurrent;
+    liveData["sccBattV"] = mppClient.get.variableData.batteryVoltageFromScc;
+    liveData["solarV"] = mppClient.get.variableData.pvInputVoltage[0];
+    liveData["solarA"] = mppClient.get.variableData.pvInputCurrent[0];
+    liveData["solarW"] = mppClient.get.variableData.pvChargingPower[0];
+    liveData["iv_mode"] = mppClient.get.variableData.operationMode;
 
-  if (mppClient.qAvaible.qpiri)
-  {
-    staticData["AC_in_rating_voltage"] = mppClient.get.staticData.gridRatingVoltage;
-    staticData["AC_in_rating_current"] = mppClient.get.staticData.gridRatingCurrent;
-    staticData["AC_out_rating_voltage"] = mppClient.get.staticData.acOutputRatingVoltage;
-    staticData["AC_out_rating_frequency"] = mppClient.get.staticData.acOutputRatingFrquency;
-    staticData["AC_out_rating_current"] = mppClient.get.staticData.acoutputRatingCurrent;
-    staticData["AC_out_rating_apparent_power"] = mppClient.get.staticData.acOutputRatingApparentPower;
-    staticData["AC_out_rating_active_power"] = mppClient.get.staticData.acOutputRatingActivePower;
-    staticData["Battery_rating_voltage"] = mppClient.get.staticData.batteryRatingVoltage;
-    staticData["Battery_re-charge_voltage"] = mppClient.get.staticData.batteryReChargeVoltage;
-    staticData["Battery_under_voltage"] = mppClient.get.staticData.batteryUnderVoltage;
-    staticData["Battery_bulk_voltage"] = mppClient.get.staticData.batteryBulkVoltage;
-    staticData["Battery_float_voltage"] = mppClient.get.staticData.batteryFloatVoltage;
+    if (mppClient.qAvaible.qpiri)
+    {
+      staticData["AC_in_rating_voltage"] = mppClient.get.staticData.gridRatingVoltage;
+      staticData["AC_in_rating_current"] = mppClient.get.staticData.gridRatingCurrent;
+      staticData["AC_out_rating_voltage"] = mppClient.get.staticData.acOutputRatingVoltage;
+      staticData["AC_out_rating_frequency"] = mppClient.get.staticData.acOutputRatingFrquency;
+      staticData["AC_out_rating_current"] = mppClient.get.staticData.acoutputRatingCurrent;
+      staticData["AC_out_rating_apparent_power"] = mppClient.get.staticData.acOutputRatingApparentPower;
+      staticData["AC_out_rating_active_power"] = mppClient.get.staticData.acOutputRatingActivePower;
+      staticData["Battery_rating_voltage"] = mppClient.get.staticData.batteryRatingVoltage;
+      staticData["Battery_re-charge_voltage"] = mppClient.get.staticData.batteryReChargeVoltage;
+      staticData["Battery_under_voltage"] = mppClient.get.staticData.batteryUnderVoltage;
+      staticData["Battery_bulk_voltage"] = mppClient.get.staticData.batteryBulkVoltage;
+      staticData["Battery_float_voltage"] = mppClient.get.staticData.batteryFloatVoltage;
 
-    staticData["Battery_type"] = mppClient.get.staticData.batterytype;
-    staticData["Current_max_AC_charging_current"] = mppClient.get.staticData.currentMaxAcChargingCurrent;
-    staticData["Current_max_charging_current"] = mppClient.get.staticData.currentMaxChargingCurrent;
-  }
-  // QPI
-  if (mppClient.qAvaible.qpi)
-  {
-    staticData["Protocol_ID"] = mppClient.get.staticData.deviceProtocol;
-  }
-  // QMN
-  if (mppClient.qAvaible.qmn)
-  {
-    staticData["Device_Model"] = mppClient.get.staticData.modelName;
-  }
-  */
+      staticData["Battery_type"] = mppClient.get.staticData.batterytype;
+      staticData["Current_max_AC_charging_current"] = mppClient.get.staticData.currentMaxAcChargingCurrent;
+      staticData["Current_max_charging_current"] = mppClient.get.staticData.currentMaxChargingCurrent;
+    }
+    // QPI
+    if (mppClient.qAvaible.qpi)
+    {
+      staticData["Protocol_ID"] = mppClient.get.staticData.deviceProtocol;
+    }
+    // QMN
+    if (mppClient.qAvaible.qmn)
+    {
+      staticData["Device_Model"] = mppClient.get.staticData.modelName;
+    }
+    */
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
@@ -621,7 +628,7 @@ bool sendtoMQTT()
       {
         char msgBuffer1[200];
         sprintf(msgBuffer1, "%s/%s/%s", settings.data.mqttTopic, jsonDev.key().c_str(), jsondat.key().c_str());
-        //DEBUG_PRINTLN(msgBuffer1);
+        // DEBUG_PRINTLN(msgBuffer1);
         mqttclient.publish(msgBuffer1, jsondat.value().as<String>().c_str());
       }
     }

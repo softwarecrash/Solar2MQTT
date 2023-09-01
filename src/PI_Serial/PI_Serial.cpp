@@ -5,17 +5,17 @@ SoftwareSerial myPort;
 #include "CRC16.h"
 #include "CRC.h"
 CRC16 crc;
-//static
+// static
 #include "QPI.h"
 #include "QPIRI.h"
 #include "QMN.h"
-//variable
+// variable
 #include "Q1.h"
 #include "QPIGS.h"
 #include "QMOD.h"
 #include "QALL.h"
 //----------------------------------------------------------------------
-// Public Functions
+//  Public Functions
 //----------------------------------------------------------------------
 
 PI_Serial::PI_Serial(int rx, int tx)
@@ -91,23 +91,16 @@ bool PI_Serial::loop()
             switch (requestCounter)
             {
             case 0:
-            if(PIXX_QALL()){
-                requestCounter++;
-            } else if(PIXX_QPIGS()) {
-                requestCounter++;
-            } else {
-                requestCounter = 0;
-            }
+                requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
                 break;
             case 1:
-                //requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
-                requestCounter++;
-                break;
-            case 2:
                 requestCounter = PIXX_QMOD() ? (requestCounter + 1) : 0;
                 break;
-            case 3:
+            case 2:
                 requestCounter = PIXX_Q1() ? (requestCounter + 1) : 0;
+                break;
+            case 3:
+                requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
                 break;
             case 4:
                 sendCustomCommand();
@@ -251,7 +244,7 @@ String PI_Serial::requestData(String command)
         commandBuffer = "ERCRC";
     }
     char debugBuff[128];
-    sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc,commandBuffer.length(), (const wchar_t *)commandBuffer.c_str());
+    sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, commandBuffer.length(), (const wchar_t *)commandBuffer.c_str());
     PI_DEBUG_PRINTLN(debugBuff);
     PI_DEBUG_WEBLN(debugBuff);
     return commandBuffer;

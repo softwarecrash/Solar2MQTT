@@ -29,7 +29,7 @@ bool PI_Serial::PIXX_QALL()
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswer == "NAK")
   {
-    return false;
+    return true;
   }
     if(commandAnswer == "ERCRC")
   {

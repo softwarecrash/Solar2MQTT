@@ -115,7 +115,7 @@
     function onMessage(event) {
         var data = JSON.parse(event.data);
         document.getElementById("packSOC").innerHTML = data.Battery_Percent + '%%';
-        $('#packSOC').width(data.Battery_Percent + "%").attr('aria-valuenow', data.Battery_Percent);
+        $('#packSOC').width(data.Battery_Percent + '%%').attr('aria-valuenow', data.Battery_Percent);
 
         document.getElementById("pv_volt").innerHTML = data.PV_Input_Voltage + 'V ';
         document.getElementById("pv_current").innerHTML = data.PV_Input_Current + 'A  ';
@@ -138,9 +138,13 @@
 
         document.getElementById("ivmode").innerHTML = data.Inverter_Operation_Mode;
 
-
-
-
+        for (var i = 0; i < dataFields.length; i++) {
+            if (dataFields[i].innerHTML.indexOf("undefined") > -1) {
+                dataFields[i].style.display = 'none';
+            } else {
+                dataFields[i].style.display = '';
+            }
+        }
     }
 
     function alert(data) {

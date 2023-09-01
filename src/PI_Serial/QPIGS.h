@@ -76,15 +76,17 @@ bool PI_Serial::PIXX_QPIGS()
 {
   String commandAnswer = this->requestData("QPIGS");
   byte commandAnswerLength = commandAnswer.length();
-  byte protocolNum = 0;
-    if (commandAnswer == "NAK")
+  byte protocolNum = 0; // for future use
+  String strs[30];      // buffer for string splitting
+  if (commandAnswer == "NAK")
   {
     return true;
   }
-    if(commandAnswer == "ERCRC")
+  if (commandAnswer == "ERCRC")
   {
     return false;
   }
+  get.raw.qpigs = commandAnswer;
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswerLength >= 60 && commandAnswerLength <= 140)
   {
@@ -96,10 +98,7 @@ bool PI_Serial::PIXX_QPIGS()
     {
       protocolNum = 1;
     }
-  get.raw.qpigs = commandAnswer;
-   // rawData["QPIGS"] = commandAnswer; // sometimes it writes null, why?
 
-    String strs[30];
     // Split the string into substrings
     int StringCount = 0;
     while (commandAnswer.length() > 0)
