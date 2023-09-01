@@ -1,21 +1,21 @@
 // #define isDEBUG
-
+#include "ArduinoJson.h"
 #include "PI_Serial.h"
 SoftwareSerial myPort;
 #include "CRC16.h"
 #include "CRC.h"
 CRC16 crc;
-//static
-#include "Q/PI.h"
-#include "Q/PIRI.h"
-#include "Q/MN.h"
-//variable
-#include "Q/1.h"
-#include "Q/PIGS.h"
-#include "Q/MOD.h"
-#include "Q/ALL.h"
+// static
+#include "QPI.h"
+#include "QPIRI.h"
+#include "QMN.h"
+// variable
+#include "Q1.h"
+#include "QPIGS.h"
+#include "QMOD.h"
+#include "QALL.h"
 //----------------------------------------------------------------------
-// Public Functions
+//  Public Functions
 //----------------------------------------------------------------------
 
 PI_Serial::PI_Serial(int rx, int tx)
@@ -94,13 +94,13 @@ bool PI_Serial::loop()
                 requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
                 break;
             case 1:
-                requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
-                break;
-            case 2:
                 requestCounter = PIXX_QMOD() ? (requestCounter + 1) : 0;
                 break;
-            case 3:
+            case 2:
                 requestCounter = PIXX_Q1() ? (requestCounter + 1) : 0;
+                break;
+            case 3:
+                requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
                 break;
             case 4:
                 sendCustomCommand();
@@ -244,7 +244,7 @@ String PI_Serial::requestData(String command)
         commandBuffer = "ERCRC";
     }
     char debugBuff[128];
-    sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc,commandBuffer.length(), (const wchar_t *)commandBuffer.c_str());
+    sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, commandBuffer.length(), (const wchar_t *)commandBuffer.c_str());
     PI_DEBUG_PRINTLN(debugBuff);
     PI_DEBUG_WEBLN(debugBuff);
     return commandBuffer;
@@ -311,7 +311,7 @@ String PI_Serial::appendCRC(String data) // calculate and add the crc to the str
         uint16_t u;
     } cu_t;
     cu_t v;
-    v.u = crc.getCRC();
+    v.u = crc.calc();
     data.concat(v.cH);
     data.concat(v.cL);
     /*
@@ -341,7 +341,7 @@ uint16_t PI_Serial::getCRC(String data) // get a calculated crc from a string
     crc.reset();
     crc.setPolynome(0x1021);
     crc.add((uint8_t *)data.c_str(), data.length());
-    return crc.getCRC(); // here comes the crc;
+    return crc.calc(); // here comes the crc;
 }
 
 byte PI_Serial::getCHK(String data) // get a calculatedt CHK

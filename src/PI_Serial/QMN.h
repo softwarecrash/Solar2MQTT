@@ -4,17 +4,18 @@ bool PI_Serial::PIXX_QMN()
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if(commandAnswer == "NAK")
   {
-    qAvaible.qmn = false; //if recived NAK, set the command avaible to false and never aks again until reboot
     return true;
-  } else
-  if (commandAnswer.length() > 3 && commandAnswer.length() < 50)
-  {
-    qAvaible.qmn = true;
-    get.raw.qmn = commandAnswer;
-    get.staticData.modelName = commandAnswer;
-    return true;
-  } else
+  }
+    if(commandAnswer == "ERCRC")
   {
     return false;
   }
+  if (commandAnswer.length() > 3 && commandAnswer.length() < 50)
+  {
+    get.raw.qmn = commandAnswer;
+    //get.staticData.modelName = commandAnswer;
+    staticData["Device_Model"] = commandAnswer;
+    return true;
+  }
+  return true;
 }

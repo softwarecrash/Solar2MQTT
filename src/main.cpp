@@ -14,12 +14,8 @@ https://github.com/softwarecrash/Solar2MQTT
 
 #include "Settings.h"
 
-#include "webpages/htmlCase.h"      //The HTML Konstructor
-#include "webpages/main.h"          //landing page with menu
-#include "webpages/settings.h"      //settings page
-#include "webpages/settingsedit.h"  //mqtt settings page
-#include "webpages/reboot.h"        // Reboot Page
-#include "webpages/htmlProzessor.h" // The html Prozessor
+#include "html.h"
+#include "htmlProzessor.h"
 
 #include "PI_Serial/PI_Serial.h"
 
@@ -55,15 +51,13 @@ String commandFromMqtt;
 String customResponse;
 
 bool firstPublish;
-DynamicJsonDocument Json(JSON_BUFFER);
-// StaticJsonDocument<JSON_BUFFER> Json;                          // main Json
-JsonObject deviceJson = Json.createNestedObject("Device");     // basic device data
+DynamicJsonDocument Json(JSON_BUFFER); // main Json
+// StaticJsonDocument <JSON_BUFFER>Json;
+JsonObject deviceJson = Json.createNestedObject("EspData");    // basic device data
 JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
 JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
+// JsonObject rawData = Json.createNestedObject("RawData");       // battery package data
 
-DynamicJsonDocument root(1024);
-JsonObject nest1 = root.createNestedObject("nest1");
-JsonObject nest2 = root.createNestedObject("nest2");
 //----------------------------------------------------------------------
 void saveConfigCallback()
 {
@@ -78,9 +72,13 @@ void notifyClients()
   {
     DEBUG_PRINT(F("Data sent to WebSocket... "));
     DEBUG_WEB(F("Data sent to WebSocket... "));
-    char data[JSON_BUFFER];
-    size_t len = serializeJson(Json, data);
-    wsClient->text(data, len);
+    size_t len = measureJson(liveData);
+    AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
+    if (buffer)
+    {
+      serializeJson(liveData, (char *)buffer->get(), len + 1);
+      wsClient->text(buffer);
+    }
     DEBUG_PRINTLN(F("Done"));
     DEBUG_WEBLN(F("Done"));
   }
@@ -123,74 +121,26 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
   }
 }
 
-static void handle_update_progress_cb(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
-{
-  uint32_t free_space = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
-  if (!index)
-  {
-    DEBUG_PRINTLN("Update");
-    DEBUG_WEBLN("Update");
-    Update.runAsync(true);
-    if (!Update.begin(free_space))
-    {
-      Update.printError(Serial);
-      ESP.restart();
-    }
-  }
-
-  if (Update.write(data, len) != len)
-  {
-    Update.printError(Serial);
-    ESP.restart();
-  }
-
-  if (final)
-  {
-    if (!Update.end(true))
-    {
-      Update.printError(Serial);
-      ESP.restart();
-    }
-    else
-    {
-
-      AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_REBOOT, htmlProcessor);
-      request->send(response);
-      restartNow = true; // Set flag so main loop can issue restart call
-      RestartTimer = millis();
-      DEBUG_PRINTLN("Update complete");
-      DEBUG_WEBLN("Update complete");
-    }
-  }
-}
-
 #ifdef isDEBUG
 /* Message callback of WebSerial */
 void recvMsg(uint8_t *data, size_t len)
 {
-  WebSerial.println("Received Data...");
   String d = "";
   for (uint i = 0; i < len; i++)
   {
     d += char(data[i]);
   }
-  WebSerial.println(d);
+  valChange = true;
+  commandFromWeb = (d);
+  WebSerial.println("Sending [" + d + "] to Device");
 }
 #endif
 
 void setup()
 {
 
-  nest1["nest1_1"] = "hello";
-  nest1["nest1_2"] = "nest";
-  nest1["nest1_3"] = 3;
-
-  nest2["nest2_1"] = "second";
-  nest2["nest2_2"] = "nestnumber";
-  nest2["nest2_3"] = 3;
-
 #ifdef DEBUG
-  DEBUG_BEGIN(9600); // Debugging towards UART1
+  DEBUG_BEGIN(DEBUG_BAUD); // Debugging towards UART1
 #endif
   settings.load();
   WiFi.persistent(true); // fix wifi save bug
@@ -204,8 +154,8 @@ void setup()
   wm.setDebugOutput(false); // disable wifimanager debug output
 #endif
   wm.setMinimumSignalQuality(20); // filter weak wifi signals
-  wm.setConnectTimeout(15);       // how long to try to connect for before continuing
-  wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
+  // wm.setConnectTimeout(15);       // how long to try to connect for before continuing
+  // wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
   wm.setSaveConfigCallback(saveConfigCallback);
 
   DEBUG_PRINTLN();
@@ -288,7 +238,7 @@ void setup()
   DEBUG_WEBLN(F("MQTT Server config Loaded"));
 
   mqttclient.setCallback(mqttcallback);
-  mqttclient.setBufferSize(MQTT_BUFFER);
+  // mqttclient.setBufferSize(MQTT_BUFFER);
 
   // check is WiFi connected
   if (!apRunning)
@@ -352,33 +302,14 @@ void setup()
                 settings.data.mqttRefresh = request->arg("post_mqttRefresh").toInt() < 1 ? 1 : request->arg("post_mqttRefresh").toInt(); // prevent lower numbers
                 strncpy(settings.data.deviceName, request->arg("post_deviceName").c_str(), 40);
                 settings.data.mqttJson = (request->arg("post_mqttjson") == "true") ? true : false;
+                strncpy(settings.data.mqttTriggerPath, request->arg("post_mqtttrigger").c_str(), 80);
+                settings.data.webUIdarkmode = (request->arg("post_webuicolormode") == "true") ? true : false;
                 settings.save();
                 request->redirect("/reboot"); });
 
     server.on("/set", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                 AsyncWebParameter *p = request->getParam(0);
-                if (p->name() == "maxcharge")
-                {
-                  valChange = true;
-                //  _qpiriMessage.battMaxChrgA = p->value().toInt(); //const string zu int
-                }
-                if (p->name() == "maxaccharge")
-                {
-                  valChange = true;
-                 // _qpiriMessage.battMaxAcChrgA = p->value().toInt(); //const string zu int
-                }
-                if (p->name() == "PCVV")
-                {
-                  valChange = true;
-                 // _qpiriMessage.battBulkV = p->value().toFloat(); //const string zu int
-                }
-                if (p->name() == "PBFT")
-                {
-                  valChange = true;
-                  //_qpiriMessage.battFloatV = p->value().toFloat(); //const string zu int
-                }
-
                 if (p->name() == "CC")
                 {
                   valChange = true;
@@ -389,11 +320,52 @@ void setup()
     server.on(
         "/update", HTTP_POST, [](AsyncWebServerRequest *request)
         {
-          fwUpdateRunning = true;
-          Serial.end();
-          ws.enable(false);
-          ws.closeAll(); },
-        handle_update_progress_cb);
+    //https://gist.github.com/JMishou/60cb762047b735685e8a09cd2eb42a60
+    // the request handler is triggered after the upload has finished... 
+    // create the response, add header, and send response
+    AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", (Update.hasError())?"FAIL":"OK");
+    response->addHeader("Connection", "close");
+    response->addHeader("Access-Control-Allow-Origin", "*");
+    //restartNow = true; // Tell the main loop to restart the ESP
+    //RestartTimer = millis();  // Tell the main loop to restart the ESP
+    request->send(response); },
+        [](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
+        {
+          // Upload handler chunks in data
+
+          if (!index)
+          { // if index == 0 then this is the first frame of data
+            Serial.printf("UploadStart: %s\n", filename.c_str());
+            Serial.setDebugOutput(true);
+
+            // calculate sketch space required for the update
+            uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+            if (!Update.begin(maxSketchSpace))
+            { // start with max available size
+              Update.printError(Serial);
+            }
+            Update.runAsync(true); // tell the updaterClass to run in async mode
+          }
+
+          // Write chunked data to the free sketch space
+          if (Update.write(data, len) != len)
+          {
+            Update.printError(Serial);
+          }
+
+          if (final)
+          { // if the final flag is set then this is the last frame of data
+            if (Update.end(true))
+            { // true to set the size to the current progress
+              Serial.printf("Update Success: %u B\nRebooting...\n", index + len);
+            }
+            else
+            {
+              Update.printError(Serial);
+            }
+            Serial.setDebugOutput(false);
+          }
+        });
 
     server.onNotFound([](AsyncWebServerRequest *request)
                       { request->send(418, "text/plain", "418 I'm a teapot"); });
@@ -428,14 +400,19 @@ void loop()
 {
 
   // Make sure wifi is in the right mode
-  if (WiFi.status() == WL_CONNECTED)
+  if (WiFi.status() == WL_CONNECTED && !fwUpdateRunning)
   {                      // No use going to next step unless WIFI is up and running.
     ws.cleanupClients(); // clean unused client connections
     MDNS.update();
-    if (!fwUpdateRunning)
-      mppClient.loop(); // Call the PI Serial Library loop
-    mqttclient.loop();  // Check if we have something to read from MQTT
-    notificationLED();  // notification LED routine
+    getJsonData();
+    mppClient.loop();  // Call the PI Serial Library loop
+    mqttclient.loop(); // Check if we have something to read from MQTT
+    notificationLED(); // notification LED routine
+    if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
+    {
+      sendtoMQTT(); // Update data to MQTT server if we should
+      mqtttimer = millis();
+    }
   }
 
   if (restartNow && millis() >= (RestartTimer + 500))
@@ -449,14 +426,17 @@ void loop()
 void prozessData()
 {
   DEBUG_PRINTLN("ProzessData called");
-  getJsonData();
+  // getJsonData();
   if (wsClient != nullptr && wsClient->canSend())
-    notifyClients();
-  if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
   {
-    sendtoMQTT(); // Update data to MQTT server if we should
-    mqtttimer = millis();
+    notifyClients();
   }
+
+  // if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
+  //{
+  //   sendtoMQTT(); // Update data to MQTT server if we should
+  //  mqtttimer = millis();
+  //}
 
   if (valChange)
   {
@@ -465,6 +445,7 @@ void prozessData()
       DEBUG_PRINTLN(commandFromWeb);
       DEBUG_WEBLN(commandFromWeb);
       String tmp = mppClient.sendCommand(commandFromWeb); // send a custom command to the device
+      // mppClient.requestStaticData = true;
       DEBUG_PRINTLN(tmp);
       DEBUG_WEBLN(tmp);
       commandFromWeb = "";
@@ -474,10 +455,11 @@ void prozessData()
       DEBUG_PRINTLN(commandFromMqtt);
       DEBUG_WEBLN(commandFromMqtt);
       String customResponse = mppClient.sendCommand(commandFromMqtt); // send a custom command to the device
+      // mppClient.requestStaticData = true;
       DEBUG_PRINTLN(customResponse);
       DEBUG_WEBLN(customResponse);
       commandFromMqtt = "";
-      // mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (customResponse).c_str());
+      // mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (mppClient.get.raw.commandAnswer).c_str());
     }
     // mqtttimer = 0;
     mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
@@ -488,67 +470,72 @@ void prozessData()
 
 void getJsonData()
 {
-  deviceJson[F("device_name")] = settings.data.deviceName;
+  // Json["EP_"]["LiveData"]["CONNECTION"] = 123;
+
+  deviceJson[F("Device_name")] = settings.data.deviceName;
   deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
   deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
-  deviceJson[F("sw_version")] = SOFTWARE_VERSION;
+  deviceJson[F("Version")] = SOFTWARE_VERSION;
+  // for debug
+  /*
   deviceJson[F("Flash_Size")] = ESP.getFlashChipSize();
   deviceJson[F("Sketch_Size")] = ESP.getSketchSize();
   deviceJson[F("Free_Sketch_Space")] = ESP.getFreeSketchSpace();
-  deviceJson[F("CPU_Frequency")] = ESP.getCpuFreqMHz();
   deviceJson[F("Real_Flash_Size")] = ESP.getFlashChipRealSize();
   deviceJson[F("Free_Heap")] = ESP.getFreeHeap();
   deviceJson[F("HEAP_Fragmentation")] = ESP.getHeapFragmentation();
   deviceJson[F("Free_BlockSize")] = ESP.getMaxFreeBlockSize();
+  */
+  /*
+    liveData["gridV"] = mppClient.get.variableData.gridVoltage;
+    liveData["gridHz"] = mppClient.get.variableData.gridFrequency;
+    liveData["acOutV"] = mppClient.get.variableData.acOutputVoltage;
+    liveData["acOutHz"] = mppClient.get.variableData.acOutputFrequency;
+    liveData["acOutVa"] = mppClient.get.variableData.acOutputApparentPower;
+    liveData["acOutW"] = mppClient.get.variableData.acOutputActivePower;
+    liveData["acOutPercent"] = mppClient.get.variableData.outputLoadPercent;
+    liveData["busV"] = mppClient.get.variableData.busVoltage;
+    liveData["heatSinkDegC"] = mppClient.get.variableData.inverterHeatSinkTemperature;
+    liveData["battV"] = mppClient.get.variableData.batteryVoltage;
+    liveData["battPercent"] = mppClient.get.variableData.batteryCapacity;
+    liveData["battChargeA"] = mppClient.get.variableData.batteryChargingCurrent;
+    liveData["battDischargeA"] = mppClient.get.variableData.batteryDischargeCurrent;
+    liveData["sccBattV"] = mppClient.get.variableData.batteryVoltageFromScc;
+    liveData["solarV"] = mppClient.get.variableData.pvInputVoltage[0];
+    liveData["solarA"] = mppClient.get.variableData.pvInputCurrent[0];
+    liveData["solarW"] = mppClient.get.variableData.pvChargingPower[0];
+    liveData["iv_mode"] = mppClient.get.variableData.operationMode;
 
-  liveData["gridV"] = mppClient.get.variableData.gridVoltage;
-  liveData["gridHz"] = mppClient.get.variableData.gridFrequency;
-  liveData["acOutV"] = mppClient.get.variableData.acOutputVoltage;
-  liveData["acOutHz"] = mppClient.get.variableData.acOutputFrequency;
-  liveData["acOutVa"] = mppClient.get.variableData.acOutputApparentPower;
-  liveData["acOutW"] = mppClient.get.variableData.acOutputActivePower;
-  liveData["acOutPercent"] = mppClient.get.variableData.outputLoadPercent;
-  liveData["busV"] = mppClient.get.variableData.busVoltage;
-  liveData["heatSinkDegC"] = mppClient.get.variableData.inverterHeatSinkTemperature;
-  liveData["battV"] = mppClient.get.variableData.batteryVoltage;
-  liveData["battPercent"] = mppClient.get.variableData.batteryCapacity;
-  liveData["battChargeA"] = mppClient.get.variableData.batteryChargingCurrent;
-  liveData["battDischargeA"] = mppClient.get.variableData.batteryDischargeCurrent;
-  liveData["sccBattV"] = mppClient.get.variableData.batteryVoltageFromScc;
-  liveData["solarV"] = mppClient.get.variableData.pvInputVoltage[0];
-  liveData["solarA"] = mppClient.get.variableData.pvInputCurrent[0];
-  liveData["solarW"] = mppClient.get.variableData.pvChargingPower[0];
-  liveData["iv_mode"] = mppClient.get.variableData.operationMode;
+    if (mppClient.qAvaible.qpiri)
+    {
+      staticData["AC_in_rating_voltage"] = mppClient.get.staticData.gridRatingVoltage;
+      staticData["AC_in_rating_current"] = mppClient.get.staticData.gridRatingCurrent;
+      staticData["AC_out_rating_voltage"] = mppClient.get.staticData.acOutputRatingVoltage;
+      staticData["AC_out_rating_frequency"] = mppClient.get.staticData.acOutputRatingFrquency;
+      staticData["AC_out_rating_current"] = mppClient.get.staticData.acoutputRatingCurrent;
+      staticData["AC_out_rating_apparent_power"] = mppClient.get.staticData.acOutputRatingApparentPower;
+      staticData["AC_out_rating_active_power"] = mppClient.get.staticData.acOutputRatingActivePower;
+      staticData["Battery_rating_voltage"] = mppClient.get.staticData.batteryRatingVoltage;
+      staticData["Battery_re-charge_voltage"] = mppClient.get.staticData.batteryReChargeVoltage;
+      staticData["Battery_under_voltage"] = mppClient.get.staticData.batteryUnderVoltage;
+      staticData["Battery_bulk_voltage"] = mppClient.get.staticData.batteryBulkVoltage;
+      staticData["Battery_float_voltage"] = mppClient.get.staticData.batteryFloatVoltage;
 
-  if (mppClient.qAvaible.qpiri)
-  {
-    staticData["AC_in_rating_voltage"] = mppClient.get.staticData.gridRatingVoltage;
-    staticData["AC_in_rating_current"] = mppClient.get.staticData.gridRatingCurrent;
-    staticData["AC_out_rating_voltage"] = mppClient.get.staticData.acOutputRatingVoltage;
-    staticData["AC_out_rating_frequency"] = mppClient.get.staticData.acOutputRatingFrquency;
-    staticData["AC_out_rating_current"] = mppClient.get.staticData.acoutputRatingCurrent;
-    staticData["AC_out_rating_apparent_power"] = mppClient.get.staticData.acOutputRatingApparentPower;
-    staticData["AC_out_rating_active_power"] = mppClient.get.staticData.acOutputRatingActivePower;
-    staticData["Battery_rating_voltage"] = mppClient.get.staticData.batteryRatingVoltage;
-    staticData["Battery_re-charge_voltage"] = mppClient.get.staticData.batteryReChargeVoltage;
-    staticData["Battery_under_voltage"] = mppClient.get.staticData.batteryUnderVoltage;
-    staticData["Battery_bulk_voltage"] = mppClient.get.staticData.batteryBulkVoltage;
-    staticData["Battery_float_voltage"] = mppClient.get.staticData.batteryFloatVoltage;
-
-    staticData["Battery_type"] = mppClient.get.staticData.batterytype;
-    staticData["Current_max_AC_charging_current"] = mppClient.get.staticData.currentMaxAcChargingCurrent;
-    staticData["Current_max_charging_current"] = mppClient.get.staticData.currentMaxChargingCurrent;
-  }
-  // QPI
-  if (mppClient.qAvaible.qpi)
-  {
-    staticData["Protocol_ID"] = mppClient.get.staticData.deviceProtocol;
-  }
-  // QMN
-  if (mppClient.qAvaible.qmn)
-  {
-    staticData["Device_Model"] = mppClient.get.staticData.modelName;
-  }
+      staticData["Battery_type"] = mppClient.get.staticData.batterytype;
+      staticData["Current_max_AC_charging_current"] = mppClient.get.staticData.currentMaxAcChargingCurrent;
+      staticData["Current_max_charging_current"] = mppClient.get.staticData.currentMaxChargingCurrent;
+    }
+    // QPI
+    if (mppClient.qAvaible.qpi)
+    {
+      staticData["Protocol_ID"] = mppClient.get.staticData.deviceProtocol;
+    }
+    // QMN
+    if (mppClient.qAvaible.qmn)
+    {
+      staticData["Device_Model"] = mppClient.get.staticData.modelName;
+    }
+    */
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
@@ -583,11 +570,13 @@ bool connectMQTT()
         DEBUG_PRINTLN(F("Done"));
         DEBUG_WEBLN(F("Done"));
         mqttclient.publish(topicBuilder(buff, "alive"), "true", true); // LWT online message must be retained!
-        mqttclient.publish(topicBuilder(buff, "Device_IP"), (const char *)(WiFi.localIP().toString()).c_str(), true);
+        mqttclient.publish(topicBuilder(buff, "IP"), (const char *)(WiFi.localIP().toString()).c_str(), true);
         mqttclient.subscribe(topicBuilder(buff, "Device_Control/Set_Command"));
-
-        if (settings.data.relaisFunction == 4)
-          mqttclient.subscribe(topicBuilder(buff, "Device_Control/Relais"));
+        if (strlen(settings.data.mqttTriggerPath) > 0)
+        {
+          DEBUG_WEBLN("MQTT Data Trigger Subscribed");
+          mqttclient.subscribe(settings.data.mqttTriggerPath);
+        }
       }
       else
       {
@@ -619,7 +608,6 @@ char *topicBuilder1(char *buffer, char const *path0, char const *path1)
 
 bool sendtoMQTT()
 {
-  char msgBuffer[32];
   char buff[256]; // temp buffer for the topic string
   if (!connectMQTT())
   {
@@ -630,34 +618,21 @@ bool sendtoMQTT()
   }
   DEBUG_PRINT(F("Data sent to MQTT Server... "));
   DEBUG_WEB(F("Data sent to MQTT Server... "));
-
+  mqttclient.publish(topicBuilder(buff, "alive"), "true", true); // LWT online message must be retained!
   if (!settings.data.mqttJson)
   {
 
-    DEBUG_PRINTLN(F("json pair test:"));
-
-    for (JsonPair i : root.as<JsonObject>())
+    for (JsonPair jsonDev : Json.as<JsonObject>())
     {
-      //DEBUG_PRINTLN(i.key().c_str());
-      String subTopicOne = i.value().as<String>();
-      for (JsonPair k : i.value().as<JsonObject>())
+      for (JsonPair jsondat : jsonDev.value().as<JsonObject>())
       {
-        DEBUG_PRINT(k.key().c_str());
-        DEBUG_PRINT(": ");
-        DEBUG_PRINTLN(k.value().as<String>());
-        const char * subTopicTwo = k.value().as<const char*>();
-        char msgBuffer1[512];
-        //sprintf(msgBuffer1, "%s/%p/%p",settings.data.mqttTopic, subTopicOne, subTopicTwo);
-        DEBUG_PRINTLN(msgBuffer1);
-        DEBUG_PRINT(subTopicOne);
-        DEBUG_PRINT("/");
-        DEBUG_PRINTLN(subTopicTwo);
-
-        //mqttclient.publish(msgBuffer1, k.value().as<const char *>());
-        //msgBuffer1 = "0";
+        char msgBuffer1[200];
+        sprintf(msgBuffer1, "%s/%s/%s", settings.data.mqttTopic, jsonDev.key().c_str(), jsondat.key().c_str());
+        // DEBUG_PRINTLN(msgBuffer1);
+        mqttclient.publish(msgBuffer1, jsondat.value().as<String>().c_str());
       }
     }
-
+    mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (mppClient.get.raw.commandAnswer).c_str());
 /*
     // testing
     mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), mppClient.get.raw.commandAnswer.c_str());
@@ -784,10 +759,9 @@ bool sendtoMQTT()
   }
   else
   {
-    char data[JSON_BUFFER];
-    serializeJson(Json, data);
-    mqttclient.setBufferSize(JSON_BUFFER + 100);
-    mqttclient.publish(topicBuilder(buff, "Data"), data, false);
+    mqttclient.beginPublish(topicBuilder(buff, "Data"), measureJson(Json), false);
+    serializeJson(Json, mqttclient);
+    mqttclient.endPublish();
   }
   DEBUG_PRINTLN(F("Done"));
   DEBUG_WEBLN(F("Done"));
@@ -844,16 +818,3 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
     valChange = true;
   }
 }
-
-/* later
-void DEBUG_PRINT(const __FlashStringHelper *logmessage)
-{
-  DEBUG_PRINT(logmessage);
-  DEBUG_WEB(logmessage);
-}
-void DEBUG_PRINTLN(const __FlashStringHelper *logmessage)
-{
-  DEBUG_PRINTLN(logmessage);
-  DEBUG_WEBLN(logmessage);
-}
-*/

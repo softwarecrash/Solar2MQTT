@@ -2,8 +2,8 @@
 #define DEBUG Serial // Uncomment the below #define to enable debugging print statements.
 #include <WebSerialLite.h>
 #endif
-#define ARDUINOJSON_USE_DOUBLE 0
-#define ARDUINOJSON_USE_LONG_LONG 0
+#define ARDUINOJSON_USE_DOUBLE 1
+#define ARDUINOJSON_USE_LONG_LONG 1
 
 #define INVERTER_TX 13
 #define INVERTER_RX 12
@@ -11,7 +11,17 @@
 #define LED_PIN 02 //D4 with the LED on Wemos D1 Mini
 
 #define JSON_BUFFER 4096
-#define MQTT_BUFFER 512
+
+#define ESP01
+#define FlashSize ESP.getFreeSketchSpace()
+#ifdef ARDUINO_ESP8266_ESP01
+#undef EPEVER_DE_RE
+#define EPEVER_DE_RE 0  // ESP01 
+#ifdef ESP01
+#undef ESP01
+#define ESP01 "display: none;"
+#endif 
+#endif
 
 // DON'T edit version here, place version number in platformio.ini (custom_prog_version) !!!
 #define SOFTWARE_VERSION SWVERSION
@@ -20,8 +30,7 @@
 #define SOFTWARE_VERSION SWVERSION " " HWBOARD " " __DATE__ " " __TIME__
 #endif
 
-#define FlashSize ESP.getFlashChipSize()
-
+#define DEBUG_BAUD 115200
 #ifdef DEBUG
 #define DEBUG_BEGIN(...) DEBUG.begin(__VA_ARGS__)
 #define DEBUG_PRINT(...) DEBUG.print(__VA_ARGS__)
