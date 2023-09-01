@@ -4,3 +4,5 @@
 .vscode/launch.json
 .vscode/ipch
 .vscode
+.firmware
+src/html.h
