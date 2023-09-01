@@ -219,6 +219,7 @@ private:
     // dynamic requests
     bool PIXX_Q1();
     bool PIXX_QPIGS();
+    bool PIXX_QPIGS2();
     bool PIXX_QALL();
     bool PIXX_QMOD();
     // static reqeuests

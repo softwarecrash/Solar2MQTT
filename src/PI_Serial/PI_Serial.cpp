@@ -12,6 +12,7 @@ CRC16 crc;
 // variable
 #include "Q1.h"
 #include "QPIGS.h"
+#include "QPIGS2.h"
 #include "QMOD.h"
 #include "QALL.h"
 //----------------------------------------------------------------------
@@ -94,15 +95,18 @@ bool PI_Serial::loop()
                 requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
                 break;
             case 1:
-                requestCounter = PIXX_QMOD() ? (requestCounter + 1) : 0;
+                requestCounter = PIXX_QPIGS2() ? (requestCounter + 1) : 0;
                 break;
             case 2:
-                requestCounter = PIXX_Q1() ? (requestCounter + 1) : 0;
+                requestCounter = PIXX_QMOD() ? (requestCounter + 1) : 0;
                 break;
             case 3:
-                requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
+                requestCounter = PIXX_Q1() ? (requestCounter + 1) : 0;
                 break;
             case 4:
+                requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
+                break;
+            case 5:
                 sendCustomCommand();
                 requestCallback();
                 requestCounter = 0;

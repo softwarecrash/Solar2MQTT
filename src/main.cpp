@@ -378,12 +378,12 @@ void setup()
     DEBUG_WEBLN(F("mDNS running..."));
     ws.onEvent(onEvent);
     server.addHandler(&ws);
-//#ifdef isDEBUG
-    // WebSerial is accessible at "<IP Address>/webserial" in browser
+    // #ifdef isDEBUG
+    //  WebSerial is accessible at "<IP Address>/webserial" in browser
     WebSerial.begin(&server);
     /* Attach Message Callback */
     WebSerial.onMessage(recvMsg);
-//#endif
+    // #endif
     server.begin();
 
     mppClient.setProtocol(100); // manual set the protocol
@@ -470,7 +470,7 @@ void getJsonData()
 {
   deviceJson[F("Device_name")] = settings.data.deviceName;
   deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
-  //deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
+  // deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
   deviceJson[F("Version")] = SOFTWARE_VERSION;
 }
 
@@ -608,5 +608,12 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
     // not needed anymore, we make a callback with the raw mqtt point
     // mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), customResponse.c_str());
     valChange = true;
+  }
+  if (strlen(settings.data.mqttTriggerPath) > 0 && strcmp(top, topicBuilder(buff, settings.data.mqttTriggerPath)) == 0)
+  {
+    DEBUG_PRINTLN(F("<MQTT> MQTT Data Trigger Firered Up"));
+    DEBUG_WEBLN(F("<MQTT> MQTT Data Trigger Firered Up"));
+    //mqtttimer = 0;
+    mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
   }
 }
