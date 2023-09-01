@@ -6,3 +6,5 @@ wiki:
 readme.md
 - neue bilder
 - allgemein mal drüber schauen und neu formatieren
+
+diesen ordner mit bildern löschen wenn fertig
