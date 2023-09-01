@@ -6,7 +6,7 @@
 - classic MQTT datapoints or Json string over MQTT
 - get Json over web at /livejson?
 - firmware update over webinterface
-- debug log on Wemos USB (use only if you **don't** supply Wemos from Inverter!!!)
+- debug log on Wemos USB or Webserial
 - [blink codes](https://github.com/softwarecrash/Solar2MQTT/wiki/Blink-Codes) for the current state of the ESP
 - with Teapod
 
