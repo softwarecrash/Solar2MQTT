@@ -22,9 +22,12 @@
 
 
 
-![live](https://user-images.githubusercontent.com/44615614/139434909-d735c268-9cd7-4382-b100-d9d965da1500.jpg)
+![image](https://github.com/softwarecrash/Solar2MQTT/assets/17761850/de945ad5-29ad-476e-9562-a0eba1b4f2ce)
 
-![edit](https://user-images.githubusercontent.com/44615614/139434941-79c6c013-d745-4eb1-adcc-4e0fd89dd4c3.jpg)
+![image](https://github.com/softwarecrash/Solar2MQTT/assets/17761850/075d1e66-3912-4a33-b7d3-a52da99c8553)
+
+![image](https://github.com/softwarecrash/Solar2MQTT/assets/17761850/823093bf-8abe-4b7e-913f-7bac9420d108)
+
 
 
 
