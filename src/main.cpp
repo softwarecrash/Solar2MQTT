@@ -121,7 +121,6 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
   }
 }
 
-#ifdef isDEBUG
 /* Message callback of WebSerial */
 void recvMsg(uint8_t *data, size_t len)
 {
@@ -134,7 +133,6 @@ void recvMsg(uint8_t *data, size_t len)
   commandFromWeb = (d);
   WebSerial.println("Sending [" + d + "] to Device");
 }
-#endif
 
 void setup()
 {
