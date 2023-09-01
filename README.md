@@ -34,7 +34,7 @@
 
 # How to use:
 - flash the bin file to an ESP8266 (recommended Wemos D1 Mini) with [Tasmotizer](https://github.com/tasmota/tasmotizer/releases)
-- connect the ESP like the [wiring diagram](https://github.com/softwarecrash/Solar2MQTT/wiki/Wireing-Diagram)
+- connect the ESP like the [wiring diagram](https://github.com/softwarecrash/Solar2MQTT/wiki/Wiring-Diagram)
 - search for the wifi ap "Solar2MQTT-AP" and connect to it
 - surf to 192.168.4.1 and set up your wifi and optional MQTT
 - that's it :)
