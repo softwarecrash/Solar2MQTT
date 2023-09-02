@@ -1,13 +1,14 @@
 # Features:
 - captive portal for wifi and MQTT config
 - config in webinterface
-- Full Controll with Custom commands
-- get essential data over webinterface, get all data over MQTT
+- Full Controll with [Custom commands](https://github.com/softwarecrash/Solar2MQTT/wiki/Set-parameters)
+- get essential data over webinterface, get [all data](https://github.com/softwarecrash/Solar2MQTT/wiki/Datapoints-and-units) over MQTT
 - classic MQTT datapoints or Json string over MQTT
 - get Json over web at /livejson?
 - firmware update over webinterface
 - debug log on Wemos USB or Webserial
 - [blink codes](https://github.com/softwarecrash/Solar2MQTT/wiki/Blink-Codes) for the current state of the ESP
+- [Reset functions](https://github.com/softwarecrash/Solar2MQTT/wiki/Reset)
 - with Teapod
 
 
