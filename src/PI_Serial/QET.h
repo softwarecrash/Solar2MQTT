@@ -10,6 +10,6 @@ bool PI_Serial::PIXX_QET()
   {
     return false;
   }
-    liveData["PV_total_Generated_energy"] = commandAnswer;
+    liveData["PV_generation_sum"] = commandAnswer;
     return true;
 }
