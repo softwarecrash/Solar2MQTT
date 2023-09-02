@@ -75,7 +75,15 @@ public:
             String qpigs;
             String qpigs2;
             String qmod;
+            String qt;
             String qet;
+            String qey;
+            String qem;
+            String qed;
+            String qlt;
+            String qly;
+            String qlm;
+            String qld;
             String commandAnswer;
         } raw;
 
