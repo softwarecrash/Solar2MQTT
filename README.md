@@ -20,7 +20,7 @@
 - IGrid
 - Many devices from EASUN
 - and many many others based on the chinese solar inverter with a rj45 jack and usb port, primary identified by the display
-- Take a look at the device list in the wiki
+- Take a look at the [device list in the wiki](https://github.com/softwarecrash/Solar2MQTT/wiki/Device-List)
 - for P18 Protocol use this fork: https://github.com/BMBIT-oss/Solar2MQTT_P18
 
 
