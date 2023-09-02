@@ -119,7 +119,7 @@
 
         document.getElementById("pv_volt").innerHTML = data.PV_Input_Voltage + 'V ';
         document.getElementById("pv_current").innerHTML = data.PV_Input_Current + 'A  ';
-        document.getElementById("pv_power").innerHTML = Math.round(data.PV_Input_Power) + 'W  ';
+        document.getElementById("pv_power").innerHTML = Math.round(data.PV_Charging_Power) + 'W  ';
 
         document.getElementById("grid_volt").innerHTML = data.AC_in_Voltage + 'V ';
         document.getElementById("grid_hz").innerHTML = data.AC_in_Frequenz + 'Hz  ';
