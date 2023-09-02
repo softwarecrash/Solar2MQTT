@@ -177,8 +177,8 @@ bool resetCounter(bool count)
 }
 void setup()
 {
-analogWrite(LED_PIN, 0);
-resetCounter(true);
+  analogWrite(LED_PIN, 0);
+  resetCounter(true);
 #ifdef DEBUG
   DEBUG_BEGIN(DEBUG_BAUD); // Debugging towards UART1
 #endif
@@ -434,7 +434,7 @@ resetCounter(true);
 
     mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
   }
-    analogWrite(LED_PIN, 255);
+  analogWrite(LED_PIN, 255);
   resetCounter(false);
 }
 
@@ -547,16 +547,17 @@ bool connectMQTT()
     {
       if (mqttclient.connected())
       {
-        DEBUG_PRINTLN(F("Done"));
-        DEBUG_WEBLN(F("Done"));
+
         mqttclient.publish(topicBuilder(buff, "Alive"), "true", true); // LWT online message must be retained!
         mqttclient.publish(topicBuilder(buff, "IP"), (const char *)(WiFi.localIP().toString()).c_str(), true);
         mqttclient.subscribe(topicBuilder(buff, "Device_Control/Set_Command"));
-        if (strlen(settings.data.mqttTriggerPath) > 0)
+
+        if (strlen(settings.data.mqttTriggerPath) >= 1)
         {
-          DEBUG_WEBLN("MQTT Data Trigger Subscribed");
           mqttclient.subscribe(settings.data.mqttTriggerPath);
         }
+        DEBUG_PRINTLN(F("Done"));
+        DEBUG_WEBLN(F("Done"));
       }
       else
       {
@@ -614,7 +615,6 @@ bool sendtoMQTT()
     mqttclient.publish(topicBuilder(buff, "RAW/QMOD"), (mppClient.get.raw.qmod).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QALL"), (mppClient.get.raw.qall).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QMN"), (mppClient.get.raw.qmn).c_str());
-    
 #endif
   }
   else
@@ -640,6 +640,14 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
   {
     messageTemp += (char)payload[i];
   }
+  if (strlen(settings.data.mqttTriggerPath) > 0 && strcmp(top, settings.data.mqttTriggerPath) == 0)
+  {
+    DEBUG_PRINTLN(F("<MQTT> MQTT Data Trigger Firered Up"));
+    DEBUG_WEBLN(F("<MQTT> MQTT Data Trigger Firered Up"));
+    // mqtttimer = 0;
+    mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
+  }
+
   if (messageTemp == "NAK" || messageTemp == "(NAK" || messageTemp == "")
     return;
 
@@ -655,12 +663,5 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
     // not needed anymore, we make a callback with the raw mqtt point
     // mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), customResponse.c_str());
     valChange = true;
-  }
-  if (strlen(settings.data.mqttTriggerPath) > 0 && strcmp(top, topicBuilder(buff, settings.data.mqttTriggerPath)) == 0)
-  {
-    DEBUG_PRINTLN(F("<MQTT> MQTT Data Trigger Firered Up"));
-    DEBUG_WEBLN(F("<MQTT> MQTT Data Trigger Firered Up"));
-    //mqtttimer = 0;
-    mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
   }
 }
