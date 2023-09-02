@@ -118,16 +118,6 @@ public:
     bool loop();
 
     /**
-     * @brief fetching the Variable data
-     */
-    bool getVariableData();
-
-    /**
-     * @brief fetching the Static data
-     */
-    bool getStaticeData();
-
-    /**
      * @brief Send custom command to the device
      */
     String sendCommand(String command);
