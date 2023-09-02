@@ -170,26 +170,6 @@ private:
     String appendCHK(String data);
 
     /**
-     * @brief Parses out the float
-     */
-    float getNextFloat(String &command, int &index);
-
-    /**
-     * @brief Parses out the long
-     */
-    long getNextLong(String &command, int &index);
-
-    /**
-     * @brief Parses out the long
-     */
-    int getNextInt(String &command, int &index);
-
-    /**
-     * @brief // Gets if the next character is '1'
-     */
-    bool getNextBit(String &command, int &index);
-
-    /**
      * @brief function for autodetect the inverter
      * @details ask all modes and sort it to a protocol
      */

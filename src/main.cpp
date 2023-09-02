@@ -175,6 +175,7 @@ bool resetCounter(bool count)
   DEBUG_PRINTLN(ESP.getResetInfoPtr()->reason);
   return true;
 }
+
 void setup()
 {
   analogWrite(LED_PIN, 0);
@@ -449,20 +450,21 @@ void loop()
     getJsonData();
     mppClient.loop();  // Call the PI Serial Library loop
     mqttclient.loop(); // Check if we have something to read from MQTT
-    notificationLED(); // notification LED routine
+    
     if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
     {
       sendtoMQTT(); // Update data to MQTT server if we should
       mqtttimer = millis();
     }
+    
   }
-
   if (restartNow && millis() >= (RestartTimer + 500))
   {
     DEBUG_PRINTLN("Restart");
     DEBUG_WEBLN("Restart");
     ESP.restart();
   }
+  notificationLED(); // notification LED routine
 }
 
 void prozessData()
@@ -473,12 +475,6 @@ void prozessData()
   {
     notifyClients();
   }
-
-  // if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
-  //{
-  //   sendtoMQTT(); // Update data to MQTT server if we should
-  //  mqtttimer = millis();
-  //}
 
   if (valChange)
   {
