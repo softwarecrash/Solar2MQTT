@@ -1,14 +1,19 @@
+# Solar2MQTT [![GitHub release](https://img.shields.io/github/release/softwarecrash/Solar2MQTT?include_prereleases=&sort=semver&color=blue)](https://github.com/softwarecrash/Solar2MQTT/releases/latest) [![Discord](https://img.shields.io/discord/1007020337482973254?logo=discord&label=Discord)](https://discord.gg/fb2nZWDExz)
+
 # Features:
 - captive portal for wifi and MQTT config
 - config in webinterface
-- Full Controll with Custom commands
-- get essential data over webinterface, get all data over MQTT
+- Full Controll with [Custom commands](https://github.com/softwarecrash/Solar2MQTT/wiki/Set-parameters)
+- get essential data over webinterface, get [all data](https://github.com/softwarecrash/Solar2MQTT/wiki/Datapoints-and-units) over MQTT
 - classic MQTT datapoints or Json string over MQTT
 - get Json over web at /livejson?
 - firmware update over webinterface
 - debug log on Wemos USB or Webserial
 - [blink codes](https://github.com/softwarecrash/Solar2MQTT/wiki/Blink-Codes) for the current state of the ESP
+- [Reset functions](https://github.com/softwarecrash/Solar2MQTT/wiki/Reset)
 - with Teapod
+
+
 
 
 **works with**
@@ -17,7 +22,7 @@
 - IGrid
 - Many devices from EASUN
 - and many many others based on the chinese solar inverter with a rj45 jack and usb port, primary identified by the display
-- Take a look at the device list in the wiki
+- Take a look at the [device list in the wiki](https://github.com/softwarecrash/Solar2MQTT/wiki/Device-List)
 - for P18 Protocol use this fork: https://github.com/BMBIT-oss/Solar2MQTT_P18
 
 
@@ -70,3 +75,6 @@ Questions?
 
 #
 [<img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"/>](https://donate.softwarecrash.de)
+
+[![LICENSE](https://licensebuttons.net/l/by-nc-nd/4.0/88x31.png)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
+
