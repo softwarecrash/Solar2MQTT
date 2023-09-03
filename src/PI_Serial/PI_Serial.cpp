@@ -15,7 +15,7 @@ CRC16 crc;
 #include "QPIGS2.h"
 #include "QMOD.h"
 #include "QALL.h"
-#include "QET.h"
+#include "QEX.h"
 //----------------------------------------------------------------------
 //  Public Functions
 //----------------------------------------------------------------------
@@ -108,7 +108,7 @@ bool PI_Serial::loop()
                 requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
                 break;
             case 5:
-                requestCounter = PIXX_QET() ? (requestCounter + 1) : 0;
+                requestCounter = PIXX_QEX() ? (requestCounter + 1) : 0;
                 break;
             case 6:
                 sendCustomCommand();
