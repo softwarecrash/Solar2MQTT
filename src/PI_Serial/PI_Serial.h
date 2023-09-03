@@ -44,6 +44,7 @@ class PI_Serial
 {
 public:
     const char *startChar = "("; // move later to changeable
+    const char *delimiter = " ";
     bool requestStaticData = true;
 
     enum protocolType

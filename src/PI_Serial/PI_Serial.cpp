@@ -105,7 +105,8 @@ bool PI_Serial::loop()
                 requestCounter = PIXX_Q1() ? (requestCounter + 1) : 0;
                 break;
             case 4:
-                requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
+                //requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
+                requestCounter++;
                 break;
             case 5:
                 requestCounter = PIXX_QEX() ? (requestCounter + 1) : 0;

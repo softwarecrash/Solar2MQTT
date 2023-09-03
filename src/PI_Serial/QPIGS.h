@@ -71,23 +71,48 @@ static const char *const qpigsList[][30] = {
 
     },
 };
+static const char *const qallList[] = {
+    // [PI30 Revo]
+    "AC_in_Voltage",             // BBB.B
+    "AC_in_Frequenz",            // CC.C
+    "AC_out_Voltage",            // DDD.D
+    "AC_out_Frequenz",           // EE.E
+    "AC_out_VA",                 // FFFF
+    "AC_out_percent",            // GGG
+    "Battery_Voltage",           // HH.H
+    "Battery_Percent",           // III
+    "Battery_Charge_Current",    // JJJ
+    "Battery_Discharge_Current", // KKK
+    "PV_Input_Voltage",          // LLL
+    "PV_Input_Current",          // MM.M
+    "PV_Charging_Power",         // NNNN
+    "PV_generation_day",         // OOOOOO
+    "PV_generation_sum",         // PPPPPP
+    "Inverter_Operation_Mode",   // Q
+    "Warning_Code",              // KK
+    "Fault_code",                // SS
+};
 
 bool PI_Serial::PIXX_QPIGS()
 {
-  String commandAnswer = this->requestData("QPIGS");
-  get.raw.qpigs = commandAnswer;
-  byte commandAnswerLength = commandAnswer.length();
   byte protocolNum = 0; // for future use
   String strs[30];      // buffer for string splitting
-  if (commandAnswer == "NAK")
-  {
-    return true;
-  }
-  if (commandAnswer == "ERCRC")
+
+  String commandAnswerQALL = this->requestData("QALL");
+  get.raw.qall = commandAnswerQALL;
+  if (commandAnswerQALL == "ERCRC")
   {
     return false;
   }
-  
+  //
+  String commandAnswerQPIGS = this->requestData("QPIGS");
+  get.raw.qpigs = commandAnswerQPIGS;
+  if (commandAnswerQPIGS == "NAK")
+    return true;
+  if (commandAnswerQPIGS == "ERCRC")
+    return false;
+  byte commandAnswerLength = commandAnswerQPIGS.length();
+
   // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
   if (commandAnswerLength >= 60 && commandAnswerLength <= 140)
   {
@@ -102,18 +127,18 @@ bool PI_Serial::PIXX_QPIGS()
 
     // Split the string into substrings
     int StringCount = 0;
-    while (commandAnswer.length() > 0)
+    while (commandAnswerQPIGS.length() > 0)
     {
-      int index = commandAnswer.indexOf(' ');
+      int index = commandAnswerQPIGS.indexOf(delimiter);
       if (index == -1) // No space found
       {
-        strs[StringCount++] = commandAnswer;
+        strs[StringCount++] = commandAnswerQPIGS;
         break;
       }
       else
       {
-        strs[StringCount++] = commandAnswer.substring(0, index);
-        commandAnswer = commandAnswer.substring(index + 1);
+        strs[StringCount++] = commandAnswerQPIGS.substring(0, index);
+        commandAnswerQPIGS = commandAnswerQPIGS.substring(index + 1);
       }
     }
 
@@ -126,5 +151,35 @@ bool PI_Serial::PIXX_QPIGS()
     liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
     liveData["PV_Input_Power"] = (liveData["PV_Input_Voltage"].as<unsigned short>() * liveData["PV_Input_Current"].as<unsigned short>());
   }
+
+  if (get.raw.qall != "NAK" || get.raw.qall != "ERCRC")
+  {
+    // String strs[30];
+    //  Split the string into substrings
+    int StringCount = 0;
+    while (commandAnswerQALL.length() > 0)
+    {
+      int index = commandAnswerQALL.indexOf(delimiter);
+      if (index == -1) // No space found
+      {
+        strs[StringCount++] = commandAnswerQALL;
+        break;
+      }
+      else
+      {
+        strs[StringCount++] = commandAnswerQALL.substring(0, index);
+        commandAnswerQALL = commandAnswerQALL.substring(index + 1);
+      }
+    }
+
+    for (unsigned int i = 0; i < sizeof qpigsList / sizeof qpigsList[0]; i++)
+    {
+      if (!strs[i].isEmpty() && strcmp(qallList[i], "") != 0)
+        liveData[qallList[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
+    }
+    liveData["Inverter_Operation_Mode"] = getModeDesc((char)liveData["Inverter_Operation_Mode"].as<String>().charAt(0));
+    liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
+  }
+
   return true;
 }

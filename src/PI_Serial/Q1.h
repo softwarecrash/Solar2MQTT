@@ -34,7 +34,7 @@ bool PI_Serial::PIXX_Q1()
         int StringCount = 0;
         while (commandAnswer.length() > 0)
         {
-            int index = commandAnswer.indexOf(' ');
+            int index = commandAnswer.indexOf(delimiter);
             if (index == -1) // No space found
             {
                 strs[StringCount++] = commandAnswer;
