@@ -200,7 +200,7 @@ private:
     bool PIXX_Q1();
     bool PIXX_QPIGS();
     bool PIXX_QPIGS2();
-    bool PIXX_QALL();
+    //bool PIXX_QALL();
     bool PIXX_QMOD();
     bool PIXX_QEX();
     // static reqeuests

@@ -96,7 +96,7 @@ static const char *const qallList[] = {
 bool PI_Serial::PIXX_QPIGS()
 {
   byte protocolNum = 0; // for future use
-  String strs[30];      // buffer for string splitting
+  
 
   String commandAnswerQALL = this->requestData("QALL");
   get.raw.qall = commandAnswerQALL;
@@ -126,6 +126,7 @@ bool PI_Serial::PIXX_QPIGS()
     }
 
     // Split the string into substrings
+    String strs[30];      // buffer for string splitting
     int StringCount = 0;
     while (commandAnswerQPIGS.length() > 0)
     {
@@ -154,28 +155,28 @@ bool PI_Serial::PIXX_QPIGS()
 
   if (get.raw.qall != "NAK" || get.raw.qall != "ERCRC")
   {
-    // String strs[30];
+     String strsQALL[30];
     //  Split the string into substrings
-    int StringCount = 0;
+    int StringCountQALL = 0;
     while (commandAnswerQALL.length() > 0)
     {
       int index = commandAnswerQALL.indexOf(delimiter);
       if (index == -1) // No space found
       {
-        strs[StringCount++] = commandAnswerQALL;
+        strsQALL[StringCountQALL++] = commandAnswerQALL;
         break;
       }
       else
       {
-        strs[StringCount++] = commandAnswerQALL.substring(0, index);
+        strsQALL[StringCountQALL++] = commandAnswerQALL.substring(0, index);
         commandAnswerQALL = commandAnswerQALL.substring(index + 1);
       }
     }
 
-    for (unsigned int i = 0; i < sizeof qpigsList / sizeof qpigsList[0]; i++)
+    for (unsigned int i = 0; i < sizeof qallList / sizeof qallList[0]; i++)
     {
-      if (!strs[i].isEmpty() && strcmp(qallList[i], "") != 0)
-        liveData[qallList[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
+      if (!strsQALL[i].isEmpty() && strcmp(qallList[i], "") != 0)
+        liveData[qallList[i]] = (int)(strsQALL[i].toFloat() * 100 + 0.5) / 100.0;
     }
     liveData["Inverter_Operation_Mode"] = getModeDesc((char)liveData["Inverter_Operation_Mode"].as<String>().charAt(0));
     liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
