@@ -122,12 +122,12 @@ String PI_Serial::sendCommand(String command)
 //----------------------------------------------------------------------
 void PI_Serial::autoDetect() // function for autodetect the inverter type
 {
-    PI_DEBUG_PRINTLN("------------- Start Autodetect -----------------");
-    PI_DEBUG_WEBLN("------------- Start Autodetect -----------------");
+    PI_DEBUG_PRINTLN("----------------- Start Autodetect -----------------");
+    PI_DEBUG_WEBLN("----------------- Start Autodetect -----------------");
     for (size_t i = 0; i < 3; i++) // try 3 times to detect the inverter
     {
-        PI_DEBUG_PRINT("Try Autodetect Protocol");
-        PI_DEBUG_WEB("Try Autodetect Protocol");
+        PI_DEBUG_PRINTLN("Try Autodetect Protocol");
+        PI_DEBUG_WEBLN("Try Autodetect Protocol");
 
         startChar = "(";
         serialIntfBaud = 2400;
@@ -162,8 +162,8 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         }
         this->my_serialIntf->end();
     }
-    PI_DEBUG_PRINTLN("------------- End Autodetect -----------------");
-    PI_DEBUG_WEBLN("------------- End Autodetect -----------------");
+    PI_DEBUG_PRINTLN("----------------- End Autodetect -----------------");
+    PI_DEBUG_WEBLN("----------------- End Autodetect -----------------");
 }
 
 bool PI_Serial::sendCustomCommand()
