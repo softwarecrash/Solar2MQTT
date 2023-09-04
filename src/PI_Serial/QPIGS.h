@@ -95,7 +95,7 @@ static const char *const P005GS[][28] = {
     {"PV1_Input_Voltage", "10"},        // SSSS
     {"PV2_Input_Voltage", "10"},        // TTTT
     {"Configuration_State", "0"},       // U
-    {"MPPT_Charger_Status", "0"},       // V
+    {"MPPT1_Charger_Status", "0"},       // V
     {"MPPT2_CHarger_Status", "0"},      // W
     {"Load_Connection", "0"},           // X
     {"Battery_Power_Direction", "0"},   // Y
