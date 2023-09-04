@@ -27,7 +27,7 @@ bool PI_Serial::PIXX_Q1()
   {
     return false;
   }
-    if (commandAnswerLength == 47)
+    if (commandAnswerLength == 47 || commandAnswerLength == 105)
     {
         String strs[16];
         // Split the string into substrings
