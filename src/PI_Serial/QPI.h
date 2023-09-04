@@ -26,5 +26,5 @@ bool PI_Serial::PIXX_QPI()
   else
   {
     return false;
-  };
+  }
 }

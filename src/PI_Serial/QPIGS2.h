@@ -7,47 +7,62 @@ static const char *const qpigs2List[] = {
 
 bool PI_Serial::PIXX_QPIGS2()
 {
-  String commandAnswer = this->requestData("QPIGS2");
-  get.raw.qpigs2 = commandAnswer;
-  byte commandAnswerLength = commandAnswer.length();
-  String strs[30]; // buffer for string splitting
-  if (commandAnswer == "NAK")
+  if (protocol == PI30)
+  {
+    String commandAnswer = this->requestData("QPIGS2");
+    get.raw.qpigs2 = commandAnswer;
+    byte commandAnswerLength = commandAnswer.length();
+    String strs[30]; // buffer for string splitting
+    if (commandAnswer == "NAK")
+    {
+      return true;
+    }
+    if (commandAnswer == "ERCRC")
+    {
+      return false;
+    }
+
+    // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
+    if (commandAnswerLength >= 10 && commandAnswerLength <= 20)
+    {
+
+      // Split the string into substrings
+      int StringCount = 0;
+      while (commandAnswer.length() > 0)
+      {
+        int index = commandAnswer.indexOf(delimiter);
+        if (index == -1) // No space found
+        {
+          strs[StringCount++] = commandAnswer;
+          break;
+        }
+        else
+        {
+          strs[StringCount++] = commandAnswer.substring(0, index);
+          commandAnswer = commandAnswer.substring(index + 1);
+        }
+      }
+
+      for (unsigned int i = 0; i < sizeof qpigs2List / sizeof qpigs2List[0]; i++)
+      {
+        if (!strs[i].isEmpty() && strcmp(qpigs2List[i], "") != 0)
+          liveData[qpigs2List[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
+      }
+      // make some things pretty
+      liveData["PV2_Input_Power"] = (liveData["PV2_Input_Voltage"].as<unsigned short>() * liveData["PV2_Input_Current"].as<unsigned short>());
+    }
+    return true;
+  }
+  else if (protocol == PI18)
   {
     return true;
   }
-  if (commandAnswer == "ERCRC")
+  else if (protocol == NoD)
   {
     return false;
   }
-  
-  // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
-  if (commandAnswerLength >= 10 && commandAnswerLength <= 20)
+  else
   {
-
-    // Split the string into substrings
-    int StringCount = 0;
-    while (commandAnswer.length() > 0)
-    {
-      int index = commandAnswer.indexOf(delimiter);
-      if (index == -1) // No space found
-      {
-        strs[StringCount++] = commandAnswer;
-        break;
-      }
-      else
-      {
-        strs[StringCount++] = commandAnswer.substring(0, index);
-        commandAnswer = commandAnswer.substring(index + 1);
-      }
-    }
-
-    for (unsigned int i = 0; i < sizeof qpigs2List / sizeof qpigs2List[0]; i++)
-    {
-      if (!strs[i].isEmpty() && strcmp(qpigs2List[i], "") != 0)
-        liveData[qpigs2List[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
-    }
-    // make some things pretty
-    liveData["PV2_Input_Power"] = (liveData["PV2_Input_Voltage"].as<unsigned short>() * liveData["PV2_Input_Current"].as<unsigned short>());
+    return false;
   }
-  return true;
 }
