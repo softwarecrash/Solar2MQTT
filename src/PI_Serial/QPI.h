@@ -1,15 +1,30 @@
 bool PI_Serial::PIXX_QPI()
 {
-  String commandAnswer = this->requestData("QPI");
-  get.raw.qpi = commandAnswer;
-  if (commandAnswer == "NAK")
+  if (protocol == PI30)
+  {
+    String commandAnswer = this->requestData("QPI");
+    get.raw.qpi = commandAnswer;
+    if (commandAnswer == "NAK")
+    {
+      return true;
+    }
+    if (commandAnswer == "ERCRC")
+    {
+      return false;
+    }
+    staticData["Protocol_ID"] = commandAnswer;
+    return true;
+  }
+  else if (protocol == PI18)
   {
     return true;
   }
-    if(commandAnswer == "ERCRC")
+  else if (protocol == NoD)
   {
     return false;
   }
-    staticData["Protocol_ID"] = commandAnswer;
-    return true;
+  else
+  {
+    return false;
+  };
 }
