@@ -267,7 +267,11 @@ bool PI_Serial::PIXX_QPIGS()
       // make some things pretty
 
       liveData["PV_Input_Voltage"] = (liveData["PV1_Input_Voltage"].as<unsigned short>() + liveData["PV2_Input_Voltage"].as<unsigned short>());
-      liveData["PV_Charging_Power"] = (liveData["PV1_Input_Power"].as<unsigned short>() + liveData["PV2_Input_Power"].as<unsigned short>());
+liveData["PV_Charging_Power"] = (liveData["PV1_Input_Power"].as<unsigned short>() + liveData["PV2_Input_Power"].as<unsigned short>());
+
+      liveData["PV_Input_Current"] = (liveData["PV_Charging_Power"].as<unsigned short>() / liveData["PV_Input_Voltage"].as<unsigned short>());
+
+      
       liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
     }
     return true;
