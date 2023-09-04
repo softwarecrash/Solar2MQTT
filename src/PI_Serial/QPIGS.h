@@ -100,7 +100,7 @@ static const char *const P005GS[][28] = {
     {"Load_Connection", "0"},           // X
     {"Battery_Power_Direction", "0"},   // Y
     {"ACDC_Power_Direction", "0"},      // Z
-    {"Line_Power_DIrection", "0"},      // a
+    {"Line_Power_Direction", "0"},      // a
     {"Local_Parallel_ID", "0"},         // b
 
 };
