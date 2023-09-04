@@ -138,8 +138,8 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         PI_DEBUG_WEBLN("QPI:\t\t" + qpi + " (Length: " + qpi.length() + ")");
         if (qpi != "" && qpi.substring(0, 2) == "PI")
         {
-            PI_DEBUG_PRINT("<Autodetect> Match protocol: PI3X");
-            PI_DEBUG_WEB("<Autodetect> Match protocol: PI3X");
+            PI_DEBUG_PRINTLN("<Autodetect> Match protocol: PI3X");
+            PI_DEBUG_WEBLN("<Autodetect> Match protocol: PI3X");
             break;
         }
         this->my_serialIntf->end();

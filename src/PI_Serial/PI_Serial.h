@@ -99,11 +99,6 @@ public:
     bool Init();
 
     /**
-     * @brief set global the protocol
-     */
-    bool setProtocol(int protocolID);
-
-    /**
      * @brief Updating the Data from the BMS
      */
     bool loop();
