@@ -1,11 +1,3 @@
-// QPIRI: AAA.A BB.B CCC.C DDD.D EEE.E FF.F GGG.G H II J        not correct letters equal to other documents                                     PI16
-
-// QPIRI: BBBB CC DD.D EE.EE FF.FF GG HH II.I JJ KKKK L MM.MM N                                                                                  PI34 / MPPT-3000
-// QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O P0 QQ0 O P Q R SS T                                                    PI30 Revo
-// QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X                                         PI30 HS MS MSX
-// QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X                                         PI30 PIP
-// QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X YYY                                     PI41 / LV5048
-// QPIRI: BBB.B CC.C DDD.D EE.E FF.F HHHH IIII JJ.J KK.K JJ.J KK.K LL.L O PP QQ0 O P Q R SS T U VV.V W X YYY Z CCC                               PI30 Max
 static const char *const qpiriList[][30] = {
     // [PI34 / MPPT-3000], [PI30 HS MS MSX], [PI30 Revo], [PI30 PIP], [PI41 / LV5048]
     {
@@ -69,6 +61,35 @@ static const char *const qpiriList[][30] = {
         "Operation_Logic",                 // Z
         "Max_discharging_current",         // CCC
     },
+};
+static const char *const P007PIRI[][25] = {
+    // [PI34 / MPPT-3000], [PI30 HS MS MSX], [PI30 Revo], [PI30 PIP], [PI41 / LV5048]
+
+    {"AC_in_rating_voltage", "10"},           // AAAA
+    {"AC_in_rating_current", "10"},           // BBB
+    {"AC_out_rating_voltage", "10"},          // CCCC
+    {"AC_out_rating_frequency", "10"},        // DDD
+    {"AC_out_rating_current", "10"},          // EEE
+    {"AC_out_rating_apparent_power", "0"},    // FFFF
+    {"AC_out_rating_active_power", "0"},      // IIII
+    {"Battery_rating_voltage", "10"},         // HHH
+    {"Battery_re-charge_voltage", "10"},      // III
+    {"Battery_re-discharge_voltage", "10"},   // JJJ
+    {"Battery_under_voltage", "10"},          // KKK
+    {"Battery_bulk_voltage", "10"},           // LLL
+    {"Battery_float_voltage", "10"},          // MMM
+    {"Battery_type", "0"},                    // N
+    {"Current_max_AC_charging_current", "0"}, // OO
+    {"Current_max_charging_current", "0"},    // PPP
+    {"Input_voltage_range", "0"},             // Q
+    {"Output_source_priority", "0"},          // R
+    {"Charger_source_priority", "0"},         // S
+    {"Parallel_max_num", "0"},                // T
+    {"Machine_type", "0"},                    // U
+    {"Topology", "0"},                        // V
+    {"Output_mode", "0"},                     // W
+    {"Solar_power_priority", "0"},            // Z
+    {"MPPT_string", "0"},                     // a
 };
 bool PI_Serial::PIXX_QPIRI()
 {

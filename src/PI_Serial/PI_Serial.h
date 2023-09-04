@@ -43,7 +43,7 @@ extern JsonObject liveData;
 class PI_Serial
 {
 public:
-    const char *startChar = "("; // move later to changeable
+    const char *startChar = "(";
     const char *delimiter = " ";
     bool requestStaticData = true;
     byte protocol = NoD;
@@ -133,8 +133,6 @@ private:
     byte requestCounter = 0;
     String customCommandBuffer;
 
-    //unsigned int protocolType = 100;
-
     /**
      * @brief get the crc from a string
      */
@@ -187,7 +185,6 @@ private:
     bool PIXX_Q1();
     bool PIXX_QPIGS();
     bool PIXX_QPIGS2();
-    //bool PIXX_QALL();
     bool PIXX_QMOD();
     bool PIXX_QEX();
     // static reqeuests
