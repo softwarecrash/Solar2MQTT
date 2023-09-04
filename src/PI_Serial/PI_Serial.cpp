@@ -14,7 +14,7 @@ CRC16 crc;
 #include "QPIGS.h"
 #include "QPIGS2.h"
 #include "QMOD.h"
-//#include "QALL.h"
+// #include "QALL.h"
 #include "QEX.h"
 //----------------------------------------------------------------------
 //  Public Functions
@@ -43,28 +43,6 @@ bool PI_Serial::Init()
     this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
     clearGet();
     return true;
-}
-
-bool PI_Serial::setProtocol(int protocolID)
-{
-    if (protocolID >= 0 && protocolID <= 20)
-    {
-        protocolType = protocolID;
-
-        PI_DEBUG_PRINT("<setProtocol> Match protocol number: ");
-        PI_DEBUG_PRINTLN(protocolType);
-        PI_DEBUG_WEB("<setProtocol> Match protocol number: ");
-        PI_DEBUG_WEBLN(protocolType);
-        return true;
-    }
-    else
-    {
-        PI_DEBUG_PRINT("<setProtocol> Protocol number: ");
-        PI_DEBUG_PRINTLN(protocolType);
-        PI_DEBUG_WEB("<setProtocol> Protocol number: ");
-        PI_DEBUG_WEBLN(protocolType);
-        return false;
-    }
 }
 
 bool PI_Serial::loop()
@@ -105,7 +83,7 @@ bool PI_Serial::loop()
                 requestCounter = PIXX_Q1() ? (requestCounter + 1) : 0;
                 break;
             case 4:
-                //requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
+                // requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
                 requestCounter++;
                 break;
             case 5:
@@ -142,58 +120,47 @@ String PI_Serial::sendCommand(String command)
 //----------------------------------------------------------------------
 // Private Functions
 //----------------------------------------------------------------------
-unsigned int PI_Serial::autoDetect() // function for autodetect the inverter type
+void PI_Serial::autoDetect() // function for autodetect the inverter type
 {
-    if (protocolType == 100)
+    PI_DEBUG_PRINTLN("------------- Start Autodetect -----------------");
+    PI_DEBUG_WEBLN("------------- Start Autodetect -----------------");
+    for (size_t i = 0; i < 3; i++) // try 3 times to detect the inverter
     {
-        PI_DEBUG_PRINTLN("------------- Start Autodetect -----------------");
-        PI_DEBUG_WEBLN("------------- Start Autodetect -----------------");
-        for (size_t i = 0; i < 3; i++) // try 3 times to detect the inverter
+        PI_DEBUG_PRINT("Try Autodetect Protocol");
+        PI_DEBUG_WEB("Try Autodetect Protocol");
+
+        startChar = "(";
+        serialIntfBaud = 2400;
+        // this->my_serialIntf->setTimeout(250);
+        this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
+        String qpi = this->requestData("QPI");
+        PI_DEBUG_PRINTLN("QPI:\t\t" + qpi + " (Length: " + qpi.length() + ")");
+        PI_DEBUG_WEBLN("QPI:\t\t" + qpi + " (Length: " + qpi.length() + ")");
+        if (qpi != "" && qpi.substring(0, 2) == "PI")
         {
-            PI_DEBUG_PRINT("Try Autodetect Protocol");
-            PI_DEBUG_WEB("Try Autodetect Protocol");
-            serialIntfBaud = 2400;
-            // this->my_serialIntf->setTimeout(250);
-            this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
-
-            String qpi = this->requestData("QPI");
-            PI_DEBUG_PRINTLN("QPI:\t\t" + qpi + " (Length: " + qpi.length() + ")");
-            PI_DEBUG_WEBLN("QPI:\t\t" + qpi + " (Length: " + qpi.length() + ")");
-            String qpiri = this->requestData("QPIRI");
-            PI_DEBUG_PRINTLN("QPIRI:\t\t" + qpiri + " (Length: " + qpiri.length() + ")");
-            PI_DEBUG_WEBLN("QPIRI:\t\t" + qpiri + " (Length: " + qpiri.length() + ")");
-            String qpigs = this->requestData("QPIGS");
-            PI_DEBUG_PRINTLN("QPIGS:\t\t" + qpigs + " (Length: " + qpigs.length() + ")");
-            PI_DEBUG_WEBLN("QPIGS:\t\t" + qpigs + " (Length: " + qpigs.length() + ")");
-
-            if ((
-                    qpiri.length() == 83 || // Revo
-                    qpiri.length() == 94 || // PIP MSX
-                    qpiri.length() == 95 || // wox
-                    qpiri.length() == 98 || // LV5048
-                    qpiri.length() == 104   // PI30 MAX
-                    ) &&
-                (qpigs.length() == 90 ||  // Revo MSX
-                 qpigs.length() == 105 || // PIP special for samson71
-                 qpigs.length() == 106 || // PIP PI41
-                 qpigs.length() == 118    // PI30MAX
-                 ))
-            {
-                protocolType = PIXX;
-                PI_DEBUG_PRINT("<Autodetect> Match protocol number: ");
-                PI_DEBUG_PRINTLN(protocolType);
-                PI_DEBUG_WEB("<Autodetect> Match protocol number: ");
-                PI_DEBUG_WEBLN(protocolType);
-            }
-            this->my_serialIntf->end();
-
-            if (protocolType != 100) // protocol found, break and report it
-                break;
+            PI_DEBUG_PRINT("<Autodetect> Match protocol: PI3X");
+            PI_DEBUG_WEB("<Autodetect> Match protocol: PI3X");
+            break;
         }
-        PI_DEBUG_PRINTLN("------------- End Autodetect -----------------");
-        PI_DEBUG_WEBLN("------------- End Autodetect -----------------");
+        this->my_serialIntf->end();
+
+        startChar = "^Dxxx";
+        serialIntfBaud = 9600;
+        // this->my_serialIntf->setTimeout(250);
+        this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
+        String P005PI = this->requestData("^P005PI");
+        PI_DEBUG_PRINTLN("^P005PI:\t\t" + P005PI + " (Length: " + P005PI.length() + ")");
+        PI_DEBUG_WEBLN("^P005PI:\t\t" + P005PI + " (Length: " + P005PI.length() + ")");
+        if (P005PI != "" && P005PI.substring(0, 2) == "PI")
+        {
+            PI_DEBUG_PRINT("<Autodetect> Match protocol: PI18");
+            PI_DEBUG_WEB("<Autodetect> Match protocol: PI18");
+            break;
+        }
+        this->my_serialIntf->end();
     }
-    return protocolType;
+    PI_DEBUG_PRINTLN("------------- End Autodetect -----------------");
+    PI_DEBUG_WEBLN("------------- End Autodetect -----------------");
 }
 
 bool PI_Serial::sendCustomCommand()
@@ -246,7 +213,7 @@ String PI_Serial::requestData(String command)
         crcCalc = getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1;
         crcRecive = commandBuffer[commandBuffer.length() - 1];
         commandBuffer.remove(commandBuffer.length() - 1);
-        commandBuffer.remove(0, strlen(startChar));
+        commandBuffer.remove(0, strlen(startChar)); // remove the start char ( for Pi30 and ^Dxxx for Pi18
     }
     else
     {

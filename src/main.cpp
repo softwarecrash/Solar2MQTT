@@ -429,7 +429,7 @@ void setup()
     // #endif
     server.begin();
 
-    mppClient.setProtocol(100); // manual set the protocol
+    //mppClient.setProtocol(100); // manual set the protocol
     mppClient.Init();           // init the PI_serial Library
     mppClient.callback(prozessData);
 

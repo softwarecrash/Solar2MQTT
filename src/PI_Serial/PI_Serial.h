@@ -49,18 +49,8 @@ public:
 
     enum protocolType
     {
-        PIXX,
-        PI00,
-        PI16,
-        PI17,
         PI18,
-        PI30_MAX,
-        PI30_REVO,
-        PI30_C,
-        PI30_HS_MS_MSX, // current implementet protocol
-        PI30_PIP,
-        PI34,
-        PI41,
+        PI30,
     };
     struct
     {
@@ -146,7 +136,7 @@ private:
     byte requestCounter = 0;
     String customCommandBuffer;
 
-    unsigned int protocolType = 100;
+    //unsigned int protocolType = 100;
 
     /**
      * @brief get the crc from a string
@@ -172,7 +162,7 @@ private:
      * @brief function for autodetect the inverter
      * @details ask all modes and sort it to a protocol
      */
-    unsigned int autoDetect();
+    void autoDetect();
 
     /**
      * @brief Sends a complete packet with the specified command
