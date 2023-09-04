@@ -27,7 +27,7 @@ bool PI_Serial::PIXX_QPI()
     {
       return false;
     }
-    staticData["Protocol_ID"] = commandAnswer;
+    staticData["Protocol_ID"] = commandAnswer.toInt();
     return true;
   }
   else if (protocol == NoD)
