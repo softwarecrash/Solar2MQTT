@@ -109,9 +109,9 @@ static const char *const P005GS[][28] = {
     {"Inverter_Bus_Temperature", "0"},  // NNN
     {"MPPT1_Charger_Temperature", "0"}, // OOO
     {"MPPT2_Charger_Temperature", "0"}, // PPP
-    {"PV1_Input_Power", "0"},            // QQQQ
+    {"PV1_Input_Power", "0"},           // QQQQ
     {"PV2_Input_Power", "0"},           // RRRR
-    {"PV1_Input_Voltage", "10"},         // SSSS
+    {"PV1_Input_Voltage", "10"},        // SSSS
     {"PV2_Input_Voltage", "10"},        // TTTT
     {"Configuration_State", "0"},       // U
     {"MPPT_Charger_Status", "0"},       // V
@@ -267,11 +267,10 @@ bool PI_Serial::PIXX_QPIGS()
       // make some things pretty
 
       liveData["PV_Input_Voltage"] = (liveData["PV1_Input_Voltage"].as<unsigned short>() + liveData["PV2_Input_Voltage"].as<unsigned short>());
-liveData["PV_Charging_Power"] = (liveData["PV1_Input_Power"].as<unsigned short>() + liveData["PV2_Input_Power"].as<unsigned short>());
+      liveData["PV_Charging_Power"] = (liveData["PV1_Input_Power"].as<unsigned short>() + liveData["PV2_Input_Power"].as<unsigned short>());
 
       liveData["PV_Input_Current"] = (liveData["PV_Charging_Power"].as<unsigned short>() / liveData["PV_Input_Voltage"].as<unsigned short>());
 
-      
       liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
     }
     return true;
