@@ -223,6 +223,135 @@ bool PI_Serial::PIXX_QPIRI()
   }
   else if (protocol == PI18)
   {
+        String commandAnswer = this->requestData("QPIRI");
+    get.raw.qpiri = commandAnswer;
+    // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
+    if (commandAnswer == "NAK")
+    {
+      return true;
+    }
+    if (commandAnswer == "ERCRC")
+    {
+      return false;
+    }
+    if (commandAnswer.length() > 80 &&
+        commandAnswer.length() < 105)
+    {
+      String strs[30];
+      // Split the string into substrings
+      int StringCount = 0;
+      while (commandAnswer.length() > 0)
+      {
+        int index = commandAnswer.indexOf(delimiter);
+        if (index == -1) // No space found
+        {
+          strs[StringCount++] = commandAnswer;
+          break;
+        }
+        else
+        {
+          strs[StringCount++] = commandAnswer.substring(0, index);
+          commandAnswer = commandAnswer.substring(index + 1);
+        }
+      }
+
+      for (unsigned int i = 0; i < sizeof qpiriList[0] / sizeof qpiriList[0][0]; i++)
+      {
+        if (!strs[i].isEmpty() && strcmp(qpiriList[0][i], "") != 0)
+
+
+-------------------------------------
+          staticData[qpiriList[0][i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
+
+
+
+      }
+
+      switch ((byte)staticData["Battery_type"].as<unsigned int>())
+      {
+      case 0:
+        staticData["Battery_type"] = "AGM";
+        break;
+      case 1:
+        staticData["Battery_type"] = "Flooded";
+        break;
+      case 2:
+        staticData["Battery_type"] = "User";
+        break;
+      default:
+        break;
+      }
+      switch ((byte)staticData["Input_voltage_range"].as<unsigned int>())
+      {
+      case 0:
+        staticData["Input_voltage_range"] = "Appliance";
+        break;
+      case 1:
+        staticData["Input_voltage_range"] = "UPS";
+        break;
+      default:
+        break;
+      }
+      switch ((byte)staticData["Output_source_priority"].as<unsigned int>())
+      {
+      case 0:
+        staticData["Output_source_priority"] = "Utility first";
+        break;
+      case 1:
+        staticData["Output_source_priority"] = "Solar first";
+        break;
+      case 2:
+        staticData["Output_source_priority"] = "SBU first";
+        break;
+      default:
+        break;
+      }
+      switch ((byte)staticData["Charger_source_priority"].as<unsigned int>())
+      {
+      case 0:
+        staticData["Charger_source_priority"] = "Utility first";
+        break;
+      case 1:
+        staticData["Charger_source_priority"] = "Solar first";
+        break;
+      case 2:
+        staticData["Charger_source_priority"] = "Solar + Utility";
+        break;
+      case 3:
+        staticData["Charger_source_priority"] = "Only solar charging permitted";
+        break;
+      default:
+        break;
+      }
+      switch ((byte)staticData["Machine_type"].as<unsigned int>())
+      {
+      case 00:
+        staticData["Machine_type"] = "Grid tie";
+        break;
+      case 01:
+        staticData["Machine_type"] = "Off Grid";
+        break;
+      case 10:
+        staticData["Machine_type"] = "Hybrid";
+        break;
+      default:
+        break;
+      }
+      switch ((byte)staticData["Topology"])
+      {
+      case 0:
+        staticData["Topology"] = "Transformerless";
+        break;
+      case 1:
+        staticData["Topology"] = "Transformer";
+        break;
+      default:
+        break;
+        return true;
+      }
+      return true;
+    }
+    return true;
     return true;
   }
   else if (protocol == NoD)
