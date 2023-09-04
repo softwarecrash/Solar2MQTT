@@ -352,7 +352,6 @@ bool PI_Serial::PIXX_QPIRI()
       return true;
     }
     return true;
-    return true;
   }
   else if (protocol == NoD)
   {
