@@ -429,8 +429,8 @@ void setup()
     // #endif
     server.begin();
 
-    //mppClient.setProtocol(100); // manual set the protocol
-    mppClient.Init();           // init the PI_serial Library
+    // mppClient.setProtocol(100); // manual set the protocol
+    mppClient.Init(); // init the PI_serial Library
     mppClient.callback(prozessData);
 
     mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
@@ -450,13 +450,12 @@ void loop()
     getJsonData();
     mppClient.loop();  // Call the PI Serial Library loop
     mqttclient.loop(); // Check if we have something to read from MQTT
-    
+
     if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
     {
       sendtoMQTT(); // Update data to MQTT server if we should
       mqtttimer = millis();
     }
-    
   }
   if (restartNow && millis() >= (RestartTimer + 500))
   {
@@ -606,7 +605,15 @@ bool sendtoMQTT()
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS"), (mppClient.get.raw.qpigs).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS2"), (mppClient.get.raw.qpigs2).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIRI"), (mppClient.get.raw.qpiri).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QT"), (mppClient.get.raw.qt).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QET"), (mppClient.get.raw.qet).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QEY"), (mppClient.get.raw.qey).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QEM"), (mppClient.get.raw.qem).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QED"), (mppClient.get.raw.qed).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QLT"), (mppClient.get.raw.qt).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QLY"), (mppClient.get.raw.qly).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QLM"), (mppClient.get.raw.qlm).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QLD"), (mppClient.get.raw.qld).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPI"), (mppClient.get.raw.qpi).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QMOD"), (mppClient.get.raw.qmod).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QALL"), (mppClient.get.raw.qall).c_str());

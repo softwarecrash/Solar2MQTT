@@ -95,92 +95,104 @@ static const char *const qallList[] = {
 
 bool PI_Serial::PIXX_QPIGS()
 {
-  byte protocolNum = 0; // for future use
-  
-
-  String commandAnswerQALL = this->requestData("QALL");
-  get.raw.qall = commandAnswerQALL;
-  if (commandAnswerQALL == "ERCRC")
+  if (protocol == PI30)
   {
-    return false;
-  }
-  //
-  String commandAnswerQPIGS = this->requestData("QPIGS");
-  get.raw.qpigs = commandAnswerQPIGS;
-  if (commandAnswerQPIGS == "NAK")
+    byte protocolNum = 0; // for future use
+    String commandAnswerQALL = this->requestData("QALL");
+    get.raw.qall = commandAnswerQALL;
+    if (commandAnswerQALL == "ERCRC")
+    {
+      return false;
+    }
+    //
+    String commandAnswerQPIGS = this->requestData("QPIGS");
+    get.raw.qpigs = commandAnswerQPIGS;
+    if (commandAnswerQPIGS == "NAK")
+      return true;
+    if (commandAnswerQPIGS == "ERCRC")
+      return false;
+    byte commandAnswerLength = commandAnswerQPIGS.length();
+
+    // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
+    if (commandAnswerLength >= 60 && commandAnswerLength <= 140)
+    {
+      if (commandAnswerLength <= 116)
+      {
+        protocolNum = 0;
+      }
+      else if (commandAnswerLength > 131)
+      {
+        protocolNum = 1;
+      }
+
+      // Split the string into substrings
+      String strs[30]; // buffer for string splitting
+      int StringCount = 0;
+      while (commandAnswerQPIGS.length() > 0)
+      {
+        int index = commandAnswerQPIGS.indexOf(delimiter);
+        if (index == -1) // No space found
+        {
+          strs[StringCount++] = commandAnswerQPIGS;
+          break;
+        }
+        else
+        {
+          strs[StringCount++] = commandAnswerQPIGS.substring(0, index);
+          commandAnswerQPIGS = commandAnswerQPIGS.substring(index + 1);
+        }
+      }
+
+      for (unsigned int i = 0; i < sizeof qpigsList[protocolNum] / sizeof qpigsList[protocolNum][0]; i++)
+      {
+        if (!strs[i].isEmpty() && strcmp(qpigsList[protocolNum][i], "") != 0)
+          liveData[qpigsList[protocolNum][i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
+      }
+      // make some things pretty
+      liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
+      liveData["PV_Input_Power"] = (liveData["PV_Input_Voltage"].as<unsigned short>() * liveData["PV_Input_Current"].as<unsigned short>());
+    }
+
+    if (get.raw.qall != "NAK" || get.raw.qall != "ERCRC")
+    {
+      String strsQALL[30];
+      //  Split the string into substrings
+      int StringCountQALL = 0;
+      while (commandAnswerQALL.length() > 0)
+      {
+        int index = commandAnswerQALL.indexOf(delimiter);
+        if (index == -1) // No space found
+        {
+          strsQALL[StringCountQALL++] = commandAnswerQALL;
+          break;
+        }
+        else
+        {
+          strsQALL[StringCountQALL++] = commandAnswerQALL.substring(0, index);
+          commandAnswerQALL = commandAnswerQALL.substring(index + 1);
+        }
+      }
+
+      for (unsigned int i = 0; i < sizeof qallList / sizeof qallList[0]; i++)
+      {
+        if (!strsQALL[i].isEmpty() && strcmp(qallList[i], "") != 0)
+          liveData[qallList[i]] = (int)(strsQALL[i].toFloat() * 100 + 0.5) / 100.0;
+      }
+      liveData["Inverter_Operation_Mode"] = getModeDesc((char)liveData["Inverter_Operation_Mode"].as<String>().charAt(0));
+      liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
+    }
     return true;
-  if (commandAnswerQPIGS == "ERCRC")
+  }
+  else if (protocol == PI18)
+  {
+    return true;
+  }
+  else if (protocol == NoD)
+  {
     return false;
-  byte commandAnswerLength = commandAnswerQPIGS.length();
-
-  // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
-  if (commandAnswerLength >= 60 && commandAnswerLength <= 140)
-  {
-    if (commandAnswerLength <= 116)
-    {
-      protocolNum = 0;
-    }
-    else if (commandAnswerLength > 131)
-    {
-      protocolNum = 1;
-    }
-
-    // Split the string into substrings
-    String strs[30];      // buffer for string splitting
-    int StringCount = 0;
-    while (commandAnswerQPIGS.length() > 0)
-    {
-      int index = commandAnswerQPIGS.indexOf(delimiter);
-      if (index == -1) // No space found
-      {
-        strs[StringCount++] = commandAnswerQPIGS;
-        break;
-      }
-      else
-      {
-        strs[StringCount++] = commandAnswerQPIGS.substring(0, index);
-        commandAnswerQPIGS = commandAnswerQPIGS.substring(index + 1);
-      }
-    }
-
-    for (unsigned int i = 0; i < sizeof qpigsList[protocolNum] / sizeof qpigsList[protocolNum][0]; i++)
-    {
-      if (!strs[i].isEmpty() && strcmp(qpigsList[protocolNum][i], "") != 0)
-        liveData[qpigsList[protocolNum][i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
-    }
-    // make some things pretty
-    liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
-    liveData["PV_Input_Power"] = (liveData["PV_Input_Voltage"].as<unsigned short>() * liveData["PV_Input_Current"].as<unsigned short>());
   }
-
-  if (get.raw.qall != "NAK" || get.raw.qall != "ERCRC")
+  else
   {
-     String strsQALL[30];
-    //  Split the string into substrings
-    int StringCountQALL = 0;
-    while (commandAnswerQALL.length() > 0)
-    {
-      int index = commandAnswerQALL.indexOf(delimiter);
-      if (index == -1) // No space found
-      {
-        strsQALL[StringCountQALL++] = commandAnswerQALL;
-        break;
-      }
-      else
-      {
-        strsQALL[StringCountQALL++] = commandAnswerQALL.substring(0, index);
-        commandAnswerQALL = commandAnswerQALL.substring(index + 1);
-      }
-    }
-
-    for (unsigned int i = 0; i < sizeof qallList / sizeof qallList[0]; i++)
-    {
-      if (!strsQALL[i].isEmpty() && strcmp(qallList[i], "") != 0)
-        liveData[qallList[i]] = (int)(strsQALL[i].toFloat() * 100 + 0.5) / 100.0;
-    }
-    liveData["Inverter_Operation_Mode"] = getModeDesc((char)liveData["Inverter_Operation_Mode"].as<String>().charAt(0));
-    liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
+    return false;
   }
-
-  return true;
 }
