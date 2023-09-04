@@ -140,6 +140,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         {
             PI_DEBUG_PRINTLN("<Autodetect> Match protocol: PI3X");
             PI_DEBUG_WEBLN("<Autodetect> Match protocol: PI3X");
+            delimiter = " ";
             protocol = PI30;
             break;
             
@@ -157,6 +158,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         {
             PI_DEBUG_PRINTLN("<Autodetect> Match protocol: PI18");
             PI_DEBUG_WEBLN("<Autodetect> Match protocol: PI18");
+            delimiter = ",";
             protocol = PI18;
             break;
         }
