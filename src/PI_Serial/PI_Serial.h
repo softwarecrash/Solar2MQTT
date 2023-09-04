@@ -46,9 +46,11 @@ public:
     const char *startChar = "("; // move later to changeable
     const char *delimiter = " ";
     bool requestStaticData = true;
+    byte protocol = NoD;
 
     enum protocolType
     {
+        NoD,
         PI18,
         PI30,
     };

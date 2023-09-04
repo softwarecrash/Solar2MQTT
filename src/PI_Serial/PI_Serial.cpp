@@ -47,7 +47,7 @@ bool PI_Serial::Init()
 
 bool PI_Serial::loop()
 {
-    if (millis() - previousTime >= delayTime)
+    if (millis() - previousTime >= delayTime && protocol != NoD)
     {
         switch (requestStaticData)
         {
@@ -140,7 +140,9 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         {
             PI_DEBUG_PRINTLN("<Autodetect> Match protocol: PI3X");
             PI_DEBUG_WEBLN("<Autodetect> Match protocol: PI3X");
+            protocol = PI30;
             break;
+            
         }
         this->my_serialIntf->end();
 
@@ -155,6 +157,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         {
             PI_DEBUG_PRINTLN("<Autodetect> Match protocol: PI18");
             PI_DEBUG_WEBLN("<Autodetect> Match protocol: PI18");
+            protocol = PI18;
             break;
         }
         this->my_serialIntf->end();
