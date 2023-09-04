@@ -147,13 +147,13 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         this->my_serialIntf->end();
 
         startChar = "^Dxxx";
-        serialIntfBaud = 9600;
+        serialIntfBaud = 2400;
         // this->my_serialIntf->setTimeout(250);
         this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
         String P005PI = this->requestData("^P005PI");
         PI_DEBUG_PRINTLN("^P005PI:\t\t" + P005PI + " (Length: " + P005PI.length() + ")");
         PI_DEBUG_WEBLN("^P005PI:\t\t" + P005PI + " (Length: " + P005PI.length() + ")");
-        if (P005PI != "" && P005PI.substring(0, 2) == "PI")
+        if (P005PI != "" && P005PI == "18")
         {
             PI_DEBUG_PRINTLN("<Autodetect> Match protocol: PI18");
             PI_DEBUG_WEBLN("<Autodetect> Match protocol: PI18");
