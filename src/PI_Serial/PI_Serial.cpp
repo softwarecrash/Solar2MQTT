@@ -215,6 +215,7 @@ String PI_Serial::requestData(String command)
     }
     else
     {
+        PI_DEBUG_PRINTLN(commandBuffer);
         commandBuffer = "ERCRC";
     }
     char debugBuff[128];
