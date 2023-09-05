@@ -13,9 +13,8 @@ bool PI_Serial::PIXX_QEX()
       return false;
     }
     liveData["PV_generation_sum"] = commandAnswer.toInt();
-
     commandAnswer = this->requestData("QT");
-    get.raw.qt = commandAnswer;
+    get.raw.qt = commandAnswer.substring(0, 8);
     if (commandAnswer == "ERCRC")
     {
       return false;
@@ -89,6 +88,7 @@ bool PI_Serial::PIXX_QEX()
   {
     String commandAnswer = this->requestData("^P005ET");
     get.raw.qet = commandAnswer;
+    if (commandAnswer != "ERCRC" && commandAnswer != "NAK" && commandAnswer != "")
     if (commandAnswer == "NAK")
     {
       return true;

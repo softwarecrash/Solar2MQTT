@@ -123,7 +123,7 @@ private:
     unsigned int serialIntfBaud;
 
     unsigned int previousTime = 0;
-    unsigned int delayTime = 150;
+    unsigned int delayTime = 10;
     byte requestCounter = 0;
     
     String customCommandBuffer;
