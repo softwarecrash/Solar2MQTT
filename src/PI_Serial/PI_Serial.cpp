@@ -38,7 +38,7 @@ bool PI_Serial::Init()
 
     autoDetect();
 
-    // this->my_serialIntf->setTimeout(450);
+    this->my_serialIntf->setTimeout(450);
     this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
     clearGet();
     return true;
