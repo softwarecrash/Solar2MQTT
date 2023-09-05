@@ -48,12 +48,6 @@ public:
     bool requestStaticData = true;
     byte protocol = NoD;
 
-    enum protocolType
-    {
-        NoD,
-        PI18,
-        PI30,
-    };
     struct
     {
         struct
@@ -131,7 +125,14 @@ private:
     unsigned int previousTime = 0;
     unsigned int delayTime = 50;
     byte requestCounter = 0;
+    
     String customCommandBuffer;
+    enum protocolType
+    {
+        NoD,
+        PI18,
+        PI30,
+    };
 
     /**
      * @brief get the crc from a string
