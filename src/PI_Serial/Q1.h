@@ -16,65 +16,81 @@ static const char *const q1List[] = {
 };
 bool PI_Serial::PIXX_Q1()
 {
-    String commandAnswer = this->requestData("Q1");
-    get.raw.q1 = commandAnswer;
-    byte commandAnswerLength = commandAnswer.length();
-  if (commandAnswer == "NAK")
-  {
-    return true;
-  }
-  if(commandAnswer == "ERCRC")
-  {
-    return false;
-  }
-    if (commandAnswerLength == 47 || commandAnswerLength == 105)
+    if (protocol == PI30)
     {
-        String strs[16];
-        // Split the string into substrings
-        int StringCount = 0;
-        while (commandAnswer.length() > 0)
+        String commandAnswer = this->requestData("Q1");
+        get.raw.q1 = commandAnswer;
+        byte commandAnswerLength = commandAnswer.length();
+        if (commandAnswer == "NAK")
         {
-            //int index = commandAnswer.indexOf(delimiter);
-            int index = commandAnswer.indexOf(' ');
-            if (index == -1) // No space found
+            return true;
+        }
+        if (commandAnswer == "ERCRC")
+        {
+            return false;
+        }
+        if (commandAnswerLength == 47 || commandAnswerLength == 105)
+        {
+            String strs[16];
+            // Split the string into substrings
+            int StringCount = 0;
+            while (commandAnswer.length() > 0)
             {
-                strs[StringCount++] = commandAnswer;
-                break;
+                // int index = commandAnswer.indexOf(delimiter);
+                int index = commandAnswer.indexOf(' ');
+                if (index == -1) // No space found
+                {
+                    strs[StringCount++] = commandAnswer;
+                    break;
+                }
+                else
+                {
+                    strs[StringCount++] = commandAnswer.substring(0, index);
+                    commandAnswer = commandAnswer.substring(index + 1);
+                }
             }
-            else
+
+            for (unsigned int i = 0; i < sizeof q1List / sizeof q1List[0]; i++)
             {
-                strs[StringCount++] = commandAnswer.substring(0, index);
-                commandAnswer = commandAnswer.substring(index + 1);
+                if (!strs[i].isEmpty() && strcmp(q1List[i], "") != 0)
+                    liveData[q1List[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
+            }
+
+            if (liveData.containsKey("Inverter_charge_state"))
+            {
+                switch ((int)liveData["Inverter_charge_state"].as<unsigned int>())
+                {
+                default:
+                    // liveData["Inverter_charge_state"] = "no data";
+                    break;
+                case 10:
+                    liveData["Inverter_charge_state"] = "No charging";
+                    break;
+                case 11:
+                    liveData["Inverter_charge_state"] = "Bulk stage";
+                    break;
+                case 12:
+                    liveData["Inverter_charge_state"] = "Absorb";
+                    break;
+                case 13:
+                    liveData["Inverter_charge_state"] = "Float";
+                    break;
+                }
             }
         }
 
-        for (unsigned int i = 0; i < sizeof q1List / sizeof q1List[0]; i++)
-        {
-            if (!strs[i].isEmpty() && strcmp(q1List[i], "") != 0)
-                liveData[q1List[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
-        }
-
-        if (liveData.containsKey("Inverter_charge_state"))
-        {
-            switch ((int)liveData["Inverter_charge_state"].as<unsigned int>())
-            {
-            default:
-                //liveData["Inverter_charge_state"] = "no data";
-                break;
-            case 10:
-                liveData["Inverter_charge_state"] = "No charging";
-                break;
-            case 11:
-                liveData["Inverter_charge_state"] = "Bulk stage";
-                break;
-            case 12:
-                liveData["Inverter_charge_state"] = "Absorb";
-                break;
-            case 13:
-                liveData["Inverter_charge_state"] = "Float";
-                break;
-            }
-        }
+        return true;
     }
-    return true;
+    else if (protocol == PI18)
+    {
+        return true;
+    }
+    else if (protocol == NoD)
+    {
+        return false;
+    }
+    else
+    {
+        return false;
+    }
 }
