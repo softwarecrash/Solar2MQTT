@@ -135,7 +135,7 @@ bool PI_Serial::PIXX_QEX()
         return true;
       liveData["PV_generation_day"] = commandAnswer.toInt();
 
-      return true;
+      //return true;
     }
     return true;
   }
