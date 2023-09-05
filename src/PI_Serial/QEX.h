@@ -81,6 +81,8 @@ bool PI_Serial::PIXX_QEX()
       if (commandAnswer == "NAK")
         return true;
       liveData["AC_in_generation_day"] = commandAnswer;
+
+      return true;
     }
   }
   else if (protocol == PI18)
@@ -164,6 +166,9 @@ bool PI_Serial::PIXX_QEX()
       if (commandAnswer == "NAK")
         return true;
       liveData["AC_in_generation_day"] = commandAnswer;
+
+
+      return true;
     }
     return true;
   }
