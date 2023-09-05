@@ -86,9 +86,9 @@ bool PI_Serial::PIXX_QEX()
   }
   else if (protocol == PI18)
   {
-    String commandAnswer = this->requestData("^P005ET");
+    String commandAnswer;
+    commandAnswer = this->requestData("^P005ET");
     get.raw.qet = commandAnswer;
-    if (commandAnswer != "ERCRC" && commandAnswer != "NAK" && commandAnswer != "")
     if (commandAnswer == "NAK")
     {
       return true;
