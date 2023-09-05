@@ -95,7 +95,8 @@ bool PI_Serial::PIXX_QEX()
     }
     if (commandAnswer == "ERCRC")
     {
-      return false;
+      //return false;
+      return true;
     }
     liveData["PV_generation_sum"] = commandAnswer.toInt();
 
@@ -103,7 +104,8 @@ bool PI_Serial::PIXX_QEX()
     get.raw.qt = commandAnswer;
     if (commandAnswer == "ERCRC")
     {
-      return false;
+      //return false;
+      return true;
     }
     if (commandAnswer == "NAK")
     {
@@ -113,7 +115,7 @@ bool PI_Serial::PIXX_QEX()
     {
       commandAnswer = this->requestData("^P009EY" + get.raw.qt.substring(0, 4));
       get.raw.qey = commandAnswer;
-      if (commandAnswer == "ERCRC")
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK")
         return false;
       if (commandAnswer == "NAK")
         return true;
