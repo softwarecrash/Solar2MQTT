@@ -95,7 +95,7 @@ bool PI_Serial::PIXX_QEX()
     }
     if (commandAnswer == "ERCRC")
     {
-      //return false;
+      // return false;
       return true;
     }
     liveData["PV_generation_sum"] = commandAnswer.toInt();
@@ -104,7 +104,7 @@ bool PI_Serial::PIXX_QEX()
     get.raw.qt = commandAnswer;
     if (commandAnswer == "ERCRC")
     {
-      //return false;
+      // return false;
       return true;
     }
     if (commandAnswer == "NAK")
@@ -116,7 +116,8 @@ bool PI_Serial::PIXX_QEX()
       commandAnswer = this->requestData("^P009EY" + get.raw.qt.substring(0, 4));
       get.raw.qey = commandAnswer;
       if (commandAnswer == "ERCRC" || commandAnswer == "NAK")
-        return false;
+        // return false;
+        return true;
       if (commandAnswer == "NAK")
         return true;
       liveData["PV_generation_year"] = commandAnswer.toInt();
@@ -124,7 +125,8 @@ bool PI_Serial::PIXX_QEX()
       commandAnswer = this->requestData("^P011EM" + get.raw.qt.substring(0, 6));
       get.raw.qem = commandAnswer;
       if (commandAnswer == "ERCRC")
-        return false;
+        // return false;
+        return true;
       if (commandAnswer == "NAK")
         return true;
       liveData["PV_generation_month"] = commandAnswer.toInt();
@@ -132,12 +134,13 @@ bool PI_Serial::PIXX_QEX()
       commandAnswer = this->requestData("^P013ED" + get.raw.qt.substring(0, 8));
       get.raw.qed = commandAnswer;
       if (commandAnswer == "ERCRC")
-        return false;
+        // return false;
+        return true;
       if (commandAnswer == "NAK")
         return true;
       liveData["PV_generation_day"] = commandAnswer.toInt();
 
-      //return true;
+      // return true;
     }
     return true;
   }
