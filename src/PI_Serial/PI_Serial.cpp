@@ -184,6 +184,7 @@ String PI_Serial::requestData(String command)
     // }
     this->my_serialIntf->print(appendCRC(command));
     this->my_serialIntf->print("\r");
+    this->my_serialIntf->flush();
     commandBuffer = this->my_serialIntf->readStringUntil('\r');
     /* only for debug
     PI_DEBUG_PRINT("RAW HEX: >");
@@ -215,7 +216,7 @@ String PI_Serial::requestData(String command)
     }
     else
     {
-        PI_DEBUG_PRINTLN(commandBuffer);
+        PI_DEBUG_PRINTLN("ERRDATA: >" + commandBuffer+ "<");
         commandBuffer = "ERCRC";
     }
     char debugBuff[128];
