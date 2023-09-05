@@ -12,7 +12,7 @@ bool PI_Serial::PIXX_QEX()
     {
       return false;
     }
-    liveData["PV_generation_sum"] = commandAnswer;
+    liveData["PV_generation_sum"] = commandAnswer.toInt();
 
     commandAnswer = this->requestData("QT");
     get.raw.qt = commandAnswer;
@@ -32,7 +32,7 @@ bool PI_Serial::PIXX_QEX()
         return false;
       if (commandAnswer == "NAK")
         return true;
-      liveData["PV_generation_year"] = commandAnswer;
+      liveData["PV_generation_year"] = commandAnswer.toInt();
 
       commandAnswer = this->requestData("QEM" + get.raw.qt.substring(0, 6));
       get.raw.qem = commandAnswer;
@@ -40,7 +40,7 @@ bool PI_Serial::PIXX_QEX()
         return false;
       if (commandAnswer == "NAK")
         return true;
-      liveData["PV_generation_month"] = commandAnswer;
+      liveData["PV_generation_month"] = commandAnswer.toInt();
 
       commandAnswer = this->requestData("QED" + get.raw.qt.substring(0, 8));
       get.raw.qed = commandAnswer;
@@ -48,7 +48,7 @@ bool PI_Serial::PIXX_QEX()
         return false;
       if (commandAnswer == "NAK")
         return true;
-      liveData["PV_generation_day"] = commandAnswer;
+      liveData["PV_generation_day"] = commandAnswer.toInt();
 
       commandAnswer = this->requestData("QLT");
       get.raw.qlt = commandAnswer;
@@ -56,7 +56,7 @@ bool PI_Serial::PIXX_QEX()
         return false;
       if (commandAnswer == "NAK")
         return true;
-      liveData["AC_in_generation_sum "] = commandAnswer;
+      liveData["AC_in_generation_sum "] = commandAnswer.toInt();
 
       commandAnswer = this->requestData("QLY" + get.raw.qt.substring(0, 4));
       get.raw.qly = commandAnswer;
@@ -64,7 +64,7 @@ bool PI_Serial::PIXX_QEX()
         return false;
       if (commandAnswer == "NAK")
         return true;
-      liveData["AC_in_generation_year"] = commandAnswer;
+      liveData["AC_in_generation_year"] = commandAnswer.toInt();
 
       commandAnswer = this->requestData("QLM" + get.raw.qt.substring(0, 6));
       get.raw.qlm = commandAnswer;
@@ -72,7 +72,7 @@ bool PI_Serial::PIXX_QEX()
         return false;
       if (commandAnswer == "NAK")
         return true;
-      liveData["AC_in_generation_month"] = commandAnswer;
+      liveData["AC_in_generation_month"] = commandAnswer.toInt();
 
       commandAnswer = this->requestData("QLD" + get.raw.qt.substring(0, 8));
       get.raw.qld = commandAnswer;
@@ -80,7 +80,7 @@ bool PI_Serial::PIXX_QEX()
         return false;
       if (commandAnswer == "NAK")
         return true;
-      liveData["AC_in_generation_day"] = commandAnswer;
+      liveData["AC_in_generation_day"] = commandAnswer.toInt();
 
       return true;
     }
@@ -97,7 +97,7 @@ bool PI_Serial::PIXX_QEX()
     {
       return false;
     }
-    liveData["PV_generation_sum"] = commandAnswer;
+    liveData["PV_generation_sum"] = commandAnswer.toInt();
 
     commandAnswer = this->requestData("^P004T");
     get.raw.qt = commandAnswer;
@@ -117,7 +117,7 @@ bool PI_Serial::PIXX_QEX()
         return false;
       if (commandAnswer == "NAK")
         return true;
-      liveData["PV_generation_year"] = commandAnswer;
+      liveData["PV_generation_year"] = commandAnswer.toInt();
 
       commandAnswer = this->requestData("^P011EM" + get.raw.qt.substring(0, 6));
       get.raw.qem = commandAnswer;
@@ -125,7 +125,7 @@ bool PI_Serial::PIXX_QEX()
         return false;
       if (commandAnswer == "NAK")
         return true;
-      liveData["PV_generation_month"] = commandAnswer;
+      liveData["PV_generation_month"] = commandAnswer.toInt();
 
       commandAnswer = this->requestData("^P013ED" + get.raw.qt.substring(0, 8));
       get.raw.qed = commandAnswer;
@@ -133,7 +133,7 @@ bool PI_Serial::PIXX_QEX()
         return false;
       if (commandAnswer == "NAK")
         return true;
-      liveData["PV_generation_day"] = commandAnswer;
+      liveData["PV_generation_day"] = commandAnswer.toInt();
 
       return true;
     }
