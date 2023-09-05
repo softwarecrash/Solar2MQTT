@@ -254,21 +254,21 @@ bool PI_Serial::PIXX_QPIRI()
         }
       }
 
-      for (unsigned int i = 0; i < sizeof qpiriList[0] / sizeof qpiriList[0][0]; i++)
+      for (unsigned int i = 0; i < sizeof P007PIRI[0] / sizeof P007PIRI[0][0]; i++)
       {
-        if (!strs[i].isEmpty() && strcmp(qpiriList[0][i], "") != 0)
+        if (!strs[i].isEmpty() && strcmp(P007PIRI[0][i], "") != 0)
         {
-          if (atoi(P005GS[i][1]) > 0)
+          if (atoi(P007PIRI[i][1]) > 0)
           {
-            staticData[P005GS[i][0]] = (int)((strs[i].toFloat() / atoi(P005GS[i][1])) * 100 + 0.5) / 100.0;
+            staticData[P007PIRI[i][0]] = (int)((strs[i].toFloat() / atoi(P007PIRI[i][1])) * 100 + 0.5) / 100.0;
           }
-          else if (atoi(P005GS[i][1]) == 0)
+          else if (atoi(P007PIRI[i][1]) == 0)
           {
-            staticData[P005GS[i][0]] = strs[i].toInt();
+            staticData[P007PIRI[i][0]] = strs[i].toInt();
           }
           else
           {
-            staticData[P005GS[i][0]] = strs[i];
+            staticData[P007PIRI[i][0]] = strs[i];
           }
           // staticData[qpiriList[0][i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
         }
