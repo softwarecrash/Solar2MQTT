@@ -273,90 +273,113 @@ bool PI_Serial::PIXX_QPIRI()
           // staticData[qpiriList[0][i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
         }
       }
-      /*
-            switch ((byte)staticData["Battery_type"].as<unsigned int>())
-            {
-            case 0:
-              staticData["Battery_type"] = "AGM";
-              break;
-            case 1:
-              staticData["Battery_type"] = "Flooded";
-              break;
-            case 2:
-              staticData["Battery_type"] = "User";
-              break;
-            default:
-              break;
-            }
-            switch ((byte)staticData["Input_voltage_range"].as<unsigned int>())
-            {
-            case 0:
-              staticData["Input_voltage_range"] = "Appliance";
-              break;
-            case 1:
-              staticData["Input_voltage_range"] = "UPS";
-              break;
-            default:
-              break;
-            }
-            switch ((byte)staticData["Output_source_priority"].as<unsigned int>())
-            {
-            case 0:
-              staticData["Output_source_priority"] = "Utility first";
-              break;
-            case 1:
-              staticData["Output_source_priority"] = "Solar first";
-              break;
-            case 2:
-              staticData["Output_source_priority"] = "SBU first";
-              break;
-            default:
-              break;
-            }
-            switch ((byte)staticData["Charger_source_priority"].as<unsigned int>())
-            {
-            case 0:
-              staticData["Charger_source_priority"] = "Utility first";
-              break;
-            case 1:
-              staticData["Charger_source_priority"] = "Solar first";
-              break;
-            case 2:
-              staticData["Charger_source_priority"] = "Solar + Utility";
-              break;
-            case 3:
-              staticData["Charger_source_priority"] = "Only solar charging permitted";
-              break;
-            default:
-              break;
-            }
-            switch ((byte)staticData["Machine_type"].as<unsigned int>())
-            {
-            case 00:
-              staticData["Machine_type"] = "Grid tie";
-              break;
-            case 01:
-              staticData["Machine_type"] = "Off Grid";
-              break;
-            case 10:
-              staticData["Machine_type"] = "Hybrid";
-              break;
-            default:
-              break;
-            }
-            switch ((byte)staticData["Topology"])
-            {
-            case 0:
-              staticData["Topology"] = "Transformerless";
-              break;
-            case 1:
-              staticData["Topology"] = "Transformer";
-              break;
-            default:
-              break;
-              return true;
-            }
-            */
+
+      switch ((byte)staticData["Battery_type"].as<unsigned int>())
+      {
+      case 0:
+        staticData["Battery_type"] = "AGM";
+        break;
+      case 1:
+        staticData["Battery_type"] = "Flooded";
+        break;
+      case 2:
+        staticData["Battery_type"] = "User";
+        break;
+      default:
+        break;
+      }
+      switch ((byte)staticData["Input_voltage_range"].as<unsigned int>())
+      {
+      case 0:
+        staticData["Input_voltage_range"] = "Appliance";
+        break;
+      case 1:
+        staticData["Input_voltage_range"] = "UPS";
+        break;
+      default:
+        break;
+      }
+      switch ((byte)staticData["Output_source_priority"].as<unsigned int>())
+      {
+      case 0:
+        staticData["Output_source_priority"] = "Solar-Utility-Battery";
+        break;
+      case 1:
+        staticData["Output_source_priority"] = "Solar-Battery-Utility";
+        break;
+      default:
+        break;
+      }
+      switch ((byte)staticData["Charger_source_priority"].as<unsigned int>())
+      {
+      case 0:
+        staticData["Charger_source_priority"] = "Solar first";
+        break;
+      case 1:
+        staticData["Charger_source_priority"] = "Solar and Utility";
+        break;
+      case 2:
+        staticData["Charger_source_priority"] = "Only solar";
+        break;
+      default:
+        break;
+      }
+      switch ((byte)staticData["Machine_type"].as<unsigned int>())
+      {
+      case 0:
+        staticData["Machine_type"] = "Off-grid Tie";
+        break;
+      case 1:
+        staticData["Machine_type"] = "Grid-Tie";
+        break;
+      default:
+        break;
+      }
+      switch ((byte)staticData["Topology"])
+      {
+      case 0:
+        staticData["Topology"] = "Transformerless";
+        break;
+      case 1:
+        staticData["Topology"] = "Transformer";
+        break;
+      default:
+        break;
+        return true;
+      }
+      switch ((byte)staticData["Output_mode"].as<unsigned int>())
+      {
+      case 0:
+        staticData["Output_mode"] = "Single module";
+        break;
+      case 1:
+        staticData["Output_mode"] = "parallel output";
+      case 2:
+        staticData["Output_mode"] = "Phase 1 of three phaseoutput";
+        break;
+      case 3:
+        staticData["Output_mode"] = "Phase 2 of three phase output";
+        break;
+      case 4:
+        staticData["Output_mode"] = "Phase 3 of three phase";
+        break;
+      default:
+        break;
+        return true;
+      }
+      switch ((byte)staticData["Solar_power_priority"].as<unsigned int>())
+      {
+      case 0:
+        staticData["Solar_power_priority"] = "Battery-Load-Utility";
+        break;
+      case 1:
+        staticData["Solar_power_priority"] = "Load-Battery-Utility";
+        break;
+      default:
+        break;
+        return true;
+      }
+
       return true;
     }
     return true;
