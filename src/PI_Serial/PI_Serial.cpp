@@ -14,7 +14,6 @@ CRC16 crc;
 #include "QPIGS.h"
 #include "QPIGS2.h"
 #include "QMOD.h"
-// #include "QALL.h"
 #include "QEX.h"
 //----------------------------------------------------------------------
 //  Public Functions
