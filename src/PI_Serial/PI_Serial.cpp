@@ -185,7 +185,6 @@ String PI_Serial::requestData(String command)
     this->my_serialIntf->print(appendCRC(command));
     this->my_serialIntf->print("\r");
     commandBuffer = this->my_serialIntf->readStringUntil('\r');
-    Serial.println(commandBuffer);
     /* only for debug
     PI_DEBUG_PRINT("RAW HEX: >");
     for (size_t i = 0; i < commandBuffer.length(); i++)
@@ -203,15 +202,15 @@ String PI_Serial::requestData(String command)
     {
         crcCalc = 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1];
         crcRecive = getCRC(commandBuffer.substring(0, commandBuffer.length() - 2));
-        commandBuffer.remove(commandBuffer.length() - 2);
-        commandBuffer.remove(0, strlen(startChar));
+        commandBuffer.remove(commandBuffer.length() - 2); //remove the crc
+        commandBuffer.remove(0, strlen(startChar));// remove the start char ( for Pi30 and ^Dxxx for Pi18
     }
     else if (getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 == commandBuffer[commandBuffer.length() - 1] &&
              getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 != 0 && commandBuffer[commandBuffer.length() - 1] != 0) // CHK for QALL
     {
         crcCalc = getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1;
         crcRecive = commandBuffer[commandBuffer.length() - 1];
-        commandBuffer.remove(commandBuffer.length() - 1);
+        commandBuffer.remove(commandBuffer.length() - 1); //remove the crc
         commandBuffer.remove(0, strlen(startChar)); // remove the start char ( for Pi30 and ^Dxxx for Pi18
     }
     else
