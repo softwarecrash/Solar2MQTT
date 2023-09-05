@@ -259,10 +259,10 @@ bool PI_Serial::PIXX_QPIRI()
       {
         if (!strs[i].isEmpty() && strcmp(qpiriList[0][i], "") != 0)
 
-
+{
 
           //staticData[qpiriList[0][i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
-
+}
 
 
       }
