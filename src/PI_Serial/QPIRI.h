@@ -223,7 +223,7 @@ bool PI_Serial::PIXX_QPIRI()
   }
   else if (protocol == PI18)
   {
-        String commandAnswer = this->requestData("QPIRI");
+        String commandAnswer = this->requestData("^P007PIRI");
     get.raw.qpiri = commandAnswer;
     // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
     if (commandAnswer == "NAK")
