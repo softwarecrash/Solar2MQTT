@@ -256,7 +256,7 @@ bool PI_Serial::PIXX_QPIRI()
 
       for (unsigned int i = 0; i < sizeof P007PIRI[0] / sizeof P007PIRI[0][0]; i++)
       {
-        if (!strs[i].isEmpty() && strcmp(P007PIRI[i][1], "") != 0)
+        if (!strs[i].isEmpty() && strcmp(P007PIRI[i][0], "") != 0)
         {
           if (atoi(P007PIRI[i][1]) > 0)
           {
