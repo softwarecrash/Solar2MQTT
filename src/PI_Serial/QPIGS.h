@@ -72,7 +72,6 @@ static const char *const qallList[] = {
     "Warning_Code",              // KK
     "Fault_code",                // SS
 };
-
 static const char *const P005GS[][28] = {
     {"AC_in_Voltage", "10"},            // AAAA
     {"AC_in_Frequenz", "10"},           // BBB
@@ -230,7 +229,6 @@ bool PI_Serial::PIXX_QPIGS()
       {
         if (!strs[i].isEmpty() && strcmp(P005GS[i][0], "") != 0)
         {
-
           if (atoi(P005GS[i][1]) > 0)
           {
             liveData[P005GS[i][0]] = (int)((strs[i].toFloat() / atoi(P005GS[i][1])) * 100 + 0.5) / 100.0;
