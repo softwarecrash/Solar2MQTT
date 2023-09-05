@@ -88,20 +88,12 @@ bool PI_Serial::PIXX_QEX()
   {
     String commandAnswer;
     commandAnswer = this->requestData("^P005ET");
+    if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "")
+      return true;
     get.raw.qet = commandAnswer;
-    if (commandAnswer == "NAK")
-    {
-      return true;
-    }
-    if (commandAnswer == "ERCRC")
-    {
-      // return false;
-      return true;
-    }
     liveData["PV_generation_sum"] = commandAnswer.toInt();
 
     commandAnswer = this->requestData("^P004T");
-    
     if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "")
     {
       return true;
@@ -109,7 +101,6 @@ bool PI_Serial::PIXX_QEX()
     else
     {
       get.raw.qt = commandAnswer;
-
       commandAnswer = this->requestData("^P009EY" + get.raw.qt.substring(0, 4));
       if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "")
         return true;
@@ -117,7 +108,7 @@ bool PI_Serial::PIXX_QEX()
       liveData["PV_generation_year"] = commandAnswer.toInt();
 
       commandAnswer = this->requestData("^P011EM" + get.raw.qt.substring(0, 6));
-      
+
       if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "")
         return true;
       get.raw.qem = commandAnswer;
