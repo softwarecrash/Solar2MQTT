@@ -131,7 +131,6 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
 
         startChar = "(";
         serialIntfBaud = 2400;
-        // this->my_serialIntf->setTimeout(250);
         this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
         String qpi = this->requestData("QPI");
         PI_DEBUG_PRINTLN("QPI:\t\t" + qpi + " (Length: " + qpi.length() + ")");
@@ -143,13 +142,8 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
             delimiter = " ";
             protocol = PI30;
             break;
-            
         }
-        this->my_serialIntf->end();
-
         startChar = "^Dxxx";
-        serialIntfBaud = 2400;
-        // this->my_serialIntf->setTimeout(250);
         this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
         String P005PI = this->requestData("^P005PI");
         PI_DEBUG_PRINTLN("^P005PI:\t\t" + P005PI + " (Length: " + P005PI.length() + ")");
