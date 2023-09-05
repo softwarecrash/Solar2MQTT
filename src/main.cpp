@@ -509,7 +509,7 @@ void getJsonData()
 {
   deviceJson[F("Device_name")] = settings.data.deviceName;
   deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
-  // deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
+  deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
   deviceJson[F("Version")] = SOFTWARE_VERSION;
 }
 
