@@ -13,7 +13,6 @@ bool PI_Serial::PIXX_QEX()
       return false;
     }
     liveData["PV_generation_sum"] = commandAnswer;
-    return true;
 
     commandAnswer = this->requestData("QT");
     get.raw.qt = commandAnswer;
@@ -97,7 +96,6 @@ bool PI_Serial::PIXX_QEX()
       return false;
     }
     liveData["PV_generation_sum"] = commandAnswer;
-    return true;
 
     commandAnswer = this->requestData("^P004T");
     get.raw.qt = commandAnswer;
