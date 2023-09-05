@@ -185,6 +185,7 @@ String PI_Serial::requestData(String command)
     this->my_serialIntf->print(appendCRC(command));
     this->my_serialIntf->print("\r");
     commandBuffer = this->my_serialIntf->readStringUntil('\r');
+    Serial.println(commandBuffer);
     /* only for debug
     PI_DEBUG_PRINT("RAW HEX: >");
     for (size_t i = 0; i < commandBuffer.length(); i++)
