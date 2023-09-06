@@ -39,7 +39,8 @@ bool PI_Serial::Init()
 
     autoDetect();
 
-    this->my_serialIntf->setTimeout(450);
+    //this->my_serialIntf->setTimeout(450);
+    this->my_serialIntf->enableRxGPIOPullUp(true);
     this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
     clearGet();
     return true;
@@ -186,7 +187,14 @@ String PI_Serial::requestData(String command)
     this->my_serialIntf->print(appendCRC(command));
     this->my_serialIntf->print("\r");
     this->my_serialIntf->flush();
+    //for testing
+    this->my_serialIntf->enableTx(true);
+    delay(20);
     commandBuffer = this->my_serialIntf->readStringUntil('\r');
+    this->my_serialIntf->enableTx(false);
+
+
+    //commandBuffer = this->my_serialIntf->readStringUntil('\r');
     /* only for debug
     PI_DEBUG_PRINT("RAW HEX: >");
     for (size_t i = 0; i < commandBuffer.length(); i++)
