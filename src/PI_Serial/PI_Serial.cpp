@@ -24,6 +24,7 @@ PI_Serial::PI_Serial(int rx, int tx)
     soft_rx = rx;
     soft_tx = tx;
     this->my_serialIntf = &myPort;
+    //https://forum.arduino.cc/t/pass-reference-to-serial-object-into-a-class/483988/6
 }
 
 bool PI_Serial::Init()
