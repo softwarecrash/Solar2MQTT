@@ -228,10 +228,10 @@ String PI_Serial::requestData(String command)
         PI_DEBUG_PRINTLN("ERRDATA: >" + commandBuffer+ "<");
         commandBuffer = "ERCRC";
     }
-    char debugBuff[128];
-    sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, commandBuffer.length(), (const wchar_t *)commandBuffer.c_str());
-    PI_DEBUG_PRINTLN(debugBuff);
-    PI_DEBUG_WEBLN(debugBuff);
+    //char debugBuff[128];
+   // sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, commandBuffer.length(), (const wchar_t *)commandBuffer.c_str());
+    //PI_DEBUG_PRINTLN(debugBuff);
+    //PI_DEBUG_WEBLN(debugBuff);
     return commandBuffer;
 }
 
