@@ -207,6 +207,7 @@ String PI_Serial::requestData(String command)
     PI_DEBUG_PRINTLN("<");
     PI_DEBUG_WEBLN("<");
     */
+
     if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) == 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1] &&
         getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) != 0 && 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1] != 0)
     {
@@ -218,7 +219,9 @@ String PI_Serial::requestData(String command)
         requestOK++;
     }
     else if (getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 == commandBuffer[commandBuffer.length() - 1] &&
-             getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 != 0 && commandBuffer[commandBuffer.length() - 1] != 0) // CHK for QALL
+             getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 != 0 && commandBuffer[commandBuffer.length() - 1] != 0 &&
+             command == "QALL" // crude fix for the qall chk thing
+             ) // CHK for QALL
     {
         crcCalc = getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1;
         crcRecive = commandBuffer[commandBuffer.length() - 1];
