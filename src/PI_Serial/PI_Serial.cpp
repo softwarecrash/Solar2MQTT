@@ -214,6 +214,8 @@ String PI_Serial::requestData(String command)
         crcRecive = getCRC(commandBuffer.substring(0, commandBuffer.length() - 2));
         commandBuffer.remove(commandBuffer.length() - 2); //remove the crc
         commandBuffer.remove(0, strlen(startChar));// remove the start char ( for Pi30 and ^Dxxx for Pi18
+
+        requestOK++;
     }
     else if (getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 == commandBuffer[commandBuffer.length() - 1] &&
              getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 != 0 && commandBuffer[commandBuffer.length() - 1] != 0) // CHK for QALL
@@ -222,9 +224,12 @@ String PI_Serial::requestData(String command)
         crcRecive = commandBuffer[commandBuffer.length() - 1];
         commandBuffer.remove(commandBuffer.length() - 1); //remove the crc
         commandBuffer.remove(0, strlen(startChar)); // remove the start char ( for Pi30 and ^Dxxx for Pi18
+
+        requestOK++;
     }
     else
     {
+        requestFail++;
         PI_DEBUG_PRINTLN("ERRDATA: >" + commandBuffer+ "<");
         commandBuffer = "ERCRC";
     }
@@ -232,6 +237,11 @@ String PI_Serial::requestData(String command)
    // sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, commandBuffer.length(), (const wchar_t *)commandBuffer.c_str());
     //PI_DEBUG_PRINTLN(debugBuff);
     //PI_DEBUG_WEBLN(debugBuff);
+
+    PI_DEBUG_PRINT(requestOK);
+    PI_DEBUG_PRINT("<-OK | Fail->");
+    PI_DEBUG_PRINTLN(requestFail);
+
     return commandBuffer;
 }
 

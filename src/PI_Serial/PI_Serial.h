@@ -125,6 +125,9 @@ private:
     unsigned int previousTime = 0;
     unsigned int delayTime = 10;
     byte requestCounter = 0;
+
+    long long int requestOK = 0;
+    long long int requestFail = 0;
     
     String customCommandBuffer;
     enum protocolType
