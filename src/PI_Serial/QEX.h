@@ -103,20 +103,20 @@ bool PI_Serial::PIXX_QEX()
       get.raw.qt = commandAnswer;
 
       commandAnswer = this->requestData("^P013ED" + get.raw.qt.substring(0, 8));
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer.toInt() == 0 || commandAnswer == get.raw.qem) // last short fix for strange data
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer == get.raw.qem) // last short fix for strange data
         return true;
       get.raw.qed = commandAnswer;
       liveData["PV_generation_day"] = commandAnswer.toInt();
 
       commandAnswer = this->requestData("^P011EM" + get.raw.qt.substring(0, 6));
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer.toInt() == 0)
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "")
         return true;
       get.raw.qem = commandAnswer;
       liveData["PV_generation_month"] = commandAnswer.toInt();
 
       get.raw.qt = commandAnswer;
       commandAnswer = this->requestData("^P009EY" + get.raw.qt.substring(0, 4));
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer.toInt() == 0)
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "")
         return true;
       get.raw.qey = commandAnswer;
       liveData["PV_generation_year"] = commandAnswer.toInt();
