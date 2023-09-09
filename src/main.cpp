@@ -452,6 +452,7 @@ void loop()
     
     if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
     {
+      DEBUG_PRINTLN("mqtt send-----------");
       sendtoMQTT(); // Update data to MQTT server if we should
       mqtttimer = millis();
     }
