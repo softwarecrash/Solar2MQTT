@@ -450,7 +450,7 @@ void loop()
     getJsonData();
     mppClient.loop();  // Call the PI Serial Library loop
     
-    if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
+    if (millis() - mqtttimer >= (settings.data.mqttRefresh * 1000))
     {
       sendtoMQTT(); // Update data to MQTT server if we should
       mqtttimer = millis();
