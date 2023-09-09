@@ -449,13 +449,13 @@ void loop()
     MDNS.update();
     getJsonData();
     mppClient.loop();  // Call the PI Serial Library loop
-    mqttclient.loop(); // Check if we have something to read from MQTT
-
+    
     if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
     {
       sendtoMQTT(); // Update data to MQTT server if we should
       mqtttimer = millis();
     }
+    mqttclient.loop(); // Check if we have something to read from MQTT
   }
   if (restartNow && millis() >= (RestartTimer + 500))
   {
