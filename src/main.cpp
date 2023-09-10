@@ -455,7 +455,7 @@ void loop()
       sendtoMQTT(); // Update data to MQTT server if we should
       mqtttimer = millis();
     }
-    mqttclient.loop(); // Check if we have something to read from MQTT
+    mqttclient.loop();
   }
   if (restartNow && millis() >= (RestartTimer + 500))
   {
