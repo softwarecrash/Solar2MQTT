@@ -123,11 +123,13 @@ private:
     unsigned int serialIntfBaud;
 
     unsigned int previousTime = 0;
-    unsigned int delayTime = 100;
+    unsigned int delayTime = 150;
     byte requestCounter = 0;
 
     long long int requestOK = 0;
     long long int requestFail = 0;
+
+    byte qexCounter = 0;
     
     String customCommandBuffer;
     enum protocolType
@@ -184,7 +186,8 @@ private:
      * @brief Serial interface used for communication
      * @details This is set in the constructor
      */
-    SoftwareSerial *my_serialIntf;
+    //SoftwareSerial *my_serialIntf;
+    HardwareSerial *my_serialIntf;
     // dynamic requests
     bool PIXX_Q1();
     bool PIXX_QPIGS();
