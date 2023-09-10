@@ -87,43 +87,61 @@ bool PI_Serial::PIXX_QEX()
   else if (protocol == PI18)
   {
     String commandAnswer;
-    commandAnswer = this->requestData("^P005ET");
-    if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "")
-      return true;
-    get.raw.qet = commandAnswer;
-    liveData["PV_generation_sum"] = commandAnswer.toInt();
-    delay(50);
-    commandAnswer = this->requestData("^P004T");
-    if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer.toInt() == 0)
+    switch (qexCounter)
     {
-      return true;
-    }
-    else
-    {
-
+    case 0:
+      commandAnswer = this->requestData("^P005ET");
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "")
+        return true;
+      get.raw.qet = commandAnswer;
+      liveData["PV_generation_sum"] = commandAnswer.toInt();
+      qexCounter++;
+      break;
+    case 1:
+      commandAnswer = this->requestData("^P004T");
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer.toInt() == 0)
+        return true;
       get.raw.qt = commandAnswer;
-delay(50);
+      qexCounter++;
+      break;
+    case 2:
       commandAnswer = this->requestData("^P013ED" + get.raw.qt.substring(0, 8));
       if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer == get.raw.qem) // last short fix for strange data
+      {
+        qexCounter = 0;
         return true;
+      }
       get.raw.qed = commandAnswer;
       liveData["PV_generation_day"] = commandAnswer.toInt();
-delay(50);
+      qexCounter++;
+      break;
+    case 3:
       commandAnswer = this->requestData("^P011EM" + get.raw.qt.substring(0, 6));
       if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "")
+      {
+        qexCounter = 0;
         return true;
+      }
       get.raw.qem = commandAnswer;
       liveData["PV_generation_month"] = commandAnswer.toInt();
-delay(50);
-      get.raw.qt = commandAnswer;
+      qexCounter++;
+      break;
+    case 4:
       commandAnswer = this->requestData("^P009EY" + get.raw.qt.substring(0, 4));
       if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "")
+      {
+        qexCounter = 0;
         return true;
+      }
       get.raw.qey = commandAnswer;
       liveData["PV_generation_year"] = commandAnswer.toInt();
+      qexCounter = 0;
+      break;
 
-      // return true;
-    }
+    default:
+      break;
+    } // return true;
+
     return true;
   }
   else if (protocol == NoD)
