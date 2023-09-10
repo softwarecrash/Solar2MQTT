@@ -89,22 +89,19 @@ bool PI_Serial::PIXX_QEX()
     String commandAnswer;
     switch (qexCounter)
     {
+
     case 0:
-      commandAnswer = this->requestData("^P005ET");
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "")
-        return true;
-      get.raw.qet = commandAnswer;
-      liveData["PV_generation_sum"] = commandAnswer.toInt();
-      qexCounter++;
-      break;
-    case 1:
       commandAnswer = this->requestData("^P004T");
       if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer.toInt() == 0)
+      {
+      get.raw.qt = 0;
         return true;
+      
+      }
       get.raw.qt = commandAnswer;
       qexCounter++;
       break;
-    case 2:
+    case 1:
       commandAnswer = this->requestData("^P013ED" + get.raw.qt.substring(0, 8));
       if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer == get.raw.qem) // last short fix for strange data
       {
@@ -115,7 +112,7 @@ bool PI_Serial::PIXX_QEX()
       liveData["PV_generation_day"] = commandAnswer.toInt();
       qexCounter++;
       break;
-    case 3:
+    case 2:
       commandAnswer = this->requestData("^P011EM" + get.raw.qt.substring(0, 6));
       if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "")
       {
@@ -126,7 +123,7 @@ bool PI_Serial::PIXX_QEX()
       liveData["PV_generation_month"] = commandAnswer.toInt();
       qexCounter++;
       break;
-    case 4:
+    case 3:
       commandAnswer = this->requestData("^P009EY" + get.raw.qt.substring(0, 4));
       if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "")
       {
@@ -135,6 +132,14 @@ bool PI_Serial::PIXX_QEX()
       }
       get.raw.qey = commandAnswer;
       liveData["PV_generation_year"] = commandAnswer.toInt();
+      qexCounter++;
+      break;
+    case 4:
+      commandAnswer = this->requestData("^P005ET");
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "")
+        return true;
+      get.raw.qet = commandAnswer;
+      liveData["PV_generation_sum"] = commandAnswer.toInt();
       qexCounter = 0;
       break;
 
