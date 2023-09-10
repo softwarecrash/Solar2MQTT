@@ -275,6 +275,7 @@ void setup()
   }
 
   mqttclient.setServer(settings.data.mqttServer, settings.data.mqttPort);
+  mqttclient.setBufferSize(MQTT_BUFFER);
   DEBUG_PRINTLN(F("MQTT Server config Loaded"));
   DEBUG_WEBLN(F("MQTT Server config Loaded"));
 

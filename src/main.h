@@ -12,6 +12,7 @@
 #define LED_PIN 02 //D4 with the LED on Wemos D1 Mini
 
 #define JSON_BUFFER 4096
+#define MQTT_BUFFER 512
 
 #define ESP01
 #define FlashSize ESP.getFreeSketchSpace()
