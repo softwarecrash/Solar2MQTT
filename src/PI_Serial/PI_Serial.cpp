@@ -23,7 +23,7 @@ PI_Serial::PI_Serial(int rx, int tx)
 {
     soft_rx = rx;
     soft_tx = tx;
-   //>// this->my_serialIntf = &myPort;
+    this->my_serialIntf = &myPort;
     //https://forum.arduino.cc/t/pass-reference-to-serial-object-into-a-class/483988/6
 }
 
@@ -40,9 +40,8 @@ bool PI_Serial::Init()
     autoDetect();
 
     //this->my_serialIntf->setTimeout(450);
-    ////this->my_serialIntf->enableRxGPIOPullUp(true);
-    ////this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
-    this->my_serialIntf->begin(2400);
+    this->my_serialIntf->enableRxGPIOPullUp(true);
+    this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
     clearGet();
     return true;
 }
@@ -133,7 +132,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
 
         startChar = "(";
         serialIntfBaud = 2400;
-        ////this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
+        this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
         String qpi = this->requestData("QPI");
         PI_DEBUG_PRINTLN("QPI:\t\t" + qpi + " (Length: " + qpi.length() + ")");
         PI_DEBUG_WEBLN("QPI:\t\t" + qpi + " (Length: " + qpi.length() + ")");
@@ -146,7 +145,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
             break;
         }
         startChar = "^Dxxx";
-        /////this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
+        this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
         String P005PI = this->requestData("^P005PI");
         PI_DEBUG_PRINTLN("^P005PI:\t\t" + P005PI + " (Length: " + P005PI.length() + ")");
         PI_DEBUG_WEBLN("^P005PI:\t\t" + P005PI + " (Length: " + P005PI.length() + ")");
@@ -189,10 +188,10 @@ String PI_Serial::requestData(String command)
     this->my_serialIntf->print("\r");
     this->my_serialIntf->flush();
     //for testing
-    ////this->my_serialIntf->enableTx(true);
-    /////delay(20);
+    this->my_serialIntf->enableTx(true);
+    delay(20);
     commandBuffer = this->my_serialIntf->readStringUntil('\r');
-    /////this->my_serialIntf->enableTx(false);
+    this->my_serialIntf->enableTx(false);
 
 
     //commandBuffer = this->my_serialIntf->readStringUntil('\r');

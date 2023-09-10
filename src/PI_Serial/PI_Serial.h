@@ -186,8 +186,7 @@ private:
      * @brief Serial interface used for communication
      * @details This is set in the constructor
      */
-    //SoftwareSerial *my_serialIntf;
-    HardwareSerial *my_serialIntf;
+    SoftwareSerial *my_serialIntf;
     // dynamic requests
     bool PIXX_Q1();
     bool PIXX_QPIGS();
