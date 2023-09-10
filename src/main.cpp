@@ -275,12 +275,12 @@ void setup()
   }
 
   mqttclient.setServer(settings.data.mqttServer, settings.data.mqttPort);
-  mqttclient.setBufferSize(MQTT_BUFFER);
+
   DEBUG_PRINTLN(F("MQTT Server config Loaded"));
   DEBUG_WEBLN(F("MQTT Server config Loaded"));
 
   mqttclient.setCallback(mqttcallback);
-  // mqttclient.setBufferSize(MQTT_BUFFER);
+  mqttclient.setBufferSize(MQTT_BUFFER);
 
   // check is WiFi connected
   if (!apRunning)
