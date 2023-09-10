@@ -94,6 +94,7 @@ bool PI_Serial::PIXX_QEX()
       commandAnswer = this->requestData("^P004T");
       if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer.toInt() == 0)
       {
+        qexCounter = 0;
       get.raw.qt = 0;
         return true;
       
@@ -103,7 +104,7 @@ bool PI_Serial::PIXX_QEX()
       break;
     case 1:
       commandAnswer = this->requestData("^P013ED" + get.raw.qt.substring(0, 8));
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer == get.raw.qem) // last short fix for strange data
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "") // last short fix for strange data
       {
         qexCounter = 0;
         return true;
