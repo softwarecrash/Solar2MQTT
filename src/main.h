@@ -6,8 +6,11 @@
 #define ARDUINOJSON_USE_LONG_LONG 1
 #include <WebSerialLite.h>
 
-#define INVERTER_TX 13
-#define INVERTER_RX 12
+//#define INVERTER_TX 13
+//#define INVERTER_RX 12
+
+#define INVERTER_TX 1
+#define INVERTER_RX 3
 
 #define LED_PIN 02 //D4 with the LED on Wemos D1 Mini
 
