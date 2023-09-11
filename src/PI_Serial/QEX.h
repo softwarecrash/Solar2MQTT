@@ -92,7 +92,7 @@ bool PI_Serial::PIXX_QEX()
 
     case 0:
       commandAnswer = this->requestData("^P004T");
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer.toInt() == 0)
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer == "0")
       {
         qexCounter = 0;
       get.raw.qt = "";
@@ -104,7 +104,7 @@ bool PI_Serial::PIXX_QEX()
       break;
     case 1:
       commandAnswer = this->requestData("^P013ED" + get.raw.qt.substring(0, 8));
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == "")
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == "" || commandAnswer == "0")
       {
         qexCounter = 0;
         return true;
@@ -115,7 +115,7 @@ bool PI_Serial::PIXX_QEX()
       break;
     case 2:
       commandAnswer = this->requestData("^P011EM" + get.raw.qt.substring(0, 6));
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == "")
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == "" || commandAnswer == "0")
       {
         qexCounter = 0;
         return true;
@@ -126,7 +126,7 @@ bool PI_Serial::PIXX_QEX()
       break;
     case 3:
       commandAnswer = this->requestData("^P009EY" + get.raw.qt.substring(0, 4));
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == "")
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == ""  || commandAnswer == "0")
       {
         qexCounter = 0;
         return true;
@@ -137,7 +137,7 @@ bool PI_Serial::PIXX_QEX()
       break;
     case 4:
       commandAnswer = this->requestData("^P005ET");
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "")
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer == "0")
         return true;
       get.raw.qet = commandAnswer;
       liveData["PV_generation_sum"] = strtol(commandAnswer.c_str(),  NULL, 10);
