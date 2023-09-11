@@ -1,14 +1,5 @@
 bool PI_Serial::PIXX_QEX()
 {
-  switch (protocol)
-  {
-  case PI30:
-    /* code */
-    break;
-  
-  default:
-    break;
-  }
   if (protocol == PI30)
   {
     String commandAnswer = this->requestData("QET");
