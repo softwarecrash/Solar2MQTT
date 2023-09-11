@@ -1,5 +1,14 @@
 bool PI_Serial::PIXX_QEX()
 {
+  switch (protocol)
+  {
+  case PI30:
+    /* code */
+    break;
+  
+  default:
+    break;
+  }
   if (protocol == PI30)
   {
     String commandAnswer = this->requestData("QET");
@@ -89,59 +98,74 @@ bool PI_Serial::PIXX_QEX()
     String commandAnswer = "";
     switch (qexCounter)
     {
-
     case 0:
       commandAnswer = this->requestData("^P004T");
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer == "0")
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer.toInt() < 1)
       {
         qexCounter = 0;
-      get.raw.qt = "";
+        get.raw.qt = "";
         return true;
-      
       }
-      get.raw.qt = commandAnswer;
-      qexCounter++;
+      else
+      {
+        get.raw.qt = commandAnswer;
+        qexCounter++;
+      }
       break;
     case 1:
       commandAnswer = this->requestData("^P013ED" + get.raw.qt.substring(0, 8));
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == "" || commandAnswer == "0")
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == "" || commandAnswer.toInt() < 1)
       {
         qexCounter = 0;
         return true;
       }
-      get.raw.qed = commandAnswer;
-      liveData["PV_generation_day"] = strtol(commandAnswer.c_str(),  NULL, 10);
-      qexCounter++;
+      else
+      {
+        get.raw.qed = commandAnswer;
+        liveData["PV_generation_day"] = commandAnswer.toInt();
+        qexCounter++;
+      }
       break;
     case 2:
       commandAnswer = this->requestData("^P011EM" + get.raw.qt.substring(0, 6));
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == "" || commandAnswer == "0")
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == "" || commandAnswer.toInt() < 1)
       {
         qexCounter = 0;
         return true;
       }
-      get.raw.qem = commandAnswer;
-      liveData["PV_generation_month"] = strtol(commandAnswer.c_str(),  NULL, 10);
-      qexCounter++;
+      else
+      {
+        get.raw.qem = commandAnswer;
+        liveData["PV_generation_month"] = commandAnswer.toInt();
+        qexCounter++;
+      }
       break;
     case 3:
       commandAnswer = this->requestData("^P009EY" + get.raw.qt.substring(0, 4));
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == ""  || commandAnswer == "0")
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == "" || commandAnswer.toInt() < 1)
       {
         qexCounter = 0;
         return true;
       }
-      get.raw.qey = commandAnswer;
-      liveData["PV_generation_year"] = strtol(commandAnswer.c_str(),  NULL, 10);
-      qexCounter++;
+      else
+      {
+        get.raw.qey = commandAnswer;
+        liveData["PV_generation_year"] = commandAnswer.toInt();
+        qexCounter++;
+      }
       break;
     case 4:
       commandAnswer = this->requestData("^P005ET");
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer == "0")
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer.toInt() < 1)
+      {
         return true;
-      get.raw.qet = commandAnswer;
-      liveData["PV_generation_sum"] = strtol(commandAnswer.c_str(),  NULL, 10);
-      qexCounter = 0;
+      }
+      else
+      {
+        get.raw.qet = commandAnswer;
+        liveData["PV_generation_sum"] = commandAnswer.toInt();
+        qexCounter = 0;
+      }
       break;
 
     default:
