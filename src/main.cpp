@@ -511,7 +511,14 @@ void getJsonData()
   deviceJson[F("Device_name")] = settings.data.deviceName;
   deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
   deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
-  deviceJson[F("Version")] = SOFTWARE_VERSION;
+  deviceJson[F("sw_version")] = SOFTWARE_VERSION;
+  deviceJson[F("Free_Heap")] = ESP.getFreeHeap();
+  deviceJson[F("HEAP_Fragmentation")] = ESP.getHeapFragmentation();
+  deviceJson[F("json_memory_usage")] = Json.memoryUsage();
+  deviceJson[F("json_capacity")] = Json.capacity();
+  deviceJson[F("runtime")] = millis() / 1000;
+  deviceJson[F("ws_clients")] = ws.count();
+
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
