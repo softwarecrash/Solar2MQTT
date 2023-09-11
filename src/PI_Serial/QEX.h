@@ -110,7 +110,7 @@ bool PI_Serial::PIXX_QEX()
         return true;
       }
       get.raw.qed = commandAnswer;
-      liveData["PV_generation_day"] = commandAnswer.toInt();
+      liveData["PV_generation_day"] = strtol(commandAnswer.c_str(),  NULL, 10);
       qexCounter++;
       break;
     case 2:
@@ -121,7 +121,7 @@ bool PI_Serial::PIXX_QEX()
         return true;
       }
       get.raw.qem = commandAnswer;
-      liveData["PV_generation_month"] = commandAnswer.toInt();
+      liveData["PV_generation_month"] = strtol(commandAnswer.c_str(),  NULL, 10);
       qexCounter++;
       break;
     case 3:
@@ -132,7 +132,7 @@ bool PI_Serial::PIXX_QEX()
         return true;
       }
       get.raw.qey = commandAnswer;
-      liveData["PV_generation_year"] = commandAnswer.toInt();
+      liveData["PV_generation_year"] = strtol(commandAnswer.c_str(),  NULL, 10);
       qexCounter++;
       break;
     case 4:
@@ -140,7 +140,7 @@ bool PI_Serial::PIXX_QEX()
       if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "")
         return true;
       get.raw.qet = commandAnswer;
-      liveData["PV_generation_sum"] = commandAnswer.toInt();
+      liveData["PV_generation_sum"] = strtol(commandAnswer.c_str(),  NULL, 10);
       qexCounter = 0;
       break;
 
