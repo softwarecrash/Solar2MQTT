@@ -663,7 +663,7 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
     return;
 
   // send raw control command
-  if (strcmp(top, topicBuilder(buff, "Device_Control/Set_Command")) == 0)
+  if (strcmp(top, topicBuilder(buff, "Device_Control/Set_Command")) == 0 &&  messageTemp.length() > 0)
   {
     DEBUG_PRINT(F("Send Command message recived: "));
     DEBUG_PRINTLN(messageTemp);
