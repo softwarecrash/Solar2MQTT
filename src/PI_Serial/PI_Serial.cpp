@@ -240,11 +240,13 @@ String PI_Serial::requestData(String command)
         commandBuffer.remove(0, strlen(startChar)); // remove the start char ( for Pi30 and ^Dxxx for Pi18
 
         requestOK++;
-    } else if(commandBuffer.indexOf("NAK", strlen(startChar)) > 0)
+    } else if(commandBuffer.indexOf("NAK", strlen(startChar)) > 0) //catch NAK without crc
     {
         commandBuffer = "NAK";
     } else
     {
+    PI_DEBUG_PRINTLN("ERROR Send: >" + command+ "< Recive: >" + commandBuffer +"<");
+    PI_DEBUG_WEBLN("ERROR Send: >" + command+ "< Recive: >" + commandBuffer +"<");
     PI_DEBUG_PRINT("RAW HEX: >");
     PI_DEBUG_WEB("RAW HEX: >");
     for (size_t i = 0; i < commandBuffer.length(); i++)
@@ -258,8 +260,8 @@ String PI_Serial::requestData(String command)
     PI_DEBUG_WEBLN("<");
 
         requestFail++;
-        PI_DEBUG_PRINTLN("ERRDATA: >" + commandBuffer+ "<");
-        PI_DEBUG_WEBLN("ERRDATA: >" + commandBuffer+ "<");
+        //PI_DEBUG_PRINTLN("ERRDATA: >" + commandBuffer+ "<");
+        //PI_DEBUG_WEBLN("ERRDATA: >" + commandBuffer+ "<");
         commandBuffer = "ERCRC";
         //commandBuffer = commandBuffer.substring(strlen(startChar), (strlen(startChar)+3));
     }
