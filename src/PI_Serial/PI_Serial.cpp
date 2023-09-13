@@ -197,10 +197,10 @@ String PI_Serial::requestData(String command)
  //   this->my_serialIntf->write("\x50\x4F\x50\x30\x32\xE2\x0A\x0D");
 //} else {
 
-    for (size_t i = 0; i < strlen(command.c_str()); i++)
-    {
-        this->my_serialIntf->write(command[i]);
-    }
+    //for (size_t i = 0; i < strlen(command.c_str()); i++)
+    //{
+        this->my_serialIntf->write(command.c_str());
+    //}
     this->my_serialIntf->write(highByte(getCRC(command)));
     this->my_serialIntf->write(lowByte(getCRC(command)));
     this->my_serialIntf->write(0x0D);
