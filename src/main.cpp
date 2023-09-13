@@ -111,7 +111,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
     break;
   case WS_EVT_DATA:
     // bmstimer = millis();
-    //mqtttimer = millis();
+    // mqtttimer = millis();
     handleWebSocketMessage(arg, data, len);
     break;
   case WS_EVT_PONG:
@@ -449,8 +449,8 @@ void loop()
     ws.cleanupClients(); // clean unused client connections
     MDNS.update();
     getJsonData();
-    mppClient.loop();  // Call the PI Serial Library loop
-    
+    mppClient.loop(); // Call the PI Serial Library loop
+
     if (millis() - mqtttimer >= (settings.data.mqttRefresh * 1000))
     {
       sendtoMQTT(); // Update data to MQTT server if we should
@@ -518,7 +518,6 @@ void getJsonData()
   deviceJson[F("json_capacity")] = Json.capacity();
   deviceJson[F("runtime")] = millis() / 1000;
   deviceJson[F("ws_clients")] = ws.count();
-
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
@@ -606,8 +605,10 @@ bool sendtoMQTT()
         mqttclient.publish(msgBuffer1, jsondat.value().as<String>().c_str());
       }
     }
-    mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (mppClient.get.raw.commandAnswer).c_str());
-
+    if (mppClient.get.raw.commandAnswer.length() > 0)
+    {
+      mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (mppClient.get.raw.commandAnswer).c_str());
+    }
 // RAW
 #ifdef DEBUG
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS"), (mppClient.get.raw.qpigs).c_str());
@@ -663,7 +664,7 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
     return;
 
   // send raw control command
-  if (strcmp(top, topicBuilder(buff, "Device_Control/Set_Command")) == 0 &&  messageTemp.length() > 0)
+  if (strcmp(top, topicBuilder(buff, "Device_Control/Set_Command")) == 0 && messageTemp.length() > 0)
   {
     DEBUG_PRINT(F("Send Command message recived: "));
     DEBUG_PRINTLN(messageTemp);
