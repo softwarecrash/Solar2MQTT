@@ -48,8 +48,13 @@ bool PI_Serial::Init()
 
 bool PI_Serial::loop()
 {
-    if (millis() - previousTime >= delayTime && protocol != NoD)
+    if (millis() - previousTime >= delayTime /*&& protocol != NoD*/)
     {
+        if(sendCustomCommand())
+        {
+            requestStaticData = true;
+            requestCounter = 0;
+        }
         switch (requestStaticData)
         {
         case true:
@@ -91,7 +96,7 @@ bool PI_Serial::loop()
                 requestCounter = PIXX_QEX() ? (requestCounter + 1) : 0;
                 break;
             case 6:
-                sendCustomCommand();
+                //sendCustomCommand();
                 requestCallback();
                 requestCounter = 0;
                 break;
@@ -169,7 +174,7 @@ bool PI_Serial::sendCustomCommand()
         return false;
     get.raw.commandAnswer = requestData(customCommandBuffer);
     customCommandBuffer = "";
-    requestStaticData = true;
+    //requestStaticData = true;
     return true;
 }
 
