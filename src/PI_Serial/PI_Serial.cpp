@@ -193,32 +193,6 @@ String PI_Serial::requestData(String command)
     commandBuffer = this->my_serialIntf->readStringUntil('\r');
     this->my_serialIntf->enableTx(false);
 
-
-    //commandBuffer = this->my_serialIntf->readStringUntil('\r');
-     //only for debug
-     /*
-    PI_DEBUG_PRINTLN();
-    PI_DEBUG_WEBLN();
-    PI_DEBUG_PRINTLN("Send: "+command);
-    PI_DEBUG_WEBLN("Send: "+command);
-    PI_DEBUG_PRINTLN("Recive: "+commandBuffer);
-    PI_DEBUG_WEBLN("Recive: "+commandBuffer);
-    */
-/*
-    PI_DEBUG_PRINT("RAW HEX: >");
-    PI_DEBUG_WEB("RAW HEX: >");
-    
-    for (size_t i = 0; i < commandBuffer.length(); i++)
-    {
-        PI_DEBUG_PRINT("0x");
-        PI_DEBUG_PRINT(commandBuffer[i], HEX);
-        PI_DEBUG_WEB("0x");
-        PI_DEBUG_WEB(commandBuffer[i], HEX);
-    }
-    PI_DEBUG_PRINTLN("<");
-    PI_DEBUG_WEBLN("<");
-    */
-
     if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) == 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1] &&
         getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) != 0 && 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1] != 0)
     {
@@ -260,15 +234,12 @@ String PI_Serial::requestData(String command)
     PI_DEBUG_WEBLN("<");
 
         requestFail++;
-        //PI_DEBUG_PRINTLN("ERRDATA: >" + commandBuffer+ "<");
-        //PI_DEBUG_WEBLN("ERRDATA: >" + commandBuffer+ "<");
         commandBuffer = "ERCRC";
-        //commandBuffer = commandBuffer.substring(strlen(startChar), (strlen(startChar)+3));
     }
-    //char debugBuff[128];
-   // sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, commandBuffer.length(), (const wchar_t *)commandBuffer.c_str());
-    //PI_DEBUG_PRINTLN(debugBuff);
-    //PI_DEBUG_WEBLN(debugBuff);
+    char debugBuff[128];
+    sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, commandBuffer.length(), (const wchar_t *)commandBuffer.c_str());
+    PI_DEBUG_PRINTLN(debugBuff);
+    PI_DEBUG_WEBLN(debugBuff);
 
     PI_DEBUG_PRINT(requestOK);
     PI_DEBUG_PRINT("<-OK | Fail->");
