@@ -185,14 +185,35 @@ String PI_Serial::requestData(String command)
     // this->my_serialIntf->print(appendCRC(command));
     // }
     
-    this->my_serialIntf->print(appendCRC(command).c_str());
-    this->my_serialIntf->print("\r");
+
+for (size_t i = 0; i < strlen(command.c_str()); i++)
+{
+    
+    this->my_serialIntf->write(command[i]);
+}
+this->my_serialIntf->write(highByte(getCRC(command)));
+if(lowByte(getCRC(command)) == 10)
+    this->my_serialIntf->write("0A");
+else
+    this->my_serialIntf->write(lowByte(getCRC(command)));
+this->my_serialIntf->print("\r");
+
+   // this->my_serialIntf->print(appendCRC(command).c_str());
+   // this->my_serialIntf->print("\r");
     this->my_serialIntf->flush();
 
     // POP02 hex = 50 4F 50 30 32 E2 0A 0D
-    if (command.indexOf("POP02") > 0) // catch NAK without crc
+    if (command == "POP02") // catch NAK without crc
     {
+        PI_DEBUG_PRINT("RAW HEX: >");
+        PI_DEBUG_WEB("RAW HEX: >");
+        if(lowByte(getCRC(command)) == 0xA)
+        {
+            Serial.println((lowByte(getCRC(command))), HEX);
+        }
+        Serial.println(int8_t(lowByte(getCRC(command))));
         String tmpBuff = appendCRC(command).c_str();
+        
         for (size_t i = 0; i < tmpBuff.length(); i++)
         {
             PI_DEBUG_PRINT(tmpBuff[i], HEX);
@@ -200,6 +221,8 @@ String PI_Serial::requestData(String command)
             PI_DEBUG_WEB(tmpBuff[i], HEX);
             PI_DEBUG_WEB(" ");
         }
+        PI_DEBUG_PRINTLN("<");
+        PI_DEBUG_WEBLN("<");
 }
 
     // for testing
@@ -255,12 +278,12 @@ String PI_Serial::requestData(String command)
     }
     char debugBuff[128];
     sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, commandBuffer.length(), (const wchar_t *)commandBuffer.c_str());
-    PI_DEBUG_PRINTLN(debugBuff);
-    PI_DEBUG_WEBLN(debugBuff);
+    //PI_DEBUG_PRINTLN(debugBuff);
+    //PI_DEBUG_WEBLN(debugBuff);
 
-    PI_DEBUG_PRINT(requestOK);
-    PI_DEBUG_PRINT("<-OK | Fail->");
-    PI_DEBUG_PRINTLN(requestFail);
+    //PI_DEBUG_PRINT(requestOK);
+    //PI_DEBUG_PRINT("<-OK | Fail->");
+    //PI_DEBUG_PRINTLN(requestFail);
 
     return commandBuffer;
 }
@@ -313,6 +336,7 @@ void PI_Serial::clearGet(void)
 
 String PI_Serial::appendCRC(String data) // calculate and add the crc to the string
 {
+
     crc.reset();
     crc.setPolynome(0x1021);
     crc.add((uint8_t *)data.c_str(), data.length());
@@ -329,6 +353,8 @@ String PI_Serial::appendCRC(String data) // calculate and add the crc to the str
     v.u = crc.calc();
     data.concat(v.cH);
     data.concat(v.cL);
+
+
     /*
         uint16_t crc = crc.getCRC();
         uint16_t value;
