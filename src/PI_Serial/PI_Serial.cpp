@@ -184,9 +184,24 @@ String PI_Serial::requestData(String command)
     // }else{
     // this->my_serialIntf->print(appendCRC(command));
     // }
-    this->my_serialIntf->print(appendCRC(command));
+    
+    //this->my_serialIntf->print(appendCRC(command));
+    const char * sendBuff = appendCRC(command).c_str();
+
+    for (size_t i = 0; i < sizeof sendBuff; i++)
+    {
+        this->my_serialIntf->write(sendBuff[i]);
+    }
+    
+
+
+
+
     this->my_serialIntf->print("\r");
     this->my_serialIntf->flush();
+
+
+
     // for testing
     this->my_serialIntf->enableTx(true);
     delay(20);
