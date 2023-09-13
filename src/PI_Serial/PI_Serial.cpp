@@ -185,21 +185,7 @@ String PI_Serial::requestData(String command)
     // this->my_serialIntf->print(appendCRC(command));
     // }
     
-    //this->my_serialIntf->print(appendCRC(command));
-
-    
-    //const char * sendBuff = (appendCRC(command)).c_str();
-    String sendBuff = (appendCRC(command)).c_str();
-    Serial.println(sendBuff);
-    for (size_t i = 0; i < strlen(sendBuff.c_str()); i++)
-    {
-        this->my_serialIntf->write(sendBuff[i]);
-    }
-    
-
-
-
-
+    this->my_serialIntf->print(appendCRC(command).c_str());
     this->my_serialIntf->print("\r");
     this->my_serialIntf->flush();
 
