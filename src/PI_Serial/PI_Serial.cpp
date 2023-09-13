@@ -213,8 +213,14 @@ if(command == "POP02")
             PI_DEBUG_WEB(command[i], HEX);
             PI_DEBUG_WEB(" ");
         }
-        PI_DEBUG_WEB(highByte(getCRC(command)));
-        PI_DEBUG_WEB(lowByte(getCRC(command)));
+        PI_DEBUG_WEB(highByte(getCRC(command)), HEX);
+        PI_DEBUG_WEB(" ");
+        PI_DEBUG_WEB(lowByte(getCRC(command)), HEX);
+
+        PI_DEBUG_PRINT(highByte(getCRC(command)), HEX);
+        PI_DEBUG_PRINT(" ");
+        PI_DEBUG_PRINT(lowByte(getCRC(command)), HEX);
+
         PI_DEBUG_PRINTLN("<");
         PI_DEBUG_WEBLN("<");
     }
