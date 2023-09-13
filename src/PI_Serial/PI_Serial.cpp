@@ -24,7 +24,7 @@ PI_Serial::PI_Serial(int rx, int tx)
     soft_rx = rx;
     soft_tx = tx;
     this->my_serialIntf = &myPort;
-    //https://forum.arduino.cc/t/pass-reference-to-serial-object-into-a-class/483988/6
+    // https://forum.arduino.cc/t/pass-reference-to-serial-object-into-a-class/483988/6
 }
 
 bool PI_Serial::Init()
@@ -39,7 +39,7 @@ bool PI_Serial::Init()
 
     autoDetect();
 
-    //this->my_serialIntf->setTimeout(450);
+    // this->my_serialIntf->setTimeout(450);
     this->my_serialIntf->enableRxGPIOPullUp(true);
     this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
     clearGet();
@@ -187,7 +187,7 @@ String PI_Serial::requestData(String command)
     this->my_serialIntf->print(appendCRC(command));
     this->my_serialIntf->print("\r");
     this->my_serialIntf->flush();
-    //for testing
+    // for testing
     this->my_serialIntf->enableTx(true);
     delay(20);
     commandBuffer = this->my_serialIntf->readStringUntil('\r');
@@ -198,40 +198,42 @@ String PI_Serial::requestData(String command)
     {
         crcCalc = 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1];
         crcRecive = getCRC(commandBuffer.substring(0, commandBuffer.length() - 2));
-        commandBuffer.remove(commandBuffer.length() - 2); //remove the crc
-        commandBuffer.remove(0, strlen(startChar));// remove the start char ( for Pi30 and ^Dxxx for Pi18
+        commandBuffer.remove(commandBuffer.length() - 2); // remove the crc
+        commandBuffer.remove(0, strlen(startChar));       // remove the start char ( for Pi30 and ^Dxxx for Pi18
 
         requestOK++;
     }
     else if (getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 == commandBuffer[commandBuffer.length() - 1] &&
              getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 != 0 && commandBuffer[commandBuffer.length() - 1] != 0 &&
              command == "QALL" // crude fix for the qall chk thing
-             ) // CHK for QALL
+             )                 // CHK for QALL
     {
         crcCalc = getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1;
         crcRecive = commandBuffer[commandBuffer.length() - 1];
-        commandBuffer.remove(commandBuffer.length() - 1); //remove the crc
-        commandBuffer.remove(0, strlen(startChar)); // remove the start char ( for Pi30 and ^Dxxx for Pi18
+        commandBuffer.remove(commandBuffer.length() - 1); // remove the crc
+        commandBuffer.remove(0, strlen(startChar));       // remove the start char ( for Pi30 and ^Dxxx for Pi18
 
         requestOK++;
-    } else if(commandBuffer.indexOf("NAK", strlen(startChar)) > 0) //catch NAK without crc
+    }
+    else if (commandBuffer.indexOf("NAK", strlen(startChar)) > 0) // catch NAK without crc
     {
         commandBuffer = "NAK";
-    } else
-    {
-    PI_DEBUG_PRINTLN("ERROR Send: >" + command+ "< Recive: >" + commandBuffer +"<");
-    PI_DEBUG_WEBLN("ERROR Send: >" + command+ "< Recive: >" + commandBuffer +"<");
-    PI_DEBUG_PRINT("RAW HEX: >");
-    PI_DEBUG_WEB("RAW HEX: >");
-    for (size_t i = 0; i < commandBuffer.length(); i++)
-    {
-        PI_DEBUG_PRINT(commandBuffer[i], HEX);
-        PI_DEBUG_PRINT(" ");
-        PI_DEBUG_WEB(commandBuffer[i], HEX);
-        PI_DEBUG_WEB(" ");
     }
-    PI_DEBUG_PRINTLN("<");
-    PI_DEBUG_WEBLN("<");
+    else
+    {
+        PI_DEBUG_PRINTLN("ERROR Send: >" + command + "< Recive: >" + commandBuffer + "<");
+        PI_DEBUG_WEBLN("ERROR Send: >" + command + "< Recive: >" + commandBuffer + "<");
+        PI_DEBUG_PRINT("RAW HEX: >");
+        PI_DEBUG_WEB("RAW HEX: >");
+        for (size_t i = 0; i < commandBuffer.length(); i++)
+        {
+            PI_DEBUG_PRINT(commandBuffer[i], HEX);
+            PI_DEBUG_PRINT(" ");
+            PI_DEBUG_WEB(commandBuffer[i], HEX);
+            PI_DEBUG_WEB(" ");
+        }
+        PI_DEBUG_PRINTLN("<");
+        PI_DEBUG_WEBLN("<");
 
         requestFail++;
         commandBuffer = "ERCRC";
