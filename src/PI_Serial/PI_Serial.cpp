@@ -48,7 +48,7 @@ bool PI_Serial::Init()
 
 bool PI_Serial::loop()
 {
-    if (millis() - previousTime >= delayTime /*&& protocol != NoD*/)
+    if (millis() - previousTime >= delayTime && protocol != NoD)
     {
         if(sendCustomCommand())
         {
@@ -168,6 +168,10 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
     }
     PI_DEBUG_PRINTLN("----------------- End Autodetect -----------------");
     PI_DEBUG_WEBLN("----------------- End Autodetect -----------------");
+
+
+    //debug only
+    protocol = PI30;
 }
 
 bool PI_Serial::sendCustomCommand()
