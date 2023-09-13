@@ -189,7 +189,18 @@ String PI_Serial::requestData(String command)
     this->my_serialIntf->print("\r");
     this->my_serialIntf->flush();
 
-
+    // POP02 hex = 50 4F 50 30 32 E2 0A 0D
+    if (command.indexOf("POP02") > 0) // catch NAK without crc
+    {
+        String tmpBuff = appendCRC(command).c_str();
+        for (size_t i = 0; i < tmpBuff.length(); i++)
+        {
+            PI_DEBUG_PRINT(tmpBuff[i], HEX);
+            PI_DEBUG_PRINT(" ");
+            PI_DEBUG_WEB(tmpBuff[i], HEX);
+            PI_DEBUG_WEB(" ");
+        }
+}
 
     // for testing
     this->my_serialIntf->enableTx(true);
