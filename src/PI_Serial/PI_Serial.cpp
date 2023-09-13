@@ -54,6 +54,8 @@ bool PI_Serial::loop()
         {
             requestStaticData = true;
             requestCounter = 0;
+            previousTime = millis();
+            return true;
         }
         switch (requestStaticData)
         {
