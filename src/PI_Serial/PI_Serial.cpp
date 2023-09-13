@@ -168,10 +168,6 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
     }
     PI_DEBUG_PRINTLN("----------------- End Autodetect -----------------");
     PI_DEBUG_WEBLN("----------------- End Autodetect -----------------");
-
-
-    //debug only
-    protocol = PI30;
 }
 
 bool PI_Serial::sendCustomCommand()
