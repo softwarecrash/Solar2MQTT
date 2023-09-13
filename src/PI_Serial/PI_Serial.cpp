@@ -184,22 +184,14 @@ String PI_Serial::requestData(String command)
     // }else{
     // this->my_serialIntf->print(appendCRC(command));
     // }
-    
 
-for (size_t i = 0; i < strlen(command.c_str()); i++)
-{
-    
-    this->my_serialIntf->write(command[i]);
-}
-this->my_serialIntf->write(highByte(getCRC(command)));
-if(lowByte(getCRC(command)) == 10)
-    this->my_serialIntf->write("0A");
-else
+    for (size_t i = 0; i < strlen(command.c_str()); i++)
+    {
+        this->my_serialIntf->write(command[i]);
+    }
+    this->my_serialIntf->write(highByte(getCRC(command)));
     this->my_serialIntf->write(lowByte(getCRC(command)));
-this->my_serialIntf->print("\r");
-
-   // this->my_serialIntf->print(appendCRC(command).c_str());
-   // this->my_serialIntf->print("\r");
+    this->my_serialIntf->print("\r");
     this->my_serialIntf->flush();
 
     // POP02 hex = 50 4F 50 30 32 E2 0A 0D
@@ -207,23 +199,18 @@ this->my_serialIntf->print("\r");
     {
         PI_DEBUG_PRINT("RAW HEX: >");
         PI_DEBUG_WEB("RAW HEX: >");
-        if(lowByte(getCRC(command)) == 0xA)
+        for (size_t i = 0; i < command.length(); i++)
         {
-            Serial.println((lowByte(getCRC(command))), HEX);
-        }
-        Serial.println(int8_t(lowByte(getCRC(command))));
-        String tmpBuff = appendCRC(command).c_str();
-        
-        for (size_t i = 0; i < tmpBuff.length(); i++)
-        {
-            PI_DEBUG_PRINT(tmpBuff[i], HEX);
+            PI_DEBUG_PRINT(command[i], HEX);
             PI_DEBUG_PRINT(" ");
-            PI_DEBUG_WEB(tmpBuff[i], HEX);
+            PI_DEBUG_WEB(command[i], HEX);
             PI_DEBUG_WEB(" ");
         }
+        PI_DEBUG_WEB(highByte(getCRC(command)));
+        PI_DEBUG_WEB(lowByte(getCRC(command)));
         PI_DEBUG_PRINTLN("<");
         PI_DEBUG_WEBLN("<");
-}
+    }
 
     // for testing
     this->my_serialIntf->enableTx(true);
@@ -278,12 +265,12 @@ this->my_serialIntf->print("\r");
     }
     char debugBuff[128];
     sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, commandBuffer.length(), (const wchar_t *)commandBuffer.c_str());
-    //PI_DEBUG_PRINTLN(debugBuff);
-    //PI_DEBUG_WEBLN(debugBuff);
+    // PI_DEBUG_PRINTLN(debugBuff);
+    // PI_DEBUG_WEBLN(debugBuff);
 
-    //PI_DEBUG_PRINT(requestOK);
-    //PI_DEBUG_PRINT("<-OK | Fail->");
-    //PI_DEBUG_PRINTLN(requestFail);
+    // PI_DEBUG_PRINT(requestOK);
+    // PI_DEBUG_PRINT("<-OK | Fail->");
+    // PI_DEBUG_PRINTLN(requestFail);
 
     return commandBuffer;
 }
@@ -353,7 +340,6 @@ String PI_Serial::appendCRC(String data) // calculate and add the crc to the str
     v.u = crc.calc();
     data.concat(v.cH);
     data.concat(v.cL);
-
 
     /*
         uint16_t crc = crc.getCRC();
