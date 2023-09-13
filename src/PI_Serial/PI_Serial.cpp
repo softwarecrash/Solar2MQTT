@@ -202,7 +202,7 @@ if(command == "POP02")
 
 
     // POP02 hex = 50 4F 50 30 32 E2 0A 0D
-    if (command == "POP02") // catch NAK without crc
+    if (command == "POP02")
     {
         PI_DEBUG_PRINT("RAW HEX: >");
         PI_DEBUG_WEB("RAW HEX: >");
