@@ -122,8 +122,8 @@ private:
     unsigned int soft_rx;
     unsigned int serialIntfBaud;
 
-    unsigned int previousTime = 0;
-    unsigned int delayTime = 150;
+    unsigned long previousTime = 0;
+    unsigned long delayTime = 150;
     byte requestCounter = 0;
 
     long long int requestOK = 0;

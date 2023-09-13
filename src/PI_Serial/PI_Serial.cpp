@@ -195,18 +195,27 @@ String PI_Serial::requestData(String command)
 
 
     //commandBuffer = this->my_serialIntf->readStringUntil('\r');
-    /* only for debug
+     //only for debug
+    PI_DEBUG_PRINTLN();
+    PI_DEBUG_WEBLN();
+    PI_DEBUG_PRINTLN("Recive: "+command);
+    PI_DEBUG_WEBLN("Recive: "+command);
+    PI_DEBUG_PRINTLN("Recive: "+commandBuffer);
+    PI_DEBUG_WEBLN("Recive: "+commandBuffer);
+
     PI_DEBUG_PRINT("RAW HEX: >");
+    PI_DEBUG_WEB("RAW HEX: >");
+    
     for (size_t i = 0; i < commandBuffer.length(); i++)
     {
+        PI_DEBUG_PRINT("0x");
         PI_DEBUG_PRINT(commandBuffer[i], HEX);
-        PI_DEBUG_PRINT(" ");
+        PI_DEBUG_WEB("0x");
         PI_DEBUG_WEB(commandBuffer[i], HEX);
-        PI_DEBUG_WEB(" ");
     }
     PI_DEBUG_PRINTLN("<");
     PI_DEBUG_WEBLN("<");
-    */
+    
 
     if (getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) == 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1] &&
         getCRC(commandBuffer.substring(0, commandBuffer.length() - 2)) != 0 && 256U * (uint8_t)commandBuffer[commandBuffer.length() - 2] + (uint8_t)commandBuffer[commandBuffer.length() - 1] != 0)

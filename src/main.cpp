@@ -36,7 +36,7 @@ char mqttClientId[80];
 ADC_MODE(ADC_VCC);
 
 // flag for saving data
-long mqtttimer = 0;
+unsigned long mqtttimer = 0;
 unsigned long requestTimer = 0;
 unsigned long RestartTimer = 0;
 bool shouldSaveConfig = false;
