@@ -155,11 +155,6 @@ private:
     String appendCRC(String data);
 
     /**
-     * @brief append the calcualted crc to the given string and return it
-     */
-    String appendCHK(String data);
-
-    /**
      * @brief function for autodetect the inverter
      * @details ask all modes and sort it to a protocol
      */
@@ -170,12 +165,6 @@ private:
      * @details calculates the checksum and sends the command over the specified serial connection
      */
     String requestData(String command);
-
-    /**
-     * @brief Clear all data from the Get struct
-     * @details when wrong or missing data comes in it need sto be cleared
-     */
-    void clearGet();
 
     /**
      * @brief accept a achar and get back the operation mode as string
