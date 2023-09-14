@@ -111,10 +111,10 @@ bool PI_Serial::PIXX_QPIGS()
     byte protocolNum = 0; // for future use
     String commandAnswerQALL = this->requestData("QALL");
     get.raw.qall = commandAnswerQALL;
-    if (commandAnswerQALL == "ERCRC")
-    {
-      return false;
-    }
+   // if (commandAnswerQALL == "ERCRC")
+    //{
+    //  return false;
+    //}
     //
     String commandAnswerQPIGS = this->requestData("QPIGS");
     get.raw.qpigs = commandAnswerQPIGS;
