@@ -297,17 +297,17 @@ String PI_Serial::requestData(String command)
 }
 /*
 //https://forums.aeva.asn.au/viewtopic.php?t=4332&start=25
-INT16U cal_crc_half(INT8U far *pin, INT8U len)
+uint16_t cal_crc_half(uint8_t far *pin, uint8 len)
 {
 
-     INT16U crc;
+     uint16_t crc;
 
-     INT8U da;
-     INT8U far *ptr;
-     INT8U bCRCHign;
-    INT8U bCRCLow;
+     uint8_t da;
+     uint8_t far *ptr;
+     uint8_t bCRCHign;
+    uint8_t bCRCLow;
 
-     INT16U crc_ta[16]=
+     uint16_t crc_ta[16]=
      {
           0x0000,0x1021,0x2042,0x3063,0x4084,0x50a5,0x60c6,0x70e7,
 
@@ -318,13 +318,13 @@ INT16U cal_crc_half(INT8U far *pin, INT8U len)
      
      while(len--!=0)
      {
-          da=((INT8U)(crc>>8))>>4;
+          da=((uint8_t)(crc>>8))>>4;
 
           crc<<=4;
 
           crc^=crc_ta[da^(*ptr>>4)];
 
-          da=((INT8U)(crc>>8))>>4;
+          da=((uint8_t)(crc>>8))>>4;
 
           crc<<=4;
 
@@ -334,7 +334,7 @@ INT16U cal_crc_half(INT8U far *pin, INT8U len)
      }
      bCRCLow = crc;
 
-    bCRCHign= (INT8U)(crc>>8);
+    bCRCHign= (uint8_t)(crc>>8);
 
      if(bCRCLow==0x28||bCRCLow==0x0d||bCRCLow==0x0a)
 
@@ -346,7 +346,7 @@ INT16U cal_crc_half(INT8U far *pin, INT8U len)
     {
           bCRCHign++;
     }
-    crc = ((INT16U)bCRCHign)<<8;
+    crc = ((uint16_t)bCRCHign)<<8;
     crc += bCRCLow;
      return(crc);
 }
