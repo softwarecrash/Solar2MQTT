@@ -24,7 +24,6 @@ PI_Serial::PI_Serial(int rx, int tx)
     soft_rx = rx;
     soft_tx = tx;
     this->my_serialIntf = &myPort;
-    // https://forum.arduino.cc/t/pass-reference-to-serial-object-into-a-class/483988/6
 }
 
 bool PI_Serial::Init()
@@ -36,10 +35,7 @@ bool PI_Serial::Init()
         PI_DEBUG_WEBLN("<PI SERIAL> ERROR: No serial peripheral specificed!");
         return false;
     }
-
     autoDetect();
-
-    // this->my_serialIntf->setTimeout(450);
     this->my_serialIntf->enableRxGPIOPullUp(true);
     this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
     return true;
