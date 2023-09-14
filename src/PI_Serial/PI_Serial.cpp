@@ -192,10 +192,11 @@ String PI_Serial::requestData(String command)
     // this->my_serialIntf->print(appendCRC(command));
     // }
 
-//if(command == "POP02")
-//{
- //   this->my_serialIntf->write("\x50\x4F\x50\x30\x32\xE2\x0A\x0D");
-//} else {
+if(command == "POP02")
+{
+    //this->my_serialIntf->write("\x50\x4F\x50\x30\x32\xE2\x0A\x0D");
+    this->my_serialIntf->write("\x50\x4F\x50\x30\x32\xE2\x0B\x0D");
+} else {
 
     //for (size_t i = 0; i < strlen(command.c_str()); i++)
     //{
@@ -205,7 +206,7 @@ String PI_Serial::requestData(String command)
     this->my_serialIntf->write(lowByte(getCRC(command)));
     this->my_serialIntf->write(0x0D);
     this->my_serialIntf->flush();
-//}
+}
 
 
     // POP02 hex = 50 4F 50 30 32 E2 0A 0D
