@@ -184,52 +184,12 @@ String PI_Serial::requestData(String command)
     String commandBuffer = "";
     uint16_t crcCalc = 0;
     uint16_t crcRecive = 0;
-    // if(command == "QALL")
-    // {
-    // this->my_serialIntf->print(appendCHK(command));
-    // }else{
-    // this->my_serialIntf->print(appendCRC(command));
-    // }
 
-    // if(command == "POP02")
-    //{
-    // this->my_serialIntf->write("\x50\x4F\x50\x30\x32\xE2\x0A\x0D");
-    // this->my_serialIntf->write("\x50\x4F\x50\x30\x32\xE2\x0B\x0D");
-    //} else {
-
-    // for (size_t i = 0; i < strlen(command.c_str()); i++)
-    //{
     this->my_serialIntf->write(command.c_str());
-    //}
     this->my_serialIntf->write(highByte(getCRC(command)));
     this->my_serialIntf->write(lowByte(getCRC(command)));
     this->my_serialIntf->write(0x0D);
     this->my_serialIntf->flush();
-    //}
-
-    // POP02 hex = 50 4F 50 30 32 E2 0A 0D
-    if (command == "POP02")
-    {
-        PI_DEBUG_PRINT("RAW HEX: >");
-        PI_DEBUG_WEB("RAW HEX: >");
-        for (size_t i = 0; i < command.length(); i++)
-        {
-            PI_DEBUG_PRINT(command[i], HEX);
-            PI_DEBUG_PRINT(" ");
-            PI_DEBUG_WEB(command[i], HEX);
-            PI_DEBUG_WEB(" ");
-        }
-        PI_DEBUG_WEB(highByte(getCRC(command)), HEX);
-        PI_DEBUG_WEB(" ");
-        PI_DEBUG_WEB(lowByte(getCRC(command)), HEX);
-
-        PI_DEBUG_PRINT(highByte(getCRC(command)), HEX);
-        PI_DEBUG_PRINT(" ");
-        PI_DEBUG_PRINT(lowByte(getCRC(command)), HEX);
-
-        PI_DEBUG_PRINTLN("<");
-        PI_DEBUG_WEBLN("<");
-    }
 
     // for testing
     this->my_serialIntf->enableTx(true);
@@ -284,18 +244,18 @@ String PI_Serial::requestData(String command)
     }
     char debugBuff[128];
     sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, commandBuffer.length(), (const wchar_t *)commandBuffer.c_str());
-    // PI_DEBUG_PRINTLN(debugBuff);
-    // PI_DEBUG_WEBLN(debugBuff);
+     PI_DEBUG_PRINTLN(debugBuff);
+     PI_DEBUG_WEBLN(debugBuff);
 
-    // PI_DEBUG_PRINT(requestOK);
-    // PI_DEBUG_PRINT("<-OK | Fail->");
-    // PI_DEBUG_PRINTLN(requestFail);
+     PI_DEBUG_PRINT(requestOK);
+     PI_DEBUG_PRINT("<-OK | Fail->");
+     PI_DEBUG_PRINTLN(requestFail);
 
     return commandBuffer;
 }
 
-// https://forums.aeva.asn.au/viewtopic.php?t=4332&start=25
 uint16_t cal_crc_half(uint8_t* pin, uint8_t len)
+// https://forums.aeva.asn.au/viewtopic.php?t=4332&start=25
 {
     uint16_t crc;
     uint8_t da;
@@ -334,38 +294,6 @@ uint16_t cal_crc_half(uint8_t* pin, uint8_t len)
     return crc;
 }
 
-/*
-String PI_Serial::appendCRC(String data) // calculate and add the crc to the string
-{
-
-    crc.reset();
-    crc.setPolynome(0x1021);
-    crc.add((uint8_t *)data.c_str(), data.length());
-    typedef union
-    {
-        struct
-        {
-            char cL;
-            char cH;
-        };
-        uint16_t u;
-    } cu_t;
-    cu_t v;
-    v.u = crc.calc();
-    data.concat(v.cH);
-    data.concat(v.cL);
-
-    
-    //uint16_t crc = crc.getCRC();
-    //uint16_t value;
-    //((uint8_t*)&value)[1] = crc[0];
-    //((uint8_t*)&value)[0] = crc[1];
-    //data.concat(value);
-      
-
-    return data;
-}
-*/
 uint16_t PI_Serial::getCRC(String data) // get a calculated crc from a string
 {
     crc.reset();

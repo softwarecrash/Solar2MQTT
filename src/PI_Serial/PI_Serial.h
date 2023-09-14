@@ -150,11 +150,6 @@ private:
     byte getCHK(String data);
 
     /**
-     * @brief append the calcualted crc to the given string and return it
-     */
-    String appendCRC(String data);
-
-    /**
      * @brief function for autodetect the inverter
      * @details ask all modes and sort it to a protocol
      */
