@@ -329,7 +329,7 @@ char *PI_Serial::getModeDesc(char mode) // get the char from QMOD and make reada
     switch (mode)
     {
     default:
-        modeString = (char *)("Undefined, Origin: " + mode);
+        modeString = (char *)("");
         break;
     case 'P':
         modeString = (char *)"Power On";
