@@ -8,6 +8,13 @@
   3x no MQTT Connection
   4x no WiFi Connection
 
+
+//#define LED_BUILTIN       5
+const int PIN_LED = 5;  // COM
+const int PIN_LED2 = 0; // SRV
+const int PIN_LED4 = 4; // NET
+
+
 */
 unsigned int ledPin = 0;
 unsigned int ledTimer = 0;
