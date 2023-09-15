@@ -55,7 +55,7 @@ bool PI_Serial::PIXX_QEX()
         return false;
       if (commandAnswer == "NAK")
         return true;
-      liveData["AC_in_generation_sum "] = commandAnswer.toInt();
+      liveData["AC_in_generation_sum"] = commandAnswer.toInt();
 
       commandAnswer = this->requestData("QLY" + get.raw.qt.substring(0, 4));
       get.raw.qly = commandAnswer;
