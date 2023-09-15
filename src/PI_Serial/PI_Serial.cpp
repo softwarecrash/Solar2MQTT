@@ -43,7 +43,7 @@ bool PI_Serial::Init()
 
 bool PI_Serial::loop()
 {
-    if (millis() - previousTime >= delayTime && protocol != NoD)
+    if (millis() - previousTime > delayTime && protocol != NoD)
     {
         if (sendCustomCommand())
         {
