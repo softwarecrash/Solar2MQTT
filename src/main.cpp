@@ -37,18 +37,16 @@ ADC_MODE(ADC_VCC);
 
 // flag for saving data
 unsigned long mqtttimer = 0;
-unsigned long requestTimer = 0;
 unsigned long RestartTimer = 0;
 bool shouldSaveConfig = false;
 char mqtt_server[40];
 bool restartNow = false;
-bool valChange = false;
 bool askInverterOnce = false;
 bool fwUpdateRunning = false;
 bool publishFirst = false;
+bool haDiscTrigger = false;
 uint32_t bootcount = 0;
-String commandFromWeb;
-String commandFromMqtt;
+String commandFromUser;
 String customResponse;
 
 bool firstPublish;
@@ -130,8 +128,7 @@ void recvMsg(uint8_t *data, size_t len)
   {
     d += char(data[i]);
   }
-  valChange = true;
-  commandFromWeb = (d);
+  commandFromUser = (d);
   WebSerial.println("Sending [" + d + "] to Device");
 }
 
@@ -248,19 +245,13 @@ void setup()
   wm.addParameter(&custom_mqtt_refresh);
   wm.addParameter(&custom_device_name);
 
-  bool apRunning = wm.autoConnect("Solar2MQTT-AP");
-  /*
-    #ifdef DEBUG
-      wm.setDebugOutput(true);       // enable wifimanager debug output
-    #else
-      wm.setDebugOutput(false);       // disable wifimanager debug output
-    #endif
-    wm.setMinimumSignalQuality(20); // filter weak wifi signals
-    wm.setConnectTimeout(15);       // how long to try to connect for before continuing
-    wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
-    wm.setSaveConfigCallback(saveConfigCallback);
-  */
+  wm.setDebugOutput(false);       // disable wifimanager debug output
+  wm.setMinimumSignalQuality(20); // filter weak wifi signals
+  // wm.setConnectTimeout(15);       // how long to try to connect for before continuing
+  wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
+  wm.setSaveConfigCallback(saveConfigCallback);
   // save settings if wifi setup is fire up
+  bool apRunning = wm.autoConnect("Solar2MQTT-AP");
   if (shouldSaveConfig)
   {
     strncpy(settings.data.mqttServer, custom_mqtt_server.getValue(), 40);
@@ -289,8 +280,6 @@ void setup()
   }
   else
   {
-    // deviceJson["IP"] = WiFi.localIP(); // grab the device ip
-
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
               {
               AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_MAIN, htmlProcessor);
@@ -354,8 +343,11 @@ void setup()
                 AsyncWebParameter *p = request->getParam(0);
                 if (p->name() == "CC")
                 {
-                  valChange = true;
-                  commandFromWeb = (p->value());
+                  commandFromUser = (p->value());
+                }
+                if (p->name() == "ha")
+                {
+                haDiscTrigger = true;
                 }
                 request->send(200, "text/plain", "message received"); });
 
@@ -442,19 +434,29 @@ void setup()
 
 void loop()
 {
-
   // Make sure wifi is in the right mode
   if (WiFi.status() == WL_CONNECTED && !fwUpdateRunning)
-  {                      // No use going to next step unless WIFI is up and running.
+  { // No use going to next step unless WIFI is up and running.
+    if (commandFromUser != "")
+    {
+      DEBUG_PRINTLN(commandFromUser);
+      DEBUG_WEBLN(commandFromUser);
+      String tmp = mppClient.sendCommand(commandFromUser); // send a custom command to the device
+      DEBUG_PRINTLN(tmp);
+      DEBUG_WEBLN(tmp);
+      commandFromUser = "";
+      mqtttimer = 0;
+    }
+
     ws.cleanupClients(); // clean unused client connections
     MDNS.update();
     getJsonData();
     mppClient.loop(); // Call the PI Serial Library loop
 
-    if (millis() - mqtttimer >= (settings.data.mqttRefresh * 1000))
+    if (haDiscTrigger)
     {
-      sendtoMQTT(); // Update data to MQTT server if we should
-      mqtttimer = millis();
+      sendHaDiscovery();
+      haDiscTrigger = false;
     }
     mqttclient.loop();
   }
@@ -475,34 +477,10 @@ void prozessData()
   {
     notifyClients();
   }
-
-  if (valChange)
+  if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
   {
-    if (commandFromWeb != "")
-    {
-      DEBUG_PRINTLN(commandFromWeb);
-      DEBUG_WEBLN(commandFromWeb);
-      String tmp = mppClient.sendCommand(commandFromWeb); // send a custom command to the device
-      // mppClient.requestStaticData = true;
-      DEBUG_PRINTLN(tmp);
-      DEBUG_WEBLN(tmp);
-      commandFromWeb = "";
-    }
-    if (commandFromMqtt != "")
-    {
-      DEBUG_PRINTLN(commandFromMqtt);
-      DEBUG_WEBLN(commandFromMqtt);
-      String customResponse = mppClient.sendCommand(commandFromMqtt); // send a custom command to the device
-      // mppClient.requestStaticData = true;
-      DEBUG_PRINTLN(customResponse);
-      DEBUG_WEBLN(customResponse);
-      commandFromMqtt = "";
-      // mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (mppClient.get.raw.commandAnswer).c_str());
-    }
-    // mqtttimer = 0;
-    mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
-    requestTimer = 0;
-    valChange = false;
+    sendtoMQTT(); // Update data to MQTT server if we should
+    mqtttimer = millis();
   }
 }
 
@@ -670,10 +648,35 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
     DEBUG_PRINTLN(messageTemp);
     DEBUG_WEB(F("Send Command message recived: "));
     DEBUG_WEBLN(messageTemp);
-
-    commandFromMqtt = messageTemp;
-    // not needed anymore, we make a callback with the raw mqtt point
-    // mqttclient.publish(topicBuilder(buff, "Device_Control/Set_Command_answer"), customResponse.c_str());
-    valChange = true;
+    commandFromUser = messageTemp;
   }
+}
+
+bool sendHaDiscovery()
+{
+  if (!connectMQTT())
+  {
+    return false;
+  }
+  char topBuff[128];
+  char configBuff[1024];
+  size_t mqttContentLength;
+  for (size_t i = 0; i < sizeof haDescriptor / sizeof haDescriptor[0]; i++)
+  {
+    if (Json.containsKey(haDescriptor[i][0]))
+    {
+      sprintf(topBuff, "homeassistant/sensor/%s/%s/config", settings.data.deviceName, haDescriptor[i][0]); // build the topic
+
+      // mqttContentLength = sprintf(configBuff, "{\"state_topic\": \"%s/%s\",\"unique_id\": \"sensor.%s_%s\",\"name\": \"%s\",\"icon\": \"%s\",\"unit_of_measurement\": \"%s\",\"device_class\":\"%s\",\"device\":{\"identifiers\":[\"%s\"], \"configuration_url\":\"http://%s\",\"name\":\"%s\", \"model\":\"%s\",\"manufacturer\":\"SoftWareCrash\",\"sw_version\":\"Victron2MQTT %s\"}}",
+      //                             settings.data.mqttTopic, haDescriptor[i][0], settings.data.deviceName, haDescriptor[i][0], haDescriptor[i][0], haDescriptor[i][1], haDescriptor[i][2], haDescriptor[i][3], Json["Serial_number"].as<String>().c_str(), jsonESP["IP"].as<String>().c_str(), _settings.data.deviceName, Json["Model_description"].as<String>().c_str(), SOFTWARE_VERSION);
+
+      mqttclient.beginPublish(topBuff, mqttContentLength, false);
+      for (size_t i = 0; i < mqttContentLength; i++)
+      {
+        mqttclient.write(configBuff[i]);
+      }
+      mqttclient.endPublish();
+    }
+  }
+  return true;
 }
