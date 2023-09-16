@@ -11,6 +11,7 @@
 - debug log on Wemos USB or Webserial
 - [blink codes](https://github.com/softwarecrash/Solar2MQTT/wiki/Blink-Codes) for the current state of the ESP
 - [Reset functions](https://github.com/softwarecrash/Solar2MQTT/wiki/Reset)
+- [Support Home Assistant](https://github.com/softwarecrash/Solar2MQTT/wiki/HomeAssistant-integration)
 - with Teapod
 
 
