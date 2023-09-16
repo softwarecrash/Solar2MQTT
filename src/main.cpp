@@ -42,7 +42,7 @@ bool shouldSaveConfig = false;
 char mqtt_server[40];
 bool restartNow = false;
 bool askInverterOnce = false;
-bool fwUpdateRunning = false;
+bool workerCanRun = true;
 bool publishFirst = false;
 bool haDiscTrigger = false;
 uint32_t bootcount = 0;
@@ -414,15 +414,11 @@ void setup()
     DEBUG_WEBLN(F("mDNS running..."));
     ws.onEvent(onEvent);
     server.addHandler(&ws);
-    // #ifdef isDEBUG
-    //  WebSerial is accessible at "<IP Address>/webserial" in browser
     WebSerial.begin(&server);
-    /* Attach Message Callback */
     WebSerial.onMessage(recvMsg);
-    // #endif
+
     server.begin();
 
-    // mppClient.setProtocol(100); // manual set the protocol
     mppClient.Init(); // init the PI_serial Library
     mppClient.callback(prozessData);
 
@@ -434,31 +430,38 @@ void setup()
 
 void loop()
 {
-  // Make sure wifi is in the right mode
-  if (WiFi.status() == WL_CONNECTED && !fwUpdateRunning)
-  { // No use going to next step unless WIFI is up and running.
-    if (commandFromUser != "")
-    {
-      DEBUG_PRINTLN(commandFromUser);
-      DEBUG_WEBLN(commandFromUser);
-      String tmp = mppClient.sendCommand(commandFromUser); // send a custom command to the device
-      DEBUG_PRINTLN(tmp);
-      DEBUG_WEBLN(tmp);
-      commandFromUser = "";
-      mqtttimer = 0;
-    }
+  if (Update.isRunning())
+  {
+    workerCanRun = false; // lockout, atfer true need reboot
+  }
+  if (workerCanRun)
+  {
+    // Make sure wifi is in the right mode
+    if (WiFi.status() == WL_CONNECTED)
+    { // No use going to next step unless WIFI is up and running.
+      if (commandFromUser != "")
+      {
+        DEBUG_PRINTLN(commandFromUser);
+        DEBUG_WEBLN(commandFromUser);
+        String tmp = mppClient.sendCommand(commandFromUser); // send a custom command to the device
+        DEBUG_PRINTLN(tmp);
+        DEBUG_WEBLN(tmp);
+        commandFromUser = "";
+        mqtttimer = 0;
+      }
 
-    ws.cleanupClients(); // clean unused client connections
-    MDNS.update();
-    getJsonData();
-    mppClient.loop(); // Call the PI Serial Library loop
+      ws.cleanupClients(); // clean unused client connections
+      MDNS.update();
+      getJsonData();
+      mppClient.loop(); // Call the PI Serial Library loop
 
-    if (haDiscTrigger)
-    {
-      sendHaDiscovery();
-      haDiscTrigger = false;
+      if (haDiscTrigger)
+      {
+        sendHaDiscovery();
+        haDiscTrigger = false;
+      }
+      mqttclient.loop();
     }
-    mqttclient.loop();
   }
   if (restartNow && millis() >= (RestartTimer + 500))
   {
@@ -490,14 +493,14 @@ void getJsonData()
   deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
   deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
   deviceJson[F("sw_version")] = SOFTWARE_VERSION;
-  #ifdef isDEBUG
+#ifdef isDEBUG
   deviceJson[F("Free_Heap")] = ESP.getFreeHeap();
   deviceJson[F("HEAP_Fragmentation")] = ESP.getHeapFragmentation();
   deviceJson[F("json_memory_usage")] = Json.memoryUsage();
   deviceJson[F("json_capacity")] = Json.capacity();
   deviceJson[F("runtime")] = millis() / 1000;
   deviceJson[F("ws_clients")] = ws.count();
-  #endif
+#endif
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
@@ -593,15 +596,15 @@ bool sendtoMQTT()
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS"), (mppClient.get.raw.qpigs).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS2"), (mppClient.get.raw.qpigs2).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIRI"), (mppClient.get.raw.qpiri).c_str());
-  //  mqttclient.publish(topicBuilder(buff, "RAW/QT"), (mppClient.get.raw.qt).c_str());
-  //  mqttclient.publish(topicBuilder(buff, "RAW/QET"), (mppClient.get.raw.qet).c_str());
-  //  mqttclient.publish(topicBuilder(buff, "RAW/QEY"), (mppClient.get.raw.qey).c_str());
-  //  mqttclient.publish(topicBuilder(buff, "RAW/QEM"), (mppClient.get.raw.qem).c_str());
-  //  mqttclient.publish(topicBuilder(buff, "RAW/QED"), (mppClient.get.raw.qed).c_str());
-  //  mqttclient.publish(topicBuilder(buff, "RAW/QLT"), (mppClient.get.raw.qt).c_str());
-  //  mqttclient.publish(topicBuilder(buff, "RAW/QLY"), (mppClient.get.raw.qly).c_str());
-  //  mqttclient.publish(topicBuilder(buff, "RAW/QLM"), (mppClient.get.raw.qlm).c_str());
-  //  mqttclient.publish(topicBuilder(buff, "RAW/QLD"), (mppClient.get.raw.qld).c_str());
+    //  mqttclient.publish(topicBuilder(buff, "RAW/QT"), (mppClient.get.raw.qt).c_str());
+    //  mqttclient.publish(topicBuilder(buff, "RAW/QET"), (mppClient.get.raw.qet).c_str());
+    //  mqttclient.publish(topicBuilder(buff, "RAW/QEY"), (mppClient.get.raw.qey).c_str());
+    //  mqttclient.publish(topicBuilder(buff, "RAW/QEM"), (mppClient.get.raw.qem).c_str());
+    //  mqttclient.publish(topicBuilder(buff, "RAW/QED"), (mppClient.get.raw.qed).c_str());
+    //  mqttclient.publish(topicBuilder(buff, "RAW/QLT"), (mppClient.get.raw.qt).c_str());
+    //  mqttclient.publish(topicBuilder(buff, "RAW/QLY"), (mppClient.get.raw.qly).c_str());
+    //  mqttclient.publish(topicBuilder(buff, "RAW/QLM"), (mppClient.get.raw.qlm).c_str());
+    //  mqttclient.publish(topicBuilder(buff, "RAW/QLD"), (mppClient.get.raw.qld).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPI"), (mppClient.get.raw.qpi).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QMOD"), (mppClient.get.raw.qmod).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QALL"), (mppClient.get.raw.qall).c_str());
