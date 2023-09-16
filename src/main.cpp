@@ -354,6 +354,8 @@ void setup()
     server.on(
         "/update", HTTP_POST, [](AsyncWebServerRequest *request)
         {
+       //To upload through terminal you can use: curl -F "image=@firmware.bin" <ESP_IP>/update
+
     //https://gist.github.com/JMishou/60cb762047b735685e8a09cd2eb42a60
     // the request handler is triggered after the upload has finished... 
     // create the response, add header, and send response
