@@ -667,15 +667,29 @@ bool sendHaDiscovery()
   char topBuff[128];
   char configBuff[1024];
   size_t mqttContentLength;
-  for (size_t i = 0; i < sizeof haDescriptor / sizeof haDescriptor[0]; i++)
+  for (size_t i = 0; i < sizeof haStaticDescriptor / sizeof haStaticDescriptor[0]; i++)
   {
-    if (Json.containsKey(haDescriptor[i][0]))
+    if (Json.containsKey(haStaticDescriptor[i][0]))
     {
-      sprintf(topBuff, "homeassistant/sensor/%s/%s/config", settings.data.deviceName, haDescriptor[i][0]); // build the topic
+      sprintf(topBuff, "homeassistant/sensor/%s/%s/config", settings.data.deviceName, haStaticDescriptor[i][0]); // build the topic
+       mqttContentLength = sprintf(configBuff, "{\"state_topic\": \"%s/DeviceData/%s\",\"unique_id\": \"sensor.%s_%s\",\"name\": \"%s\",\"icon\": \"%s\",\"unit_of_measurement\": \"%s\",\"device_class\":\"%s\",\"device\":{\"identifiers\":[\"%s\"], \"configuration_url\":\"http://%s\",\"name\":\"%s\", \"model\":\"%s\",\"manufacturer\":\"SoftWareCrash\",\"sw_version\":\"Victron2MQTT %s\"}}",
+                                   settings.data.mqttTopic, haStaticDescriptor[i][0], settings.data.deviceName, haStaticDescriptor[i][0], haStaticDescriptor[i][0], haStaticDescriptor[i][1], haStaticDescriptor[i][2], haStaticDescriptor[i][3], Json["Serial_number"].as<String>().c_str(), (const char *)(WiFi.localIP().toString()).c_str(), settings.data.deviceName, Json["Model_description"].as<String>().c_str(), SOFTWARE_VERSION);
+      mqttclient.beginPublish(topBuff, mqttContentLength, false);
+      for (size_t i = 0; i < mqttContentLength; i++)
+      {
+        mqttclient.write(configBuff[i]);
+      }
+      mqttclient.endPublish();
+    }
+  }
 
-      // mqttContentLength = sprintf(configBuff, "{\"state_topic\": \"%s/%s\",\"unique_id\": \"sensor.%s_%s\",\"name\": \"%s\",\"icon\": \"%s\",\"unit_of_measurement\": \"%s\",\"device_class\":\"%s\",\"device\":{\"identifiers\":[\"%s\"], \"configuration_url\":\"http://%s\",\"name\":\"%s\", \"model\":\"%s\",\"manufacturer\":\"SoftWareCrash\",\"sw_version\":\"Victron2MQTT %s\"}}",
-      //                             settings.data.mqttTopic, haDescriptor[i][0], settings.data.deviceName, haDescriptor[i][0], haDescriptor[i][0], haDescriptor[i][1], haDescriptor[i][2], haDescriptor[i][3], Json["Serial_number"].as<String>().c_str(), jsonESP["IP"].as<String>().c_str(), _settings.data.deviceName, Json["Model_description"].as<String>().c_str(), SOFTWARE_VERSION);
-
+    for (size_t i = 0; i < sizeof haLiveDescriptor / sizeof haLiveDescriptor[0]; i++)
+  {
+    if (Json.containsKey(haLiveDescriptor[i][0]))
+    {
+      sprintf(topBuff, "homeassistant/sensor/%s/%s/config", settings.data.deviceName, haLiveDescriptor[i][0]); // build the topic
+       mqttContentLength = sprintf(configBuff, "{\"state_topic\": \"%s/LiveData/%s\",\"unique_id\": \"sensor.%s_%s\",\"name\": \"%s\",\"icon\": \"%s\",\"unit_of_measurement\": \"%s\",\"device_class\":\"%s\",\"device\":{\"identifiers\":[\"%s\"], \"configuration_url\":\"http://%s\",\"name\":\"%s\", \"model\":\"%s\",\"manufacturer\":\"SoftWareCrash\",\"sw_version\":\"Victron2MQTT %s\"}}",
+                                   settings.data.mqttTopic, haLiveDescriptor[i][0], settings.data.deviceName, haLiveDescriptor[i][0], haLiveDescriptor[i][0], haLiveDescriptor[i][1], haLiveDescriptor[i][2], haLiveDescriptor[i][3], Json["Serial_number"].as<String>().c_str(), (const char *)(WiFi.localIP().toString()).c_str(), settings.data.deviceName, Json["Model_description"].as<String>().c_str(), SOFTWARE_VERSION);
       mqttclient.beginPublish(topBuff, mqttContentLength, false);
       for (size_t i = 0; i < mqttContentLength; i++)
       {
