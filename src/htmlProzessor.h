@@ -10,9 +10,9 @@ String htmlProcessor(const String &var)
     if (var == F("pre_swversion"))
         return (SWVERSION);
     if (var == F("pre_flash_size"))
-        return (String(FlashSize).c_str());
-    if (var == F("pre_esp01"))
-        return (String(ESP01).c_str());
+        return (String(ESP.getFreeSketchSpace()).c_str());
+   // if (var == F("pre_esp01"))
+   //     return (String(ESP01).c_str());
     if (var == F("pre_device_name"))
         return (settings.data.deviceName);
     if (var == F("pre_mqtt_server"))

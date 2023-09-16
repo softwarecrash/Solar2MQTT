@@ -43,17 +43,11 @@ extern JsonObject liveData;
 class PI_Serial
 {
 public:
-    const char *startChar = "("; // move later to changeable
+    const char *startChar = "(";
     const char *delimiter = " ";
     bool requestStaticData = true;
     byte protocol = NoD;
 
-    enum protocolType
-    {
-        NoD,
-        PI18,
-        PI30,
-    };
     struct
     {
         struct
@@ -128,12 +122,22 @@ private:
     unsigned int soft_rx;
     unsigned int serialIntfBaud;
 
-    unsigned int previousTime = 0;
-    unsigned int delayTime = 50;
+    unsigned long previousTime = 0;
+    unsigned long delayTime = 150;
     byte requestCounter = 0;
-    String customCommandBuffer;
 
-    //unsigned int protocolType = 100;
+    long long int requestOK = 0;
+    long long int requestFail = 0;
+
+    byte qexCounter = 0;
+    
+    String customCommandBuffer;
+    enum protocolType
+    {
+        NoD,
+        PI18,
+        PI30,
+    };
 
     /**
      * @brief get the crc from a string
@@ -146,16 +150,6 @@ private:
     byte getCHK(String data);
 
     /**
-     * @brief append the calcualted crc to the given string and return it
-     */
-    String appendCRC(String data);
-
-    /**
-     * @brief append the calcualted crc to the given string and return it
-     */
-    String appendCHK(String data);
-
-    /**
      * @brief function for autodetect the inverter
      * @details ask all modes and sort it to a protocol
      */
@@ -166,12 +160,6 @@ private:
      * @details calculates the checksum and sends the command over the specified serial connection
      */
     String requestData(String command);
-
-    /**
-     * @brief Clear all data from the Get struct
-     * @details when wrong or missing data comes in it need sto be cleared
-     */
-    void clearGet();
 
     /**
      * @brief accept a achar and get back the operation mode as string
@@ -187,7 +175,6 @@ private:
     bool PIXX_Q1();
     bool PIXX_QPIGS();
     bool PIXX_QPIGS2();
-    //bool PIXX_QALL();
     bool PIXX_QMOD();
     bool PIXX_QEX();
     // static reqeuests

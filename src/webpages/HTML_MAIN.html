@@ -4,14 +4,14 @@
     <h2 id="device_name">%pre_device_name%</h2>
 </figure>
 
-<div class="row gx-0 mb-1" id="alert" style="padding-bottom: 0rem;padding-top: 0px; display: none;">
+<div class="dR row gx-0 mb-1" id="alert" style="padding-bottom: 0rem;padding-top: 0px; display: none;">
     <div id="alert" class="" role="alert" style="text-align: center;">
         <i id="alert_icon" class=""></i>
         <span id="alert_message"></span>
     </div>
 </div>
 
-<div class="row gx-0 mb-2">
+<div class="dR row gx-0 mb-2">
     <div class="col" id="ClickSOC">
         <div class="progress" style="height:1.8rem;">
             <div id="packSOC" class="progress-bar dF" role="progressbar" style="width:0%;height:1.8rem;"
@@ -20,7 +20,7 @@
     </div>
 </div>
 
-<div class="row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
+<div class="dR row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
     <div class="col">Solar:</div>
     <div class="col dF">
         <span id="pv_volt"></span>
@@ -29,7 +29,16 @@
     </div>
 </div>
 
-<div class="row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
+<div class="dR row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
+    <div class="col">Solar2:</div>
+    <div class="col dF">
+        <span id="pv2_volt"></span>
+        <span id="pv2_current"></span>
+        <span id="pv2_power"></span>
+    </div>
+</div>
+
+<div class="dR row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
     <div class="col">Grid:</div>
     <div class="col dF">
         <span id="grid_volt"></span>
@@ -37,7 +46,7 @@
     </div>
 </div>
 
-<div class="row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
+<div class="dR row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
     <div class="col">AC out:</div>
     <div class="col dF">
         <span id="ac_out_volt"></span>
@@ -47,14 +56,14 @@
     </div>
 </div>
 
-<div class="row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
+<div class="dR row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
     <div class="col">Temperature:</div>
     <div class="col dF">
         <span id="heatsink_temp"></span>
     </div>
 </div>
 
-<div class="row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
+<div class="dR row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
     <div class="col">Battery:</div>
     <div class="col dF">
         <span id="batt_volt"></span>
@@ -63,11 +72,10 @@
     </div>
 </div>
 
-<div class="row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
+<div class="dR row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
     <div class="col">Inverter mode:</div>
     <div class="col dF">
         <span id="ivmode"></span>
-
     </div>
 </div>
 
@@ -91,6 +99,7 @@
     var alertListitem = 0;
     var kickRefresh = true;
     var dataFields = document.getElementsByClassName("dF");
+    var dataRows = document.getElementsByClassName("dR");
 
     function initWebSocket() {
         //console.log('Trying to open a WebSocket connection...');
@@ -102,6 +111,7 @@
     }
     function onOpen(event) {
         console.log('Connection opened');
+        setInterval(checkWS, 5000);
     }
     function onClose(event) {
         //document.getElementById("status").innerHTML = 'WS Closed';
@@ -121,12 +131,16 @@
         document.getElementById("pv_current").innerHTML = data.PV_Input_Current + 'A  ';
         document.getElementById("pv_power").innerHTML = Math.round(data.PV_Charging_Power) + 'W  ';
 
+        document.getElementById("pv2_volt").innerHTML = data.PV2_Input_Voltage + 'V ';
+        document.getElementById("pv2_current").innerHTML = data.PV2_Input_Current + 'A  ';
+        document.getElementById("pv2_power").innerHTML = Math.round(data.PV2_Charging_Power) + 'W  ';
+
         document.getElementById("grid_volt").innerHTML = data.AC_in_Voltage + 'V ';
         document.getElementById("grid_hz").innerHTML = data.AC_in_Frequenz + 'Hz  ';
 
         document.getElementById("ac_out_volt").innerHTML = data.AC_out_Voltage + 'V ';
         document.getElementById("ac_out_hz").innerHTML = data.AC_out_Frequenz + 'Hz ';
-        //document.getElementById("ac_out_va").innerHTML = data.acOutVa+'Va ';
+
         document.getElementById("ac_out_power").innerHTML = data.AC_out_Watt + 'W ';
         document.getElementById("ac_out_percent").innerHTML = data.AC_out_percent + '%%';
 
@@ -143,6 +157,14 @@
                 dataFields[i].style.display = 'none';
             } else {
                 dataFields[i].style.display = '';
+            }
+        }
+
+        for (var i = 0; i < dataRows.length; i++) {
+            if (dataRows[i].innerHTML.indexOf("undefined") > -1) {
+                dataRows[i].style.display = 'none';
+            } else {
+                dataRows[i].style.display = '';
             }
         }
     }
@@ -199,7 +221,11 @@
     function initButton() {
 
     }
-
+    function checkWS() {
+        if (websocket.readyState !== WebSocket.CLOSED) {
+            websocket.send("A9");
+        }
+    }
 </script>
 
 %pre_foot_template%

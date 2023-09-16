@@ -1,23 +1,4 @@
-// QPIGS: 239.4 49.9 230.0 50.0 0230 0187 004 374 53.00 000 068 0027 0002 088.7 52.96 00001 00110110 00 00 00121 010                             //loosi
-// QPIGS: 000.0 00.0 229.5 50.0 0137 0062 004 365 26.55 007 100 0014 0007 075.0 26.57 00000 00110110 00 00 00184 010                             //crash seiner
-
-// GPIGS: 232.0 50.0 232.0 50.0 0263 0274 009 402 25.31 002 057 0688 0002 032.4 25.29 00000 10010110 00 04 00069 000                             //issues/27
-
-// QPIGS: 231.1 49.9 000.0 00.0 0000 0000 000 402 26.76 000 096 075 00.1 120.0 00.00 00000 00000010 00 00 00016 000                              //samson 2400W Solar Hybrid Inverter 60A/80A 24V PV max 450V
-// QPIGS: 230.6 49.9 000.0 00.0 0000 0000 000 421 26.70 000 100 0052 00.0 119.8 00.00 00000 00000110 00 00 00000 100                             //samson VM-3500W 80A/100A 24V PV max 500V
-
-// QPIGS: BBB.B CC.CC DD.DD EE.EE FF.FF GGGG ±HHH II.II ±JJJ KKKK 00000000                                                                       PI34 / MPPT-3000
-// QPIGS: BBB.B CC.C DDD.D EE.E FFFF GGGG HHH III JJ.JJ KKK OOO TTTT EEEE UUU.U WW.WW PPPPP 00000000                                             PI30 HS MS MSX
-// QPIGS: BBB.B CC.C DDD.D EE.E FFFF GGGG HHH III JJ.JJ KKK OOO TTTT EEEE UUU.U WW.WW PPPPP 00000000                                             PI30 Revo
-// QPIGS: BBB.B CC.C DDD.D EE.E FFFF GGGG HHH III JJ.JJ KKK OOO TTTT EEEE UUU.U WW.WW PPPPP 00000000 QQ VV MMMMM 000                             PI41 / LV5048
-// QPIGS: BBB.B CC.C DDD.D EE.E FFFF GGGG HHH III JJ.JJ KKK OOO TTTT EE.E UUU.U WW.WW PPPPP 00000000 QQ VV MMMMM 000                             PI30 PIP
-// QPIGS: BBB.B CC.C DDD.D EE.E FFFF GGGG HHH III JJ.JJ KKK OOO TTTT EE.E UUU.U WW.WW PPPPP 00000000 QQ VV MMMMM 000 Y ZZ AAAA                   PI30 Max
-
-// QPIGS: AAA.A BBBBBB CC.C DDDD.D EEE.E FFFFF GG.G HHH.H III JJJ.J KKK.K LLL.L MMM.M NNN OOOOO PPPPP QQQQQ RRR.R SSS.S TTT.T UUU.U V WWWWWWWWW  PI16
-
-// 000.0 00.0 229.9 50.0 0137 0082 004 403 29.23 001 100 0026 0004 081.5 29.17 00000 00110110 00 00 00131 110 neu ausgelesen von crash. watt werden nicht angezeigt
-
-static const char *const qpigsList[][30] = {
+static const char *const qpigsList[][24] = {
     // [PI34 / MPPT-3000], [PI30 HS MS MSX], [PI30 Revo], [PI30 PIP], [PI41 / LV5048]
     {
         "AC_in_Voltage",                  // BBB.B
@@ -48,27 +29,26 @@ static const char *const qpigsList[][30] = {
     // [PI16]
     {
         "Grid_voltage",             // AAA.A
-        "Output power",             // BBBBBB
-        "Grid frequency",           // CC.C
-        "Output current",           // DDDD.D
-        "C output voltage R",       // EEE.E
-        "AC output power R",        // FFFFF
-        "AC output frequency",      // GG.G
-        "AC output current R",      // HHH.H
-        "Output load percent",      // III
-        "PBUS voltage",             // JJJ.J
-        "SBUS voltage",             // KKK.K
-        "Positive battery voltage", // LLL.L
-        "Negative battery voltage", // MMM.M
-        "Battery capacity",         // NNN
-        "PV1 input power",          // OOOOO
-        "PV2 input power",          // PPPPP
-        "PV3 input power",          // QQQQQ
-        "PV1 input voltage",        // RRR.R
-        "PV2 input voltage",        // SSS.S
-        "PV3 input voltage",        // TTT.T
-        "Max temperature",          // UUU.U
-
+        "Output_power",             // BBBBBB
+        "Grid_frequency",           // CC.C
+        "Output_current",           // DDDD.D
+        "AC_output_voltage",       // EEE.E
+        "AC_output_power",        // FFFFF
+        "AC_output_frequency",      // GG.G
+        "AC_output_current",      // HHH.H
+        "Output_load_percent",      // III
+        "PBUS_voltage",             // JJJ.J
+        "SBUS_voltage",             // KKK.K
+        "Positive_battery_voltage", // LLL.L
+        "Negative_battery_voltage", // MMM.M
+        "Battery_capacity",         // NNN
+        "PV1_input_power",          // OOOOO
+        "PV2_input_power",          // PPPPP
+        "PV3_input_power",          // QQQQQ
+        "PV1_input_voltage",        // RRR.R
+        "PV2_input_voltage",        // SSS.S
+        "PV3_input_voltage",        // TTT.T
+        "Max_temperature",          // UUU.U
     },
 };
 static const char *const qallList[] = {
@@ -92,6 +72,37 @@ static const char *const qallList[] = {
     "Warning_Code",              // KK
     "Fault_code",                // SS
 };
+static const char *const P005GS[][28] = {
+    {"AC_in_Voltage", "10"},            // AAAA
+    {"AC_in_Frequenz", "10"},           // BBB
+    {"AC_out_Voltage", "10"},           // CCCC
+    {"AC_out_Frequenz", "10"},          // DDD
+    {"AC_out_VA", "0"},                 // EEEE
+    {"AC_out_Watt", "0"},               // FFFF
+    {"AC_out_percent", "0"},            // GGGG
+    {"Battery_Voltage", "10"},          // HHHH
+    {"Battery_SCC_Volt", "10"},         // III
+    {"Battery_SCC2_Volt", "10"},        // JJJ
+    {"Battery_Discharge_Current", "0"}, // KKK
+    {"Battery_Charge_Current", "0"},    // LLL
+    {"Battery_Percent", "0"},           // MMM
+    {"Inverter_Bus_Temperature", "0"},  // NNN
+    {"MPPT1_Charger_Temperature", "0"}, // OOO
+    {"MPPT2_Charger_Temperature", "0"}, // PPP
+    {"PV1_Input_Power", "0"},           // QQQQ
+    {"PV2_Input_Power", "0"},           // RRRR
+    {"PV1_Input_Voltage", "10"},        // SSSS
+    {"PV2_Input_Voltage", "10"},        // TTTT
+    {"Configuration_State", "0"},       // U
+    {"MPPT1_Charger_Status", "0"},       // V
+    {"MPPT2_CHarger_Status", "0"},      // W
+    {"Load_Connection", "0"},           // X
+    {"Battery_Power_Direction", "0"},   // Y
+    {"ACDC_Power_Direction", "0"},      // Z
+    {"Line_Power_Direction", "0"},      // a
+    {"Local_Parallel_ID", "0"},         // b
+
+};
 
 bool PI_Serial::PIXX_QPIGS()
 {
@@ -100,10 +111,10 @@ bool PI_Serial::PIXX_QPIGS()
     byte protocolNum = 0; // for future use
     String commandAnswerQALL = this->requestData("QALL");
     get.raw.qall = commandAnswerQALL;
-    if (commandAnswerQALL == "ERCRC")
-    {
-      return false;
-    }
+   // if (commandAnswerQALL == "ERCRC")
+    //{
+    //  return false;
+    //}
     //
     String commandAnswerQPIGS = this->requestData("QPIGS");
     get.raw.qpigs = commandAnswerQPIGS;
@@ -185,6 +196,60 @@ bool PI_Serial::PIXX_QPIGS()
   }
   else if (protocol == PI18)
   {
+    String commandAnswer = this->requestData("^P005GS");
+    get.raw.qpigs = commandAnswer;
+    if (commandAnswer == "NAK")
+      return true;
+    if (commandAnswer == "ERCRC")
+      return false;
+    byte commandAnswerLength = commandAnswer.length();
+
+    // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
+    if (commandAnswerLength >= 60 && commandAnswerLength <= 140)
+    {
+      // Split the string into substrings
+      String strs[30]; // buffer for string splitting
+      int StringCount = 0;
+      while (commandAnswer.length() > 0)
+      {
+        int index = commandAnswer.indexOf(delimiter);
+        if (index == -1) // No space found
+        {
+          strs[StringCount++] = commandAnswer;
+          break;
+        }
+        else
+        {
+          strs[StringCount++] = commandAnswer.substring(0, index);
+          commandAnswer = commandAnswer.substring(index + 1);
+        }
+      }
+
+      for (unsigned int i = 0; i < sizeof P005GS[0] / sizeof P005GS[0][0]; i++)
+      {
+        if (!strs[i].isEmpty() && strcmp(P005GS[i][0], "") != 0)
+        {
+          if (atoi(P005GS[i][1]) > 0)
+          {
+            liveData[P005GS[i][0]] = (int)((strs[i].toFloat() / atoi(P005GS[i][1])) * 100 + 0.5) / 100.0;
+          }
+          else if (atoi(P005GS[i][1]) == 0)
+          {
+            liveData[P005GS[i][0]] = strs[i].toInt();
+          }
+          else
+          {
+            liveData[P005GS[i][0]] = strs[i];
+          }
+        }
+      }
+      // make some things pretty
+
+      liveData["PV_Input_Voltage"] = (liveData["PV1_Input_Voltage"].as<unsigned short>() + liveData["PV2_Input_Voltage"].as<unsigned short>());
+      liveData["PV_Charging_Power"] = (liveData["PV1_Input_Power"].as<unsigned short>() + liveData["PV2_Input_Power"].as<unsigned short>());
+      liveData["PV_Input_Current"] = (int)((liveData["PV_Charging_Power"].as<unsigned short>() / (liveData["PV_Input_Voltage"].as<unsigned short>()+0.5)) * 100) / 100.0;
+      liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
+    }
     return true;
   }
   else if (protocol == NoD)
