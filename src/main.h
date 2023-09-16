@@ -157,7 +157,7 @@ static const char *const haLiveDescriptor[][4]{
 {"Battery_Power_Direction","mdi:battery-charging-high","",""},
 //{"Battery_SCC_Volt","mdi:battery-high","V","voltage"},
 //{"Battery_SCC2_Volt","mdi:battery-high","V","voltage"},
-{"Battery_temperature","mdi:thermometer-lines","C","temperature"},
+{"Battery_temperature","mdi:thermometer-lines","°C","temperature"},
 {"Battery_Voltage","mdi:battery-high","V","voltage"},
 //{"Battery_voltage_offset_fans_on","mdi:fan","",""},
 //{"Configuration_State","","",""},
