@@ -669,7 +669,7 @@ bool sendHaDiscovery()
   size_t mqttContentLength;
   for (size_t i = 0; i < sizeof haStaticDescriptor / sizeof haStaticDescriptor[0]; i++)
   {
-    if (Json.containsKey(haStaticDescriptor[i][0]))
+    if (staticData.containsKey(haStaticDescriptor[i][0]))
     {
       sprintf(topBuff, "homeassistant/sensor/%s/%s/config", settings.data.deviceName, haStaticDescriptor[i][0]); // build the topic
        mqttContentLength = sprintf(configBuff, "{\"state_topic\": \"%s/DeviceData/%s\",\"unique_id\": \"sensor.%s_%s\",\"name\": \"%s\",\"icon\": \"%s\",\"unit_of_measurement\": \"%s\",\"device_class\":\"%s\",\"device\":{\"identifiers\":[\"%s\"], \"configuration_url\":\"http://%s\",\"name\":\"%s\", \"model\":\"%s\",\"manufacturer\":\"SoftWareCrash\",\"sw_version\":\"Victron2MQTT %s\"}}",
@@ -685,7 +685,7 @@ bool sendHaDiscovery()
 
     for (size_t i = 0; i < sizeof haLiveDescriptor / sizeof haLiveDescriptor[0]; i++)
   {
-    if (Json.containsKey(haLiveDescriptor[i][0]))
+    if (liveData.containsKey(haLiveDescriptor[i][0]))
     {
       sprintf(topBuff, "homeassistant/sensor/%s/%s/config", settings.data.deviceName, haLiveDescriptor[i][0]); // build the topic
        mqttContentLength = sprintf(configBuff, "{\"state_topic\": \"%s/LiveData/%s\",\"unique_id\": \"sensor.%s_%s\",\"name\": \"%s\",\"icon\": \"%s\",\"unit_of_measurement\": \"%s\",\"device_class\":\"%s\",\"device\":{\"identifiers\":[\"%s\"], \"configuration_url\":\"http://%s\",\"name\":\"%s\", \"model\":\"%s\",\"manufacturer\":\"SoftWareCrash\",\"sw_version\":\"Victron2MQTT %s\"}}",
