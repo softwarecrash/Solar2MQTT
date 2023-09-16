@@ -29,26 +29,26 @@ static const char *const qpigsList[][24] = {
     // [PI16]
     {
         "Grid_voltage",             // AAA.A
-        "Output power",             // BBBBBB
-        "Grid frequency",           // CC.C
-        "Output current",           // DDDD.D
-        "C output voltage R",       // EEE.E
-        "AC output power R",        // FFFFF
-        "AC output frequency",      // GG.G
-        "AC output current R",      // HHH.H
-        "Output load percent",      // III
-        "PBUS voltage",             // JJJ.J
-        "SBUS voltage",             // KKK.K
-        "Positive battery voltage", // LLL.L
-        "Negative battery voltage", // MMM.M
-        "Battery capacity",         // NNN
-        "PV1 input power",          // OOOOO
-        "PV2 input power",          // PPPPP
-        "PV3 input power",          // QQQQQ
-        "PV1 input voltage",        // RRR.R
-        "PV2 input voltage",        // SSS.S
-        "PV3 input voltage",        // TTT.T
-        "Max temperature",          // UUU.U
+        "Output_power",             // BBBBBB
+        "Grid_frequency",           // CC.C
+        "Output_current",           // DDDD.D
+        "AC_output_voltage",       // EEE.E
+        "AC_output_power",        // FFFFF
+        "AC_output_frequency",      // GG.G
+        "AC_output_current",      // HHH.H
+        "Output_load_percent",      // III
+        "PBUS_voltage",             // JJJ.J
+        "SBUS_voltage",             // KKK.K
+        "Positive_battery_voltage", // LLL.L
+        "Negative_battery_voltage", // MMM.M
+        "Battery_capacity",         // NNN
+        "PV1_input_power",          // OOOOO
+        "PV2_input_power",          // PPPPP
+        "PV3_input_power",          // QQQQQ
+        "PV1_input_voltage",        // RRR.R
+        "PV2_input_voltage",        // SSS.S
+        "PV3_input_voltage",        // TTT.T
+        "Max_temperature",          // UUU.U
     },
 };
 static const char *const qallList[] = {
