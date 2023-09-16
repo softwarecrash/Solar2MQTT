@@ -581,7 +581,6 @@ bool sendtoMQTT()
       {
         char msgBuffer1[200];
         sprintf(msgBuffer1, "%s/%s/%s", settings.data.mqttTopic, jsonDev.key().c_str(), jsondat.key().c_str());
-        // DEBUG_PRINTLN(msgBuffer1);
         mqttclient.publish(msgBuffer1, jsondat.value().as<String>().c_str());
       }
     }
