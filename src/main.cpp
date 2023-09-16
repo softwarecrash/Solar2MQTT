@@ -248,7 +248,7 @@ void setup()
   wm.setDebugOutput(false);       // disable wifimanager debug output
   wm.setMinimumSignalQuality(20); // filter weak wifi signals
   // wm.setConnectTimeout(15);       // how long to try to connect for before continuing
-  wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
+  // wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
   wm.setSaveConfigCallback(saveConfigCallback);
   // save settings if wifi setup is fire up
   bool apRunning = wm.autoConnect("Solar2MQTT-AP");
@@ -421,8 +421,8 @@ void setup()
 
     server.begin();
 
-    mppClient.Init(); // init the PI_serial Library
     mppClient.callback(prozessData);
+    mppClient.Init(); // init the PI_serial Library
 
     mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
   }

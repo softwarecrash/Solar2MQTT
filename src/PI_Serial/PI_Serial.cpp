@@ -43,65 +43,72 @@ bool PI_Serial::Init()
 
 bool PI_Serial::loop()
 {
-    if (millis() - previousTime > delayTime && protocol != NoD)
+    if (millis() - previousTime > delayTime)
     {
-        if (sendCustomCommand())
+        if (protocol != NoD)
         {
-            requestStaticData = true;
-            requestCounter = 0;
+            if (sendCustomCommand())
+            {
+                requestStaticData = true;
+                requestCounter = 0;
+                previousTime = millis();
+                return true;
+            }
+            switch (requestStaticData)
+            {
+            case true:
+                switch (requestCounter)
+                {
+                case 0:
+                    requestCounter = PIXX_QPIRI() ? (requestCounter + 1) : 0;
+                    break;
+                case 1:
+                    requestCounter = PIXX_QMN() ? (requestCounter + 1) : 0;
+                    break;
+                case 2:
+                    requestCounter = PIXX_QPI() ? (requestCounter + 1) : 0;
+                    requestCounter = 0;
+                    requestStaticData = false;
+                    break;
+                }
+                break;
+            case false:
+                switch (requestCounter)
+                {
+                case 0:
+                    requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
+                    break;
+                case 1:
+                    requestCounter = PIXX_QPIGS2() ? (requestCounter + 1) : 0;
+                    break;
+                case 2:
+                    requestCounter = PIXX_QMOD() ? (requestCounter + 1) : 0;
+                    break;
+                case 3:
+                    requestCounter = PIXX_Q1() ? (requestCounter + 1) : 0;
+                    break;
+                case 4:
+                    // requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
+                    requestCounter++;
+                    break;
+                case 5:
+                    requestCounter = PIXX_QEX() ? (requestCounter + 1) : 0;
+                    break;
+                case 6:
+                    // sendCustomCommand();
+                    requestCallback();
+                    requestCounter = 0;
+                    break;
+                }
+                break;
+            }
             previousTime = millis();
-            return true;
         }
-        switch (requestStaticData)
+        else
         {
-        case true:
-            switch (requestCounter)
-            {
-            case 0:
-                requestCounter = PIXX_QPIRI() ? (requestCounter + 1) : 0;
-                break;
-            case 1:
-                requestCounter = PIXX_QMN() ? (requestCounter + 1) : 0;
-                break;
-            case 2:
-                requestCounter = PIXX_QPI() ? (requestCounter + 1) : 0;
-                requestCounter = 0;
-                requestStaticData = false;
-                break;
-            }
-            break;
-        case false:
-            switch (requestCounter)
-            {
-            case 0:
-                requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
-                break;
-            case 1:
-                requestCounter = PIXX_QPIGS2() ? (requestCounter + 1) : 0;
-                break;
-            case 2:
-                requestCounter = PIXX_QMOD() ? (requestCounter + 1) : 0;
-                break;
-            case 3:
-                requestCounter = PIXX_Q1() ? (requestCounter + 1) : 0;
-                break;
-            case 4:
-                // requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
-                requestCounter++;
-                break;
-            case 5:
-                requestCounter = PIXX_QEX() ? (requestCounter + 1) : 0;
-                break;
-            case 6:
-                // sendCustomCommand();
-                requestCallback();
-                requestCounter = 0;
-                break;
-            }
-            break;
+            previousTime = millis();
+            requestCallback();
         }
-
-        previousTime = millis();
     }
     return true;
 }
@@ -239,31 +246,30 @@ String PI_Serial::requestData(String command)
         commandBuffer = "ERCRC";
     }
     char debugBuff[128];
-    //sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, commandBuffer.length(), (const wchar_t *)commandBuffer.c_str());
-     sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, commandBuffer.length());
-     PI_DEBUG_PRINTLN(debugBuff);
-     PI_DEBUG_WEBLN(debugBuff);
+    // sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]\n[D: %S]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, commandBuffer.length(), (const wchar_t *)commandBuffer.c_str());
+    sprintf(debugBuff, "[C: %5S][CR: %4X][CC: %4X][L: %3u]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, commandBuffer.length());
+    PI_DEBUG_PRINTLN(debugBuff);
+    PI_DEBUG_WEBLN(debugBuff);
 
-     PI_DEBUG_PRINT(requestOK);
-     PI_DEBUG_PRINT("<-OK | Fail->");
-     PI_DEBUG_PRINTLN(requestFail);
+    PI_DEBUG_PRINT(requestOK);
+    PI_DEBUG_PRINT("<-OK | Fail->");
+    PI_DEBUG_PRINTLN(requestFail);
 
     return commandBuffer;
 }
 
-uint16_t cal_crc_half(uint8_t* pin, uint8_t len)
+uint16_t cal_crc_half(uint8_t *pin, uint8_t len)
 // https://forums.aeva.asn.au/viewtopic.php?t=4332&start=25
 {
     uint16_t crc;
     uint8_t da;
-    uint8_t* ptr;
+    uint8_t *ptr;
     uint8_t bCRCHign;
     uint8_t bCRCLow;
     uint16_t crc_ta[16] =
-    {
-        0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
-        0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef
-    };
+        {
+            0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
+            0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef};
     ptr = pin;
     crc = 0;
     while (len-- != 0)
