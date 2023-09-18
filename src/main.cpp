@@ -537,7 +537,7 @@ bool connectMQTT()
 
         mqttclient.publish(topicBuilder(buff, "Alive"), "true", true); // LWT online message must be retained!
         mqttclient.publish(topicBuilder(buff, "IP"), (const char *)(WiFi.localIP().toString()).c_str(), true);
-        mqttclient.subscribe(topicBuilder(buff, "Device_Control/Set_Command"));
+        mqttclient.subscribe(topicBuilder(buff, "DeviceControl/Set_Command"));
 
         if (strlen(settings.data.mqttTriggerPath) >= 1)
         {
@@ -591,7 +591,7 @@ bool sendtoMQTT()
     }
     if (mppClient.get.raw.commandAnswer.length() > 0)
     {
-      mqttclient.publish((String(settings.data.mqttTopic) + String("/Device_Control/Set_Command_answer")).c_str(), (mppClient.get.raw.commandAnswer).c_str());
+      mqttclient.publish((String(settings.data.mqttTopic) + String("/DeviceControl/Set_Command_answer")).c_str(), (mppClient.get.raw.commandAnswer).c_str());
     }
 // RAW
 #ifdef DEBUG
@@ -648,7 +648,7 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
     return;
 
   // send raw control command
-  if (strcmp(top, topicBuilder(buff, "Device_Control/Set_Command")) == 0 && messageTemp.length() > 0)
+  if (strcmp(top, topicBuilder(buff, "DeviceControl/Set_Command")) == 0 && messageTemp.length() > 0)
   {
     DEBUG_PRINT(F("Send Command message recived: "));
     DEBUG_PRINTLN(messageTemp);
