@@ -101,7 +101,6 @@ static const char *const P005GS[][28] = {
     {"ACDC_Power_Direction", "0"},      // Z
     {"Line_Power_Direction", "0"},      // a
     {"Local_Parallel_ID", "0"},         // b
-
 };
 
 bool PI_Serial::PIXX_QPIGS()
@@ -109,8 +108,11 @@ bool PI_Serial::PIXX_QPIGS()
   if (protocol == PI30)
   {
     byte protocolNum = 0; // for future use
+    get.raw.qall = "";
     String commandAnswerQALL = this->requestData("QALL");
     get.raw.qall = commandAnswerQALL;
+
+    //get.raw.qall = "NAK";
    // if (commandAnswerQALL == "ERCRC")
     //{
     //  return false;
@@ -164,7 +166,7 @@ bool PI_Serial::PIXX_QPIGS()
       liveData["PV_Input_Power"] = (liveData["PV_Input_Voltage"].as<unsigned short>() * liveData["PV_Input_Current"].as<unsigned short>());
     }
 
-    if (get.raw.qall != "NAK" || get.raw.qall != "ERCRC")
+    if (get.raw.qall.length() > 10 /*get.raw.qall != "NAK" || get.raw.qall != "ERCRC" || get.raw.qall != ""*/)
     {
       String strsQALL[30];
       //  Split the string into substrings
@@ -192,6 +194,7 @@ bool PI_Serial::PIXX_QPIGS()
       liveData["Inverter_Operation_Mode"] = getModeDesc((char)liveData["Inverter_Operation_Mode"].as<String>().charAt(0));
       liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
     }
+    
     return true;
   }
   else if (protocol == PI18)
