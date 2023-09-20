@@ -14,6 +14,9 @@
 #endif
 
 #define LED_PIN 02 //D4 with the LED on Wemos D1 Mini
+#define LED_COM 5
+#define LED_SRV 0
+#define LED_NET 4
 
 #define DEBUG_WEBLN(...) WebSerial.println(__VA_ARGS__)
 #define DEBUG_WEBF(...) WebSerial.printf(__VA_ARGS__)

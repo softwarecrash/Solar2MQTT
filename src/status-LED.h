@@ -33,12 +33,15 @@ void notificationLED()
       ledState = 4;
     else if (!mqttclient.connected() && strcmp(settings.data.mqttServer, "") != 0)
       ledState = 3;
-    //else if (strcmp(bms.get.chargeDischargeStatus, "offline") == 0)
-//    else if (!bms.getState())
-//      ledState = 2;
-//    else if (WiFi.status() == WL_CONNECTED && mqttclient.connected() && strcmp(bms.get.chargeDischargeStatus, "offline") != 0)
-    else if (WiFi.status() == WL_CONNECTED && mqttclient.connected() != 0)
+    else if (mppClient.connection)
+      ledState = 2;
+    else if (WiFi.status() == WL_CONNECTED && mqttclient.connected() && mppClient.connection)
       ledState = 1;
+
+
+    digitalWrite(LED_COM, mppClient.connection);
+    digitalWrite(LED_SRV, mqttclient.connected());
+    digitalWrite(LED_NET, (WiFi.status() == WL_CONNECTED)  ? true : false);
   }
 
   if (ledState > 0)

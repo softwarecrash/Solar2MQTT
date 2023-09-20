@@ -47,6 +47,7 @@ public:
     const char *delimiter = " ";
     bool requestStaticData = true;
     byte protocol = NoD;
+    bool connection = false;
 
     struct
     {
@@ -128,6 +129,7 @@ private:
 
     long long int requestOK = 0;
     long long int requestFail = 0;
+    long long int connectionCounter = 0;
 
     byte qexCounter = 0;
     

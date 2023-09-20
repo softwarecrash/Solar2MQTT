@@ -176,6 +176,10 @@ bool resetCounter(bool count)
 void setup()
 {
   analogWrite(LED_PIN, 0);
+  analogWrite(LED_COM, 0);
+  analogWrite(LED_SRV, 0);
+  analogWrite(LED_NET, 0);
+
   resetCounter(true);
 #ifdef DEBUG
   DEBUG_BEGIN(DEBUG_BAUD); // Debugging towards UART1
@@ -427,6 +431,9 @@ void setup()
     mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
   }
   analogWrite(LED_PIN, 255);
+  analogWrite(LED_COM, 255);
+  analogWrite(LED_SRV, 255);
+  analogWrite(LED_NET, 255);
   resetCounter(false);
 }
 

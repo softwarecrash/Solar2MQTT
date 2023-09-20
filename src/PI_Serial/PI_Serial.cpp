@@ -109,6 +109,7 @@ bool PI_Serial::loop()
             previousTime = millis();
             requestCallback();
         }
+        connection = (connectionCounter < 10) ? true : false;        
     }
     return true;
 }
@@ -209,6 +210,7 @@ String PI_Serial::requestData(String command)
         commandBuffer.remove(0, strlen(startChar));       // remove the start char ( for Pi30 and ^Dxxx for Pi18
 
         requestOK++;
+        connectionCounter = 0;
     }
     else if (getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 == commandBuffer[commandBuffer.length() - 1] &&
              getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 != 0 && commandBuffer[commandBuffer.length() - 1] != 0 &&
@@ -221,6 +223,7 @@ String PI_Serial::requestData(String command)
         commandBuffer.remove(0, strlen(startChar));       // remove the start char ( for Pi30 and ^Dxxx for Pi18
 
         requestOK++;
+        connectionCounter = 0;
     }
     else if (commandBuffer.indexOf("NAK", strlen(startChar)) > 0) // catch NAK without crc
     {
@@ -243,6 +246,7 @@ String PI_Serial::requestData(String command)
         PI_DEBUG_WEBLN("<");
 
         requestFail++;
+        connectionCounter++;
         commandBuffer = "ERCRC";
     }
     char debugBuff[128];
