@@ -39,9 +39,9 @@ void notificationLED()
       ledState = 1;
 
 
-    digitalWrite(LED_COM, mppClient.connection);
-    digitalWrite(LED_SRV, mqttclient.connected());
-    digitalWrite(LED_NET, (WiFi.status() == WL_CONNECTED)  ? true : false);
+    digitalWrite(LED_COM, !mppClient.connection);
+    digitalWrite(LED_SRV, !mqttclient.connected());
+    digitalWrite(LED_NET, !(WiFi.status() == WL_CONNECTED)  ? true : false);
   }
 
   if (ledState > 0)
