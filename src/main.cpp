@@ -458,7 +458,7 @@ void loop()
         commandFromUser = "";
         mqtttimer = 0;
       }
-
+      mqttclient.loop();
       ws.cleanupClients(); // clean unused client connections
       //MDNS.update();
       getJsonData();
@@ -469,7 +469,7 @@ void loop()
         sendHaDiscovery();
         haDiscTrigger = false;
       }
-      mqttclient.loop();
+      
     }
   }
   if (restartNow && millis() >= (RestartTimer + 500))
