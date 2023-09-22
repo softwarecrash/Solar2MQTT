@@ -109,7 +109,7 @@ bool PI_Serial::loop()
             previousTime = millis();
             requestCallback();
         }
-        connection = (connectionCounter < 10) ? true : false;        
+        connection = (connectionCounter < 10) ? true : false;      
     }
     return true;
 }

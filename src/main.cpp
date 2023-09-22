@@ -460,7 +460,7 @@ void loop()
       }
 
       ws.cleanupClients(); // clean unused client connections
-      MDNS.update();
+      //MDNS.update();
       getJsonData();
       mppClient.loop(); // Call the PI Serial Library loop
 
@@ -584,12 +584,11 @@ bool sendtoMQTT()
   DEBUG_WEB(F("Data sent to MQTT Server... "));
   if (!settings.data.mqttJson)
   {
-
+  char msgBuffer1[200];
     for (JsonPair jsonDev : Json.as<JsonObject>())
     {
       for (JsonPair jsondat : jsonDev.value().as<JsonObject>())
       {
-        char msgBuffer1[200];
         sprintf(msgBuffer1, "%s/%s/%s", settings.data.mqttTopic, jsonDev.key().c_str(), jsondat.key().c_str());
         mqttclient.publish(msgBuffer1, jsondat.value().as<String>().c_str());
       }
@@ -597,6 +596,7 @@ bool sendtoMQTT()
     if (mppClient.get.raw.commandAnswer.length() > 0)
     {
       mqttclient.publish((String(settings.data.mqttTopic) + String("/DeviceControl/Set_Command_answer")).c_str(), (mppClient.get.raw.commandAnswer).c_str());
+      mppClient.get.raw.commandAnswer = "";
     }
 // RAW
 #ifdef DEBUG
