@@ -275,7 +275,7 @@ void setup()
   DEBUG_WEBLN(F("MQTT Server config Loaded"));
 
   mqttclient.setCallback(mqttcallback);
-  mqttclient.setBufferSize(MQTT_BUFFER);
+  //mqttclient.setBufferSize(MQTT_BUFFER);
 
   // check is WiFi connected
   if (!apRunning)
@@ -458,18 +458,16 @@ void loop()
         commandFromUser = "";
         mqtttimer = 0;
       }
-      mqttclient.loop();
       ws.cleanupClients(); // clean unused client connections
       //MDNS.update();
       getJsonData();
       mppClient.loop(); // Call the PI Serial Library loop
-
+      mqttclient.loop();
       if (haDiscTrigger)
       {
         sendHaDiscovery();
         haDiscTrigger = false;
       }
-      
     }
   }
   if (restartNow && millis() >= (RestartTimer + 500))

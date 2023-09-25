@@ -36,6 +36,7 @@ bool PI_Serial::Init()
         return false;
     }
     autoDetect();
+    this->my_serialIntf->setTimeout(500);
     this->my_serialIntf->enableRxGPIOPullUp(true);
     this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
     return true;
