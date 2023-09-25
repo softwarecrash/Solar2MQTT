@@ -1,7 +1,7 @@
 #include <WebSerialLite.h>
 #define ARDUINOJSON_USE_DOUBLE 1
 #define ARDUINOJSON_USE_LONG_LONG 1
-#define JSON_BUFFER 8192
+#define JSON_BUFFER 2048
 //#define MQTT_BUFFER 512
 #define DEBUG_BAUD 115200
 

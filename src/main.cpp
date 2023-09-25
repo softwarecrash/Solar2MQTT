@@ -459,7 +459,7 @@ void loop()
         mqtttimer = 0;
       }
       ws.cleanupClients(); // clean unused client connections
-      //MDNS.update();
+      MDNS.update();
       getJsonData();
       mppClient.loop(); // Call the PI Serial Library loop
       mqttclient.loop();
@@ -500,10 +500,11 @@ void getJsonData()
   deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
   deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
   deviceJson[F("sw_version")] = SOFTWARE_VERSION;
-#ifdef isDEBUG
+
   deviceJson[F("Free_Heap")] = ESP.getFreeHeap();
   deviceJson[F("HEAP_Fragmentation")] = ESP.getHeapFragmentation();
   deviceJson[F("json_memory_usage")] = Json.memoryUsage();
+  #ifdef isDEBUG
   deviceJson[F("json_capacity")] = Json.capacity();
   deviceJson[F("runtime")] = millis() / 1000;
   deviceJson[F("ws_clients")] = ws.count();
