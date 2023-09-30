@@ -17,7 +17,9 @@
 #define LED_COM 5
 #define LED_SRV 0
 #define LED_NET 4
-
+// implement this
+// https://github.com/arduino-libraries/Arduino_DebugUtils
+// function to split debug out stream into webserial and serial if avaible?
 #define DEBUG_WEBLN(...) WebSerial.println(__VA_ARGS__)
 #define DEBUG_WEBF(...) WebSerial.printf(__VA_ARGS__)
 #define DEBUG_WEB(...) WebSerial.print(__VA_ARGS__)
