@@ -88,7 +88,7 @@
     $(document).ready(function () {
         initWebSocket();
         initButton();
-        setInterval(refreshAlert, 5000);
+        //setInterval(refreshAlert, 5000);
     });
     var gateway = `ws://${window.location.host}/ws`;
     var websocket;
@@ -168,7 +168,7 @@
             }
         }
     }
-
+/*
     function alert(data) {
         alertListArr = [];
         if (data.Device.ESP_VCC < 2.8) {
@@ -217,7 +217,7 @@
         }
         document.getElementById('alert_message').innerHTML = (alertValue);
     }
-
+*/
     function initButton() {
 
     }
