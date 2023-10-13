@@ -38,6 +38,7 @@ ADC_MODE(ADC_VCC);
 // flag for saving data
 unsigned long mqtttimer = 0;
 unsigned long RestartTimer = 0;
+unsigned long slowDownTimer = 0;
 bool shouldSaveConfig = false;
 char mqtt_server[40];
 bool restartNow = false;
@@ -479,8 +480,12 @@ void loop()
   notificationLED(); // notification LED routine
 }
 
-void prozessData()
+bool prozessData()
 {
+  if (millis() < (slowDownTimer + 500))
+  {
+    return true;
+  }
   DEBUG_PRINTLN("ProzessData called");
    getJsonData();
   if (wsClient != nullptr && wsClient->canSend())
@@ -492,6 +497,9 @@ void prozessData()
     sendtoMQTT(); // Update data to MQTT server if we should
     mqtttimer = millis();
   }
+
+  slowDownTimer = millis();
+  return true;
 }
 
 void getJsonData()

@@ -51,7 +51,7 @@ void saveConfigCallback();
  * @brief callback function for data
  * 
  */
-void prozessData();
+bool prozessData();
 
 /**
  * @brief fires up the websocket and send data to the clients
@@ -93,12 +93,6 @@ void getJsonData();
  * 
  */
 void mqttcallback(char *top, unsigned char *payload, unsigned int length);
-
-/**
- * @brief 
- * 
- */
-void prozessData();
 
 bool  sendHaDiscovery();
 static const char *const haStaticDescriptor[][4]{
