@@ -482,11 +482,13 @@ void loop()
 
 bool prozessData()
 {
-  if (millis() < (slowDownTimer + 500))
+  if (millis() < (slowDownTimer + 1000) && mppClient.protocol == 0)
   {
     return true;
   }
   DEBUG_PRINTLN("ProzessData called");
+  DEBUG_PRINTLN(mppClient.protocol);
+  DEBUG_PRINTLN(mppClient.connection);
    getJsonData();
   if (wsClient != nullptr && wsClient->canSend())
   {

@@ -103,14 +103,15 @@ bool PI_Serial::loop()
                 }
                 break;
             }
+            connection = (connectionCounter < 10) ? true : false;
             previousTime = millis();
         }
         else
         {
             previousTime = millis();
             requestCallback();
+            connection = false;
         }
-        connection = (connectionCounter < 10) ? true : false;      
     }
     return true;
 }
