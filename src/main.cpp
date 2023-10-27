@@ -287,6 +287,8 @@ void setup()
   {
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+              //new login check, need more work
+              if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
               AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_MAIN, htmlProcessor);
               request->send(response); });
 
@@ -340,6 +342,10 @@ void setup()
                 settings.data.mqttJson = (request->arg("post_mqttjson") == "true") ? true : false;
                 strncpy(settings.data.mqttTriggerPath, request->arg("post_mqtttrigger").c_str(), 80);
                 settings.data.webUIdarkmode = (request->arg("post_webuicolormode") == "true") ? true : false;
+
+                strncpy(settings.data.httpUser, request->arg("post_httpUser").c_str(), 40);
+                strncpy(settings.data.httpPass, request->arg("post_httpPass").c_str(), 40);
+
                 settings.save();
                 request->redirect("/reboot"); });
 

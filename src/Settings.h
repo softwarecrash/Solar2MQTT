@@ -30,6 +30,8 @@ public:
     unsigned int deviceQuantity; // Quantity of Devices
     bool mqttJson;               // switch between classic mqtt and json
     bool webUIdarkmode;          // Flag for color mode in webUI
+    char httpUser[40];           // http basic auth username
+    char httpPass[40];           // http basic auth password
   } data;
 
   void load()
@@ -105,7 +107,15 @@ private:
     }
     if (data.webUIdarkmode && !data.webUIdarkmode)
     {
-      data.mqttJson = false;
+      data.webUIdarkmode = false;
+    }
+    if (strlen(data.httpUser) == 0 || strlen(data.httpUser) >= 40)
+    {
+      strcpy(data.httpUser, "");
+    }
+    if (strlen(data.httpPass) == 0 || strlen(data.httpPass) >= 40)
+    {
+      strcpy(data.httpPass, "");
     }
   }
   void coVersCheck()
