@@ -287,19 +287,20 @@ void setup()
   {
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
               {
-              //new login check, need more work
               if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
               AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_MAIN, htmlProcessor);
               request->send(response); });
 
     server.on("/livejson", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 AsyncResponseStream *response = request->beginResponseStream("application/json");
                 serializeJson(Json, *response);
                 request->send(response); });
 
     server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_REBOOT, htmlProcessor);
                 request->send(response);
                 restartNow = true;
@@ -307,10 +308,12 @@ void setup()
 
     server.on("/confirmreset", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_CONFIRM_RESET, htmlProcessor);
                 request->send(response); });
     server.on("/reset", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Device is Erasing...");
                 response->addHeader("Refresh", "15; url=/");
                 response->addHeader("Connection", "close");
@@ -322,16 +325,19 @@ void setup()
 
     server.on("/settingsedit", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_SETTINGS_EDIT, htmlProcessor);
                 request->send(response); });
 
     server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_SETTINGS, htmlProcessor);
                 request->send(response); });
 
     server.on("/settingssave", HTTP_POST, [](AsyncWebServerRequest *request)
               {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 strncpy(settings.data.mqttServer, request->arg("post_mqttServer").c_str(), 40);
                 settings.data.mqttPort = request->arg("post_mqttPort").toInt();
                 strncpy(settings.data.mqttUser, request->arg("post_mqttUser").c_str(), 40);
@@ -351,6 +357,7 @@ void setup()
 
     server.on("/set", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 AsyncWebParameter *p = request->getParam(0);
                 if (p->name() == "CC")
                 {
@@ -365,6 +372,7 @@ void setup()
     server.on(
         "/update", HTTP_POST, [](AsyncWebServerRequest *request)
         {
+          if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
        //To upload through terminal you can use: curl -F "image=@firmware.bin" <ESP_IP>/update
 
     //https://gist.github.com/JMishou/60cb762047b735685e8a09cd2eb42a60
