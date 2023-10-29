@@ -134,6 +134,8 @@ private:
       data.mqttRefresh = 300;
       data.mqttJson = false;
       data.webUIdarkmode = false;
+      strcpy(data.httpUser, "");
+      strcpy(data.httpPass, "");
 
       save();
       load();
