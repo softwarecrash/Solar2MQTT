@@ -12,7 +12,7 @@
 class Settings
 {
   // change eeprom config version ONLY when new parameter is added and need reset the parameter
-  unsigned int configVersion = 10;
+  unsigned int configVersion = 11;
 
 public:
   String deviceNameStr;
