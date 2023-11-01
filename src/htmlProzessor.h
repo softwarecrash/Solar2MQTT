@@ -11,8 +11,8 @@ String htmlProcessor(const String &var)
         return (SWVERSION);
     if (var == F("pre_flash_size"))
         return (String(ESP.getFreeSketchSpace()).c_str());
-   // if (var == F("pre_esp01"))
-   //     return (String(ESP01).c_str());
+    // if (var == F("pre_esp01"))
+    //     return (String(ESP01).c_str());
     if (var == F("pre_device_name"))
         return (settings.data.deviceName);
     if (var == F("pre_mqtt_server"))
@@ -36,9 +36,9 @@ String htmlProcessor(const String &var)
     if (var == F("pre_webuidarkmode"))
         return (settings.data.webUIdarkmode ? "checked" : "");
 
-            if (var == F("pre_http_user"))
+    if (var == F("pre_http_user"))
         return (settings.data.httpUser);
-            if (var == F("pre_http_pass"))
+    if (var == F("pre_http_pass"))
         return (settings.data.httpPass);
     return String();
 }
