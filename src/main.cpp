@@ -38,6 +38,7 @@ ADC_MODE(ADC_VCC);
 // flag for saving data
 unsigned long mqtttimer = 0;
 unsigned long RestartTimer = 0;
+unsigned long slowDownTimer = 0;
 bool shouldSaveConfig = false;
 char mqtt_server[40];
 bool restartNow = false;
@@ -275,7 +276,7 @@ void setup()
   DEBUG_WEBLN(F("MQTT Server config Loaded"));
 
   mqttclient.setCallback(mqttcallback);
-  mqttclient.setBufferSize(MQTT_BUFFER);
+  //mqttclient.setBufferSize(MQTT_BUFFER);
 
   // check is WiFi connected
   if (!apRunning)
@@ -286,17 +287,20 @@ void setup()
   {
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+              if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
               AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_MAIN, htmlProcessor);
               request->send(response); });
 
     server.on("/livejson", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 AsyncResponseStream *response = request->beginResponseStream("application/json");
                 serializeJson(Json, *response);
                 request->send(response); });
 
     server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_REBOOT, htmlProcessor);
                 request->send(response);
                 restartNow = true;
@@ -304,10 +308,12 @@ void setup()
 
     server.on("/confirmreset", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_CONFIRM_RESET, htmlProcessor);
                 request->send(response); });
     server.on("/reset", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Device is Erasing...");
                 response->addHeader("Refresh", "15; url=/");
                 response->addHeader("Connection", "close");
@@ -319,16 +325,19 @@ void setup()
 
     server.on("/settingsedit", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_SETTINGS_EDIT, htmlProcessor);
                 request->send(response); });
 
     server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_SETTINGS, htmlProcessor);
                 request->send(response); });
 
     server.on("/settingssave", HTTP_POST, [](AsyncWebServerRequest *request)
               {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 strncpy(settings.data.mqttServer, request->arg("post_mqttServer").c_str(), 40);
                 settings.data.mqttPort = request->arg("post_mqttPort").toInt();
                 strncpy(settings.data.mqttUser, request->arg("post_mqttUser").c_str(), 40);
@@ -339,11 +348,16 @@ void setup()
                 settings.data.mqttJson = (request->arg("post_mqttjson") == "true") ? true : false;
                 strncpy(settings.data.mqttTriggerPath, request->arg("post_mqtttrigger").c_str(), 80);
                 settings.data.webUIdarkmode = (request->arg("post_webuicolormode") == "true") ? true : false;
+
+                strncpy(settings.data.httpUser, request->arg("post_httpUser").c_str(), 40);
+                strncpy(settings.data.httpPass, request->arg("post_httpPass").c_str(), 40);
+
                 settings.save();
                 request->redirect("/reboot"); });
 
     server.on("/set", HTTP_GET, [](AsyncWebServerRequest *request)
               {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 AsyncWebParameter *p = request->getParam(0);
                 if (p->name() == "CC")
                 {
@@ -358,6 +372,7 @@ void setup()
     server.on(
         "/update", HTTP_POST, [](AsyncWebServerRequest *request)
         {
+          if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
        //To upload through terminal you can use: curl -F "image=@firmware.bin" <ESP_IP>/update
 
     //https://gist.github.com/JMishou/60cb762047b735685e8a09cd2eb42a60
@@ -458,18 +473,16 @@ void loop()
         commandFromUser = "";
         mqtttimer = 0;
       }
-
       ws.cleanupClients(); // clean unused client connections
       MDNS.update();
-      getJsonData();
+      //getJsonData();
       mppClient.loop(); // Call the PI Serial Library loop
-
+      mqttclient.loop();
       if (haDiscTrigger)
       {
         sendHaDiscovery();
         haDiscTrigger = false;
       }
-      mqttclient.loop();
     }
   }
   if (restartNow && millis() >= (RestartTimer + 500))
@@ -481,10 +494,16 @@ void loop()
   notificationLED(); // notification LED routine
 }
 
-void prozessData()
+bool prozessData()
 {
+  if (millis() < (slowDownTimer + 1000) && mppClient.protocol == 0)
+  {
+    return true;
+  }
   DEBUG_PRINTLN("ProzessData called");
-  // getJsonData();
+  DEBUG_PRINTLN(mppClient.protocol);
+  DEBUG_PRINTLN(mppClient.connection);
+   getJsonData();
   if (wsClient != nullptr && wsClient->canSend())
   {
     notifyClients();
@@ -494,6 +513,9 @@ void prozessData()
     sendtoMQTT(); // Update data to MQTT server if we should
     mqtttimer = millis();
   }
+
+  slowDownTimer = millis();
+  return true;
 }
 
 void getJsonData()
@@ -502,10 +524,11 @@ void getJsonData()
   deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
   deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
   deviceJson[F("sw_version")] = SOFTWARE_VERSION;
-#ifdef isDEBUG
+
   deviceJson[F("Free_Heap")] = ESP.getFreeHeap();
   deviceJson[F("HEAP_Fragmentation")] = ESP.getHeapFragmentation();
   deviceJson[F("json_memory_usage")] = Json.memoryUsage();
+  #ifdef isDEBUG
   deviceJson[F("json_capacity")] = Json.capacity();
   deviceJson[F("runtime")] = millis() / 1000;
   deviceJson[F("ws_clients")] = ws.count();
@@ -584,12 +607,11 @@ bool sendtoMQTT()
   DEBUG_WEB(F("Data sent to MQTT Server... "));
   if (!settings.data.mqttJson)
   {
-
+  char msgBuffer1[200];
     for (JsonPair jsonDev : Json.as<JsonObject>())
     {
       for (JsonPair jsondat : jsonDev.value().as<JsonObject>())
       {
-        char msgBuffer1[200];
         sprintf(msgBuffer1, "%s/%s/%s", settings.data.mqttTopic, jsonDev.key().c_str(), jsondat.key().c_str());
         mqttclient.publish(msgBuffer1, jsondat.value().as<String>().c_str());
       }
@@ -597,21 +619,23 @@ bool sendtoMQTT()
     if (mppClient.get.raw.commandAnswer.length() > 0)
     {
       mqttclient.publish((String(settings.data.mqttTopic) + String("/DeviceControl/Set_Command_answer")).c_str(), (mppClient.get.raw.commandAnswer).c_str());
+      mppClient.get.raw.commandAnswer = "";
     }
 // RAW
 #ifdef DEBUG
+mqttclient.publish(topicBuilder(buff, "RAW/Q1"), (mppClient.get.raw.q1).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS"), (mppClient.get.raw.qpigs).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS2"), (mppClient.get.raw.qpigs2).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIRI"), (mppClient.get.raw.qpiri).c_str());
-    //  mqttclient.publish(topicBuilder(buff, "RAW/QT"), (mppClient.get.raw.qt).c_str());
-    //  mqttclient.publish(topicBuilder(buff, "RAW/QET"), (mppClient.get.raw.qet).c_str());
-    //  mqttclient.publish(topicBuilder(buff, "RAW/QEY"), (mppClient.get.raw.qey).c_str());
-    //  mqttclient.publish(topicBuilder(buff, "RAW/QEM"), (mppClient.get.raw.qem).c_str());
-    //  mqttclient.publish(topicBuilder(buff, "RAW/QED"), (mppClient.get.raw.qed).c_str());
-    //  mqttclient.publish(topicBuilder(buff, "RAW/QLT"), (mppClient.get.raw.qt).c_str());
-    //  mqttclient.publish(topicBuilder(buff, "RAW/QLY"), (mppClient.get.raw.qly).c_str());
-    //  mqttclient.publish(topicBuilder(buff, "RAW/QLM"), (mppClient.get.raw.qlm).c_str());
-    //  mqttclient.publish(topicBuilder(buff, "RAW/QLD"), (mppClient.get.raw.qld).c_str());
+      mqttclient.publish(topicBuilder(buff, "RAW/QT"), (mppClient.get.raw.qt).c_str());
+      mqttclient.publish(topicBuilder(buff, "RAW/QET"), (mppClient.get.raw.qet).c_str());
+      mqttclient.publish(topicBuilder(buff, "RAW/QEY"), (mppClient.get.raw.qey).c_str());
+      mqttclient.publish(topicBuilder(buff, "RAW/QEM"), (mppClient.get.raw.qem).c_str());
+      mqttclient.publish(topicBuilder(buff, "RAW/QED"), (mppClient.get.raw.qed).c_str());
+      mqttclient.publish(topicBuilder(buff, "RAW/QLT"), (mppClient.get.raw.qt).c_str());
+      mqttclient.publish(topicBuilder(buff, "RAW/QLY"), (mppClient.get.raw.qly).c_str());
+      mqttclient.publish(topicBuilder(buff, "RAW/QLM"), (mppClient.get.raw.qlm).c_str());
+      mqttclient.publish(topicBuilder(buff, "RAW/QLD"), (mppClient.get.raw.qld).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPI"), (mppClient.get.raw.qpi).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QMOD"), (mppClient.get.raw.qmod).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QALL"), (mppClient.get.raw.qall).c_str());

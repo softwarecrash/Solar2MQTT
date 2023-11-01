@@ -1,8 +1,8 @@
 #include <WebSerialLite.h>
 #define ARDUINOJSON_USE_DOUBLE 1
 #define ARDUINOJSON_USE_LONG_LONG 1
-#define JSON_BUFFER 4096
-#define MQTT_BUFFER 512
+#define JSON_BUFFER 2048
+//#define MQTT_BUFFER 512
 #define DEBUG_BAUD 115200
 
 #ifdef isUART_HARDWARE
@@ -17,7 +17,9 @@
 #define LED_COM 5
 #define LED_SRV 0
 #define LED_NET 4
-
+// implement this
+// https://github.com/arduino-libraries/Arduino_DebugUtils
+// function to split debug out stream into webserial and serial if avaible?
 #define DEBUG_WEBLN(...) WebSerial.println(__VA_ARGS__)
 #define DEBUG_WEBF(...) WebSerial.printf(__VA_ARGS__)
 #define DEBUG_WEB(...) WebSerial.print(__VA_ARGS__)
@@ -49,7 +51,7 @@ void saveConfigCallback();
  * @brief callback function for data
  * 
  */
-void prozessData();
+bool prozessData();
 
 /**
  * @brief fires up the websocket and send data to the clients
@@ -91,12 +93,6 @@ void getJsonData();
  * 
  */
 void mqttcallback(char *top, unsigned char *payload, unsigned int length);
-
-/**
- * @brief 
- * 
- */
-void prozessData();
 
 bool  sendHaDiscovery();
 static const char *const haStaticDescriptor[][4]{

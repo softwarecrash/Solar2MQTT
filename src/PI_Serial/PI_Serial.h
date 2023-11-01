@@ -124,7 +124,7 @@ private:
     unsigned int serialIntfBaud;
 
     unsigned long previousTime = 0;
-    unsigned long delayTime = 150;
+    unsigned long delayTime = 100;
     byte requestCounter = 0;
 
     long long int requestOK = 0;
