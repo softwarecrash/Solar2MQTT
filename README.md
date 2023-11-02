@@ -59,6 +59,7 @@
 </a>
 
 
+
 **POWER:** Using a 3.3V DC Buck Converter that can handle up to 20V or a DC/DC or USB power currently.
 
 # Parts required to build
