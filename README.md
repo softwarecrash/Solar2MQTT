@@ -52,6 +52,12 @@
 - surf to 192.168.4.1 and set up your wifi and optional MQTT
 - that's it :)
 
+### How-To video by Jarnsen
+
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=7u8hPLdXeso" target="_blank">
+ <img src="http://img.youtube.com/vi/7u8hPLdXeso/0.jpg" alt="Watch the video" />
+</a>
+
 
 **POWER:** Using a 3.3V DC Buck Converter that can handle up to 20V or a DC/DC or USB power currently.
 
