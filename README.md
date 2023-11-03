@@ -25,7 +25,7 @@
 - IGrid
 - Many devices from EASUN
 - and many many others based on the chinese solar inverter with a rj45 jack and usb port, primary identified by the display
-- Take a look at the [device list in the wiki](https://github.com/softwarecrash/Solar2MQTT/wiki/Device-List)
+- Take a look at the [device list in the wiki](https://github.com/softwarecrash/Solar2MQTT/wiki/Confirmed-Working-Device-List)
 
 
 **Main screen:**
