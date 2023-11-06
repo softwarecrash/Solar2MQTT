@@ -649,7 +649,7 @@ mqttclient.publish(topicBuilder(buff, "RAW/Q1"), (mppClient.get.raw.q1).c_str())
     mqttclient.endPublish();
   }
   mqttclient.publish(topicBuilder(buff, "Alive"), "true", true); // LWT online message must be retained!
-  mqttclient.publish(topicBuilder(buff, "Wifi_RSSI"), String(WiFi.RSSI()).c_str());
+  mqttclient.publish(topicBuilder(buff, "EspData/Wifi_RSSI"), String(WiFi.RSSI()).c_str());
   DEBUG_PRINTLN(F("Done"));
   DEBUG_WEBLN(F("Done"));
   firstPublish = true;

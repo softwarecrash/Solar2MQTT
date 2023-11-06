@@ -115,7 +115,7 @@ static const char *const haStaticDescriptor[][4]{
 {"Current_max_AC_charging_current","mdi:current-ac","A","current"},
 {"Current_max_charging_current","mdi:battery-charging","A","current"},
 {"Device_Model","mdi:battery-charging","",""},
-{"Input_voltage_range","mdi:flash-triangle-outline","V","voltage"},
+{"Input_voltage_range","mdi:flash-triangle-outline","",""},
 {"Machine_type","mdi:state-machine","",""},
 {"Max_charging_time_at_CV_stage","mdi:clock-time-eight-outli","s","duration"},
 {"Max_discharging_current","mdi:battery-outline","A","current"},
