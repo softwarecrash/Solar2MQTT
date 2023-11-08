@@ -705,7 +705,7 @@ bool sendHaDiscovery()
       sprintf(topBuff, "homeassistant/sensor/%s/%s/config", settings.data.deviceName, haStaticDescriptor[i][0]); // build the topic
       mqttContentLength = sprintf(configBuff, "{\"state_topic\": \"%s/DeviceData/%s\",\"unique_id\": \"sensor.%s_%s\",\"name\": \"%s\",\"icon\": \"%s\",\"unit_of_measurement\": \"%s\",\"device_class\":\"%s\",\"device\":{\"identifiers\":[\"%s\"], \"configuration_url\":\"http://%s\",\"name\":\"%s\", \"model\":\"%s\",\"manufacturer\":\"SoftWareCrash\",\"sw_version\":\"Solar2MQTT %s\"}}",
                                   settings.data.mqttTopic, haStaticDescriptor[i][0], settings.data.deviceName, haStaticDescriptor[i][0], haStaticDescriptor[i][0], haStaticDescriptor[i][1], haStaticDescriptor[i][2], haStaticDescriptor[i][3], staticData["Serial_number"].as<String>().c_str(), (const char *)(WiFi.localIP().toString()).c_str(), settings.data.deviceName, staticData["Device_Model"].as<String>().c_str(), SOFTWARE_VERSION);
-      mqttclient.beginPublish(topBuff, mqttContentLength, false);
+      mqttclient.beginPublish(topBuff, mqttContentLength, true);
       for (size_t i = 0; i < mqttContentLength; i++)
       {
         mqttclient.write(configBuff[i]);
@@ -721,7 +721,7 @@ bool sendHaDiscovery()
       sprintf(topBuff, "homeassistant/sensor/%s/%s/config", settings.data.deviceName, haLiveDescriptor[i][0]); // build the topic
       mqttContentLength = sprintf(configBuff, "{\"state_topic\": \"%s/LiveData/%s\",\"unique_id\": \"sensor.%s_%s\",\"name\": \"%s\",\"icon\": \"%s\",\"unit_of_measurement\": \"%s\",\"device_class\":\"%s\",\"device\":{\"identifiers\":[\"%s\"], \"configuration_url\":\"http://%s\",\"name\":\"%s\", \"model\":\"%s\",\"manufacturer\":\"SoftWareCrash\",\"sw_version\":\"Solar2MQTT %s\"}}",
                                   settings.data.mqttTopic, haLiveDescriptor[i][0], settings.data.deviceName, haLiveDescriptor[i][0], haLiveDescriptor[i][0], haLiveDescriptor[i][1], haLiveDescriptor[i][2], haLiveDescriptor[i][3], staticData["Serial_number"].as<String>().c_str(), (const char *)(WiFi.localIP().toString()).c_str(), settings.data.deviceName, staticData["Device_Model"].as<String>().c_str(), SOFTWARE_VERSION);
-      mqttclient.beginPublish(topBuff, mqttContentLength, false);
+      mqttclient.beginPublish(topBuff, mqttContentLength, true);
       for (size_t i = 0; i < mqttContentLength; i++)
       {
         mqttclient.write(configBuff[i]);
