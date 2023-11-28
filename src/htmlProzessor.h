@@ -35,10 +35,11 @@ String htmlProcessor(const String &var)
         return (settings.data.webUIdarkmode ? "dark" : "light");
     if (var == F("pre_webuidarkmode"))
         return (settings.data.webUIdarkmode ? "checked" : "");
-
     if (var == F("pre_http_user"))
         return (settings.data.httpUser);
     if (var == F("pre_http_pass"))
         return (settings.data.httpPass);
+    if (var == F("pre_hadiscovery"))
+        return (settings.data.haDiscovery ? "checked" : "");
     return String();
 }

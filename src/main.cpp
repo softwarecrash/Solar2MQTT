@@ -46,6 +46,7 @@ bool askInverterOnce = false;
 bool workerCanRun = true;
 bool publishFirst = false;
 bool haDiscTrigger = false;
+unsigned int jsonSize = 0;
 uint32_t bootcount = 0;
 String commandFromUser;
 String customResponse;
@@ -276,7 +277,7 @@ void setup()
   DEBUG_WEBLN(F("MQTT Server config Loaded"));
 
   mqttclient.setCallback(mqttcallback);
-  //mqttclient.setBufferSize(MQTT_BUFFER);
+  // mqttclient.setBufferSize(MQTT_BUFFER);
 
   // check is WiFi connected
   if (!apRunning)
@@ -348,10 +349,9 @@ void setup()
                 settings.data.mqttJson = (request->arg("post_mqttjson") == "true") ? true : false;
                 strncpy(settings.data.mqttTriggerPath, request->arg("post_mqtttrigger").c_str(), 80);
                 settings.data.webUIdarkmode = (request->arg("post_webuicolormode") == "true") ? true : false;
-
                 strncpy(settings.data.httpUser, request->arg("post_httpUser").c_str(), 40);
                 strncpy(settings.data.httpPass, request->arg("post_httpPass").c_str(), 40);
-
+                settings.data.haDiscovery = (request->arg("post_hadiscovery") == "true") ? true : false;
                 settings.save();
                 request->redirect("/reboot"); });
 
@@ -475,13 +475,16 @@ void loop()
       }
       ws.cleanupClients(); // clean unused client connections
       MDNS.update();
-      //getJsonData();
+      // getJsonData();
       mppClient.loop(); // Call the PI Serial Library loop
       mqttclient.loop();
-      if (haDiscTrigger)
+      if ((haDiscTrigger || settings.data.haDiscovery) && measureJson(Json) > jsonSize)
       {
-        sendHaDiscovery();
+        if(sendHaDiscovery()){
         haDiscTrigger = false;
+        //haAutoDiscTrigger = false;
+        jsonSize = measureJson(Json);
+        }
       }
     }
   }
@@ -503,7 +506,7 @@ bool prozessData()
   DEBUG_PRINTLN("ProzessData called");
   DEBUG_PRINTLN(mppClient.protocol);
   DEBUG_PRINTLN(mppClient.connection);
-   getJsonData();
+  getJsonData();
   if (wsClient != nullptr && wsClient->canSend())
   {
     notifyClients();
@@ -528,7 +531,7 @@ void getJsonData()
   deviceJson[F("Free_Heap")] = ESP.getFreeHeap();
   deviceJson[F("HEAP_Fragmentation")] = ESP.getHeapFragmentation();
   deviceJson[F("json_memory_usage")] = Json.memoryUsage();
-  #ifdef isDEBUG
+#ifdef isDEBUG
   deviceJson[F("json_capacity")] = Json.capacity();
   deviceJson[F("runtime")] = millis() / 1000;
   deviceJson[F("ws_clients")] = ws.count();
@@ -607,13 +610,14 @@ bool sendtoMQTT()
   DEBUG_WEB(F("Data sent to MQTT Server... "));
   if (!settings.data.mqttJson)
   {
-  char msgBuffer1[200];
+    char msgBuffer1[200];
     for (JsonPair jsonDev : Json.as<JsonObject>())
     {
       for (JsonPair jsondat : jsonDev.value().as<JsonObject>())
       {
         sprintf(msgBuffer1, "%s/%s/%s", settings.data.mqttTopic, jsonDev.key().c_str(), jsondat.key().c_str());
         mqttclient.publish(msgBuffer1, jsondat.value().as<String>().c_str());
+        Serial.println(msgBuffer1);
       }
     }
     if (mppClient.get.raw.commandAnswer.length() > 0)
@@ -623,19 +627,19 @@ bool sendtoMQTT()
     }
 // RAW
 #ifdef DEBUG
-mqttclient.publish(topicBuilder(buff, "RAW/Q1"), (mppClient.get.raw.q1).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/Q1"), (mppClient.get.raw.q1).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS"), (mppClient.get.raw.qpigs).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS2"), (mppClient.get.raw.qpigs2).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIRI"), (mppClient.get.raw.qpiri).c_str());
-      mqttclient.publish(topicBuilder(buff, "RAW/QT"), (mppClient.get.raw.qt).c_str());
-      mqttclient.publish(topicBuilder(buff, "RAW/QET"), (mppClient.get.raw.qet).c_str());
-      mqttclient.publish(topicBuilder(buff, "RAW/QEY"), (mppClient.get.raw.qey).c_str());
-      mqttclient.publish(topicBuilder(buff, "RAW/QEM"), (mppClient.get.raw.qem).c_str());
-      mqttclient.publish(topicBuilder(buff, "RAW/QED"), (mppClient.get.raw.qed).c_str());
-      mqttclient.publish(topicBuilder(buff, "RAW/QLT"), (mppClient.get.raw.qt).c_str());
-      mqttclient.publish(topicBuilder(buff, "RAW/QLY"), (mppClient.get.raw.qly).c_str());
-      mqttclient.publish(topicBuilder(buff, "RAW/QLM"), (mppClient.get.raw.qlm).c_str());
-      mqttclient.publish(topicBuilder(buff, "RAW/QLD"), (mppClient.get.raw.qld).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QT"), (mppClient.get.raw.qt).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QET"), (mppClient.get.raw.qet).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QEY"), (mppClient.get.raw.qey).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QEM"), (mppClient.get.raw.qem).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QED"), (mppClient.get.raw.qed).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QLT"), (mppClient.get.raw.qt).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QLY"), (mppClient.get.raw.qly).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QLM"), (mppClient.get.raw.qlm).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QLD"), (mppClient.get.raw.qld).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPI"), (mppClient.get.raw.qpi).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QMOD"), (mppClient.get.raw.qmod).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QALL"), (mppClient.get.raw.qall).c_str());
@@ -695,22 +699,52 @@ bool sendHaDiscovery()
   {
     return false;
   }
+  String haDeviceDescription = String("\"dev\":") +
+                               "{\"ids\":[\"" + mqttClientId + "\"]," +
+                               "\"name\":\"" + settings.data.deviceName + "\"," +
+                               "\"cu\":\"http://" + WiFi.localIP().toString() + "\"," +
+                               "\"mdl\":\"" + staticData["Device_Model"].as<String>().c_str() + "\"," +
+                               "\"mf\":\"SoftWareCrash\"," +
+                               "\"sw\":\"" + SOFTWARE_VERSION + "\"" +
+                               "}";
+
   char topBuff[128];
-  char configBuff[1024];
-  size_t mqttContentLength;
+  // char configBuff[1024];
+  // size_t mqttContentLength;
   for (size_t i = 0; i < sizeof haStaticDescriptor / sizeof haStaticDescriptor[0]; i++)
   {
     if (staticData.containsKey(haStaticDescriptor[i][0]))
     {
+      String haPayLoad = String("{") +
+                         "\"name\":\"" + haStaticDescriptor[i][0] + "\"," +
+                         "\"stat_t\":\"" + settings.data.mqttTopic + "/DeviceData/" + haStaticDescriptor[i][0] + "\"," +
+                         "\"uniq_id\":\"" + mqttClientId + "." + haStaticDescriptor[i][0] + "\"," +
+                         "\"ic\":\"mdi:" + haStaticDescriptor[i][1] + "\",";
+      if (strlen(haStaticDescriptor[i][2]) != 0)
+        haPayLoad += (String) "\"unit_of_meas\":\"" + haStaticDescriptor[i][2] + "\",";
+      if (strlen(haStaticDescriptor[i][3]) != 0)
+        haPayLoad += (String) "\"dev_cla\":\"" + haStaticDescriptor[i][3] + "\",";
+      haPayLoad += haDeviceDescription;
+      haPayLoad += "}";
       sprintf(topBuff, "homeassistant/sensor/%s/%s/config", settings.data.deviceName, haStaticDescriptor[i][0]); // build the topic
-      mqttContentLength = sprintf(configBuff, "{\"state_topic\": \"%s/DeviceData/%s\",\"unique_id\": \"sensor.%s_%s\",\"name\": \"%s\",\"icon\": \"%s\",\"unit_of_measurement\": \"%s\",\"device_class\":\"%s\",\"device\":{\"identifiers\":[\"%s\"], \"configuration_url\":\"http://%s\",\"name\":\"%s\", \"model\":\"%s\",\"manufacturer\":\"SoftWareCrash\",\"sw_version\":\"Solar2MQTT %s\"}}",
-                                  settings.data.mqttTopic, haStaticDescriptor[i][0], settings.data.deviceName, haStaticDescriptor[i][0], haStaticDescriptor[i][0], haStaticDescriptor[i][1], haStaticDescriptor[i][2], haStaticDescriptor[i][3], staticData["Serial_number"].as<String>().c_str(), (const char *)(WiFi.localIP().toString()).c_str(), settings.data.deviceName, staticData["Device_Model"].as<String>().c_str(), SOFTWARE_VERSION);
-      mqttclient.beginPublish(topBuff, mqttContentLength, true);
-      for (size_t i = 0; i < mqttContentLength; i++)
+      mqttclient.beginPublish(topBuff, haPayLoad.length(), true);
+      for (size_t i = 0; i < haPayLoad.length(); i++)
       {
-        mqttclient.write(configBuff[i]);
+        mqttclient.write(haPayLoad[i]);
       }
       mqttclient.endPublish();
+
+      /*
+            sprintf(topBuff, "homeassistant/sensor/%s/%s/config", settings.data.deviceName, haStaticDescriptor[i][0]); // build the topic
+            mqttContentLength = sprintf(configBuff, "{\"state_topic\": \"%s/DeviceData/%s\",\"unique_id\": \"sensor.%s_%s\",\"name\": \"%s\",\"icon\": \"mdi:%s\",\"unit_of_measurement\": \"%s\",\"device_class\":\"%s\",\"device\":{\"identifiers\":[\"%s\"], \"configuration_url\":\"http://%s\",\"name\":\"%s\", \"model\":\"%s\",\"manufacturer\":\"SoftWareCrash\",\"sw_version\":\"Solar2MQTT %s\"}}",
+                                        settings.data.mqttTopic, haStaticDescriptor[i][0], settings.data.deviceName, haStaticDescriptor[i][0], haStaticDescriptor[i][0], haStaticDescriptor[i][1], haStaticDescriptor[i][2], haStaticDescriptor[i][3], staticData["Serial_number"].as<String>().c_str(), (const char *)(WiFi.localIP().toString()).c_str(), settings.data.deviceName, staticData["Device_Model"].as<String>().c_str(), SOFTWARE_VERSION);
+            mqttclient.beginPublish(topBuff, mqttContentLength, true);
+            for (size_t i = 0; i < mqttContentLength; i++)
+            {
+              mqttclient.write(configBuff[i]);
+            }
+            mqttclient.endPublish();
+            */
     }
   }
 
@@ -718,15 +752,36 @@ bool sendHaDiscovery()
   {
     if (liveData.containsKey(haLiveDescriptor[i][0]))
     {
+      String haPayLoad = String("{") +
+                         "\"name\":\"" + haLiveDescriptor[i][0] + "\"," +
+                         "\"stat_t\":\"" + settings.data.mqttTopic + "/LiveData/" + haLiveDescriptor[i][0] + "\"," +
+                         "\"uniq_id\":\"" + mqttClientId + "." + haLiveDescriptor[i][0] + "\"," +
+                         "\"ic\":\"mdi:" + haLiveDescriptor[i][1] + "\",";
+      if (strlen(haLiveDescriptor[i][2]) != 0)
+        haPayLoad += (String) "\"unit_of_meas\":\"" + haLiveDescriptor[i][2] + "\",";
+      if (strlen(haLiveDescriptor[i][3]) != 0)
+        haPayLoad += (String) "\"dev_cla\":\"" + haLiveDescriptor[i][3] + "\",";
+      haPayLoad += haDeviceDescription;
+      haPayLoad += "}";
       sprintf(topBuff, "homeassistant/sensor/%s/%s/config", settings.data.deviceName, haLiveDescriptor[i][0]); // build the topic
-      mqttContentLength = sprintf(configBuff, "{\"state_topic\": \"%s/LiveData/%s\",\"unique_id\": \"sensor.%s_%s\",\"name\": \"%s\",\"icon\": \"%s\",\"unit_of_measurement\": \"%s\",\"device_class\":\"%s\",\"device\":{\"identifiers\":[\"%s\"], \"configuration_url\":\"http://%s\",\"name\":\"%s\", \"model\":\"%s\",\"manufacturer\":\"SoftWareCrash\",\"sw_version\":\"Solar2MQTT %s\"}}",
-                                  settings.data.mqttTopic, haLiveDescriptor[i][0], settings.data.deviceName, haLiveDescriptor[i][0], haLiveDescriptor[i][0], haLiveDescriptor[i][1], haLiveDescriptor[i][2], haLiveDescriptor[i][3], staticData["Serial_number"].as<String>().c_str(), (const char *)(WiFi.localIP().toString()).c_str(), settings.data.deviceName, staticData["Device_Model"].as<String>().c_str(), SOFTWARE_VERSION);
-      mqttclient.beginPublish(topBuff, mqttContentLength, true);
-      for (size_t i = 0; i < mqttContentLength; i++)
+      mqttclient.beginPublish(topBuff, haPayLoad.length(), true);
+      for (size_t i = 0; i < haPayLoad.length(); i++)
       {
-        mqttclient.write(configBuff[i]);
+        mqttclient.write(haPayLoad[i]);
       }
       mqttclient.endPublish();
+
+      /*
+            sprintf(topBuff, "homeassistant/sensor/%s/%s/config", settings.data.deviceName, haLiveDescriptor[i][0]); // build the topic
+            mqttContentLength = sprintf(configBuff, "{\"state_topic\": \"%s/LiveData/%s\",\"unique_id\": \"sensor.%s_%s\",\"name\": \"%s\",\"icon\": \"mdi:%s\",\"unit_of_measurement\": \"%s\",\"device_class\":\"%s\",\"device\":{\"identifiers\":[\"%s\"], \"configuration_url\":\"http://%s\",\"name\":\"%s\", \"model\":\"%s\",\"manufacturer\":\"SoftWareCrash\",\"sw_version\":\"Solar2MQTT %s\"}}",
+                                        settings.data.mqttTopic, haLiveDescriptor[i][0], settings.data.deviceName, haLiveDescriptor[i][0], haLiveDescriptor[i][0], haLiveDescriptor[i][1], haLiveDescriptor[i][2], haLiveDescriptor[i][3], staticData["Serial_number"].as<String>().c_str(), (const char *)(WiFi.localIP().toString()).c_str(), settings.data.deviceName, staticData["Device_Model"].as<String>().c_str(), SOFTWARE_VERSION);
+            mqttclient.beginPublish(topBuff, mqttContentLength, true);
+            for (size_t i = 0; i < mqttContentLength; i++)
+            {
+              mqttclient.write(configBuff[i]);
+            }
+            mqttclient.endPublish();
+            */
     }
   }
   return true;
