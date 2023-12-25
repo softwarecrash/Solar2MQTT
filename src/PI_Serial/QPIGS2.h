@@ -13,7 +13,7 @@ bool PI_Serial::PIXX_QPIGS2()
     get.raw.qpigs2 = commandAnswer;
     byte commandAnswerLength = commandAnswer.length();
     String strs[30]; // buffer for string splitting
-    if (commandAnswer == "NAK")
+    if (commandAnswer == "NAK" || commandAnswer == "")
     {
       return true;
     }

@@ -77,25 +77,32 @@ bool PI_Serial::loop()
                 switch (requestCounter)
                 {
                 case 0:
+                PI_DEBUG_PRINTLN("Serial request>"+(String)requestCounter+"<:>6<");
                     requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
                     break;
                 case 1:
+                PI_DEBUG_PRINTLN("Serial request>"+(String)requestCounter+"<:>6<");
                     requestCounter = PIXX_QPIGS2() ? (requestCounter + 1) : 0;
                     break;
                 case 2:
+                PI_DEBUG_PRINTLN("Serial request>"+(String)requestCounter+"<:>6<");
                     requestCounter = PIXX_QMOD() ? (requestCounter + 1) : 0;
                     break;
                 case 3:
+                PI_DEBUG_PRINTLN("Serial request>"+(String)requestCounter+"<:>6<");
                     requestCounter = PIXX_Q1() ? (requestCounter + 1) : 0;
                     break;
                 case 4:
+                PI_DEBUG_PRINTLN("Serial request>"+(String)requestCounter+"<:>6<");
                     // requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
                     requestCounter++;
                     break;
                 case 5:
+                PI_DEBUG_PRINTLN("Serial request>"+(String)requestCounter+"<:>6<");
                     requestCounter = PIXX_QEX() ? (requestCounter + 1) : 0;
                     break;
                 case 6:
+                PI_DEBUG_PRINTLN("Serial request>"+(String)requestCounter+"<:>6<");
                     // sendCustomCommand();
                     requestCallback();
                     requestCounter = 0;
@@ -118,6 +125,7 @@ bool PI_Serial::loop()
 
 void PI_Serial::callback(std::function<void()> func)
 {
+    PI_DEBUG_PRINTLN("Data Collect complete, fire up callback");
     requestCallback = func;
 }
 
