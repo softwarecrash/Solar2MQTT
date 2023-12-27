@@ -68,13 +68,13 @@
 
     <div class="input-group mb-2">
         <span class="input-group-text w-50" id="httpUserdesc">HTTP Username</span>
-        <input type="text" class="form-control" aria-describedby="httpUserdesc" id="httpUser" name="post_httpUser" maxlength="40"
-            maxlength="35" value="%pre_http_user%">
+        <input type="text" class="form-control" aria-describedby="httpUserdesc" id="httpUser" name="post_httpUser"
+            maxlength="40" maxlength="35" value="%pre_http_user%">
     </div>
     <div class="input-group mb-2">
         <span class="input-group-text w-50" id="httpPassdesc">HTTP Password</span>
-        <input type="password" class="form-control" aria-describedby="httpPassdesc" id="httpPass" name="post_httpPass" maxlength="40"
-            maxlength="35" value="%pre_http_pass%">
+        <input type="password" class="form-control" aria-describedby="httpPassdesc" id="httpPass" name="post_httpPass"
+            maxlength="40" maxlength="35" value="%pre_http_pass%">
     </div>
 
     <div class="d-grid gap-2">
@@ -84,10 +84,15 @@
 </form>
 
 <script type='text/javascript'>
+    $(document).ready(function (load) {
+        haSwitch();
+    });
     function haSwitch() {
-        document.getElementById('mqttjson').checked = false;
+        if (document.getElementById('post_hadiscovery').checked) {
+            document.getElementById('mqttjson').checked = false;
+            document.getElementById('mqttjson').disabled = true;
+        }
         document.getElementById('mqttjson').disabled = document.getElementById('post_hadiscovery').checked;
-        document.getElementById('mqttjson').enabled = !(document.getElementById('post_hadiscovery').checked);
     }
 </script>
 
