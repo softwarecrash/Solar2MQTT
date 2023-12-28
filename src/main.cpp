@@ -511,7 +511,7 @@ bool prozessData()
   {
     notifyClients();
   }
-  if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000))
+  if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000) || mqtttimer == 0)
   {
     sendtoMQTT(); // Update data to MQTT server if we should
     mqtttimer = millis();
