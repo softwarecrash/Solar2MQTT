@@ -617,7 +617,7 @@ bool sendtoMQTT()
       {
         sprintf(msgBuffer1, "%s/%s/%s", settings.data.mqttTopic, jsonDev.key().c_str(), jsondat.key().c_str());
         mqttclient.publish(msgBuffer1, jsondat.value().as<String>().c_str());
-        Serial.println(msgBuffer1);
+        //Serial.println(msgBuffer1);
       }
     }
     if (mppClient.get.raw.commandAnswer.length() > 0)

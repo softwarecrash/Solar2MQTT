@@ -89,14 +89,9 @@ bool PI_Serial::loop()
                     requestCounter = PIXX_Q1() ? (requestCounter + 1) : 0;
                     break;
                 case 4:
-                    // requestCounter = PIXX_QALL() ? (requestCounter + 1) : 0;
-                    requestCounter++;
-                    break;
-                case 5:
                     requestCounter = PIXX_QEX() ? (requestCounter + 1) : 0;
                     break;
-                case 6:
-                    // sendCustomCommand();
+                case 5:
                     requestCallback();
                     requestCounter = 0;
                     break;
@@ -181,7 +176,6 @@ bool PI_Serial::sendCustomCommand()
         return false;
     get.raw.commandAnswer = requestData(customCommandBuffer);
     customCommandBuffer = "";
-    // requestStaticData = true;
     return true;
 }
 
