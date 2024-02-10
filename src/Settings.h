@@ -4,11 +4,6 @@
 #define EEPROM_SIZE 1024
 // Settings: Stores persistant settings, loads and saves to EEPROM
 
-#include <Arduino.h>
-#include <EEPROM.h>
-
-#define EEPROM_SIZE 1024
-
 class Settings
 {
   // change eeprom config version ONLY when new parameter is added and need reset the parameter

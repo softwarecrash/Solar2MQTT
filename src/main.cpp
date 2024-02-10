@@ -535,6 +535,7 @@ void getJsonData()
   deviceJson[F("json_capacity")] = Json.capacity();
   deviceJson[F("runtime")] = millis() / 1000;
   deviceJson[F("ws_clients")] = ws.count();
+  deviceJson[F("ws_clients")] = mppClient.protocol;
 #endif
 }
 
