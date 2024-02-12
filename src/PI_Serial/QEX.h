@@ -105,7 +105,7 @@ bool PI_Serial::PIXX_QEX()
       break;
     case 1:
       commandAnswer = this->requestData("^P013ED" + get.raw.qt.substring(0, 8));
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == "" || commandAnswer.toInt() < 1)
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == "" /*|| commandAnswer.toInt() < 1*/)
       {
         qexCounter = 0;
         return true;
@@ -119,7 +119,7 @@ bool PI_Serial::PIXX_QEX()
       break;
     case 2:
       commandAnswer = this->requestData("^P011EM" + get.raw.qt.substring(0, 6));
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == "" || commandAnswer.toInt() < 1)
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == "" /*|| commandAnswer.toInt() < 1*/)
       {
         qexCounter = 0;
         return true;
@@ -133,7 +133,7 @@ bool PI_Serial::PIXX_QEX()
       break;
     case 3:
       commandAnswer = this->requestData("^P009EY" + get.raw.qt.substring(0, 4));
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == "" || commandAnswer.toInt() < 1)
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || get.raw.qt == "" /*|| commandAnswer.toInt() < 1*/)
       {
         qexCounter = 0;
         return true;
@@ -147,7 +147,7 @@ bool PI_Serial::PIXX_QEX()
       break;
     case 4:
       commandAnswer = this->requestData("^P005ET");
-      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" || commandAnswer.toInt() < 1)
+      if (commandAnswer == "ERCRC" || commandAnswer == "NAK" || commandAnswer == "" /*|| commandAnswer.toInt() < 1*/)
       {
         return true;
       }
