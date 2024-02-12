@@ -41,7 +41,7 @@ bool PI_Serial::PIXX_QMOD()
         liveData["Inverter_Operation_Mode"] = "Standby";
         break;
       case 2:
-        liveData["Inverter_Operation_Mode"] = "BYpass";
+        liveData["Inverter_Operation_Mode"] = "Bypass";
         break;
       case 3:
         liveData["Inverter_Operation_Mode"] = "Battery";
