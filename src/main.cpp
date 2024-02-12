@@ -624,6 +624,8 @@ bool sendtoMQTT()
     if (mppClient.get.raw.commandAnswer.length() > 0)
     {
       mqttclient.publish((String(settings.data.mqttTopic) + String("/DeviceControl/Set_Command_answer")).c_str(), (mppClient.get.raw.commandAnswer).c_str());
+      DEBUG_PRINTLN(mppClient.get.raw.commandAnswer);
+      DEBUG_WEBLN(mppClient.get.raw.commandAnswer);
       mppClient.get.raw.commandAnswer = "";
     }
 // RAW
