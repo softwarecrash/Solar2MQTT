@@ -177,6 +177,9 @@ bool resetCounter(bool count)
 
 void setup()
 {
+  // make a compatibility mode for some crap routers?
+  WiFi.setPhyMode(WIFI_PHY_MODE_11G);
+
   analogWrite(LED_PIN, 0);
   analogWrite(LED_COM, 0);
   analogWrite(LED_SRV, 0);
@@ -480,10 +483,11 @@ void loop()
       mqttclient.loop();
       if ((haDiscTrigger || settings.data.haDiscovery) && measureJson(Json) > jsonSize)
       {
-        if(sendHaDiscovery()){
-        haDiscTrigger = false;
-        //haAutoDiscTrigger = false;
-        jsonSize = measureJson(Json);
+        if (sendHaDiscovery())
+        {
+          haDiscTrigger = false;
+          // haAutoDiscTrigger = false;
+          jsonSize = measureJson(Json);
         }
       }
     }
@@ -504,8 +508,8 @@ bool prozessData()
     return true;
   }
   DEBUG_PRINTLN("ProzessData called");
-  DEBUG_PRINTLN("protocol: "+(String)mppClient.protocol);
-  DEBUG_PRINTLN("connection: "+(String)mppClient.connection);
+  DEBUG_PRINTLN("protocol: " + (String)mppClient.protocol);
+  DEBUG_PRINTLN("connection: " + (String)mppClient.connection);
   getJsonData();
   if (wsClient != nullptr && wsClient->canSend())
   {
@@ -718,6 +722,9 @@ bool sendHaDiscovery()
       String haPayLoad = String("{") +
                          "\"name\":\"" + haStaticDescriptor[i][0] + "\"," +
                          "\"stat_t\":\"" + settings.data.mqttTopic + "/DeviceData/" + haStaticDescriptor[i][0] + "\"," +
+                         "\"avty_t\":\"" + settings.data.mqttTopic + "/Alive\"," +
+                         "\"pl_avail\": \"true\"," +
+                         "\"pl_not_avail\": \"false\"," +
                          "\"uniq_id\":\"" + mqttClientId + "." + haStaticDescriptor[i][0] + "\"," +
                          "\"ic\":\"mdi:" + haStaticDescriptor[i][1] + "\",";
       if (strlen(haStaticDescriptor[i][2]) != 0)
@@ -743,6 +750,9 @@ bool sendHaDiscovery()
       String haPayLoad = String("{") +
                          "\"name\":\"" + haLiveDescriptor[i][0] + "\"," +
                          "\"stat_t\":\"" + settings.data.mqttTopic + "/LiveData/" + haLiveDescriptor[i][0] + "\"," +
+                         "\"avty_t\":\"" + settings.data.mqttTopic + "/Alive\"," +
+                         "\"pl_avail\": \"true\"," +
+                         "\"pl_not_avail\": \"false\"," +
                          "\"uniq_id\":\"" + mqttClientId + "." + haLiveDescriptor[i][0] + "\"," +
                          "\"ic\":\"mdi:" + haLiveDescriptor[i][1] + "\",";
       if (strlen(haLiveDescriptor[i][2]) != 0)
