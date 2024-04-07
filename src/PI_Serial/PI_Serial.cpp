@@ -134,35 +134,31 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
     writeLog("----------------- Start Autodetect -----------------");
     for (size_t i = 0; i < 3; i++) // try 3 times to detect the inverter
     {
-        String ret;
-        if (protocol != NoD)
-        {
-            break;
-        }
+        writeLog("Try Autodetect Protocol");
 
         startChar = "(";
         serialIntfBaud = 2400;
         this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
-        ret = this->requestData("QPI");
-        if (ret != "" && ret.substring(0, 2) == "PI")
+        String qpi = this->requestData("QPI");
+        writeLog("QPI:\t\t%s (Length: %d)", qpi,qpi.length());
+        if (qpi != "" && qpi.substring(0, 2) == "PI")
         {
-            protocolName = "PI3X";
+            writeLog("<Autodetect> Match protocol: PI3X");
             delimiter = " ";
             protocol = PI30;
-            // break;
+            break;
         }
-        ret = "";
         startChar = "^Dxxx";
         this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
-        ret = this->requestData("^P005PI");
-        if (ret != "" && ret == "18")
+        String P005PI = this->requestData("^P005PI");
+        writeLog("^P005PI:\t\t%s (Length: %d)", P005PI, P005PI.length());
+        if (P005PI != "" && P005PI == "18")
         {
-            protocolName = "PI18";
+            writeLog("<Autodetect> Match protocol: PI18");
             delimiter = ",";
             protocol = PI18;
-            // break;
+            break;
         }
-        writeLog("Run:%d answer:%s protocol:%s", i, ret, protocolName);
         this->my_serialIntf->end();
     }
     writeLog("----------------- End Autodetect -----------------");
