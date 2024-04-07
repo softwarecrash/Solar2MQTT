@@ -11,16 +11,12 @@ https://github.com/softwarecrash/Solar2MQTT
 #include <ESPAsyncWiFiManager.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-
 #include "Settings.h"
-
 #include "html.h"
 #include "htmlProzessor.h"
-
 #include "PI_Serial/PI_Serial.h"
 
 PI_Serial mppClient(INVERTER_RX, INVERTER_TX);
-
 WiFiClient client;
 PubSubClient mqttclient(client);
 AsyncWebServer server(80);
@@ -53,17 +49,14 @@ String customResponse;
 
 bool firstPublish;
 DynamicJsonDocument Json(JSON_BUFFER); // main Json
-// StaticJsonDocument <JSON_BUFFER>Json;
 JsonObject deviceJson = Json.createNestedObject("EspData");    // basic device data
 JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
 JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
-// JsonObject rawData = Json.createNestedObject("RawData");       // battery package data
 
 //----------------------------------------------------------------------
 void saveConfigCallback()
 {
-  DEBUG_PRINTLN(F("Should save config"));
-  DEBUG_WEBLN(F("Should save config"));
+  writeLog("Should save config");
   shouldSaveConfig = true;
 }
 
@@ -71,8 +64,6 @@ void notifyClients()
 {
   if (wsClient != nullptr && wsClient->canSend())
   {
-    DEBUG_PRINT(F("Data sent to WebSocket... "));
-    DEBUG_WEB(F("Data sent to WebSocket... "));
     size_t len = measureJson(liveData);
     AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
     if (buffer)
@@ -80,8 +71,7 @@ void notifyClients()
       serializeJson(liveData, (char *)buffer->get(), len + 1);
       wsClient->text(buffer);
     }
-    DEBUG_PRINTLN(F("Done"));
-    DEBUG_WEBLN(F("Done"));
+    writeLog("WS data send");
   }
 }
 
@@ -91,7 +81,6 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
   {
     data[len] = 0;
-    // updateProgress = true;
   }
 }
 
@@ -101,7 +90,6 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
   {
   case WS_EVT_CONNECT:
     wsClient = client;
-    // getJsonDevice();
     getJsonData();
     notifyClients();
     break;
@@ -110,8 +98,6 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
     ws.cleanupClients(); // clean unused client connections
     break;
   case WS_EVT_DATA:
-    // bmstimer = millis();
-    // mqtttimer = millis();
     handleWebSocketMessage(arg, data, len);
     break;
   case WS_EVT_PONG:
@@ -145,8 +131,6 @@ bool resetCounter(bool count)
 
       if (bootcount >= 10 && bootcount < 20)
       {
-        // bootcount = 0;
-        // ESP.rtcUserMemoryWrite(16, &bootcount, sizeof(bootcount));
         settings.reset();
         ESP.eraseConfig();
         ESP.reset();
@@ -168,10 +152,7 @@ bool resetCounter(bool count)
     bootcount = 0;
     ESP.rtcUserMemoryWrite(16, &bootcount, sizeof(bootcount));
   }
-  DEBUG_PRINT(F("Bootcount: "));
-  DEBUG_PRINTLN(bootcount);
-  DEBUG_PRINT(F("Reboot reason: "));
-  DEBUG_PRINTLN(ESP.getResetInfoPtr()->reason);
+  writeLog("Bootcount:%d Reboot reason:%d", bootcount, ESP.getResetInfoPtr()->reason);
   return true;
 }
 
@@ -186,25 +167,18 @@ void setup()
   analogWrite(LED_NET, 0);
 
   resetCounter(true);
-#ifdef DEBUG
-  DEBUG_BEGIN(DEBUG_BAUD); // Debugging towards UART1
-#endif
+  DBG_BEGIN(DBG_BAUD); // Debugging towards UART1
   settings.load();
   WiFi.persistent(true); // fix wifi save bug
   WiFi.hostname(settings.data.deviceName);
   AsyncWiFiManager wm(&server, &dns);
   sprintf(mqttClientId, "%s-%06X", settings.data.deviceName, ESP.getChipId());
 
-#ifdef DEBUG
-  wm.setDebugOutput(true); // enable wifimanager debug output
-#else
-  wm.setDebugOutput(false); // disable wifimanager debug output
-#endif
   wm.setMinimumSignalQuality(20); // filter weak wifi signals
   // wm.setConnectTimeout(15);       // how long to try to connect for before continuing
   // wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
   wm.setSaveConfigCallback(saveConfigCallback);
-
+/*
   DEBUG_PRINTLN();
   DEBUG_PRINTF("Device Name:\t");
   DEBUG_PRINTLN(settings.data.deviceName);
@@ -235,7 +209,7 @@ void setup()
   DEBUG_WEBLN(settings.data.mqttRefresh);
   DEBUG_WEBF("Mqtt Topic:\t");
   DEBUG_WEBLN(settings.data.mqttTopic);
-
+*/
   // create custom wifimanager fields
 
   AsyncWiFiManagerParameter custom_mqtt_server("mqtt_server", "MQTT server", NULL, 40);
@@ -276,18 +250,10 @@ void setup()
 
   mqttclient.setServer(settings.data.mqttServer, settings.data.mqttPort);
 
-  DEBUG_PRINTLN(F("MQTT Server config Loaded"));
-  DEBUG_WEBLN(F("MQTT Server config Loaded"));
-
   mqttclient.setCallback(mqttcallback);
-  // mqttclient.setBufferSize(MQTT_BUFFER);
 
   // check is WiFi connected
-  if (!apRunning)
-  {
-    DEBUG_PRINTLN("Failed to connect or hit timeout");
-  }
-  else
+  if (apRunning)
   {
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
               {
@@ -428,14 +394,9 @@ void setup()
     server.onNotFound([](AsyncWebServerRequest *request)
                       { request->send(418, "text/plain", "418 I'm a teapot"); });
 
-    DEBUG_PRINTLN("Webserver Running...");
-    DEBUG_WEBLN("Webserver Running...");
-
     // set the device name
     MDNS.addService("http", "tcp", 80);
     if (MDNS.begin(settings.data.deviceName))
-      DEBUG_PRINTLN(F("mDNS running..."));
-    DEBUG_WEBLN(F("mDNS running..."));
     ws.onEvent(onEvent);
     server.addHandler(&ws);
     WebSerial.begin(&server);
@@ -468,11 +429,7 @@ void loop()
     { // No use going to next step unless WIFI is up and running.
       if (commandFromUser != "")
       {
-        DEBUG_PRINTLN(commandFromUser);
-        DEBUG_WEBLN(commandFromUser);
         String tmp = mppClient.sendCommand(commandFromUser); // send a custom command to the device
-        DEBUG_PRINTLN(tmp);
-        DEBUG_WEBLN(tmp);
         commandFromUser = "";
         mqtttimer = 0;
       }
@@ -486,7 +443,6 @@ void loop()
         if (sendHaDiscovery())
         {
           haDiscTrigger = false;
-          // haAutoDiscTrigger = false;
           jsonSize = measureJson(Json);
         }
       }
@@ -494,8 +450,6 @@ void loop()
   }
   if (restartNow && millis() >= (RestartTimer + 500))
   {
-    DEBUG_PRINTLN("Restart");
-    DEBUG_WEBLN("Restart");
     ESP.restart();
   }
   notificationLED(); // notification LED routine
@@ -507,9 +461,7 @@ bool prozessData()
   {
     return true;
   }
-  DEBUG_PRINTLN("ProzessData called");
-  DEBUG_PRINTLN("protocol: " + (String)mppClient.protocol);
-  DEBUG_PRINTLN("connection: " + (String)mppClient.connection);
+  writeLog("ProzessData P:%s C:%s", (String)mppClient.protocol, (String)mppClient.connection);
   getJsonData();
   if (wsClient != nullptr && wsClient->canSend())
   {
@@ -531,16 +483,13 @@ void getJsonData()
   deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
   deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
   deviceJson[F("sw_version")] = SOFTWARE_VERSION;
-
   deviceJson[F("Free_Heap")] = ESP.getFreeHeap();
   deviceJson[F("HEAP_Fragmentation")] = ESP.getHeapFragmentation();
   deviceJson[F("json_memory_usage")] = Json.memoryUsage();
-#ifdef isDEBUG
   deviceJson[F("json_capacity")] = Json.capacity();
   deviceJson[F("runtime")] = millis() / 1000;
   deviceJson[F("ws_clients")] = ws.count();
-  deviceJson[F("ws_clients")] = mppClient.protocol;
-#endif
+  deviceJson[F("detect_protocol")] = mppClient.protocol;
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
@@ -561,42 +510,26 @@ bool connectMQTT()
   if (!mqttclient.connected())
   {
     firstPublish = false;
-    DEBUG_PRINT(F("MQTT Client State is: "));
-    DEBUG_PRINTLN(mqttclient.state());
-    DEBUG_PRINT(F("establish MQTT Connection... "));
-    DEBUG_WEB(F("MQTT Client State is: "));
-    DEBUG_WEBLN(mqttclient.state());
-    DEBUG_WEB(F("establish MQTT Connection... "));
-
+    
     if (mqttclient.connect(mqttClientId, settings.data.mqttUser, settings.data.mqttPassword, (topicBuilder(buff, "Alive")), 0, true, "false", true))
     {
       if (mqttclient.connected())
       {
-
         mqttclient.publish(topicBuilder(buff, "Alive"), "true", true); // LWT online message must be retained!
         mqttclient.publish(topicBuilder(buff, "IP"), (const char *)(WiFi.localIP().toString()).c_str(), true);
         mqttclient.subscribe(topicBuilder(buff, "DeviceControl/Set_Command"));
-
         if (strlen(settings.data.mqttTriggerPath) >= 1)
         {
           mqttclient.subscribe(settings.data.mqttTriggerPath);
         }
-        DEBUG_PRINTLN(F("Done"));
-        DEBUG_WEBLN(F("Done"));
-      }
-      else
-      {
-        DEBUG_PRINT(F("Fail\n"));
-        DEBUG_WEB(F("Fail\n"));
       }
     }
     else
     {
-      DEBUG_PRINT(F("Fail\n"));
-      DEBUG_WEB(F("Fail\n"));
       return false; // Exit if we couldnt connect to MQTT brooker
     }
     firstPublish = true;
+    writeLog("MQTT Client State: ", mqttclient.state());
   }
   return true;
 }
@@ -606,13 +539,10 @@ bool sendtoMQTT()
   char buff[256]; // temp buffer for the topic string
   if (!connectMQTT())
   {
-    DEBUG_PRINTLN(F("Error: No connection to MQTT Server, cant send Data!"));
-    DEBUG_WEBLN(F("Error: No connection to MQTT Server, cant send Data!"));
+    writeLog("No connection to MQTT Server: ", mqttclient.state());
     firstPublish = false;
     return false;
   }
-  DEBUG_PRINT(F("Data sent to MQTT Server... "));
-  DEBUG_WEB(F("Data sent to MQTT Server... "));
   if (!settings.data.mqttJson)
   {
     char msgBuffer1[200];
@@ -627,12 +557,10 @@ bool sendtoMQTT()
     if (mppClient.get.raw.commandAnswer.length() > 0)
     {
       mqttclient.publish((String(settings.data.mqttTopic) + String("/DeviceControl/Set_Command_answer")).c_str(), (mppClient.get.raw.commandAnswer).c_str());
-      DEBUG_PRINTLN(mppClient.get.raw.commandAnswer);
-      DEBUG_WEBLN(mppClient.get.raw.commandAnswer);
+      writeLog("raw command answer: ",mppClient.get.raw.commandAnswer);
       mppClient.get.raw.commandAnswer = "";
     }
 // RAW
-#ifdef DEBUG
     mqttclient.publish(topicBuilder(buff, "RAW/Q1"), (mppClient.get.raw.q1).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS"), (mppClient.get.raw.qpigs).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS2"), (mppClient.get.raw.qpigs2).c_str());
@@ -650,7 +578,6 @@ bool sendtoMQTT()
     mqttclient.publish(topicBuilder(buff, "RAW/QMOD"), (mppClient.get.raw.qmod).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QALL"), (mppClient.get.raw.qall).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QMN"), (mppClient.get.raw.qmn).c_str());
-#endif
   }
   else
   {
@@ -660,8 +587,7 @@ bool sendtoMQTT()
   }
   mqttclient.publish(topicBuilder(buff, "Alive"), "true", true); // LWT online message must be retained!
   mqttclient.publish(topicBuilder(buff, "EspData/Wifi_RSSI"), String(WiFi.RSSI()).c_str());
-  DEBUG_PRINTLN(F("Done"));
-  DEBUG_WEBLN(F("Done"));
+  writeLog("Data sent to MQTT");
   firstPublish = true;
 
   return true;
@@ -670,8 +596,6 @@ bool sendtoMQTT()
 void mqttcallback(char *top, unsigned char *payload, unsigned int length)
 {
   char buff[256];
-  // if (!publishFirst)
-  //   return;
   String messageTemp;
   for (unsigned int i = 0; i < length; i++)
   {
@@ -679,9 +603,7 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
   }
   if (strlen(settings.data.mqttTriggerPath) > 0 && strcmp(top, settings.data.mqttTriggerPath) == 0)
   {
-    DEBUG_PRINTLN(F("<MQTT> MQTT Data Trigger Firered Up"));
-    DEBUG_WEBLN(F("<MQTT> MQTT Data Trigger Firered Up"));
-    // mqtttimer = 0;
+    writeLog("MQTT Data Trigger Firered Up");
     mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
   }
 
@@ -691,10 +613,7 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
   // send raw control command
   if (strcmp(top, topicBuilder(buff, "DeviceControl/Set_Command")) == 0 && messageTemp.length() > 0)
   {
-    DEBUG_PRINT(F("Send Command message recived: "));
-    DEBUG_PRINTLN(messageTemp);
-    DEBUG_WEB(F("Send Command message recived: "));
-    DEBUG_WEBLN(messageTemp);
+    writeLog("Command recived: ", messageTemp);
     commandFromUser = messageTemp;
   }
 }
@@ -771,4 +690,18 @@ bool sendHaDiscovery()
     }
   }
   return true;
+}
+
+void writeLog(const char* format, ...)
+{
+    char       msg[100];
+    va_list    args;
+
+    va_start(args, format);
+    vsnprintf(msg, sizeof(msg), format, args); // do check return value
+    va_end(args);
+
+    // write msg to the log
+    DBG_PRINTLN(msg);
+    DBG_WEBLN(msg);
 }

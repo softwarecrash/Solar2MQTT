@@ -2,8 +2,7 @@
 #define ARDUINOJSON_USE_DOUBLE 1
 #define ARDUINOJSON_USE_LONG_LONG 1
 #define JSON_BUFFER 2048
-// #define MQTT_BUFFER 512
-#define DEBUG_BAUD 115200
+
 
 #ifdef isUART_HARDWARE
 #define INVERTER_TX 1
@@ -17,29 +16,14 @@
 #define LED_COM 5
 #define LED_SRV 0
 #define LED_NET 4
-// implement this
-// https://github.com/arduino-libraries/Arduino_DebugUtils
-// function to split debug out stream into webserial and serial if avaible?
-#define DEBUG_WEBLN(...) WebSerial.println(__VA_ARGS__)
-#define DEBUG_WEBF(...) WebSerial.printf(__VA_ARGS__)
-#define DEBUG_WEB(...) WebSerial.print(__VA_ARGS__)
 
-#ifdef isDEBUG
-#define SOFTWARE_VERSION SWVERSION " " HWBOARD " " __DATE__ " " __TIME__
-#define DEBUG Serial
-#define DEBUG_BEGIN(...) DEBUG.begin(__VA_ARGS__)
-#define DEBUG_PRINT(...) DEBUG.print(__VA_ARGS__)
-#define DEBUG_PRINTF(...) DEBUG.printf(__VA_ARGS__)
-#define DEBUG_WRITE(...) DEBUG.write(__VA_ARGS__)
-#define DEBUG_PRINTLN(...) DEBUG.println(__VA_ARGS__)
-#else
+#define DBG_BAUD 115200
+#define DBG_WEBLN(...) WebSerial.println(__VA_ARGS__)
 #define SOFTWARE_VERSION SWVERSION
-#define DEBUG_BEGIN(...)
-#define DEBUG_PRINT(...)
-#define DEBUG_PRINTF(...)
-#define DEBUG_WRITE(...)
-#define DEBUG_PRINTLN(...)
-#endif
+#define DBG Serial
+#define DBG_BEGIN(...) DBG.begin(__VA_ARGS__)
+#define DBG_PRINTLN(...) DBG.println(__VA_ARGS__)
+
 
 /**
  * @brief callback function for wifimanager save config data
@@ -95,6 +79,13 @@ void getJsonData();
 void mqttcallback(char *top, unsigned char *payload, unsigned int length);
 
 bool sendHaDiscovery();
+
+/**
+ * @brief this function act like s/n/printf() and give the output to the configured serial and webserial
+ *
+ */
+void writeLog(const char* format, ...);
+
 static const char *const haStaticDescriptor[][4]{
     // state_topic, icon, unit_ofmeasurement, class
     {"AC_in_rating_current", "current-ac", "A", "current"},
