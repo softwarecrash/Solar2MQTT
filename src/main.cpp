@@ -733,7 +733,7 @@ bool sendHaDiscovery()
         haPayLoad += (String) "\"dev_cla\":\"" + haStaticDescriptor[i][3] + "\",";
       haPayLoad += haDeviceDescription;
       haPayLoad += "}";
-      sprintf(topBuff, "homeassistant/sensor/%s/%s/config", settings.data.deviceName, haStaticDescriptor[i][0]); // build the topic
+      sprintf(topBuff, "homeassistant/sensor/%s/%s/config", settings.data.mqttTopic, haStaticDescriptor[i][0]); // build the topic
       mqttclient.beginPublish(topBuff, haPayLoad.length(), true);
       for (size_t i = 0; i < haPayLoad.length(); i++)
       {
@@ -761,7 +761,7 @@ bool sendHaDiscovery()
         haPayLoad += (String) "\"dev_cla\":\"" + haLiveDescriptor[i][3] + "\",";
       haPayLoad += haDeviceDescription;
       haPayLoad += "}";
-      sprintf(topBuff, "homeassistant/sensor/%s/%s/config", settings.data.deviceName, haLiveDescriptor[i][0]); // build the topic
+      sprintf(topBuff, "homeassistant/sensor/%s/%s/config", settings.data.mqttTopic, haLiveDescriptor[i][0]); // build the topic
       mqttclient.beginPublish(topBuff, haPayLoad.length(), true);
       for (size_t i = 0; i < haPayLoad.length(); i++)
       {
