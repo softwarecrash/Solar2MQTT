@@ -4,10 +4,6 @@ env.Append(CPPDEFINES=[
     ("SWVERSION", env.StringifyMacro(env.GetProjectOption("custom_prog_version"))),
     ("HWBOARD", env.StringifyMacro(env["BOARD"])),
 ])
-#if env.GetProjectOption("build_type") == "debug":
-#    env.Append(CPPDEFINES=[
-#        ("isDEBUG",  env.StringifyMacro(env.GetBuildType())),
-#    ])
 
 if env.GetProjectOption("custom_hardwareserial") == "true":
     env.Append(CPPDEFINES=[
