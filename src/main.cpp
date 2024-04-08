@@ -529,7 +529,7 @@ bool connectMQTT()
       return false; // Exit if we couldnt connect to MQTT brooker
     }
     firstPublish = true;
-    writeLog("MQTT Client State: ", mqttclient.state());
+    writeLog("MQTT Client State: %d", mqttclient.state());
   }
   return true;
 }
