@@ -395,8 +395,9 @@ void setup()
                       { request->send(418, "text/plain", "418 I'm a teapot"); });
 
     // set the device name
+    
+    MDNS.begin(settings.data.deviceName);
     MDNS.addService("http", "tcp", 80);
-    if (MDNS.begin(settings.data.deviceName))
     ws.onEvent(onEvent);
     server.addHandler(&ws);
     WebSerial.begin(&server);
@@ -418,6 +419,7 @@ void setup()
 
 void loop()
 {
+  MDNS.update();
   if (Update.isRunning())
   {
     workerCanRun = false; // lockout, atfer true need reboot
@@ -434,8 +436,6 @@ void loop()
         mqtttimer = 0;
       }
       ws.cleanupClients(); // clean unused client connections
-      MDNS.update();
-      // getJsonData();
       mppClient.loop(); // Call the PI Serial Library loop
       mqttclient.loop();
       if ((haDiscTrigger || settings.data.haDiscovery) && measureJson(Json) > jsonSize)
