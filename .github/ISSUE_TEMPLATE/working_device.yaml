@@ -23,11 +23,3 @@ body:
       placeholder: enter device type!
     validations:
       required: true
-  - type: input
-    id: device-firmware
-    attributes:
-      label: Please enter the device firmware version
-      description: Also tell us, wich firmware version you are using
-      placeholder: enter device firmware version!
-    validations:
-      required: true
