@@ -26,7 +26,7 @@ body:
   - type: input
     id: device-firmware
     attributes:
-      label: What device are you using?
+      label: Please enter the device firmware version
       description: Also tell us, wich firmware version you are using
       placeholder: enter device firmware version!
     validations:
