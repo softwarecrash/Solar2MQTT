@@ -19,7 +19,7 @@ body:
     id: device-type
     attributes:
       label: Please enter the device type
-      description: Also tell us the device
+      description: Also tell us the device type
       placeholder: enter device type!
     validations:
       required: true
