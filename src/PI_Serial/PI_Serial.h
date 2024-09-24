@@ -86,6 +86,14 @@ public:
     void callback(std::function<void()> func);
     std::function<void()> requestCallback;
 
+    enum protocolType
+    {
+        NoD,
+        PI18,
+        PI30,
+        MODBUS_MUST
+    };
+
 private: 
     unsigned int serialIntfBaud;
 
@@ -100,13 +108,6 @@ private:
     String customCommandBuffer;
 
     MODBUS *modbus;
-    enum protocolType
-    {
-        NoD,
-        PI18,
-        PI30,
-        MODBUS_MUST
-    };
 
     /**
      * @brief get the crc from a string

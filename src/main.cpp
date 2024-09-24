@@ -451,7 +451,7 @@ void loop()
   if (restartNow && millis() >= (RestartTimer + 500))
   {
     ESP.restart();
-  }
+  } 
   notificationLED(); // notification LED routine
 }
 

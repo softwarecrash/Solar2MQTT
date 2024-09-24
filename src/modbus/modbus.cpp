@@ -3,23 +3,32 @@
 #include "modbus.h"
 
 extern void writeLog(const char *format, ...);
+
+unsigned int dir_pin;
+
 //----------------------------------------------------------------------
 //  Public Functions
 //----------------------------------------------------------------------
 
 MODBUS::MODBUS(SoftwareSerial *port)
 {
-    this->my_serialIntf = port;
+    my_serialIntf = port;
+    dir_pin = RS485_DIR_PIN;
+
+    if (strcmp(HWBOARD, "esp01_1m") == 0)
+    {
+        dir_pin = RS485_ESP01_DIR_PIN;
+    }
 }
 
 void MODBUS::preTransmission()
 {
-    digitalWrite(RS485_DIR_PIN, 1);
+    digitalWrite(dir_pin, 1);
 }
 
 void MODBUS::postTransmission()
 {
-    digitalWrite(RS485_DIR_PIN, 0);
+    digitalWrite(dir_pin, 0);
 }
 
 bool MODBUS::Init()
@@ -34,7 +43,7 @@ bool MODBUS::Init()
     this->my_serialIntf->begin(RS485_BAUDRATE, SWSERIAL_8N1);
 
     // Init in receive mode
-    pinMode(RS485_DIR_PIN, OUTPUT);
+    pinMode(dir_pin, OUTPUT);
     this->postTransmission();
 
     // Callbacks allow us to configure the RS485 transceiver correctly
@@ -55,7 +64,7 @@ bool MODBUS::Init()
 void MODBUS::loop()
 {
     if (!device_found)
-        return; 
+        return;
     if (parseModbusToJson(live_info))
     {
         connectionCounter = 0;
@@ -122,11 +131,11 @@ bool MODBUS::getModbusResultMsg(uint8_t result)
 bool MODBUS::getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity, uint16_t *value_ptr)
 {
     // writeLog("Requesting data");
-    for (uint8_t i = 0; i < MODBUS_RETRIES; ++i)
+    for (uint8_t i = 0; i < MODBUS_RETRIES; i++)
     {
         if (MODBUS_RETRIES > 1)
         {
-            writeLog("Trial %d/%d", i + 1, MODBUS_RETRIES);
+            // writeLog("Trial %d/%d", i + 1, MODBUS_RETRIES);
         }
         if (modbus_entity == MODBUS_TYPE_HOLDING)
         {
@@ -206,8 +215,8 @@ bool MODBUS::readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *
         case REGISTER_TYPE_DIEMATIC_ONE_DECIMAL:
             if (decodeDiematicDecimal(raw_value, 1, &final_value))
             {
-                // writeLog("Value: %.1f", final_value);
-                (*variant)[reg->name] = final_value;
+                // writeLog("Raw value: %#06x, floatValue: %f",raw_value, final_value);
+                (*variant)[reg->name] = String(final_value, 1);
             }
             else
             {
@@ -219,7 +228,7 @@ bool MODBUS::readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *
             if (decodeDiematicDecimal(raw_value, 2, &final_value))
             {
                 // writeLog("Value: %.1f", final_value);
-                (*variant)[reg->name] = final_value;
+                (*variant)[reg->name] = String(final_value, 2);
             }
             else
             {
@@ -306,11 +315,10 @@ bool MODBUS::parseModbusToJson(modbus_register_info_t &register_info)
     {
         register_info.curr_register = 0;
     }
-    writeLog("Registers size %d", register_info.array_size); 
+    // writeLog("Registers size %d", register_info.array_size);
     previousTime = millis();
     for (; register_info.curr_register <= register_info.array_size - 1; register_info.curr_register++)
     {
-        writeLog("curr %d", register_info.curr_register);
         bool ret_val = readModbusRegisterToJson(&register_info.registers[register_info.curr_register], register_info.variant);
 
         if (!ret_val)
@@ -318,7 +326,7 @@ bool MODBUS::parseModbusToJson(modbus_register_info_t &register_info)
             return false;
         }
 
-        if (millis() - previousTime > cmdDelayTime) //limit execution time
+        if (millis() - previousTime > cmdDelayTime) // limit execution time
         {
             return false;
         }

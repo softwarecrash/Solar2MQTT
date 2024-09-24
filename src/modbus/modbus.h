@@ -9,7 +9,11 @@ extern JsonObject deviceJson;
 extern JsonObject staticData;
 extern JsonObject liveData;
 
-#define RS485_DIR_PIN D5
+ 
+#define RS485_DIR_PIN 14 //D5
+#define RS485_ESP01_DIR_PIN 0 
+
+
 #define RS485_BAUDRATE 19200
 
 #define INVERTER_MODBUS_ADDR 4
@@ -64,11 +68,11 @@ public:
     String requestData(String command);
 
 private:
-    bool device_found = false;
-    unsigned int soft_tx;
-    unsigned int soft_rx;
-    unsigned long previousTime = 0; 
-    unsigned long cmdDelayTime = 3000; 
+    bool device_found = false; 
+    unsigned long previousTime = 0;
+    unsigned long cmdDelayTime = 3000;
+
+
     byte requestCounter = 0;
 
     long long int connectionCounter = 0;
