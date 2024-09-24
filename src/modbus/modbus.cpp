@@ -57,7 +57,11 @@ bool MODBUS::Init()
         .registers = registers_live,
         .array_size = sizeof(registers_live) / sizeof(modbus_register_t),
         .curr_register = 0};
-
+    static_info = {
+        .variant = &staticData,
+        .registers = registers_static,
+        .array_size = sizeof(registers_static) / sizeof(modbus_register_t),
+        .curr_register = 0};
     return true;
 }
 
@@ -65,15 +69,24 @@ void MODBUS::loop()
 {
     if (!device_found)
         return;
-    if (parseModbusToJson(live_info))
+
+    modbus_register_info_t *cur_info_registers = &live_info;
+    if (requestStaticData)
+    {
+        cur_info_registers = &static_info;
+    }
+
+    if (parseModbusToJson(*cur_info_registers))
     {
         connectionCounter = 0;
+        requestStaticData = false;
         requestCallback();
     }
     else
     {
         connectionCounter++;
     }
+
     connection = (connectionCounter < 10) ? true : false;
 }
 
@@ -84,7 +97,7 @@ void MODBUS::callback(std::function<void()> func)
 
 String MODBUS::requestData(String command)
 {
-
+    requestStaticData = true;
     return "";
 }
 
@@ -140,7 +153,8 @@ bool MODBUS::getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity,
         if (modbus_entity == MODBUS_TYPE_HOLDING)
         {
             uint8_t result = mb.readHoldingRegisters(register_id, 1);
-            if (getModbusResultMsg(result))
+            bool is_received = getModbusResultMsg(result);
+            if (is_received)
             {
                 *value_ptr = mb.getResponseBuffer(0);
                 return true;

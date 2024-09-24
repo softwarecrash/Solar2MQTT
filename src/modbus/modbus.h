@@ -34,6 +34,7 @@ public:
     bool requestStaticData = true;
     bool connection = false;
     modbus_register_info_t live_info;
+    modbus_register_info_t static_info;
     MODBUS(SoftwareSerial *port);
 
     /**

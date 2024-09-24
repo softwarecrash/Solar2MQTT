@@ -70,6 +70,21 @@ const modbus_register_t registers_live[] = {
     {15209, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, "MPPT1_Charger_Temperature"},
 };
 
+const modbus_register_t registers_static[] = {
+
+    {10110, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, "Battery_type", {.bitfield = {
+                                                                                                "No choose",
+                                                                                                "User defined",
+                                                                                                "Lithium",
+                                                                                                "Sealed Lead",
+                                                                                                "AGM",
+                                                                                                "GEL",
+                                                                                                "Flooded", 
+                                                                                            }}},
+    {10103, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, "Battery_float_voltage"},                        
+};
+
+
 #define DEVICE_MODEL_HIGH "Device_Model_Hight"
 #define DEVICE_MODEL_LOW "Device_Model_Low"
 
