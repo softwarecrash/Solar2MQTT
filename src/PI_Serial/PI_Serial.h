@@ -3,6 +3,7 @@
 #define PI_SERIAL_H
 
 #include <ArduinoJson.h>
+#include <modbus/modbus.h>
 extern JsonObject deviceJson;
 extern JsonObject staticData;
 extern JsonObject liveData;
@@ -85,9 +86,7 @@ public:
     void callback(std::function<void()> func);
     std::function<void()> requestCallback;
 
-private:
-    unsigned int soft_tx;
-    unsigned int soft_rx;
+private: 
     unsigned int serialIntfBaud;
 
     unsigned long previousTime = 0;
@@ -99,11 +98,14 @@ private:
     byte qexCounter = 0;
     
     String customCommandBuffer;
+
+    MODBUS *modbus;
     enum protocolType
     {
         NoD,
         PI18,
         PI30,
+        MODBUS_MUST
     };
 
     /**
@@ -148,6 +150,8 @@ private:
     bool PIXX_QPIRI();
     bool PIXX_QPI();
     bool PIXX_QMN();
+
+    bool isModbus();
 };
 
 #endif

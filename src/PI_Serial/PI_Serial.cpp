@@ -1,7 +1,7 @@
 // #define isDEBUG
 #include "ArduinoJson.h"
 #include "PI_Serial.h"
-SoftwareSerial myPort;
+
 #include "CRC16.h"
 #include "CRC.h"
 CRC16 crc;
@@ -22,9 +22,7 @@ extern void writeLog(const char *format, ...);
 
 PI_Serial::PI_Serial(int rx, int tx)
 {
-    soft_rx = rx;
-    soft_tx = tx;
-    this->my_serialIntf = &myPort;
+    this->my_serialIntf = new SoftwareSerial(rx, tx, false); // init pins
 }
 
 bool PI_Serial::Init()
@@ -36,9 +34,17 @@ bool PI_Serial::Init()
         return false;
     }
     autoDetect();
+    if (isModbus())
+    {
+        if (requestCallback)
+        {
+            modbus->callback(requestCallback);
+        }
+        return true;
+    }
     this->my_serialIntf->setTimeout(500);
     this->my_serialIntf->enableRxGPIOPullUp(true);
-    this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
+    this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1);
     return true;
 }
 
@@ -55,50 +61,64 @@ bool PI_Serial::loop()
                 previousTime = millis();
                 return true;
             }
-            switch (requestStaticData)
+            if (isModbus())
             {
-            case true:
-                switch (requestCounter)
-                {
-                case 0:
-                    requestCounter = PIXX_QPIRI() ? (requestCounter + 1) : 0;
-                    break;
-                case 1:
-                    requestCounter = PIXX_QMN() ? (requestCounter + 1) : 0;
-                    break;
-                case 2:
-                    requestCounter = PIXX_QPI() ? (requestCounter + 1) : 0;
-                    requestCounter = 0;
-                    requestStaticData = false;
-                    break;
-                }
-                break;
-            case false:
-                switch (requestCounter)
-                {
-                case 0:
-                    requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
-                    break;
-                case 1:
-                    requestCounter = PIXX_QPIGS2() ? (requestCounter + 1) : 0;
-                    break;
-                case 2:
-                    requestCounter = PIXX_QMOD() ? (requestCounter + 1) : 0;
-                    break;
-                case 3:
-                    requestCounter = PIXX_Q1() ? (requestCounter + 1) : 0;
-                    break;
-                case 4:
-                    requestCounter = PIXX_QEX() ? (requestCounter + 1) : 0;
-                    break;
-                case 5:
-                    requestCallback();
-                    requestCounter = 0;
-                    break;
-                }
-                break;
+                modbus->loop();
             }
-            connection = (connectionCounter < 10) ? true : false;
+            else
+            {
+                switch (requestStaticData)
+                {
+                case true:
+                    switch (requestCounter)
+                    {
+                    case 0:
+                        requestCounter = PIXX_QPIRI() ? (requestCounter + 1) : 0;
+                        break;
+                    case 1:
+                        requestCounter = PIXX_QMN() ? (requestCounter + 1) : 0;
+                        break;
+                    case 2:
+                        requestCounter = PIXX_QPI() ? (requestCounter + 1) : 0;
+                        requestCounter = 0;
+                        requestStaticData = false;
+                        break;
+                    }
+                    break;
+                case false:
+                    switch (requestCounter)
+                    {
+                    case 0:
+                        requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
+                        break;
+                    case 1:
+                        requestCounter = PIXX_QPIGS2() ? (requestCounter + 1) : 0;
+                        break;
+                    case 2:
+                        requestCounter = PIXX_QMOD() ? (requestCounter + 1) : 0;
+                        break;
+                    case 3:
+                        requestCounter = PIXX_Q1() ? (requestCounter + 1) : 0;
+                        break;
+                    case 4:
+                        requestCounter = PIXX_QEX() ? (requestCounter + 1) : 0;
+                        break;
+                    case 5:
+                        requestCallback();
+                        requestCounter = 0;
+                        break;
+                    }
+                    break;
+                }
+            }
+            if (isModbus())
+            {
+                connection = modbus->connection;
+            }
+            else
+            {
+                connection = (connectionCounter < 10) ? true : false;
+            }
             previousTime = millis();
         }
         else
@@ -138,9 +158,9 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
 
         startChar = "(";
         serialIntfBaud = 2400;
-        this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
+        this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1);
         String qpi = this->requestData("QPI");
-        writeLog("QPI:\t\t%s (Length: %d)", qpi,qpi.length());
+        writeLog("QPI:\t\t%s (Length: %d)", qpi, qpi.length());
         if (qpi != "" && qpi.substring(0, 2) == "PI")
         {
             writeLog("<Autodetect> Match protocol: PI3X");
@@ -149,7 +169,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
             break;
         }
         startChar = "^Dxxx";
-        this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1, soft_rx, soft_tx, false);
+        this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1);
         String P005PI = this->requestData("^P005PI");
         writeLog("^P005PI:\t\t%s (Length: %d)", P005PI, P005PI.length());
         if (P005PI != "" && P005PI == "18")
@@ -161,20 +181,38 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         }
         this->my_serialIntf->end();
     }
+    this->my_serialIntf->end();
     writeLog("----------------- End Autodetect -----------------");
+    if (protocol == NoD)
+    {
+        modbus = new MODBUS(this->my_serialIntf);
+        modbus->Init();
+        if (modbus->autoDetect()){
+            protocol = MODBUS_MUST;
+        }
+    }
 }
 
 bool PI_Serial::sendCustomCommand()
 {
     if (customCommandBuffer == "")
         return false;
-    get.raw.commandAnswer = requestData(customCommandBuffer);
+
+    if (isModbus())
+    {
+        get.raw.commandAnswer = modbus->requestData(customCommandBuffer);
+    }
+    else
+    {
+        get.raw.commandAnswer = requestData(customCommandBuffer);
+    }
     customCommandBuffer = "";
     return true;
 }
 
 String PI_Serial::requestData(String command)
 {
+
     String commandBuffer = "";
     uint16_t crcCalc = 0;
     uint16_t crcRecive = 0;
@@ -199,7 +237,7 @@ String PI_Serial::requestData(String command)
         commandBuffer.remove(commandBuffer.length() - 2); // remove the crc
         commandBuffer.remove(0, strlen(startChar));       // remove the start char ( for Pi30 and ^Dxxx for Pi18
 
-        //requestOK++;
+        // requestOK++;
         connectionCounter = 0;
     }
     else if (getCHK(commandBuffer.substring(0, commandBuffer.length() - 1)) + 1 == commandBuffer[commandBuffer.length() - 1] &&
@@ -212,7 +250,7 @@ String PI_Serial::requestData(String command)
         commandBuffer.remove(commandBuffer.length() - 1); // remove the crc
         commandBuffer.remove(0, strlen(startChar));       // remove the start char ( for Pi30 and ^Dxxx for Pi18
 
-        //requestOK++;
+        // requestOK++;
         connectionCounter = 0;
     }
     else if (commandBuffer.indexOf("NAK", strlen(startChar)) > 0) // catch NAK without crc
@@ -225,7 +263,7 @@ String PI_Serial::requestData(String command)
     }
     else
     {
-        writeLog("ERROR Send: >%s< Recive: >%s<",  command, commandBuffer);
+        writeLog("ERROR Send: >%s< Recive: >%s<", command, commandBuffer);
         connectionCounter++;
         commandBuffer = "ERCRC";
     }
@@ -345,4 +383,9 @@ char *PI_Serial::getModeDesc(char mode) // get the char from QMOD and make reada
         break;
     }
     return modeString;
+}
+
+bool PI_Serial::isModbus()
+{
+    return protocol == MODBUS_MUST;
 }
