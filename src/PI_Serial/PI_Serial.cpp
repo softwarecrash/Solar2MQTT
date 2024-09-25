@@ -182,7 +182,6 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         this->my_serialIntf->end();
     }
     this->my_serialIntf->end();
-    writeLog("----------------- End Autodetect -----------------");
     if (protocol == NoD)
     {
         modbus = new MODBUS(this->my_serialIntf);
@@ -190,7 +189,8 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         if (modbus->autoDetect()){
             protocol = MODBUS_MUST;
         }
-    }
+    } 
+    writeLog("----------------- End Autodetect -----------------");
 }
 
 bool PI_Serial::sendCustomCommand()
