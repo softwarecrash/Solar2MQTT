@@ -148,7 +148,7 @@ bool MODBUS::getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity,
     {
         if (MODBUS_RETRIES > 1)
         {
-            // writeLog("Trial %d/%d", i + 1, MODBUS_RETRIES);
+            writeLog("Trial %d/%d", i + 1, MODBUS_RETRIES);
         }
         if (modbus_entity == MODBUS_TYPE_HOLDING)
         {
@@ -331,10 +331,10 @@ bool MODBUS::parseModbusToJson(modbus_register_info_t &register_info)
     }
     // writeLog("Registers size %d", register_info.array_size);
     previousTime = millis();
-    for (; register_info.curr_register <= register_info.array_size - 1; register_info.curr_register++)
+    while (register_info.curr_register <= register_info.array_size)
     {
-        bool ret_val = readModbusRegisterToJson(&register_info.registers[register_info.curr_register], register_info.variant);
-
+       bool ret_val = readModbusRegisterToJson(&register_info.registers[register_info.curr_register], register_info.variant);
+        register_info.curr_register++;
         if (!ret_val)
         {
             return false;
@@ -355,14 +355,13 @@ bool MODBUS::parseModbusToJson(modbus_register_info_t &register_info)
 bool MODBUS::autoDetect() // function for autodetect the inverter type
 {
     String modelName = retrieveModel();
-    if (modelName)
+    if (!modelName.isEmpty())
     {
         writeLog("<Autodetect> Found Modbus device: %s", modelName);
         staticData["Device_Model"] = modelName;
         device_found = true;
         return true;
     }
-
     return false;
 }
 
