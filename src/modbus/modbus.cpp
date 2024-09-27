@@ -39,7 +39,7 @@ bool MODBUS::Init()
         writeLog("No serial specificed!");
         return false;
     }
-    this->my_serialIntf->setTimeout(500);
+    this->my_serialIntf->setTimeout(2000);
     this->my_serialIntf->begin(RS485_BAUDRATE, SWSERIAL_8N1);
 
     // Init in receive mode
@@ -154,6 +154,7 @@ bool MODBUS::getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity,
         {
             uint8_t result = mb.readHoldingRegisters(register_id, 1);
             bool is_received = getModbusResultMsg(result);
+            delay(100);
             if (is_received)
             {
                 *value_ptr = mb.getResponseBuffer(0);
@@ -328,11 +329,11 @@ bool MODBUS::parseModbusToJson(modbus_register_info_t &register_info, bool skip_
     if (register_info.curr_register >= register_info.array_size)
     {
         register_info.curr_register = 0;
-    } 
+    }
     previousTime = millis();
     while (register_info.curr_register < register_info.array_size)
     {
-       
+
         bool ret_val = readModbusRegisterToJson(&register_info.registers[register_info.curr_register], register_info.variant);
         if (ret_val || skip_reg_on_error)
         {
