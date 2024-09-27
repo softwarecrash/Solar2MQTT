@@ -328,13 +328,13 @@ bool MODBUS::parseModbusToJson(modbus_register_info_t &register_info, bool skip_
     if (register_info.curr_register >= register_info.array_size)
     {
         register_info.curr_register = 0;
-    }
-    // writeLog("Registers size %d", register_info.array_size);
+    } 
     previousTime = millis();
-    while (register_info.curr_register <= register_info.array_size)
+    while (register_info.curr_register < register_info.array_size)
     {
+       
         bool ret_val = readModbusRegisterToJson(&register_info.registers[register_info.curr_register], register_info.variant);
-        if (skip_reg_on_error)
+        if (ret_val || skip_reg_on_error)
         {
             register_info.curr_register++;
         }
@@ -364,13 +364,13 @@ bool MODBUS::autoDetect() // function for autodetect the inverter type
     {
         writeLog("<Autodetect> Found Modbus device: %s", modelName);
         staticData["Device_Model"] = modelName;
+        device_found = true;
     }
     return device_found;
 }
 
 String MODBUS::retrieveModel()
 {
-    bool found = false;
     String model = "";
     DynamicJsonDocument doc(256);
     JsonObject jsonObj = doc.to<JsonObject>(); // Create and get JsonObject
@@ -384,20 +384,13 @@ String MODBUS::retrieveModel()
     {
         if (parseModbusToJson(model_info, false))
         {
-            found = true;
+            const char *modelHigh = doc[DEVICE_MODEL_HIGH];
+            int modelLow = doc[DEVICE_MODEL_LOW];
+            model = String(modelHigh) + String(modelLow);
             break;
         }
         delay(100);
     }
 
-    if (found)
-    {
-        const char *modelHigh = doc[DEVICE_MODEL_HIGH];
-        if (modelHigh != nullptr) // check is not nullptr before converting it to a String.
-        {
-            int modelLow = doc[DEVICE_MODEL_LOW];
-            return String(modelHigh) + String(modelLow);
-        }
-    }
     return model;
 }
