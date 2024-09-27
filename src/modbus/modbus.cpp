@@ -322,7 +322,7 @@ bool MODBUS::readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *
     return true;
 }
 
-bool MODBUS::parseModbusToJson(modbus_register_info_t &register_info)
+bool MODBUS::parseModbusToJson(modbus_register_info_t &register_info, bool skip_reg_on_error)
 {
     // writeLog("Parsing Modbus registers");
     if (register_info.curr_register >= register_info.array_size)
@@ -334,7 +334,10 @@ bool MODBUS::parseModbusToJson(modbus_register_info_t &register_info)
     while (register_info.curr_register <= register_info.array_size)
     {
         bool ret_val = readModbusRegisterToJson(&register_info.registers[register_info.curr_register], register_info.variant);
-        register_info.curr_register++;
+        if (skip_reg_on_error)
+        {
+            register_info.curr_register++;
+        }
         if (!ret_val)
         {
             return false;
@@ -379,7 +382,7 @@ String MODBUS::retrieveModel()
 
     for (size_t i = 0; i < model_info.array_size * 2; i++)
     {
-        if (parseModbusToJson(model_info))
+        if (parseModbusToJson(model_info, false))
         {
             found = true;
             break;
@@ -390,8 +393,11 @@ String MODBUS::retrieveModel()
     if (found)
     {
         const char *modelHigh = doc[DEVICE_MODEL_HIGH];
-        int modelLow = doc[DEVICE_MODEL_LOW];
-        return String(modelHigh) + String(modelLow);
+        if (modelHigh != nullptr) // check is not nullptr before converting it to a String.
+        {
+            int modelLow = doc[DEVICE_MODEL_LOW];
+            return String(modelHigh) + String(modelLow);
+        }
     }
     return model;
 }

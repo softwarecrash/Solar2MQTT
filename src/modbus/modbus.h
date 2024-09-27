@@ -60,7 +60,7 @@ public:
     void callback(std::function<void()> func);
     std::function<void()> requestCallback;
     bool readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *variant);
-    bool parseModbusToJson(modbus_register_info_t &register_info);
+    bool parseModbusToJson(modbus_register_info_t &register_info, bool skip_reg_on_error = true);
     bool autoDetect();
     /**
      * @brief Sends a complete packet with the specified command
