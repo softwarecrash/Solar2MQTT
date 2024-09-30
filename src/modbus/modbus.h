@@ -9,16 +9,20 @@ extern JsonObject deviceJson;
 extern JsonObject staticData;
 extern JsonObject liveData;
 
- 
-#define RS485_DIR_PIN 14 //D5
-#define RS485_ESP01_DIR_PIN 0 
-
+#define RS485_DIR_PIN 14 // D5
+#define RS485_ESP01_DIR_PIN 0
 
 #define RS485_BAUDRATE 19200
 
 #define INVERTER_MODBUS_ADDR 4
 
 #define MODBUS_RETRIES 2
+
+typedef enum
+{
+    READ_FAIL = 0,
+    READ_OK = 1,
+} response_type_t;
 
 typedef struct
 {
@@ -31,6 +35,7 @@ typedef struct
 class MODBUS
 {
 public:
+    const uint8_t MAX_CONNECTION_ATTEMPTS = 10;
     bool requestStaticData = true;
     bool connection = false;
     modbus_register_info_t live_info;
@@ -60,7 +65,8 @@ public:
     void callback(std::function<void()> func);
     std::function<void()> requestCallback;
     bool readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *variant);
-    bool parseModbusToJson(modbus_register_info_t &register_info, bool skip_reg_on_error = true);
+    response_type_t parseModbusToJson(modbus_register_info_t &register_info, bool skip_reg_on_error = true);
+    bool isAllRegistersRead(modbus_register_info_t &register_info);
     bool autoDetect();
     /**
      * @brief Sends a complete packet with the specified command
@@ -69,10 +75,9 @@ public:
     String requestData(String command);
 
 private:
-    bool device_found = false; 
+    bool device_found = false;
     unsigned long previousTime = 0;
-    unsigned long cmdDelayTime = 3000;
-
+    unsigned long cmdDelayTime = 100;
 
     byte requestCounter = 0;
 

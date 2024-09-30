@@ -62,32 +62,47 @@ bool MODBUS::Init()
         .registers = registers_static,
         .array_size = sizeof(registers_static) / sizeof(modbus_register_t),
         .curr_register = 0};
+    previousTime = millis();
     return true;
 }
 
 void MODBUS::loop()
 {
     if (!device_found)
+    {
         return;
+    }
+
+    if (millis() - previousTime < cmdDelayTime)
+    {
+        return;
+    }
 
     modbus_register_info_t *cur_info_registers = &live_info;
     if (requestStaticData)
     {
         cur_info_registers = &static_info;
     }
-
-    if (parseModbusToJson(*cur_info_registers))
+    switch (parseModbusToJson(*cur_info_registers))
     {
+    case READ_OK:
         connectionCounter = 0;
+        break;
+    case READ_FAIL:
+        connectionCounter++;
+        break;
+    default:
+        break;
+    }
+
+    connection = connectionCounter < MAX_CONNECTION_ATTEMPTS;
+    if (isAllRegistersRead(*cur_info_registers))
+    {
         requestStaticData = false;
         requestCallback();
     }
-    else
-    {
-        connectionCounter++;
-    }
 
-    connection = (connectionCounter < 10) ? true : false;
+    previousTime = millis();
 }
 
 void MODBUS::callback(std::function<void()> func)
@@ -148,13 +163,12 @@ bool MODBUS::getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity,
     {
         if (MODBUS_RETRIES > 1)
         {
-            writeLog("Trial %d/%d", i + 1, MODBUS_RETRIES);
+            // writeLog("Trial %d/%d", i + 1, MODBUS_RETRIES);
         }
         if (modbus_entity == MODBUS_TYPE_HOLDING)
         {
             uint8_t result = mb.readHoldingRegisters(register_id, 1);
             bool is_received = getModbusResultMsg(result);
-            delay(100);
             if (is_received)
             {
                 *value_ptr = mb.getResponseBuffer(0);
@@ -212,13 +226,13 @@ bool MODBUS::readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *
     {
         return false; // Return false if invalid input
     }
-    writeLog("Register id=%d type=0x%x name=%s", reg->id, reg->type, reg->name);
+    // writeLog("Register id=%d type=0x%x name=%s", reg->id, reg->type, reg->name);
     uint16_t raw_value = 0;
 
     float final_value;
     if (getModbusValue(reg->id, reg->modbus_entity, &raw_value))
     {
-        // writeLog("Raw value: %s=%#06x", reg->name, raw_value);
+        writeLog("Raw value: %s=%#06x\n", reg->name, raw_value);
 
         switch (reg->type)
         {
@@ -226,12 +240,16 @@ bool MODBUS::readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *
             // writeLog("Value: %u", raw_value);
             (*variant)[reg->name] = raw_value;
             break;
+        case REGISTER_TYPE_INT16:
+            // writeLog("Value: %u", raw_value);
+            (*variant)[reg->name] = static_cast<int16_t>(raw_value);
+            break;
 
         case REGISTER_TYPE_DIEMATIC_ONE_DECIMAL:
             if (decodeDiematicDecimal(raw_value, 1, &final_value))
             {
                 // writeLog("Raw value: %#06x, floatValue: %f",raw_value, final_value);
-                (*variant)[reg->name] = String(final_value, 1);
+                (*variant)[reg->name] = (int)(final_value * 100 + 0.5) / 100.0;
             }
             else
             {
@@ -243,7 +261,7 @@ bool MODBUS::readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *
             if (decodeDiematicDecimal(raw_value, 2, &final_value))
             {
                 // writeLog("Value: %.1f", final_value);
-                (*variant)[reg->name] = String(final_value, 2);
+                (*variant)[reg->name] = (int)(final_value * 1000 + 0.5) / 1000.0;
             }
             else
             {
@@ -319,38 +337,37 @@ bool MODBUS::readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *
         writeLog("Request failed!");
         return false;
     }
-    writeLog("Request OK!");
+    // writeLog("Request OK!");
     return true;
 }
 
-bool MODBUS::parseModbusToJson(modbus_register_info_t &register_info, bool skip_reg_on_error)
+response_type_t MODBUS::parseModbusToJson(modbus_register_info_t &register_info, bool skip_reg_on_error)
 {
-    // writeLog("Parsing Modbus registers");
+
     if (register_info.curr_register >= register_info.array_size)
     {
         register_info.curr_register = 0;
     }
-    previousTime = millis();
     while (register_info.curr_register < register_info.array_size)
     {
-
         bool ret_val = readModbusRegisterToJson(&register_info.registers[register_info.curr_register], register_info.variant);
         if (ret_val || skip_reg_on_error)
         {
             register_info.curr_register++;
         }
-        if (!ret_val)
-        {
-            return false;
-        }
 
-        if (millis() - previousTime > cmdDelayTime) // limit execution time
-        {
-            return false;
-        }
+        return ret_val ? READ_OK : READ_FAIL;
     }
+    return READ_FAIL;
+}
 
-    return true;
+bool MODBUS::isAllRegistersRead(modbus_register_info_t &register_info)
+{
+    if (register_info.curr_register >= register_info.array_size)
+    {
+        return true;
+    }
+    return false;
 }
 
 //----------------------------------------------------------------------
@@ -383,14 +400,15 @@ String MODBUS::retrieveModel()
 
     for (size_t i = 0; i < model_info.array_size * 2; i++)
     {
-        if (parseModbusToJson(model_info, false))
+        parseModbusToJson(model_info, false);
+        if (isAllRegistersRead(model_info))
         {
             const char *modelHigh = doc[DEVICE_MODEL_HIGH];
             int modelLow = doc[DEVICE_MODEL_LOW];
             model = String(modelHigh) + String(modelLow);
             break;
         }
-        delay(100);
+        delay(50);
     }
 
     return model;
