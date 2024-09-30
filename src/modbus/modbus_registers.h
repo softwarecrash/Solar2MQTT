@@ -16,6 +16,7 @@ typedef enum
 {
     //    REGISTER_TYPE_U8 = 0x00,                   /*!< Unsigned 8 */
     REGISTER_TYPE_U16 = 0x01,   /*!< Unsigned 16 */
+    REGISTER_TYPE_INT16 = 0x02, /*!< Signed 16 */
                                 //    REGISTER_TYPE_U32 = 0x02,                  /*!< Unsigned 32 */
                                 //    REGISTER_TYPE_FLOAT = 0x03,                /*!< Float type */
     REGISTER_TYPE_ASCII = 0x04, /*!< ASCII type */
@@ -52,15 +53,13 @@ const modbus_register_t registers_live[] = {
                                                                                                 "GridCharging",
                                                                                             }}},
 
-    {25205, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, "Battery_Voltage"},
-    {25274, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, "Battery_Load"},
+    {25205, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, "Battery_Voltage"}, 
+    {25206, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, "AC_out_Voltage"},
     {25207, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, "AC_in_Voltage"},
+    {25208, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, "Inverter_Bus_Voltage"},
+    {25225, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_TWO_DECIMAL, "AC_out_Frequenz"},
     {25226, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_TWO_DECIMAL, "AC_in_Frequenz"},
 
-    {25206, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, "AC_out_Voltage"},
-    {25225, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_TWO_DECIMAL, "AC_out_Frequenz"},
-
-    {25208, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, "Inverter_Bus_Voltage"},
     {25216, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, "Output_load_percent"},
     {15205, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, "PV_Input_Voltage"},
     {15208, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, "PV_Charging_Power"},
@@ -68,6 +67,11 @@ const modbus_register_t registers_live[] = {
     {25233, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, "Inverter_Bus_Temperature"},
     {25234, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, "Transformer_temperature"},
     {15209, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, "MPPT1_Charger_Temperature"},
+
+    {25215, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, "AC_out_Watt"}, //W
+    {25216, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, "AC_out_percent"}, //%
+
+     {25274, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, "Battery_Load"},
 };
 
 const modbus_register_t registers_static[] = {
