@@ -327,14 +327,14 @@ void setup()
     server.on("/set", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                 if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
-                AsyncWebParameter *p = request->getParam(0);
-                if (p->name() == "CC")
-                {
-                  commandFromUser = (p->value());
+                String message;
+                if (request->hasParam("CC")) {
+                  message = request->getParam("CC")->value();
+                  commandFromUser = (message);
                 }
-                if (p->name() == "ha")
-                {
-                haDiscTrigger = true;
+                if (request->hasParam("ha")) {
+                  message = request->getParam("ha")->value();
+                  haDiscTrigger = true;
                 }
                 request->send(200, "text/plain", "message received"); });
 
