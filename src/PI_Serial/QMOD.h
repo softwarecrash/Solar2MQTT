@@ -14,7 +14,7 @@ bool PI_Serial::PIXX_QMOD()
     }
     if (commandAnswer.length() == 1)
     {
-      liveData["Inverter_Operation_Mode"] = getModeDesc((char)commandAnswer.charAt(0));
+      liveData[DESCR_LIVE_INVERTER_OPERATION_MODE] = getModeDesc((char)commandAnswer.charAt(0));
     }
     return true;
   }
@@ -35,25 +35,25 @@ bool PI_Serial::PIXX_QMOD()
       switch (commandAnswer.toInt())
       {
       case 0:
-        liveData["Inverter_Operation_Mode"] = "Power on";
+        liveData[DESCR_LIVE_INVERTER_OPERATION_MODE] = "Power on";
         break;
       case 1:
-        liveData["Inverter_Operation_Mode"] = "Standby";
+        liveData[DESCR_LIVE_INVERTER_OPERATION_MODE] = "Standby";
         break;
       case 2:
-        liveData["Inverter_Operation_Mode"] = "Bypass";
+        liveData[DESCR_LIVE_INVERTER_OPERATION_MODE] = "Bypass";
         break;
       case 3:
-        liveData["Inverter_Operation_Mode"] = "Battery";
+        liveData[DESCR_LIVE_INVERTER_OPERATION_MODE] = "Battery";
         break;
       case 4:
-        liveData["Inverter_Operation_Mode"] = "Fault";
+        liveData[DESCR_LIVE_INVERTER_OPERATION_MODE] = "Fault";
         break;
       case 5:
-        liveData["Inverter_Operation_Mode"] = "Hybrid";
+        liveData[DESCR_LIVE_INVERTER_OPERATION_MODE] = "Hybrid";
         break;
       default:
-        liveData["Inverter_Operation_Mode"] = "No data";
+        liveData[DESCR_LIVE_INVERTER_OPERATION_MODE] = "No data";
         break;
       }
 

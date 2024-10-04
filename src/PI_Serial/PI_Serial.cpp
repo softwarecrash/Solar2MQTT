@@ -15,6 +15,7 @@ CRC16 crc;
 #include "QPIGS2.h"
 #include "QMOD.h"
 #include "QEX.h"
+
 extern void writeLog(const char *format, ...);
 //----------------------------------------------------------------------
 //  Public Functions
@@ -186,9 +187,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
     {
         modbus = new MODBUS(this->my_serialIntf);
         modbus->Init();
-        if (modbus->autoDetect()){
-            protocol = MODBUS_MUST;
-        }
+        protocol = modbus->autoDetect();
     } 
     writeLog("----------------- End Autodetect -----------------");
 }

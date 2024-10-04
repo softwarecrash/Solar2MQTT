@@ -1,10 +1,12 @@
-#include "SoftwareSerial.h"
 #ifndef MODBUS_H
 #define MODBUS_H
 
+#include "SoftwareSerial.h"
 #include <ArduinoJson.h>
 #include <ModbusMaster.h>
-#include "modbus_registers.h"
+#include "modbus_registers.h" 
+#include "device/modbus_device.h"
+
 extern JsonObject deviceJson;
 extern JsonObject staticData;
 extern JsonObject liveData;
@@ -63,21 +65,21 @@ public:
      *
      */
     void callback(std::function<void()> func);
-    std::function<void()> requestCallback;
+    std::function<void()> requestCallback; 
     bool readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *variant);
     response_type_t parseModbusToJson(modbus_register_info_t &register_info, bool skip_reg_on_error = true);
     bool isAllRegistersRead(modbus_register_info_t &register_info);
-    bool autoDetect();
+    protocol_type_t autoDetect();
     /**
      * @brief Sends a complete packet with the specified command
      * @details sends the command over the specified serial connection
      */
     String requestData(String command);
 
-private:
-    bool device_found = false;
+private: 
     unsigned long previousTime = 0;
     unsigned long cmdDelayTime = 100;
+
 
     byte requestCounter = 0;
 
@@ -87,6 +89,7 @@ private:
 
     static void preTransmission();
     static void postTransmission();
+    void prepareRegisters();
     String toBinary(uint16_t input);
     bool decodeDiematicDecimal(uint16_t int_input, int8_t decimals, float *value_ptr);
     bool getModbusResultMsg(uint8_t result);
@@ -100,15 +103,13 @@ private:
      * @brief get the crc from a string
      */
     byte getCHK(String data);
-
-    String retrieveModel();
-
-    /**
+  
+        /**
      * @brief Serial interface used for communication
      * @details This is set in the constructor
      */
     SoftwareSerial *my_serialIntf;
-
+    ModbusDevice* device = nullptr;
     ModbusMaster mb;
 };
 

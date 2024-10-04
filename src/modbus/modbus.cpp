@@ -1,6 +1,7 @@
 // #define isDEBUG
-#include "ArduinoJson.h"
 #include "modbus.h"
+#include "device/must_pv_ph18.h"
+#include "device/deye.h"
 
 extern void writeLog(const char *format, ...);
 
@@ -40,7 +41,6 @@ bool MODBUS::Init()
         return false;
     }
     this->my_serialIntf->setTimeout(2000);
-    this->my_serialIntf->begin(RS485_BAUDRATE, SWSERIAL_8N1);
 
     // Init in receive mode
     pinMode(dir_pin, OUTPUT);
@@ -50,7 +50,13 @@ bool MODBUS::Init()
     mb.preTransmission(preTransmission);
     mb.postTransmission(postTransmission);
 
-    mb.begin(INVERTER_MODBUS_ADDR, *this->my_serialIntf);
+    return true;
+}
+
+void MODBUS::prepareRegisters()
+{
+    const modbus_register_t *registers_live = device->getLiveRegisters();
+    const modbus_register_t *registers_static = device->getStaticRegisters();
 
     live_info = {
         .variant = &liveData,
@@ -63,12 +69,11 @@ bool MODBUS::Init()
         .array_size = sizeof(registers_static) / sizeof(modbus_register_t),
         .curr_register = 0};
     previousTime = millis();
-    return true;
 }
 
 void MODBUS::loop()
 {
-    if (!device_found)
+    if (device == nullptr)
     {
         return;
     }
@@ -373,43 +378,32 @@ bool MODBUS::isAllRegistersRead(modbus_register_info_t &register_info)
 //----------------------------------------------------------------------
 // Private Functions
 //----------------------------------------------------------------------
-bool MODBUS::autoDetect() // function for autodetect the inverter type
+protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter type
 {
+    protocol_type_t protocol = NoD;
+    char modelName[20];
+
     writeLog("Try Autodetect Modbus device");
-    device_found = false;
-    String modelName = retrieveModel();
-    if (!modelName.isEmpty())
-    {
-        writeLog("<Autodetect> Found Modbus device: %s", modelName);
-        staticData["Device_Model"] = modelName;
-        device_found = true;
-    }
-    return device_found;
-}
 
-String MODBUS::retrieveModel()
-{
-    String model = "";
-    DynamicJsonDocument doc(256);
-    JsonObject jsonObj = doc.to<JsonObject>(); // Create and get JsonObject
-    modbus_register_info_t model_info = {
-        .variant = &jsonObj,
-        .registers = registers_device_model,
-        .array_size = sizeof(registers_device_model) / sizeof(modbus_register_t),
-        .curr_register = 0};
+    ModbusDevice *devices[] = {new MustPV_PH18(), new DEYE()};
 
-    for (size_t i = 0; i < model_info.array_size * 2; i++)
+    for (size_t i = 0; i < sizeof(devices) / sizeof(devices[0]); ++i)
     {
-        parseModbusToJson(model_info, false);
-        if (isAllRegistersRead(model_info))
+        devices[i]->init(*my_serialIntf, mb);
+
+        writeLog("Try to use: %s protocol", devices[i]->getName());
+        devices[i]->retrieveModel(*this, modelName, sizeof(modelName));
+        if (strlen(modelName) != 0)
         {
-            const char *modelHigh = doc[DEVICE_MODEL_HIGH];
-            int modelLow = doc[DEVICE_MODEL_LOW];
-            model = String(modelHigh) + String(modelLow);
-            break;
+            writeLog("<Autodetect> Found Modbus device: %s", modelName);
+            staticData["Device_Model"] = modelName;
+            prepareRegisters();
+            protocol = devices[i]->getProtocol();
+            device = devices[i];
+            return protocol;
         }
-        delay(50);
-    }
+        delete devices[i];
+    } 
 
-    return model;
+    return protocol;
 }
