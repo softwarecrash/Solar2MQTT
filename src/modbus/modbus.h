@@ -14,6 +14,9 @@ extern JsonObject liveData;
 #define RS485_DIR_PIN 14 // D5
 #define RS485_ESP01_DIR_PIN 0
 
+#define MAX485_DONGLE_DE_PIN       5         // D1, DE pin on the TTL to RS485 converter
+#define MAX485_DONGLE_RE_NEG_PIN   4  
+
 #define RS485_BAUDRATE 19200
 
 #define INVERTER_MODBUS_ADDR 4

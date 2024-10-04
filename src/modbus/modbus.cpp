@@ -24,12 +24,28 @@ MODBUS::MODBUS(SoftwareSerial *port)
 
 void MODBUS::preTransmission()
 {
-    digitalWrite(dir_pin, 1);
+    if (strcmp(HWBOARD, "esp12e") == 0)
+    {
+        digitalWrite(MAX485_DONGLE_RE_NEG_PIN, 1);
+        digitalWrite(MAX485_DONGLE_DE_PIN, 1);
+    }
+    else
+    {
+        digitalWrite(dir_pin, 1);
+    }
 }
 
 void MODBUS::postTransmission()
 {
-    digitalWrite(dir_pin, 0);
+    if (strcmp(HWBOARD, "esp12e") == 0)
+    {
+        digitalWrite(MAX485_DONGLE_RE_NEG_PIN, 0);
+        digitalWrite(MAX485_DONGLE_DE_PIN, 0);
+    }
+    else
+    {
+        digitalWrite(dir_pin, 0);
+    }
 }
 
 bool MODBUS::Init()
@@ -43,7 +59,15 @@ bool MODBUS::Init()
     this->my_serialIntf->setTimeout(2000);
 
     // Init in receive mode
-    pinMode(dir_pin, OUTPUT);
+    if (strcmp(HWBOARD, "esp12e") == 0)
+    {
+        pinMode(MAX485_DONGLE_RE_NEG_PIN, OUTPUT);
+        pinMode(MAX485_DONGLE_DE_PIN, OUTPUT);
+    }
+    else
+    {
+        pinMode(dir_pin, OUTPUT);
+    }
     this->postTransmission();
 
     // Callbacks allow us to configure the RS485 transceiver correctly
