@@ -4,7 +4,7 @@
 #include "SoftwareSerial.h"
 #include <ArduinoJson.h>
 #include <ModbusMaster.h>
-#include "modbus_registers.h" 
+#include "modbus_registers.h"
 #include "device/modbus_device.h"
 
 extern JsonObject deviceJson;
@@ -65,7 +65,7 @@ public:
      *
      */
     void callback(std::function<void()> func);
-    std::function<void()> requestCallback; 
+    std::function<void()> requestCallback;
     bool readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *variant);
     response_type_t parseModbusToJson(modbus_register_info_t &register_info, bool skip_reg_on_error = true);
     bool isAllRegistersRead(modbus_register_info_t &register_info);
@@ -76,10 +76,9 @@ public:
      */
     String requestData(String command);
 
-private: 
+private:
     unsigned long previousTime = 0;
     unsigned long cmdDelayTime = 100;
-
 
     byte requestCounter = 0;
 
@@ -93,7 +92,7 @@ private:
     String toBinary(uint16_t input);
     bool decodeDiematicDecimal(uint16_t int_input, int8_t decimals, float *value_ptr);
     bool getModbusResultMsg(uint8_t result);
-    bool getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity, uint16_t *value_ptr);
+    bool getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity, uint16_t *value_ptr, uint16_t readBytes = 1);
     /**
      * @brief get the crc from a string
      */
@@ -103,13 +102,13 @@ private:
      * @brief get the crc from a string
      */
     byte getCHK(String data);
-  
-        /**
+
+    /**
      * @brief Serial interface used for communication
      * @details This is set in the constructor
      */
     SoftwareSerial *my_serialIntf;
-    ModbusDevice* device = nullptr;
+    ModbusDevice *device = nullptr;
     ModbusMaster mb;
 };
 

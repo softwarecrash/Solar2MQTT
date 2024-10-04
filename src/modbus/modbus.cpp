@@ -161,7 +161,7 @@ bool MODBUS::getModbusResultMsg(uint8_t result)
     return false;
 }
 
-bool MODBUS::getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity, uint16_t *value_ptr)
+bool MODBUS::getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity, uint16_t *value_ptr, uint16_t readBytes)
 {
     // writeLog("Requesting data");
     for (uint8_t i = 0; i < MODBUS_RETRIES; i++)
@@ -172,7 +172,7 @@ bool MODBUS::getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity,
         }
         if (modbus_entity == MODBUS_TYPE_HOLDING)
         {
-            uint8_t result = mb.readHoldingRegisters(register_id, 1);
+            uint8_t result = mb.readHoldingRegisters(register_id, readBytes);
             bool is_received = getModbusResultMsg(result);
             if (is_received)
             {
@@ -235,7 +235,15 @@ bool MODBUS::readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *
     uint16_t raw_value = 0;
 
     float final_value;
-    if (getModbusValue(reg->id, reg->modbus_entity, &raw_value))
+
+    uint16_t readBytes = 1;
+
+    if (reg->type == REGISTER_TYPE_U32 || reg->type == REGISTER_TYPE_U32_ONE_DECIMAL)
+    {
+        readBytes = 2;
+    }
+
+    if (getModbusValue(reg->id, reg->modbus_entity, &raw_value, readBytes))
     {
         writeLog("Raw value: %s=%#06x\n", reg->name, raw_value);
 
@@ -243,18 +251,25 @@ bool MODBUS::readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *
         {
         case REGISTER_TYPE_U16:
             // writeLog("Value: %u", raw_value);
-            (*variant)[reg->name] = raw_value;
+            (*variant)[reg->name] = raw_value + reg->offset;
             break;
         case REGISTER_TYPE_INT16:
             // writeLog("Value: %u", raw_value);
-            (*variant)[reg->name] = static_cast<int16_t>(raw_value);
+            (*variant)[reg->name] = static_cast<int16_t>(raw_value) + reg->offset;
             break;
-
+        case REGISTER_TYPE_U32:
+            // writeLog("Value: %u", raw_value);
+            (*variant)[reg->name] = (raw_value + (mb.getResponseBuffer(1) << 16)) + reg->offset;
+            break;
+        case REGISTER_TYPE_U32_ONE_DECIMAL:
+            // writeLog("Value: %u", raw_value);
+            (*variant)[reg->name] = (raw_value + (mb.getResponseBuffer(1) << 16)) * 0.1 + reg->offset;
+            break;
         case REGISTER_TYPE_DIEMATIC_ONE_DECIMAL:
             if (decodeDiematicDecimal(raw_value, 1, &final_value))
             {
                 // writeLog("Raw value: %#06x, floatValue: %f",raw_value, final_value);
-                (*variant)[reg->name] = (int)(final_value * 100 + 0.5) / 100.0;
+                (*variant)[reg->name] = ((int)(final_value * 100 + 0.5) / 100.0) + reg->offset;
             }
             else
             {
@@ -266,7 +281,7 @@ bool MODBUS::readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *
             if (decodeDiematicDecimal(raw_value, 2, &final_value))
             {
                 // writeLog("Value: %.1f", final_value);
-                (*variant)[reg->name] = (int)(final_value * 1000 + 0.5) / 1000.0;
+                (*variant)[reg->name] = ((int)(final_value * 1000 + 0.5) / 1000.0) + reg->offset;
             }
             else
             {
@@ -403,7 +418,7 @@ protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter typ
             return protocol;
         }
         delete devices[i];
-    } 
+    }
 
     return protocol;
 }
