@@ -1,7 +1,7 @@
 #include "SoftwareSerial.h"
 #ifndef PI_SERIAL_H
 #define PI_SERIAL_H
-
+#include "vector"
 #include <ArduinoJson.h>
 extern JsonObject deviceJson;
 extern JsonObject staticData;
@@ -40,6 +40,7 @@ public:
             String qlm;
             String qld;
             String commandAnswer;
+            String qpiws;
         } raw;
 
     } get;
@@ -144,6 +145,7 @@ private:
     bool PIXX_QPIGS2();
     bool PIXX_QMOD();
     bool PIXX_QEX();
+    bool PIXX_QPIWS();
     // static reqeuests
     bool PIXX_QPIRI();
     bool PIXX_QPI();

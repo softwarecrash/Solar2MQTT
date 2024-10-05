@@ -15,6 +15,7 @@ CRC16 crc;
 #include "QPIGS2.h"
 #include "QMOD.h"
 #include "QEX.h"
+#include "QPIWS.h"
 extern void writeLog(const char *format, ...);
 //----------------------------------------------------------------------
 //  Public Functions
@@ -92,6 +93,9 @@ bool PI_Serial::loop()
                     requestCounter = PIXX_QEX() ? (requestCounter + 1) : 0;
                     break;
                 case 5:
+                    requestCounter = PIXX_QPIWS() ? (requestCounter + 1) : 0;
+                    break;
+                case 6:
                     requestCallback();
                     requestCounter = 0;
                     break;
