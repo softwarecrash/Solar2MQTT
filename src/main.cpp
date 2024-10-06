@@ -25,6 +25,11 @@ AsyncWebSocketClient *wsClient;
 DNSServer dns;
 Settings settings;
 
+#ifdef ONE_WIRE_BUS
+#include "OneWire/DSTemp.h"
+DSTemp dsTemp;
+#endif
+
 #include "status-LED.h"
 
 // new importetd
@@ -437,6 +442,9 @@ void loop()
       }
       ws.cleanupClients(); // clean unused client connections
       mppClient.loop(); // Call the PI Serial Library loop
+#ifdef ONE_WIRE_BUS
+      dsTemp.loop();
+#endif
       mqttclient.loop();
       if ((haDiscTrigger || settings.data.haDiscovery) && measureJson(Json) > jsonSize)
       {
