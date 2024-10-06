@@ -578,6 +578,7 @@ bool sendtoMQTT()
     mqttclient.publish(topicBuilder(buff, "RAW/QMOD"), (mppClient.get.raw.qmod).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QALL"), (mppClient.get.raw.qall).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QMN"), (mppClient.get.raw.qmn).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QPIWS"), (mppClient.get.raw.qpiws).c_str());
   }
   else
   {
