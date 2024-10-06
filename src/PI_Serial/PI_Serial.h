@@ -1,8 +1,9 @@
 #include "SoftwareSerial.h"
 #ifndef PI_SERIAL_H
 #define PI_SERIAL_H
-
+#include "vector"
 #include <ArduinoJson.h>
+#include <modbus/modbus.h>
 extern JsonObject deviceJson;
 extern JsonObject staticData;
 extern JsonObject liveData;
@@ -40,6 +41,7 @@ public:
             String qlm;
             String qld;
             String commandAnswer;
+            String qpiws;
         } raw;
 
     } get;
@@ -85,9 +87,15 @@ public:
     void callback(std::function<void()> func);
     std::function<void()> requestCallback;
 
-private:
-    unsigned int soft_tx;
-    unsigned int soft_rx;
+    enum protocolType
+    {
+        NoD,
+        PI18,
+        PI30,
+        MODBUS_MUST
+    };
+
+private: 
     unsigned int serialIntfBaud;
 
     unsigned long previousTime = 0;
@@ -99,12 +107,8 @@ private:
     byte qexCounter = 0;
     
     String customCommandBuffer;
-    enum protocolType
-    {
-        NoD,
-        PI18,
-        PI30,
-    };
+
+    MODBUS *modbus;
 
     /**
      * @brief get the crc from a string
@@ -144,10 +148,13 @@ private:
     bool PIXX_QPIGS2();
     bool PIXX_QMOD();
     bool PIXX_QEX();
+    bool PIXX_QPIWS();
     // static reqeuests
     bool PIXX_QPIRI();
     bool PIXX_QPI();
     bool PIXX_QMN();
+
+    bool isModbus();
 };
 
 #endif
