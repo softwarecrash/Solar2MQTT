@@ -1,13 +1,15 @@
 #ifndef PI_SERIAL_H
 #define PI_SERIAL_H
 
-
 #include "SoftwareSerial.h"
 #include <ArduinoJson.h>
 #include <modbus/modbus.h>
+
 extern JsonObject deviceJson;
 extern JsonObject staticData;
 extern JsonObject liveData;
+
+class MODBUS;
 
 class PI_Serial
 {

@@ -1,6 +1,7 @@
 #ifndef SRC_MODBUS_REGISTERS_H_
 #define SRC_MODBUS_REGISTERS_H_
 #include "Arduino.h"
+#include <ArduinoJson.h>
 
 typedef enum
 {
@@ -41,5 +42,14 @@ typedef struct
     int16_t offset;
     optional_param_t optional_param;
 } modbus_register_t;
+
+
+typedef struct
+{
+    JsonObject *variant;
+    const modbus_register_t *registers;
+    uint8_t array_size;
+    uint8_t curr_register;
+} modbus_register_info_t;
 
 #endif // SRC_MODBUS_REGISTERS_H_

@@ -3,39 +3,14 @@
 
 #include "SoftwareSerial.h"
 #include <ArduinoJson.h>
-#include <ModbusMaster.h>
-#include "modbus_registers.h"
+#include "modbus_com.h"
 #include "device/modbus_device.h"
+#include "device/must_pv_ph18.h"
+// #include "device/deye.h"
 
 extern JsonObject deviceJson;
 extern JsonObject staticData;
 extern JsonObject liveData;
-
-#define RS485_DIR_PIN 14 // D5
-#define RS485_ESP01_DIR_PIN 0
-
-#define MAX485_DONGLE_DE_PIN       5         // D1, DE pin on the TTL to RS485 converter
-#define MAX485_DONGLE_RE_NEG_PIN   4  
-
-#define RS485_BAUDRATE 19200
-
-#define INVERTER_MODBUS_ADDR 4
-
-#define MODBUS_RETRIES 2
-
-typedef enum
-{
-    READ_FAIL = 0,
-    READ_OK = 1,
-} response_type_t;
-
-typedef struct
-{
-    JsonObject *variant;
-    const modbus_register_t *registers;
-    uint8_t array_size;
-    uint8_t curr_register;
-} modbus_register_info_t;
 
 class MODBUS
 {
@@ -68,10 +43,7 @@ public:
      *
      */
     void callback(std::function<void()> func);
-    std::function<void()> requestCallback;
-    bool readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *variant);
-    response_type_t parseModbusToJson(modbus_register_info_t &register_info, bool skip_reg_on_error = true);
-    bool isAllRegistersRead(modbus_register_info_t &register_info);
+    std::function<void()> requestCallback; 
     protocol_type_t autoDetect();
     /**
      * @brief Sends a complete packet with the specified command
@@ -89,30 +61,15 @@ private:
 
     byte qexCounter = 0;
 
-    static void preTransmission();
-    static void postTransmission();
-    void prepareRegisters();
-    String toBinary(uint16_t input);
-    bool decodeDiematicDecimal(uint16_t int_input, int8_t decimals, float *value_ptr);
-    bool getModbusResultMsg(uint8_t result);
-    bool getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity, uint16_t *value_ptr, uint16_t readBytes = 1);
-    /**
-     * @brief get the crc from a string
-     */
-    uint16_t getCRC(String data);
-
-    /**
-     * @brief get the crc from a string
-     */
-    byte getCHK(String data);
+    void prepareRegisters(); 
 
     /**
      * @brief Serial interface used for communication
      * @details This is set in the constructor
      */
     SoftwareSerial *my_serialIntf;
-    ModbusDevice *device = nullptr;
-    ModbusMaster mb;
+    ModbusDevice *device = nullptr; 
+    MODBUS_COM _mCom;
 };
 
 #endif

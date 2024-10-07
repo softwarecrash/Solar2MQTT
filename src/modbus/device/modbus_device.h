@@ -1,57 +1,43 @@
 #ifndef MODBUS_DEVICE_H
 #define MODBUS_DEVICE_H
 
-#include <SoftwareSerial.h>
-#include <ModbusMaster.h>
+#include <SoftwareSerial.h> 
 #include <main.h>
 #include <modbus/modbus_registers.h>
-#include <modbus/modbus.h>
-
-class MODBUS; // Forward declaration of the MODBUS class
+#include <modbus/modbus_com.h>
+ 
 
 class ModbusDevice
 {
 public:
-    ModbusDevice(long baudRate, uint32_t modbusAddr, protocol_type_t protocol) : _baudRate(baudRate), _modbusAddr(modbusAddr), _protocol(protocol) {}
+    ModbusDevice(long baudRate, uint32_t modbusAddr, protocol_type_t protocol);
 
+    // Pure virtual functions - these need to be implemented in derived classes
     virtual const modbus_register_t *getLiveRegisters() const = 0;
     virtual const modbus_register_t *getStaticRegisters() const = 0;
 
-    virtual long getBaudRate()
-    {
-        return _baudRate;
-    }
+    virtual long getBaudRate();
+    virtual long getModbusAddr();
+    virtual protocol_type_t getProtocol();
 
-    virtual long getModbusAddr()
-    {
-        return _modbusAddr;
-    }
+    // Pure virtual function for getting the name
+    virtual const char *getName() const = 0;
 
-    virtual protocol_type_t getProtocol()
-    {
-        return _protocol;
-    }
+    virtual void init(SoftwareSerial &serial, MODBUS_COM &mCom);
 
-    virtual const char *getName() const = 0; // Pure virtual function
+    virtual bool retrieveModel(MODBUS_COM &mCom, char *modelBuffer, size_t bufferSize);
 
-    virtual void init(SoftwareSerial &serial, ModbusMaster &mb)
-    {
-        serial.begin(getBaudRate(), SWSERIAL_8N1);
-        mb.begin(_modbusAddr, serial);
-    }
+    // Pure virtual methods to count registers
+    virtual size_t getLiveRegistersCount() const = 0;
+    virtual size_t getStaticRegistersCount() const = 0;
 
-    virtual bool retrieveModel(MODBUS &modbus, char *modelBuffer, size_t bufferSize)
-    {
-        modelBuffer[0] = '\0';
-        return false;
-    }
-
-    virtual ~ModbusDevice() {}
+    virtual ~ModbusDevice();
 
 protected:
     long _baudRate;
     uint32_t _modbusAddr;
     protocol_type_t _protocol;
 };
+
 
 #endif

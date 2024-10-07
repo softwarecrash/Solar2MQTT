@@ -386,5 +386,5 @@ char *PI_Serial::getModeDesc(char mode) // get the char from QMOD and make reada
 
 bool PI_Serial::isModbus()
 {
-    return protocol == MODBUS_MUST;
+    return protocol == MODBUS_MUST || protocol == MODBUS_DEYE;
 }
