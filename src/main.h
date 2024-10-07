@@ -154,7 +154,7 @@ static const char *const haLiveDescriptor[][4]{
     //{"Device_Status","state-machine","",""},
     //{"EEPROM_Version","chip","",""},
     //{"Fan_speed","fan","",""},
-    //{"Fault_code","alert-outline","",""},
+    {"Fault_code","alert-outline","",""},
     {"Grid_frequency", "import", "Hz", "frequency"},
     {"Grid_voltage", "import", "V", "voltage"},
     {"Inverter_Bus_Temperature", "thermometer-lines", "°C", "temperature"},

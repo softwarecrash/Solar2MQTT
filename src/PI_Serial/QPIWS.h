@@ -53,11 +53,11 @@ bool PI_Serial::PIXX_QPIWS()
                         qpiwsStr += "; ";
                     }
                 }
-                liveData["Fault_or_Warning"] = qpiwsStr;
+                liveData["Fault_code"] = qpiwsStr;
             }
             else
             {
-                liveData["Fault_or_Warning"] = "None";
+                liveData["Fault_code"] = "None";
             }
         }
         return true;
