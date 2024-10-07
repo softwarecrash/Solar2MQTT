@@ -1,11 +1,12 @@
-// #define isDEBUG
-#include "modbus_com.h"
 
-extern void writeLog(const char *format, ...); 
+#include "modbus_com.h"
+ 
 
 //----------------------------------------------------------------------
 //  Public Functions
 //----------------------------------------------------------------------
+
+extern void writeLog(const char *format, ...);
 
 int _dir_pin;   
 
@@ -61,8 +62,8 @@ void MODBUS_COM::postTransmission()
     }
 }
 
- ModbusMaster MODBUS_COM::getModbusMaster(){
-    return _mb;
+ ModbusMaster * MODBUS_COM::getModbusMaster(){
+    return &_mb;
  }
 
 bool MODBUS_COM::getModbusResultMsg(uint8_t result)

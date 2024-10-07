@@ -8,9 +8,7 @@
 extern JsonObject deviceJson;
 extern JsonObject staticData;
 extern JsonObject liveData;
-
-class MODBUS;
-
+  
 class PI_Serial
 {
 public:

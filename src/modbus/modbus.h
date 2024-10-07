@@ -6,7 +6,7 @@
 #include "modbus_com.h"
 #include "device/modbus_device.h"
 #include "device/must_pv_ph18.h"
-// #include "device/deye.h"
+#include "device/deye.h"
 
 extern JsonObject deviceJson;
 extern JsonObject staticData;

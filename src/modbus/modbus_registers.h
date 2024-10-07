@@ -48,8 +48,8 @@ typedef struct
 {
     JsonObject *variant;
     const modbus_register_t *registers;
-    uint8_t array_size;
-    uint8_t curr_register;
+    size_t array_size;
+    size_t curr_register;
 } modbus_register_info_t;
 
 #endif // SRC_MODBUS_REGISTERS_H_

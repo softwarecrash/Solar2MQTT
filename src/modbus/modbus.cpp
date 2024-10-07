@@ -1,16 +1,13 @@
 // #define isDEBUG
 #include "modbus.h"
-
-extern void writeLog(const char *format, ...);
-
+ 
 //----------------------------------------------------------------------
 //  Public Functions
 //----------------------------------------------------------------------
 
 MODBUS::MODBUS(SoftwareSerial *port)
 {
-    my_serialIntf = port;
-    
+    my_serialIntf = port; 
 }
  
 bool MODBUS::Init()
@@ -34,12 +31,12 @@ void MODBUS::prepareRegisters()
     live_info = {
         .variant = &liveData,
         .registers = registers_live,
-        .array_size = sizeof(registers_live) / sizeof(modbus_register_t),
+        .array_size = device->getLiveRegistersCount(),
         .curr_register = 0};
     static_info = {
         .variant = &staticData,
         .registers = registers_static,
-        .array_size = sizeof(registers_static) / sizeof(modbus_register_t),
+        .array_size = device->getStaticRegistersCount(),
         .curr_register = 0};
     previousTime = millis();
 }
@@ -104,13 +101,11 @@ protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter typ
 
     writeLog("Try Autodetect Modbus device");
 
-    ModbusDevice *devices[] = {new MustPV_PH18()};//, new DEYE()};
+    ModbusDevice *devices[] = {new MustPV_PH18(), new Deye()};
 
     for (size_t i = 0; i < sizeof(devices) / sizeof(devices[0]); ++i)
     {
-        devices[i]->init(*my_serialIntf, _mCom);
-
-        writeLog("Try to use: %s protocol", devices[i]->getName());
+        devices[i]->init(*my_serialIntf, _mCom); 
         devices[i]->retrieveModel(_mCom, modelName, sizeof(modelName));
         if (strlen(modelName) != 0)
         {

@@ -19,7 +19,15 @@ typedef enum
     READ_FAIL = 0,
     READ_OK = 1,
 } response_type_t;
+ 
 
+/**
+ * @class MODBUS_COM
+ * @brief This class is responsible for Modbus communication, managing the RS485 transceiver, and interacting with a Modbus master.
+ * 
+ * The class is designed to handle communication through Modbus over an RS485 network. It supports reading Modbus registers and converting them to JSON format.
+ * The communication direction (transmission/reception) is managed through digital pins, and the class provides helper functions for decoding various register types.
+ */ 
 class MODBUS_COM
 {
 public:
@@ -28,7 +36,8 @@ public:
     bool readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *variant);
     response_type_t parseModbusToJson(modbus_register_info_t &register_info, bool skip_reg_on_error = true);
     bool isAllRegistersRead(modbus_register_info_t &register_info);
-    ModbusMaster getModbusMaster();
+    ModbusMaster *getModbusMaster();
+    
 private:
     String toBinary(uint16_t input);
     bool decodeDiematicDecimal(uint16_t int_input, int8_t decimals, float *value_ptr);

@@ -16,9 +16,9 @@ public:
     virtual const modbus_register_t *getLiveRegisters() const = 0;
     virtual const modbus_register_t *getStaticRegisters() const = 0;
 
-    virtual long getBaudRate();
-    virtual long getModbusAddr();
-    virtual protocol_type_t getProtocol();
+    virtual long getBaudRate() const;
+    virtual long getModbusAddr() const;
+    virtual protocol_type_t getProtocol() const;
 
     // Pure virtual function for getting the name
     virtual const char *getName() const = 0;
