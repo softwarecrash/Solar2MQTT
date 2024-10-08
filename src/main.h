@@ -17,6 +17,11 @@
 #define LED_SRV 0
 #define LED_NET 4
 
+#ifdef ARDUINO_ESP8266_WEMOS_D1MINI
+#define DS18B20
+#define TEMPSENS_PIN 15 // DS18B20 Pin; D8 on Wemos D1 Mini
+#endif
+
 #define DBG_BAUD 115200
 #define DBG_WEBLN(...) WebSerial.println(__VA_ARGS__)
 #define SOFTWARE_VERSION SWVERSION

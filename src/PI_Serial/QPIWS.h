@@ -57,7 +57,7 @@ bool PI_Serial::PIXX_QPIWS()
             }
             else
             {
-                liveData["Fault_code"] = "None";
+                liveData["Fault_code"] = "Ok";
             }
         }
         return true;
