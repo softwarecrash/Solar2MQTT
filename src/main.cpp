@@ -422,8 +422,9 @@ void setup()
 
     mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
   }
+
+  analogWrite(LED_PIN, 255);
   #ifdef isUART_HARDWARE
-    analogWrite(LED_PIN, 255);
     analogWrite(LED_COM, 255);
     analogWrite(LED_SRV, 255);
     analogWrite(LED_NET, 255);
