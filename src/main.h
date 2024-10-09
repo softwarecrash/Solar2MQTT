@@ -7,6 +7,9 @@
 #ifdef isUART_HARDWARE
 #define INVERTER_TX 1
 #define INVERTER_RX 3
+#define LED_COM 5
+#define LED_SRV 0
+#define LED_NET 4
 #else
 #define INVERTER_TX 13
 #define INVERTER_RX 12
@@ -14,9 +17,7 @@
 #endif
 
 #define LED_PIN 02 // D4 with the LED on Wemos D1 Mini
-#define LED_COM 5
-#define LED_SRV 0
-#define LED_NET 4
+
 
 #define DBG_BAUD 115200
 #define DBG_WEBLN(...) WebSerial.println(__VA_ARGS__)
