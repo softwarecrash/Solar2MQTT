@@ -23,7 +23,7 @@ unsigned int cycleTime = 250;
 unsigned int cycleMillis = 0;
 byte ledState = 0;
 
-//bool waveHelper = false;
+// bool waveHelper = false;
 void notificationLED()
 {
 
@@ -39,13 +39,11 @@ void notificationLED()
       ledState = 1;
 
 #ifndef isUART_HARDWARE
-    digitalWrite(LED_COM, !mppClient.connection); //make it blink blink when communication
-    digitalWrite(LED_SRV, !mqttclient.connected()); //make it blinky when sending data
-    digitalWrite(LED_NET, !(WiFi.status() == WL_CONNECTED)  ? true : false);
-    #endif
+    digitalWrite(LED_COM, !mppClient.connection);   // make it blink blink when communication
+    digitalWrite(LED_SRV, !mqttclient.connected()); // make it blinky when sending data
+    digitalWrite(LED_NET, !(WiFi.status() == WL_CONNECTED) ? true : false);
+#endif
   }
-
-
 
   if (ledState > 0)
   {
@@ -53,7 +51,7 @@ void notificationLED()
     {
       if (ledPin == 0)
       {
-        ledPin = 255; 
+        ledPin = 255;
       }
       else
       {
@@ -66,29 +64,29 @@ void notificationLED()
         ledTimer = millis();
       }
     }
-/* make it later
-    if (millis() >= (cycleMillis + cycleTime) && relaisOn == true)
-    {
-       //ledPin = 127.0 + 128.0 * sin((millis() / (float)(cycleTime * 2)) * 2.0 * PI);
-       ledPin = (cos((millis() / (float)(cycleTime/4)) - PI)*0.5+0.5)*255;
+    /* make it later
+        if (millis() >= (cycleMillis + cycleTime) && relaisOn == true)
+        {
+           //ledPin = 127.0 + 128.0 * sin((millis() / (float)(cycleTime * 2)) * 2.0 * PI);
+           ledPin = (cos((millis() / (float)(cycleTime/4)) - PI)*0.5+0.5)*255;
 
-      if (ledPin == 254 && waveHelper == false)
-      {
-        waveHelper = true;
-      }
-      if (ledPin == 0 && waveHelper == true)
-      {
-        ledState--;
-        waveHelper = false;
-      }
+          if (ledPin == 254 && waveHelper == false)
+          {
+            waveHelper = true;
+          }
+          if (ledPin == 0 && waveHelper == true)
+          {
+            ledState--;
+            waveHelper = false;
+          }
 
 
-      if (ledState == 0)
-      {
-        ledTimer = millis();
-      }
-    }
-    */
+          if (ledState == 0)
+          {
+            ledTimer = millis();
+          }
+        }
+        */
   }
   analogWrite(LED_PIN, 255 - ledPin);
 }

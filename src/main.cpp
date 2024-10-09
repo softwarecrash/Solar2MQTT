@@ -172,8 +172,8 @@ void setup()
 {
   // make a compatibility mode for some crap routers?
   //WiFi.setPhyMode(WIFI_PHY_MODE_11G);
-#ifndef isUART_HARDWARE
   analogWrite(LED_PIN, 0);
+#ifndef isUART_HARDWARE
   analogWrite(LED_COM, 0);
   analogWrite(LED_SRV, 0);
   analogWrite(LED_NET, 0);
