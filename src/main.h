@@ -158,7 +158,7 @@ static const char *const haLiveDescriptor[][4]{
     //{"Country","earth","",""},
     //{"Device_Status","state-machine","",""},
     //{"EEPROM_Version","chip","",""},
-    //{"Fan_speed","fan","",""},
+    {"Fan_speed","fan","%",""},
     {"Fault_code","alert-outline","",""},
     {"Grid_frequency", "import", "Hz", "frequency"},
     {"Grid_voltage", "import", "V", "voltage"},
