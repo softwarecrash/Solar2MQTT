@@ -38,10 +38,11 @@ void notificationLED()
     else if (WiFi.status() == WL_CONNECTED && mqttclient.connected() && mppClient.connection)
       ledState = 1;
 
-
+#ifndef isUART_HARDWARE
     digitalWrite(LED_COM, !mppClient.connection); //make it blink blink when communication
     digitalWrite(LED_SRV, !mqttclient.connected()); //make it blinky when sending data
     digitalWrite(LED_NET, !(WiFi.status() == WL_CONNECTED)  ? true : false);
+    #endif
   }
 
 

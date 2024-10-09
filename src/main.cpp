@@ -16,7 +16,7 @@ https://github.com/softwarecrash/Solar2MQTT
 #include "htmlProzessor.h"
 #include "PI_Serial/PI_Serial.h"
 
-#ifdef DS18B20
+#ifdef TEMPSENS_PIN
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #endif
@@ -30,7 +30,7 @@ AsyncWebSocketClient *wsClient;
 DNSServer dns;
 Settings settings;
 
-#ifdef DS18B20
+#ifdef TEMPSENS_PIN
 OneWire oneWire(TEMPSENS_PIN);
 DallasTemperature tempSens(&oneWire);
 DeviceAddress tempDeviceAddress;
@@ -171,13 +171,13 @@ bool resetCounter(bool count)
 void setup()
 {
   // make a compatibility mode for some crap routers?
-  WiFi.setPhyMode(WIFI_PHY_MODE_11G);
-
+  //WiFi.setPhyMode(WIFI_PHY_MODE_11G);
+#ifndef isUART_HARDWARE
   analogWrite(LED_PIN, 0);
   analogWrite(LED_COM, 0);
   analogWrite(LED_SRV, 0);
   analogWrite(LED_NET, 0);
-
+#endif
   resetCounter(true);
   DBG_BEGIN(DBG_BAUD); // Debugging towards UART1
   settings.load();
@@ -428,7 +428,7 @@ void setup()
   analogWrite(LED_NET, 255);
   resetCounter(false);
 
-#ifdef DS18B20
+#ifdef TEMPSENS_PIN
   tempSens.begin();
   numOfTempSens = tempSens.getDeviceCount();
   for (int i = 0; i < numOfTempSens; i++)
@@ -493,7 +493,7 @@ bool prozessData()
   }
   if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000) || mqtttimer == 0)
   {
-#ifdef DS18B20
+#ifdef TEMPSENS_PIN
     if (numOfTempSens > 0)
     {
       tempSens.requestTemperatures();
@@ -520,7 +520,7 @@ void getJsonData()
   deviceJson[F("runtime")] = millis() / 1000;
   deviceJson[F("ws_clients")] = ws.count();
   deviceJson[F("detect_protocol")] = mppClient.protocol;
-#ifdef DS18B20
+#ifdef TEMPSENS_PIN
   for (int i = 0; i < numOfTempSens; i++)
   {
     if (tempSens.getAddress(tempDeviceAddress, i))
@@ -603,7 +603,7 @@ bool sendtoMQTT()
       writeLog("raw command answer: ",mppClient.get.raw.commandAnswer);
       mppClient.get.raw.commandAnswer = "";
     }
-#ifdef DS18B20
+#ifdef TEMPSENS_PIN
     for (int i = 0; i < numOfTempSens; i++)
     {
       if (tempSens.getAddress(tempDeviceAddress, i))
@@ -748,7 +748,7 @@ bool sendHaDiscovery()
       mqttclient.endPublish();
     }
   }
-#ifdef DS18B20
+#ifdef TEMPSENS_PIN
   // Ext Temp sensors
   for (int i = 0; i < numOfTempSens; i++)
   {
