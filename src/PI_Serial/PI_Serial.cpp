@@ -9,6 +9,7 @@ CRC16 crc;
 #include "QPI.h"
 #include "QPIRI.h"
 #include "QMN.h"
+#include "QFLAG.h"
 // variable
 #include "Q1.h"
 #include "QPIGS.h"
@@ -81,6 +82,9 @@ bool PI_Serial::loop()
                         break;
                     case 2:
                         requestCounter = PIXX_QPI() ? (requestCounter + 1) : 0;
+                        break;
+                    case 3:
+                        requestCounter = PIXX_QFLAG() ? (requestCounter + 1) : 0;
                         requestCounter = 0;
                         requestStaticData = false;
                         break;
@@ -393,4 +397,15 @@ char *PI_Serial::getModeDesc(char mode) // get the char from QMOD and make reada
 bool PI_Serial::isModbus()
 {
     return protocol == MODBUS_MUST;
+}
+
+bool PI_Serial::checkQFLAG(const String& flags, char symbol) {
+    bool enabled = false;
+    for (int i = 0; i < flags.length(); i++) {
+        char c = flags.charAt(i);
+        if (c == 'E') enabled = true;
+        else if (c == 'D') enabled = false;
+        else if (c == symbol) return enabled;
+    }
+    return false;
 }

@@ -26,6 +26,7 @@ public:
             String qall;
             String qpiri;
             String qmn;
+            String qflag;
             // dynamic
             String q1;
             String qpigs;
@@ -153,8 +154,11 @@ private:
     bool PIXX_QPIRI();
     bool PIXX_QPI();
     bool PIXX_QMN();
+    bool PIXX_QFLAG();
 
     bool isModbus();
+
+    static bool checkQFLAG(const String& flags, char symbol);
 };
 
 #endif
