@@ -1,7 +1,5 @@
 #include "must_pv_ph18.h"
 
-
-
 const modbus_register_t *MustPV_PH18::getLiveRegisters() const
 {
     return registers_live;
@@ -52,4 +50,12 @@ size_t MustPV_PH18::getLiveRegistersCount() const
 size_t MustPV_PH18::getStaticRegistersCount() const
 {
     return sizeof(registers_static) / sizeof(modbus_register_t);
+}
+
+void MustPV_PH18::generationSum(JsonObject *variant, uint16_t *registerValue, const modbus_register_t *reg, MODBUS_COM &mCom)
+{  
+    if ((*variant).containsKey(MUST_DEVICE_CHARGER_HIGH) && (*variant).containsKey(MUST_DEVICE_CHARGER_LOW))
+    {
+        (*variant)[reg->name] = (*variant)[MUST_DEVICE_CHARGER_HIGH].as<uint16_t>() * 1000 + (*variant)[MUST_DEVICE_CHARGER_LOW].as<uint16_t>();
+    }
 }

@@ -20,7 +20,7 @@ static const char *const qpigsList[][24] = {
         "Status_Flag",                    // b0-b7
         "Battery_voltage_offset_fans_on", // QQ
         "EEPROM_Version",                 // VV
-        "PV_Charging_Power",              // MMMM
+        DESCR_LIVE_PV_CHARGING_POWER,              // MMMM
         "Device_Status",                  // b8-b10
         "Solar_feed_to_Grid_status",      // Y
         "Country",                        // ZZ
@@ -65,7 +65,7 @@ static const char *const qallList[] = {
     "Battery_Discharge_Current", // KKK
     DESCR_LIVE_PV_INPUT_VOLTAGE,          // LLL
     DESCR_LIVE_PV_INPUT_CURRENT,          // MM.M
-    "PV_Charging_Power",         // NNNN
+    DESCR_LIVE_PV_CHARGING_POWER,         // NNNN
     "PV_generation_day",         // OOOOOO
     "PV_generation_sum",         // PPPPPP
     "Inverter_Operation_Mode",   // Q
@@ -249,8 +249,8 @@ bool PI_Serial::PIXX_QPIGS()
       // make some things pretty
 
       liveData[DESCR_LIVE_PV_INPUT_VOLTAGE] = (liveData["PV1_Input_Voltage"].as<unsigned short>() + liveData["PV2_Input_Voltage"].as<unsigned short>());
-      liveData["PV_Charging_Power"] = (liveData["PV1_Input_Power"].as<unsigned short>() + liveData["PV2_Input_Power"].as<unsigned short>());
-      liveData["PV_Input_Current"] = (int)((liveData["PV_Charging_Power"].as<unsigned short>() / (liveData[DESCR_LIVE_PV_INPUT_VOLTAGE].as<unsigned short>()+0.5)) * 100) / 100.0;
+      liveData[DESCR_LIVE_PV_CHARGING_POWER] = (liveData["PV1_Input_Power"].as<unsigned short>() + liveData["PV2_Input_Power"].as<unsigned short>());
+      liveData["PV_Input_Current"] = (int)((liveData[DESCR_LIVE_PV_CHARGING_POWER].as<unsigned short>() / (liveData[DESCR_LIVE_PV_INPUT_VOLTAGE].as<unsigned short>()+0.5)) * 100) / 100.0;
       liveData["Battery_Load"] = (liveData["Battery_Charge_Current"].as<unsigned short>() - liveData["Battery_Discharge_Current"].as<unsigned short>());
     }
     return true;

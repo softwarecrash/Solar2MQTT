@@ -26,21 +26,30 @@ typedef enum
     REGISTER_TYPE_BITFIELD,
     REGISTER_TYPE_DEBUG,
     REGISTER_TYPE_CUSTOM_VAL_NAME,
+    REGISTER_TYPE_CALLBACK,         /*call custom callback after register read*/
+    REGISTER_TYPE_VIRTUAL_CALLBACK, /*allows to call callback without register read*/
 } register_type_t;
+
+
 
 typedef union
 {
     const char *bitfield[16];
 } optional_param_t;
+ 
+class MODBUS_COM;
 
-typedef struct
+typedef void (*modbus_callback_t)( JsonObject *variant, uint16_t *registerValue, const struct modbus_register_t *reg, MODBUS_COM &mCom); // Define a function pointer type for the callback
+
+typedef struct modbus_register_t 
 {
     uint16_t id;
     modbus_entity_t modbus_entity; /*!< Type of modbus parameter */
     register_type_t type;          /*!< Float, U8, U16, U32, ASCII, etc. */
     const char *name;
-    int16_t offset;
+    int16_t offset = 0;
     optional_param_t optional_param;
+    modbus_callback_t callback; 
 } modbus_register_t;
 
 

@@ -37,7 +37,7 @@
 #define DESCR_LIVE_AC_IN_GENERATION_MONTH "AC_in_generation_month"
 #define DESCR_LIVE_AC_IN_GENERATION_SUM "AC_in_generation_sum"
 #define DESCR_LIVE_AC_IN_GENERATION_YEAR "AC_in_generation_year"
-#define DESCR_LIVE_AC_IN_VOLTAGE "AC_in_Voltage"
+#define DESCR_LIVE_AC_IN_VOLTAGE "AC_in_Voltage" 
 #define DESCR_LIVE_AC_OUT_FREQUENZ "AC_out_Frequenz"
 #define DESCR_LIVE_AC_OUT_PERCENT "AC_out_percent"
 #define DESCR_LIVE_AC_OUT_VA "AC_out_VA"

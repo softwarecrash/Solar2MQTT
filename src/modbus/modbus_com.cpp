@@ -1,6 +1,5 @@
 
 #include "modbus_com.h"
- 
 
 //----------------------------------------------------------------------
 //  Public Functions
@@ -8,7 +7,7 @@
 
 extern void writeLog(const char *format, ...);
 
-int _dir_pin;   
+int _dir_pin;
 
 MODBUS_COM::MODBUS_COM()
 {
@@ -17,7 +16,7 @@ MODBUS_COM::MODBUS_COM()
     if (strcmp(HWBOARD, "esp01_1m") == 0)
     {
         _dir_pin = RS485_ESP01_DIR_PIN;
-    } 
+    }
 
     // Init in receive mode
     if (strcmp(HWBOARD, "esp12e") == 0)
@@ -62,9 +61,10 @@ void MODBUS_COM::postTransmission()
     }
 }
 
- ModbusMaster * MODBUS_COM::getModbusMaster(){
+ModbusMaster *MODBUS_COM::getModbusMaster()
+{
     return &_mb;
- }
+}
 
 bool MODBUS_COM::getModbusResultMsg(uint8_t result)
 {
@@ -179,6 +179,19 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
     // writeLog("Register id=%d type=0x%x name=%s", reg->id, reg->type, reg->name);
     uint16_t raw_value = 0;
 
+    if (reg->type == REGISTER_TYPE_VIRTUAL_CALLBACK)
+    {
+        if (reg->callback != nullptr)
+        {
+            reg->callback(variant, 0, reg, *(this));
+        }
+        else
+        {
+            writeLog("No callback specified for %s", reg->name);
+        }
+        return true;
+    }
+
     float final_value;
 
     uint16_t readBytes = 1;
@@ -285,6 +298,16 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
             (*variant)[reg->name] = out;
             break;
         }
+        case REGISTER_TYPE_CALLBACK:
+            if (reg->callback != nullptr)
+            {
+                reg->callback(variant, 0, reg, *(this));
+            }
+            else
+            {
+                writeLog("No callback specified for %s", reg->name);
+            }
+            break;
         case REGISTER_TYPE_DEBUG:
 
             writeLog("Raw DEBUG value: %s=%#06x %s", reg->name, raw_value, toBinary(raw_value).c_str());
@@ -308,7 +331,7 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
 
 response_type_t MODBUS_COM::parseModbusToJson(modbus_register_info_t &register_info, bool skip_reg_on_error)
 {
-    writeLog("parseModbusToJson %d", register_info.array_size);
+    // writeLog("parseModbusToJson %d", register_info.array_size);
     if (register_info.curr_register >= register_info.array_size)
     {
         register_info.curr_register = 0;
