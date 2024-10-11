@@ -1,6 +1,6 @@
 #ifndef PI_SERIAL_H
 #define PI_SERIAL_H
-
+#include "vector"
 #include "SoftwareSerial.h"
 #include <ArduinoJson.h>
 #include <modbus/modbus.h>
@@ -42,6 +42,7 @@ public:
             String qlm;
             String qld;
             String commandAnswer;
+            String qpiws;
         } raw;
 
     } get;
@@ -142,6 +143,7 @@ private:
     bool PIXX_QPIGS2();
     bool PIXX_QMOD();
     bool PIXX_QEX();
+    bool PIXX_QPIWS();
     // static reqeuests
     bool PIXX_QPIRI();
     bool PIXX_QPI();

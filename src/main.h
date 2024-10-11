@@ -10,15 +10,17 @@
 #ifdef isUART_HARDWARE
 #define INVERTER_TX 1
 #define INVERTER_RX 3
-#else
-#define INVERTER_TX 13
-#define INVERTER_RX 12
-#endif
-
-#define LED_PIN 02 // D4 with the LED on Wemos D1 Mini
 #define LED_COM 5
 #define LED_SRV 0
 #define LED_NET 4
+#else
+#define INVERTER_TX 13
+#define INVERTER_RX 12
+#define TEMPSENS_PIN 4 // DS18B20 Pin; D2 on Wemos D1 Mini
+#endif
+
+#define LED_PIN 02 // D4 with the LED on Wemos D1 Mini
+
 
 #define DBG_BAUD 115200
 #define DBG_WEBLN(...) WebSerial.println(__VA_ARGS__)
@@ -165,8 +167,8 @@ static const char *const haLiveDescriptor[][4]{
     //{"Country","earth","",""},
     //{"Device_Status","state-machine","",""},
     //{"EEPROM_Version","chip","",""},
-    //{"Fan_speed","fan","",""},
-    //{"Fault_code","alert-outline","",""},
+    {"Fan_speed","fan","%",""},
+    {"Fault_code","alert-outline","",""},
     {DESCR_LIVE_GRID_FREQUENCY, "import", "Hz", "frequency"},
     {DESCR_LIVE_GRID_VOLTAGE, "import", "V", "voltage"},
     {DESCR_LIVE_INVERTER_BUS_TEMPERATURE, "thermometer-lines", "°C", "temperature"},

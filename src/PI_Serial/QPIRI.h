@@ -107,7 +107,7 @@ bool PI_Serial::PIXX_QPIRI()
       return false;
     }
     if (commandAnswer.length() > 80 &&
-        commandAnswer.length() < 105)
+        commandAnswer.length() <= 108)
     {
 
       byte protocolNum = 0;
