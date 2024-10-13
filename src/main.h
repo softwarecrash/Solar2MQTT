@@ -7,15 +7,17 @@
 #ifdef isUART_HARDWARE
 #define INVERTER_TX 1
 #define INVERTER_RX 3
-#else
-#define INVERTER_TX 13
-#define INVERTER_RX 12
-#endif
-
-#define LED_PIN 02 // D4 with the LED on Wemos D1 Mini
 #define LED_COM 5
 #define LED_SRV 0
 #define LED_NET 4
+#else
+#define INVERTER_TX 13
+#define INVERTER_RX 12
+#define TEMPSENS_PIN 4 // DS18B20 Pin; D2 on Wemos D1 Mini
+#endif
+
+#define LED_PIN 02 // D4 with the LED on Wemos D1 Mini
+
 
 #define DBG_BAUD 115200
 #define DBG_WEBLN(...) WebSerial.println(__VA_ARGS__)
@@ -119,7 +121,16 @@ static const char *const haStaticDescriptor[][4]{
     //{"PV_OK_condition_for_parallel","solar-panel","",""},
     {"PV_power_balance", "solar-panel", "", ""},
     {"Solar_power_priority", "priority-high", "", ""},
-    {"Topology", "earth", "", ""}};
+    {"Topology", "earth", "", ""},
+    {"Buzzer_Enabled", "tune-variant", "", ""},
+    {"Overload_bypass_Enabled", "tune-variant", "", ""},
+    {"Power_saving_Enabled", "tune-variant", "", ""},
+    {"LCD_reset_to_default_Enabled", "tune-variant", "", ""},
+    {"Overload_restart_Enabled", "tune-variant", "", ""},
+    {"Over_temperature_restart_Enabled", "tune-variant", "", ""},
+    {"LCD_backlight_Enabled", "tune-variant", "", ""},
+    {"Primary_source_interrupt_alarm_Enabled", "tune-variant", "", ""},
+    {"Record_fault_code_Enabled", "tune-variant", "", ""}};
 static const char *const haLiveDescriptor[][4]{
     // state_topic, icon, unit_ofmeasurement, class
     {"AC_in_Frequenz", "import", "Hz", "frequency"},
@@ -153,8 +164,8 @@ static const char *const haLiveDescriptor[][4]{
     //{"Country","earth","",""},
     //{"Device_Status","state-machine","",""},
     //{"EEPROM_Version","chip","",""},
-    //{"Fan_speed","fan","",""},
-    //{"Fault_code","alert-outline","",""},
+    {"Fan_speed","fan","%",""},
+    {"Fault_code","alert-outline","",""},
     {"Grid_frequency", "import", "Hz", "frequency"},
     {"Grid_voltage", "import", "V", "voltage"},
     {"Inverter_Bus_Temperature", "thermometer-lines", "°C", "temperature"},

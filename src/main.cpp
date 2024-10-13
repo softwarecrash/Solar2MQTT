@@ -16,6 +16,11 @@ https://github.com/softwarecrash/Solar2MQTT
 #include "htmlProzessor.h"
 #include "PI_Serial/PI_Serial.h"
 
+#ifdef TEMPSENS_PIN
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#endif
+
 PI_Serial mppClient(INVERTER_RX, INVERTER_TX);
 WiFiClient client;
 PubSubClient mqttclient(client);
@@ -24,6 +29,13 @@ AsyncWebSocket ws("/ws");
 AsyncWebSocketClient *wsClient;
 DNSServer dns;
 Settings settings;
+
+#ifdef TEMPSENS_PIN
+OneWire oneWire(TEMPSENS_PIN);
+DallasTemperature tempSens(&oneWire);
+DeviceAddress tempDeviceAddress;
+uint8_t numOfTempSens;
+#endif
 
 #include "status-LED.h"
 
@@ -159,13 +171,13 @@ bool resetCounter(bool count)
 void setup()
 {
   // make a compatibility mode for some crap routers?
-  WiFi.setPhyMode(WIFI_PHY_MODE_11G);
-
+  //WiFi.setPhyMode(WIFI_PHY_MODE_11G);
   analogWrite(LED_PIN, 0);
+#ifdef isUART_HARDWARE
   analogWrite(LED_COM, 0);
   analogWrite(LED_SRV, 0);
   analogWrite(LED_NET, 0);
-
+#endif
   resetCounter(true);
   DBG_BEGIN(DBG_BAUD); // Debugging towards UART1
   settings.load();
@@ -410,11 +422,26 @@ void setup()
 
     mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
   }
+
   analogWrite(LED_PIN, 255);
-  analogWrite(LED_COM, 255);
-  analogWrite(LED_SRV, 255);
-  analogWrite(LED_NET, 255);
+  #ifdef isUART_HARDWARE
+    analogWrite(LED_COM, 255);
+    analogWrite(LED_SRV, 255);
+    analogWrite(LED_NET, 255);
+  #endif
   resetCounter(false);
+
+#ifdef TEMPSENS_PIN
+  tempSens.begin();
+  numOfTempSens = tempSens.getDeviceCount();
+  for (int i = 0; i < numOfTempSens; i++)
+  {
+    if (tempSens.getAddress(tempDeviceAddress, i))
+    {
+      tempSens.setResolution(tempDeviceAddress, 9);
+    }
+  }
+#endif
 }
 
 void loop()
@@ -469,6 +496,12 @@ bool prozessData()
   }
   if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000) || mqtttimer == 0)
   {
+#ifdef TEMPSENS_PIN
+    if (numOfTempSens > 0)
+    {
+      tempSens.requestTemperatures();
+    }
+#endif
     sendtoMQTT(); // Update data to MQTT server if we should
     mqtttimer = millis();
   }
@@ -490,6 +523,19 @@ void getJsonData()
   deviceJson[F("runtime")] = millis() / 1000;
   deviceJson[F("ws_clients")] = ws.count();
   deviceJson[F("detect_protocol")] = mppClient.protocol;
+#ifdef TEMPSENS_PIN
+  for (int i = 0; i < numOfTempSens; i++)
+  {
+    if (tempSens.getAddress(tempDeviceAddress, i))
+    {
+      float tempC = tempSens.getTempC(tempDeviceAddress);
+      if (tempC != DEVICE_DISCONNECTED_C)
+      {
+        deviceJson["DS18B20_" + String(i + 1)] = tempC;
+      }
+    }
+  }
+#endif
 }
 
 char *topicBuilder(char *buffer, char const *path, char const *numering = "")
@@ -560,6 +606,21 @@ bool sendtoMQTT()
       writeLog("raw command answer: ",mppClient.get.raw.commandAnswer);
       mppClient.get.raw.commandAnswer = "";
     }
+#ifdef TEMPSENS_PIN
+    for (int i = 0; i < numOfTempSens; i++)
+    {
+      if (tempSens.getAddress(tempDeviceAddress, i))
+      {
+        float tempC = tempSens.getTempC(tempDeviceAddress);
+        if (tempC != DEVICE_DISCONNECTED_C)
+        {
+          char valBuffer[8];
+          sprintf(msgBuffer1, "%s/DS18B20_%i", settings.data.mqttTopic, (i + 1));
+          mqttclient.publish(msgBuffer1, dtostrf(tempC, 4, 1, valBuffer));
+        }
+      }
+    }
+#endif
 // RAW
     mqttclient.publish(topicBuilder(buff, "RAW/Q1"), (mppClient.get.raw.q1).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS"), (mppClient.get.raw.qpigs).c_str());
@@ -579,6 +640,7 @@ bool sendtoMQTT()
     mqttclient.publish(topicBuilder(buff, "RAW/QALL"), (mppClient.get.raw.qall).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QMN"), (mppClient.get.raw.qmn).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIWS"), (mppClient.get.raw.qpiws).c_str());
+    mqttclient.publish(topicBuilder(buff, "RAW/QFLAG"), (mppClient.get.raw.qflag).c_str());
   }
   else
   {
@@ -690,6 +752,44 @@ bool sendHaDiscovery()
       mqttclient.endPublish();
     }
   }
+#ifdef TEMPSENS_PIN
+  // Ext Temp sensors
+  for (int i = 0; i < numOfTempSens; i++)
+  {
+    if (tempSens.getAddress(tempDeviceAddress, i))
+    {
+      String haDeviceDescription = String("\"dev\":") +
+                                   "{\"ids\":[\"" + mqttClientId + "\"]," +
+                                   "\"name\":\"" + settings.data.deviceName + "\"," +
+                                   "\"cu\":\"http://" + WiFi.localIP().toString() + "\"," +
+                                   "\"mdl\":\"EPEver2MQTT\"," +
+                                   "\"mf\":\"SoftWareCrash\"," +
+                                   "\"sw\":\"" + SOFTWARE_VERSION + "\"" +
+                                   "}";
+
+      String haPayLoad = String("{") +
+                         "\"name\":\"DS18B20_" + (i + 1) + "\"," +
+                         "\"stat_t\":\"" + settings.data.mqttTopic + "/DS18B20_" + (i + 1) + "\"," +
+                         "\"avty_t\":\"" + settings.data.mqttTopic + "/Alive\"," +
+                         "\"pl_avail\": \"true\"," +
+                         "\"pl_not_avail\": \"false\"," +
+                         "\"uniq_id\":\"" + mqttClientId + ".DS18B20_" + (i + 1) + "\"," +
+                         "\"ic\":\"mdi:thermometer-lines\"," +
+                         "\"unit_of_meas\":\"°C\"," +
+                         "\"dev_cla\":\"temperature\",";
+      haPayLoad += haDeviceDescription;
+      haPayLoad += "}";
+      sprintf(topBuff, "homeassistant/sensor/%s/DS18B20_%d/config", settings.data.mqttTopic, (i + 1)); // build the topic
+
+      mqttclient.beginPublish(topBuff, haPayLoad.length(), true);
+      for (size_t i = 0; i < haPayLoad.length(); i++)
+      {
+        mqttclient.write(haPayLoad[i]);
+      }
+      mqttclient.endPublish();
+    }
+  }
+#endif
   return true;
 }
 
