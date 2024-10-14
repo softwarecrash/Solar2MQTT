@@ -132,6 +132,7 @@ bool PI_Serial::loop()
         }
         else
         {
+            autoDetect();
             previousTime = millis();
             requestCallback();
             connection = false;
