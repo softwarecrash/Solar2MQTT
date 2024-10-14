@@ -109,6 +109,9 @@ bool PI_Serial::loop()
                         requestCounter = PIXX_QPIWS() ? (requestCounter + 1) : 0;
                         break;
                     case 6:
+                        requestCounter = PIXX_QPIRI() ? (requestCounter + 1) : 0;
+                        break;
+                    case 7:
                         requestCallback();
                         requestCounter = 0;
                         break;
