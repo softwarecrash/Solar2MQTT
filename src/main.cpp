@@ -60,10 +60,10 @@ String commandFromUser;
 String customResponse;
 
 bool firstPublish;
-DynamicJsonDocument Json(JSON_BUFFER); // main Json
-JsonObject deviceJson = Json.createNestedObject("EspData");    // basic device data
-JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
-JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
+JsonDocument Json; // main Json
+JsonObject deviceJson = Json["EspData"].to<JsonObject>();    // basic device data
+JsonObject staticData = Json["DeviceData"].to<JsonObject>(); // battery package data
+JsonObject liveData = Json["LiveData"].to<JsonObject>();     // battery package data
 
 //----------------------------------------------------------------------
 void saveConfigCallback()
@@ -518,8 +518,8 @@ void getJsonData()
   deviceJson[F("sw_version")] = SOFTWARE_VERSION;
   deviceJson[F("Free_Heap")] = ESP.getFreeHeap();
   deviceJson[F("HEAP_Fragmentation")] = ESP.getHeapFragmentation();
-  deviceJson[F("json_memory_usage")] = Json.memoryUsage();
-  deviceJson[F("json_capacity")] = Json.capacity();
+  //deviceJson[F("json_memory_usage")] = Json.memoryUsage();
+  //deviceJson[F("json_capacity")] = Json.capacity();
   deviceJson[F("runtime")] = millis() / 1000;
   deviceJson[F("ws_clients")] = ws.count();
   deviceJson[F("detect_protocol")] = mppClient.protocol;
@@ -699,7 +699,7 @@ bool sendHaDiscovery()
   char topBuff[128];
   for (size_t i = 0; i < sizeof haStaticDescriptor / sizeof haStaticDescriptor[0]; i++)
   {
-    if (staticData.containsKey(haStaticDescriptor[i][0]))
+    if (staticData[haStaticDescriptor[i][0]].is<const char*>())
     {
       String haPayLoad = String("{") +
                          "\"name\":\"" + haStaticDescriptor[i][0] + "\"," +
@@ -727,7 +727,7 @@ bool sendHaDiscovery()
 
   for (size_t i = 0; i < sizeof haLiveDescriptor / sizeof haLiveDescriptor[0]; i++)
   {
-    if (liveData.containsKey(haLiveDescriptor[i][0]))
+    if (liveData[haLiveDescriptor[i][0]].is<const char*>())
     {
       String haPayLoad = String("{") +
                          "\"name\":\"" + haLiveDescriptor[i][0] + "\"," +
