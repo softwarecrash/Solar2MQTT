@@ -699,7 +699,7 @@ bool sendHaDiscovery()
   char topBuff[128];
   for (size_t i = 0; i < sizeof haStaticDescriptor / sizeof haStaticDescriptor[0]; i++)
   {
-    if (staticData[haStaticDescriptor[i][0]].is<const char*>())
+    if (staticData[haStaticDescriptor[i][0]].is<JsonVariant>())
     {
       String haPayLoad = String("{") +
                          "\"name\":\"" + haStaticDescriptor[i][0] + "\"," +
@@ -727,7 +727,7 @@ bool sendHaDiscovery()
 
   for (size_t i = 0; i < sizeof haLiveDescriptor / sizeof haLiveDescriptor[0]; i++)
   {
-    if (liveData[haLiveDescriptor[i][0]].is<const char*>())
+    if (liveData[haLiveDescriptor[i][0]].is<JsonVariant>())
     {
       String haPayLoad = String("{") +
                          "\"name\":\"" + haLiveDescriptor[i][0] + "\"," +
