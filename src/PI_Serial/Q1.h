@@ -34,6 +34,37 @@ static const char *const q1List2[] = {
     "", // Sync frequency
     "Inverter_charge_state",
 };
+static const char *const q1ListP18[] = {
+    // [PI18]
+    //0 00026 00 00 00 000 042 030 040 02 00 000 0030 0000 0000 49.95 10 0 000 000 000 000 00.00 000 000 0 0000
+    "Time_until_absorb_charge", // Time until the end of absorb charging
+    "Time_until_float_charge", // Time until the end of float charging
+    "SCC_Flag", // SCC Flag
+    "AllowSccOnFlag", // AllowSccOnFlag
+    "Charge_Average_Current", // ChargeAverageCurrent
+    "Tracker_temperature", // SCC PWM temperature
+    "Inverter_temperature",
+    "Battery_temperature",
+    "Transformer_temperature",
+    "", // GPIO13
+    "Fan_lock_status",
+    "",
+    "Fan_speed", // Fan PWM speed
+    "SCC_charge_power", // SCC charge power
+    "Parallel_Warning", // Parallel Warning
+    "Sync_frequency", // Sync frequency
+    "Inverter_charge_state",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+};
 bool PI_Serial::PIXX_Q1()
 {
     if (protocol == PI30)
@@ -162,10 +193,10 @@ bool PI_Serial::PIXX_Q1()
                 }
             }
 
-            for (unsigned int i = 0; i < sizeof q1List / sizeof q1List[0]; i++)
+            for (unsigned int i = 0; i < sizeof q1ListP18 / sizeof q1ListP18[0]; i++)
             {
-                if (!strs[i].isEmpty() && strcmp(q1List[i], "") != 0)
-                    liveData[q1List[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
+                if (!strs[i].isEmpty() && strcmp(q1ListP18[i], "") != 0)
+                    liveData[q1ListP18[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
             }
 
             if (liveData.containsKey("Inverter_charge_state"))
