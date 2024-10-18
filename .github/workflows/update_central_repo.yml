@@ -6,6 +6,7 @@ on:
 
 jobs:
   update-central-repo:
+    if: ${{ github.event.release.prerelease == false }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -26,9 +27,16 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
+            const core = require('@actions/core');
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const releaseTag = context.payload.release.tag_name;
+
+            // Check if the release is a pre-release
+            if (context.payload.release.prerelease) {
+              core.setFailed('This is a pre-release. Skipping workflow.');
+              process.exit(1);
+            }
 
             // Get the release by tag name
             const release = await github.rest.repos.getReleaseByTag({
@@ -170,5 +178,3 @@ jobs:
           git commit -m "Update firmware for ${{ github.event.repository.name }} to version $version"
           git pull --rebase origin main
           git push https://all-solutions:${{ secrets.CENTRAL_REPO_TOKEN }}@github.com/all-solutions/Flash2MQTT.git HEAD:main
-
-
