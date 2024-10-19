@@ -17,11 +17,11 @@ static const char *const q1List[] = {
 static const char *const q1List2[] = {
     // [PI30]
     "Time_until_absorb_charge", // Time until the end of absorb charging
-    "Time_until_float_charge", // Time until the end of float charging
-    "", // SCC Flag
-    "", // AllowSccOnFlag
-    "", // ChargeAverageCurrent
-    "Tracker_temperature", // SCC PWM temperature
+    "Time_until_float_charge",  // Time until the end of float charging
+    "",                         // SCC Flag
+    "",                         // AllowSccOnFlag
+    "",                         // ChargeAverageCurrent
+    "Tracker_temperature",      // SCC PWM temperature
     "Inverter_temperature",
     "Battery_temperature",
     "Transformer_temperature",
@@ -29,30 +29,30 @@ static const char *const q1List2[] = {
     "Fan_lock_status",
     "",
     "Fan_speed", // Fan PWM speed
-    "", // SCC charge power
-    "", // Parallel Warning
-    "", // Sync frequency
+    "",          // SCC charge power
+    "",          // Parallel Warning
+    "",          // Sync frequency
     "Inverter_charge_state",
 };
 static const char *const q1ListP18[] = {
     // [PI18]
-    //0 00026 00 00 00 000 042 030 040 02 00 000 0030 0000 0000 49.95 10 0 000 000 000 000 00.00 000 000 0 0000
+    // 0 00026 00 00 00 000 042 030 040 02 00 000 0030 0000 0000 49.95 10 0 000 000 000 000 00.00 000 000 0 0000
     "Time_until_absorb_charge", // Time until the end of absorb charging
-    "Time_until_float_charge", // Time until the end of float charging
-    "SCC_Flag", // SCC Flag
-    "AllowSccOnFlag", // AllowSccOnFlag
-    "Charge_Average_Current", // ChargeAverageCurrent
-    "Tracker_temperature", // SCC PWM temperature
+    "Time_until_float_charge",  // Time until the end of float charging
+    "SCC_Flag",                 // SCC Flag
+    "AllowSccOnFlag",           // AllowSccOnFlag
+    "Charge_Average_Current",   // ChargeAverageCurrent
+    "Tracker_temperature",      // SCC PWM temperature
     "Inverter_temperature",
     "Battery_temperature",
     "Transformer_temperature",
     "", // GPIO13
     "Fan_lock_status",
     "",
-    "Fan_speed", // Fan PWM speed
+    "Fan_speed",        // Fan PWM speed
     "SCC_charge_power", // SCC charge power
     "Parallel_Warning", // Parallel Warning
-    "Sync_frequency", // Sync frequency
+    "Sync_frequency",   // Sync frequency
     "Inverter_charge_state",
     "",
     "",
@@ -135,25 +135,25 @@ bool PI_Serial::PIXX_Q1()
             }
         }
 
-        if (liveData.containsKey("Inverter_charge_state"))
+        if (liveData["Inverter_charge_state"].is<JsonVariant>())
         {
             switch ((int)liveData["Inverter_charge_state"].as<unsigned int>())
             {
-                default:
-                    // liveData["Inverter_charge_state"] = "no data";
-                    break;
-                case 10:
-                    liveData["Inverter_charge_state"] = "No charging";
-                    break;
-                case 11:
-                    liveData["Inverter_charge_state"] = "Bulk stage";
-                    break;
-                case 12:
-                    liveData["Inverter_charge_state"] = "Absorb";
-                    break;
-                case 13:
-                    liveData["Inverter_charge_state"] = "Float";
-                    break;
+            default:
+                // liveData["Inverter_charge_state"] = "no data";
+                break;
+            case 10:
+                liveData["Inverter_charge_state"] = "No charging";
+                break;
+            case 11:
+                liveData["Inverter_charge_state"] = "Bulk stage";
+                break;
+            case 12:
+                liveData["Inverter_charge_state"] = "Absorb";
+                break;
+            case 13:
+                liveData["Inverter_charge_state"] = "Float";
+                break;
             }
         }
 
@@ -199,7 +199,7 @@ bool PI_Serial::PIXX_Q1()
                     liveData[q1ListP18[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
             }
 
-            if (liveData.containsKey("Inverter_charge_state"))
+            if (liveData["Inverter_charge_state"].is<JsonVariant>())
             {
                 switch ((int)liveData["Inverter_charge_state"].as<unsigned int>())
                 {

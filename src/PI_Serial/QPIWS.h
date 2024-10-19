@@ -62,6 +62,19 @@ bool PI_Serial::PIXX_QPIWS()
         }
         return true;
     }
+    else if(protocol == PI18){
+        String commandAnswer = this->requestData("^P005FWS");
+        get.raw.qpiws = commandAnswer;
+        if (commandAnswer == "NAK")
+        {
+            return true;
+        }
+        if (commandAnswer == "ERCRC")
+        {
+            return false;
+        }
+        return true;
+    }
     else if (protocol == NoD)
     {
         return false;
