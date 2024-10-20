@@ -42,7 +42,7 @@ bool PI_Serial::PIXX_QFLAG()
         {
             return false;
         }
-        if (commandAnswerLength == 10)
+        if (commandAnswerLength == 18)
         {
             staticData["Buzzer_Enabled"] = ((String)commandAnswer.charAt(0) == "1") ? true : false;
             staticData["Overload_bypass_Enabled"] = ((String)(commandAnswer.charAt(1)) == "1") ? true : false;
