@@ -203,7 +203,7 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
 
     if (getModbusValue(reg->id, reg->modbus_entity, &raw_value, readBytes))
     {
-        writeLog("Raw value: %s=%#06x\n", reg->name, raw_value);
+        //writeLog("Raw value: %s=%#06x\n", reg->name, raw_value);
 
         switch (reg->type)
         {
@@ -257,7 +257,7 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
                     break;
                 }
                 const uint8_t bit_value = raw_value >> j & 1;
-                writeLog(" [bit%02d] %s=%d", j, bit_varname, bit_value);
+                //writeLog(" [bit%02d] %s=%d", j, bit_varname, bit_value);
                 (*variant)[bit_varname] = bit_value;
             }
             break;
@@ -283,7 +283,7 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
             }
             if (!isfound)
             {
-                writeLog("CUSTOM_VAL_NAME not found for raw_value=%d", raw_value);
+                writeLog("CUSTOM_VAL_NAME not found for raw_value=%d register id=%d type=0x%x name=%s",raw_value, reg->id, reg->type, reg->name);
             }
             break;
         }

@@ -49,12 +49,12 @@ private:
         {15219, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_LIVE_PV_GENERATION_DAY},
 
         {25201, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, "PV_Charger_Workstate", 0, {.bitfield = {"Initializtion", "Self Test", "Work", "Stop"}}},
-        {25202, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, "PV_Charger_MPPT_State", 0, {.bitfield = {
+        {15202, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, "PV_Charger_MPPT_State", 0, {.bitfield = {
                                                                                                      "Stop",
                                                                                                      "MPPT",
                                                                                                      "Current Limit",
                                                                                                  }}},
-        {25203, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, "PV_Charger_Charge_State", 0, {.bitfield = {
+        {15203, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, "PV_Charger_Charge_State", 0, {.bitfield = {
                                                                                                        "Stop",
                                                                                                        "Absorb",
                                                                                                        "Float",
