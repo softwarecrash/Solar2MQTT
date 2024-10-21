@@ -354,8 +354,9 @@ bool PI_Serial::PIXX_QPIRI()
         break;
       case 1:
         staticData["Output_mode"] = "parallel output";
+        break;
       case 2:
-        staticData["Output_mode"] = "Phase 1 of three phaseoutput";
+        staticData["Output_mode"] = "Phase 1 of three phase output";
         break;
       case 3:
         staticData["Output_mode"] = "Phase 2 of three phase output";

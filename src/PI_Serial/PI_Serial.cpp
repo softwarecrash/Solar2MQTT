@@ -113,6 +113,9 @@ bool PI_Serial::loop()
                         requestCounter = PIXX_QPIWS() ? (requestCounter + 1) : 0;
                         break;
                     case 6:
+                        requestCounter = PIXX_QPIRI() ? (requestCounter + 1) : 0;
+                        break;
+                    case 7:
                         requestCallback();
                         requestCounter = 0;
                         break;
@@ -132,6 +135,7 @@ bool PI_Serial::loop()
         }
         else
         {
+            autoDetect();
             previousTime = millis();
             requestCallback();
             connection = false;
@@ -401,7 +405,7 @@ bool PI_Serial::isModbus()
 
 bool PI_Serial::checkQFLAG(const String& flags, char symbol) {
     bool enabled = false;
-    for (int i = 0; i < flags.length(); i++) {
+    for (unsigned int i = 0; i < flags.length(); i++) {
         char c = flags.charAt(i);
         if (c == 'E') enabled = true;
         else if (c == 'D') enabled = false;
