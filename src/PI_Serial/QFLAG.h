@@ -42,16 +42,21 @@ bool PI_Serial::PIXX_QFLAG()
         {
             return false;
         }
-        if (commandAnswerLength == 18)
+        //[C: ^P007FLAG][CR: 190F][CC: 190F][L:  17]
+        //QFLAG 1,1,0,0,0,1,1,1,0
+        if (commandAnswerLength == 17)
         {
             staticData["Buzzer_Enabled"] = ((String)commandAnswer.charAt(0) == "1") ? true : false;
-            staticData["Overload_bypass_Enabled"] = ((String)(commandAnswer.charAt(1)) == "1") ? true : false;
-            staticData["LCD_reset_to_default_Enabled"] = ((String)(commandAnswer.charAt(2)) == "1") ? true : false;
-            staticData["Overload_restart_Enabled"] = ((String)(commandAnswer.charAt(3)) == "1") ? true : false;
-            staticData["Over_temperature_restart_Enabled"] = ((String)(commandAnswer.charAt(4)) == "1") ? true : false;
-            staticData["LCD_backlight_Enabled"] = ((String)(commandAnswer.charAt(5)) == "1") ? true : false;
-            staticData["Primary_source_interrupt_alarm_Enabled"] = ((String)(commandAnswer.charAt(6)) == "1") ? true : false;
-            staticData["Record_fault_code_Enabled"] = ((String)(commandAnswer.charAt(7)) == "1") ? true : false;
+            staticData["Overload_bypass_Enabled"] = ((String)(commandAnswer.charAt(2)) == "1") ? true : false;
+            staticData["LCD_reset_to_default_Enabled"] = ((String)(commandAnswer.charAt(4)) == "1") ? true : false;
+            staticData["Overload_restart_Enabled"] = ((String)(commandAnswer.charAt(6)) == "1") ? true : false;
+            staticData["Over_temperature_restart_Enabled"] = ((String)(commandAnswer.charAt(8)) == "1") ? true : false;
+            staticData["LCD_backlight_Enabled"] = ((String)(commandAnswer.charAt(10)) == "1") ? true : false;
+            staticData["Primary_source_interrupt_alarm_Enabled"] = ((String)(commandAnswer.charAt(12)) == "1") ? true : false;
+            staticData["Record_fault_code_Enabled"] = ((String)(commandAnswer.charAt(14)) == "1") ? true : false;
+        
+        } else {
+            get.raw.qflag = "Wrong Length(" + (String)get.raw.qflag.length() + "), Contact Dev:" +get.raw.qflag;
         }
         return true;
     }
