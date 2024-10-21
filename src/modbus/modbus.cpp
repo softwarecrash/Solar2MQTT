@@ -390,7 +390,7 @@ bool MODBUS::autoDetect() // function for autodetect the inverter type
 String MODBUS::retrieveModel()
 {
     String model = "";
-    DynamicJsonDocument doc(256);
+    JsonDocument doc;
     JsonObject jsonObj = doc.to<JsonObject>(); // Create and get JsonObject
     modbus_register_info_t model_info = {
         .variant = &jsonObj,
