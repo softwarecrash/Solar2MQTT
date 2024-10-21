@@ -132,7 +132,16 @@ static const char *const haStaticDescriptor[][4]{
     //{"PV_OK_condition_for_parallel","solar-panel","",""},
     {DESCR_STAT_PV_POWER_BALANCE, "solar-panel", "", ""},
     {DESCR_STAT_SOLAR_POWER_PRIORITY, "priority-high", "", ""},
-    {DESCR_STAT_TOPOLOGY, "earth", "", ""}};
+    {DESCR_STAT_TOPOLOGY, "earth", "", ""},
+    {"Buzzer_Enabled", "tune-variant", "", ""},
+    {"Overload_bypass_Enabled", "tune-variant", "", ""},
+    {"Power_saving_Enabled", "tune-variant", "", ""},
+    {"LCD_reset_to_default_Enabled", "tune-variant", "", ""},
+    {"Overload_restart_Enabled", "tune-variant", "", ""},
+    {"Over_temperature_restart_Enabled", "tune-variant", "", ""},
+    {"LCD_backlight_Enabled", "tune-variant", "", ""},
+    {"Primary_source_interrupt_alarm_Enabled", "tune-variant", "", ""},
+    {"Record_fault_code_Enabled", "tune-variant", "", ""}};
     
 static const char *const haLiveDescriptor[][4]{
     // state_topic, icon, unit_ofmeasurement, class
