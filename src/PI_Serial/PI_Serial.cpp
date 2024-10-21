@@ -181,17 +181,6 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
             protocol = PI30;
             break;
         }
-        //EASUN SMH II 4.2KW fix, he answer on QPI with nothing - https://github.com/softwarecrash/Solar2MQTT/issues/162
-        this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1);
-        String QVFW = this->requestData("QVFW");
-        writeLog("QVFW:\t\t%s (Length: %d)", QVFW, QVFW.length());
-        if (QVFW != "" && QVFW.substring(0, 5) == "VERFW")
-        {
-            writeLog("<Autodetect> Match protocol: PI3X");
-            delimiter = " ";
-            protocol = PI30;
-            break;
-        }
         startChar = "^Dxxx";
         this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1);
         String P005PI = this->requestData("^P005PI");
