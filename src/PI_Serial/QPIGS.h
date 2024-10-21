@@ -42,12 +42,12 @@ static const char *const qpigsList[][24] = {
         "Positive_battery_voltage", // LLL.L
         "Negative_battery_voltage", // MMM.M
         "Battery_capacity",         // NNN
-        "PV1_input_power",          // OOOOO
-        "PV2_input_power",          // PPPPP
-        "PV3_input_power",          // QQQQQ
-        "PV1_input_voltage",        // RRR.R
-        "PV2_input_voltage",        // SSS.S
-        "PV3_input_voltage",        // TTT.T
+        "PV1_Input_Power",          // OOOOO
+        "PV2_Input_Power",          // PPPPP
+        "PV3_Input_Power",          // QQQQQ
+        "PV1_Input_Voltage",        // RRR.R
+        "PV2_Input_Voltage",        // SSS.S
+        "PV3_Input_Voltage",        // TTT.T
         "Max_temperature",          // UUU.U
     },
 };

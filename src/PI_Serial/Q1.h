@@ -29,7 +29,6 @@ static const char *const DESCR_Inverter_charge_state = "Inverter_charge_state"; 
 static const char *const DESCR_unknown = "";                                          // unknown state
 
 const char *const Q1_47[] = {
-    // [PI34 / MPPT-3000], [PI30 HS MS MSX], [PI30 Revo], [PI30 PIP], [PI41 / LV5048]
     DESCR_Time_until_absorb_charge,
     DESCR_Time_until_float_charge,
     DESCR_unknown,
@@ -44,9 +43,7 @@ const char *const Q1_47[] = {
     DESCR_unknown,
     DESCR_Inverter_charge_state,
 };
-// Raw length 70
 static const char *const Q1_70[] = {
-    // [PI30]
     DESCR_Time_until_absorb_charge, // Time until the end of absorb charging
     DESCR_Time_until_float_charge,  // Time until the end of float charging
     DESCR_unknown,                  // SCC Flag
@@ -85,7 +82,6 @@ static const char *const Q1_87[] = {
     DESCR_Inverter_charge_state,
 };
 const char *const Q1_108[] = {
-    // [PI18]
     DESCR_Time_until_absorb_charge, // Time until the end of absorb charging
     DESCR_Time_until_float_charge,  // Time until the end of float charging
     DESCR_SCC_Flag,                 // SCC Flag

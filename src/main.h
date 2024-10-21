@@ -1,8 +1,7 @@
 #include <WebSerialLite.h>
 #define ARDUINOJSON_USE_DOUBLE 1
 #define ARDUINOJSON_USE_LONG_LONG 1
-#define JSON_BUFFER 2048
-
+//#define ARDUINOJSON_ENABLE_PROGMEM 1
 
 #ifdef isUART_HARDWARE
 #define INVERTER_TX 1
@@ -18,14 +17,12 @@
 
 #define LED_PIN 02 // D4 with the LED on Wemos D1 Mini
 
-
 #define DBG_BAUD 115200
 #define DBG_WEBLN(...) WebSerial.println(__VA_ARGS__)
 #define SOFTWARE_VERSION SWVERSION
 #define DBG Serial
 #define DBG_BEGIN(...) DBG.begin(__VA_ARGS__)
 #define DBG_PRINTLN(...) DBG.println(__VA_ARGS__)
-
 
 /**
  * @brief callback function for wifimanager save config data
@@ -195,20 +192,20 @@ static const char *const haLiveDescriptor[][4]{
     {"PV_Input_Current", "solar-power-variant", "A", "current"},
     {"PV_Input_Power", "solar-power-variant", "W", "power"},
     {"PV_Input_Voltage", "solar-power-variant", "V", "voltage"},
-    {"PV1_input_power", "solar-power-variant", "W", "power"},
-    {"PV1_input_voltage", "solar-power-variant", "V", "voltage"},
+    {"PV1_Input_Power", "solar-power-variant", "W", "power"},
+    {"PV1_Input_Voltage", "solar-power-variant", "V", "voltage"},
     {"PV2_Charging_Power", "solar-power-variant", "W", "power"},
     {"PV2_Input_Current", "solar-power-variant", "A", "current"},
-    {"PV2_input_power", "solar-power-variant", "W", "power"},
-    {"PV2_input_voltage", "solar-power-variant", "V", "voltage"},
-    {"PV3_input_power", "solar-power-variant", "W", "power"},
-    {"PV3_input_voltage", "solar-power-variant", "V", "voltage"},
+    {"PV2_Input_Power", "solar-power-variant", "W", "power"},
+    {"PV2_Input_Voltage", "solar-power-variant", "V", "voltage"},
+    {"PV3_Input_Power", "solar-power-variant", "W", "power"},
+    {"PV3_Input_Voltage", "solar-power-variant", "V", "voltage"},
     //{"SBUS_voltage","flash-triangle-outline","V","voltage"},
     {"Solar_feed_to_grid_power", "solar-power-variant", "W", "power"},
     {"Solar_feed_to_Grid_status", "solar-power-variant", "", ""},
-    //{"Status_Flag","flag","",""},
-    //{"Time_until_absorb_charge","solar-power-variant","s","duration"},
-    //{"Time_until_float_charge","solar-power-variant","s","duration"},
+    {"Status_Flag","flag","",""},
+    {"Time_until_absorb_charge","solar-power-variant","s","duration"},
+    {"Time_until_float_charge","solar-power-variant","s","duration"},
     {"Tracker_temperature", "thermometer-lines", "°C", "temperature"},
     {"Transformer_temperature", "thermometer-lines", "°C", "temperature"},
     {"Warning_Code", "alert-outline", "", ""}};

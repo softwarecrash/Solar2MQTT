@@ -3,6 +3,9 @@
 #define PI_SERIAL_H
 #include "vector"
 #include <ArduinoJson.h>
+#define ARDUINOJSON_USE_DOUBLE 1
+#define ARDUINOJSON_USE_LONG_LONG 1
+//#define ARDUINOJSON_ENABLE_PROGMEM 1
 #include <modbus/modbus.h>
 extern JsonObject deviceJson;
 extern JsonObject staticData;
