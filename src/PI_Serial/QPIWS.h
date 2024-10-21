@@ -58,6 +58,8 @@ bool PI_Serial::PIXX_QPIWS()
             {
                 liveData["Fault_code"] = "Ok";
             }
+        }else {
+            get.raw.qpiws = "Wrong Length(" + (String)get.raw.qpiws.length() + "), Contact Dev:" +get.raw.qpiws;
         }
         return true;
     }
@@ -134,11 +136,13 @@ bool PI_Serial::PIXX_QPIWS()
                     }
                 }
                 liveData["Fault_code"] = qpiwsStr;
-            }
+            } 
             else
             {
                 liveData["Fault_code"] = "Ok";
             }
+        }else {
+            get.raw.qpiws = "Wrong Length(" + (String)get.raw.qpiws.length() + "), Contact Dev:" +get.raw.qpiws;
         }
         return true;
     }

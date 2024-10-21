@@ -26,6 +26,8 @@ bool PI_Serial::PIXX_QFLAG()
             staticData["LCD_backlight_Enabled"] = checkQFLAG(commandAnswer, 'x');
             staticData["Primary_source_interrupt_alarm_Enabled"] = checkQFLAG(commandAnswer, 'y');
             staticData["Record_fault_code_Enabled"] = checkQFLAG(commandAnswer, 'z');
+        }else {
+            get.raw.qflag = "Wrong Length(" + (String)get.raw.qflag.length() + "), Contact Dev:" +get.raw.qflag;
         }
         return true;
     }

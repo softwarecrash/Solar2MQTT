@@ -114,91 +114,7 @@ const char *const Q1_108[] = {
     DESCR_unknown,
     DESCR_unknown,
 };
-/*
-static const char *const Q1_47[] = {
-    "Time_until_absorb_charge",
-    "Time_until_float_charge",
-    "",
-    "Tracker_temperature",
-    "Inverter_temperature",
-    "Battery_temperature",
-    "Transformer_temperature",
-    "",
-    "",
-    "",
-    "Fan_speed",
-    "",
-    "Inverter_charge_state",
-};
-static const char *const Q1_70[] = {
-    "Time_until_absorb_charge", // Time until the end of absorb charging
-    "Time_until_float_charge",  // Time until the end of float charging
-    "",                         // SCC Flag
-    "",                         // AllowSccOnFlag
-    "",                         // ChargeAverageCurrent
-    "Tracker_temperature",      // SCC PWM temperature
-    "Inverter_temperature",
-    "Battery_temperature",
-    "Transformer_temperature",
-    "", // GPIO13
-    "Fan_lock_status",
-    "",
-    "Fan_speed", // Fan PWM speed
-    "",          // SCC charge power
-    "",          // Parallel Warning
-    "",          // Sync frequency
-    "Inverter_charge_state",
-};
-static const char *const Q1_87[] = {
-    "Time_until_absorb_charge", // Time until the end of absorb charging
-    "Time_until_float_charge",  // Time until the end of float charging
-    "",                         // SCC Flag
-    "",                         // AllowSccOnFlag
-    "",                         // ChargeAverageCurrent
-    "Tracker_temperature",      // SCC PWM temperature
-    "Inverter_temperature",
-    "Battery_temperature",
-    "Transformer_temperature",
-    "", // GPIO13
-    "Fan_lock_status",
-    "",
-    "Fan_speed", // Fan PWM speed
-    "",          // SCC charge power
-    "",          // Parallel Warning
-    "",          // Sync frequency
-    "Inverter_charge_state",
-};
-static const char *const Q1_108[] = {
-    // [PI18]
-    "Time_until_absorb_charge", // Time until the end of absorb charging
-    "Time_until_float_charge",  // Time until the end of float charging
-    "SCC_Flag",                 // SCC Flag
-    "AllowSccOnFlag",           // AllowSccOnFlag
-    "Charge_Average_Current",   // ChargeAverageCurrent
-    "Tracker_temperature",      // SCC PWM temperature
-    "Inverter_temperature",
-    "Battery_temperature",
-    "Transformer_temperature",
-    "", // GPIO13
-    "Fan_lock_status",
-    "",
-    "Fan_speed",        // Fan PWM speed
-    "SCC_charge_power", // SCC charge power
-    "Parallel_Warning", // Parallel Warning
-    "Sync_frequency",   // Sync frequency
-    "Inverter_charge_state",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-};
-*/
+
 bool PI_Serial::PIXX_Q1()
 {
     if (protocol == PI30 || protocol == PI18) // pi30 and pi18 devices react both on Q1
@@ -265,10 +181,8 @@ bool PI_Serial::PIXX_Q1()
             }
             break;
         case 87:
-            // Split the string into substrings
             while (commandAnswer.length() > 0)
             {
-                // int index = commandAnswer.indexOf(delimiter);
                 int index = commandAnswer.indexOf(' ');
                 if (index == -1) // No space found
                 {
@@ -289,10 +203,8 @@ bool PI_Serial::PIXX_Q1()
             break;
         case 105:
         case 108:
-            // Split the string into substrings
             while (commandAnswer.length() > 0)
             {
-                // int index = commandAnswer.indexOf(delimiter);
                 int index = commandAnswer.indexOf(' ');
                 if (index == -1) // No space found
                 {
@@ -338,150 +250,6 @@ bool PI_Serial::PIXX_Q1()
             }
         }
         return true;
-        /* if (commandAnswerLength == 47 || commandAnswerLength == 105)
-        {
-            String strs[30];
-            // Split the string into substrings
-            int StringCount = 0;
-            while (commandAnswer.length() > 0)
-            {
-                // int index = commandAnswer.indexOf(delimiter);
-                int index = commandAnswer.indexOf(' ');
-                if (index == -1) // No space found
-                {
-                    strs[StringCount++] = commandAnswer;
-                    break;
-                }
-                else
-                {
-                    strs[StringCount++] = commandAnswer.substring(0, index);
-                    commandAnswer = commandAnswer.substring(index + 1);
-                }
-            }
-
-            for (unsigned int i = 0; i < sizeof Q1_47 / sizeof Q1_47[0]; i++)
-            {
-                if (!strs[i].isEmpty() && strcmp(Q1_47[i], "") != 0)
-                    liveData[Q1_47[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
-            }
-        }
-        if (commandAnswerLength == 70)
-        {
-            String strs[30];
-            // Split the string into substrings
-            int StringCount = 0;
-            while (commandAnswer.length() > 0)
-            {
-                // int index = commandAnswer.indexOf(delimiter);
-                int index = commandAnswer.indexOf(' ');
-                if (index == -1) // No space found
-                {
-                    strs[StringCount++] = commandAnswer;
-                    break;
-                }
-                else
-                {
-                    strs[StringCount++] = commandAnswer.substring(0, index);
-                    commandAnswer = commandAnswer.substring(index + 1);
-                }
-            }
-
-            for (unsigned int i = 0; i < sizeof Q1_70 / sizeof Q1_70[0]; i++)
-            {
-                if (!strs[i].isEmpty() && strcmp(Q1_70[i], "") != 0)
-                    liveData[Q1_70[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
-            }
-        }
-
-        if (liveData["Inverter_charge_state"].is<JsonVariant>())
-        {
-            switch ((int)liveData["Inverter_charge_state"].as<unsigned int>())
-            {
-            default:
-                // liveData["Inverter_charge_state"] = "no data";
-                break;
-            case 10:
-                liveData["Inverter_charge_state"] = "No charging";
-                break;
-            case 11:
-                liveData["Inverter_charge_state"] = "Bulk stage";
-                break;
-            case 12:
-                liveData["Inverter_charge_state"] = "Absorb";
-                break;
-            case 13:
-                liveData["Inverter_charge_state"] = "Float";
-                break;
-            }
-        }
-
-        return true;
-    }
-    else if (protocol == PI18)
-    {
-        String commandAnswer = this->requestData("Q1");
-        get.raw.q1 = commandAnswer;
-        byte commandAnswerLength = commandAnswer.length();
-        if (commandAnswer == "NAK")
-        {
-            return true;
-        }
-        if (commandAnswer == "ERCRC")
-        {
-            return false;
-        }
-        if (commandAnswerLength >= 47 && commandAnswerLength <= 105)
-        // if (commandAnswerLength == 47 || commandAnswerLength == 105)
-        {
-            String strs[30];
-            // Split the string into substrings
-            int StringCount = 0;
-            while (commandAnswer.length() > 0)
-            {
-                // int index = commandAnswer.indexOf(delimiter);
-                int index = commandAnswer.indexOf(' ');
-                if (index == -1) // No space found
-                {
-                    strs[StringCount++] = commandAnswer;
-                    break;
-                }
-                else
-                {
-                    strs[StringCount++] = commandAnswer.substring(0, index);
-                    commandAnswer = commandAnswer.substring(index + 1);
-                }
-            }
-
-            for (unsigned int i = 0; i < sizeof Q1_108 / sizeof Q1_108[0]; i++)
-            {
-                if (!strs[i].isEmpty() && strcmp(Q1_108[i], "") != 0)
-                    liveData[Q1_108[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
-            }
-
-            if (liveData["Inverter_charge_state"].is<JsonVariant>())
-            {
-                switch ((int)liveData["Inverter_charge_state"].as<unsigned int>())
-                {
-                default:
-                    // liveData["Inverter_charge_state"] = "no data";
-                    break;
-                case 10:
-                    liveData["Inverter_charge_state"] = "No charging";
-                    break;
-                case 11:
-                    liveData["Inverter_charge_state"] = "Bulk stage";
-                    break;
-                case 12:
-                    liveData["Inverter_charge_state"] = "Absorb";
-                    break;
-                case 13:
-                    liveData["Inverter_charge_state"] = "Float";
-                    break;
-                }
-            }
-        }
-        return true;
-        }*/
     }
     else if (protocol == NoD)
     {
