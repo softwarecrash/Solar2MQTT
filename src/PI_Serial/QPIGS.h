@@ -105,14 +105,13 @@ static const char *const P005GS[][28] = {
 
 bool PI_Serial::PIXX_QPIGS()
 {
-  const char* constqlist  = nullptr;
+  const char *const *qlist  = nullptr;
   if (protocol == PI30)
   {
     byte protocolNum = 0; // for future use
     get.raw.qall = "";
     String commandAnswerQALL = this->requestData("QALL");
     get.raw.qall = commandAnswerQALL;
-
     //get.raw.qall = "NAK";
    // if (commandAnswerQALL == "ERCRC")
     //{
@@ -125,6 +124,22 @@ bool PI_Serial::PIXX_QPIGS()
       return true;
     if (commandAnswerQPIGS == "ERCRC")
       return false;
+
+    switch (commandAnswerQPIGS.length())
+    {
+    bool handleAnswer = false;
+    case 106: //from my list legth
+      qlist = qallList;
+      handleAnswer = true;
+      break;
+    
+    default:
+    get.raw.qpigs = "Wrong Length(" + (String)get.raw.qpigs.length() + "), Contact Dev:" + get.raw.qpigs;
+      break;
+    }
+
+
+
     byte commandAnswerLength = commandAnswerQPIGS.length();
 
     // calculate the length with https://elmar-eigner.de/text-zeichen-laenge.html
