@@ -1,3 +1,31 @@
+static const char *const qpigs_106[] = {24
+    // [PI34 / MPPT-3000], [PI30 HS MS MSX], [PI30 Revo], [PI30 PIP], [PI41 / LV5048]
+    {
+        "AC_in_Voltage",                  // BBB.B
+        "AC_in_Frequenz",                 // CC.C
+        "AC_out_Voltage",                 // DDD.D
+        "AC_out_Frequenz",                // EE.E
+        "AC_out_VA",                      // FFFF
+        "AC_out_Watt",                    // GGGG
+        "AC_out_percent",                 // HHH
+        "Inverter_Bus_Voltage",           // III
+        "Battery_Voltage",                // JJ.JJ
+        "Battery_Charge_Current",         // KKK
+        "Battery_Percent",                // OOO
+        "Inverter_Bus_Temperature",       // TTTT
+        "PV_Input_Current",               // EE.E
+        "PV_Input_Voltage",               // UUU.U
+        "Battery_SCC_Volt",               // WW.WW
+        "Battery_Discharge_Current",      // PPPP
+        "Status_Flag",                    // b0-b7
+        "Battery_voltage_offset_fans_on", // QQ
+        "EEPROM_Version",                 // VV
+        "PV_Charging_Power",              // MMMM
+        "Device_Status",                  // b8-b10
+        "Solar_feed_to_Grid_status",      // Y
+        "Country",                        // ZZ
+        "Solar_feed_to_grid_power",       // AAAA
+    },
 static const char *const qpigsList[][24] = {
     // [PI34 / MPPT-3000], [PI30 HS MS MSX], [PI30 Revo], [PI30 PIP], [PI41 / LV5048]
     {
@@ -126,10 +154,17 @@ bool PI_Serial::PIXX_QPIGS()
       return false;
 
     switch (commandAnswerQPIGS.length())
+        /*
+        or count how many fields it have and select the answer deepens on field count
+       int count = 1;
+        for (uint8_t i=0; i<str.length(); i++)
+          if (str[i] == ' ') count++;
+        
+        */
     {
     bool handleAnswer = false;
-    case 106: //from my list legth
-      qlist = qallList;
+    case 106: //000.0 00.0 230.6 50.0 0000 0000 000 356 25.89 001 092 0032 0001 052.2 25.87 00000 00110110 00 00 00045 010 - 21 fields
+      qlist = qpigs_106;
       handleAnswer = true;
       break;
     
