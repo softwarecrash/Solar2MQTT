@@ -105,6 +105,7 @@ static const char *const P005GS[][28] = {
 
 bool PI_Serial::PIXX_QPIGS()
 {
+  const char* constqlist  = nullptr;
   if (protocol == PI30)
   {
     byte protocolNum = 0; // for future use
