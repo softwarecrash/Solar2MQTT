@@ -84,7 +84,8 @@ const char *const DESCR_unknown = "";                                          /
 
 
  // QPIGS static const char HTML_CONFIRM_RESET[] PROGMEM
-static const char DESCR_AC_in_Voltage[] PROGMEM = "AC_in_Voltage";                                   // BBB.B
+//vvvvvvvvvv change all to this
+const static char DESCR_AC_in_Voltage[] PROGMEM = "AC_in_Voltage";                                   // BBB.B
 static const char DESCR_AC_in_Frequenz[] PROGMEM = "AC_in_Frequenz";                                 // CC.C
 static const char DESCR_AC_out_Voltage[] PROGMEM = "AC_out_Voltage";                                 // DDD.D
 static const char DESCR_AC_out_Frequenz[] PROGMEM = "AC_out_Frequenz";                               // EE.E
