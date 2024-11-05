@@ -1,7 +1,7 @@
 #ifndef MODBUS_DEYE_H
 #define MODBUS_DEYE_H
 
-#include "modbus_device.h"
+#include <modbus/device/modbus_device.h>
 
 class Deye : public ModbusDevice
 {

@@ -35,7 +35,8 @@ typedef enum
     PI18,
     PI30,
     MODBUS_MUST,
-    MODBUS_DEYE
+    MODBUS_DEYE,
+    MODBUS_ANENJI
 } protocol_type_t;
 
 /**

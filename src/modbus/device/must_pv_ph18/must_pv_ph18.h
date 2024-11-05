@@ -1,7 +1,7 @@
 #ifndef MODBUS_MUST_PV_PH18_H
 #define MODBUS_MUST_PV_PH18_H
 
-#include "modbus_device.h"
+#include <modbus/device/modbus_device.h>
 
 #define DEVICE_MODEL_HIGH "must_device_model_h"
 #define DEVICE_MODEL_LOW "must_device_model_l"

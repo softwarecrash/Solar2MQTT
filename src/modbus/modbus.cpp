@@ -101,12 +101,14 @@ protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter typ
 
     writeLog("Try Autodetect Modbus device");
 
-    ModbusDevice *devices[] = {new MustPV_PH18(), new Deye()};
-
-    for (size_t i = 0; i < sizeof(devices) / sizeof(devices[0]); ++i)
+    ModbusDevice *devices[] = {new MustPV_PH18(), new Deye(), new Anenji()};
+    const size_t deviceCount = sizeof(devices) / sizeof(devices[0]);
+    
+    for (size_t i = 0; i < deviceCount; ++i)
     {
         devices[i]->init(*my_serialIntf, _mCom); 
         devices[i]->retrieveModel(_mCom, modelName, sizeof(modelName));
+        
         if (strlen(modelName) != 0)
         {
             writeLog("<Autodetect> Found Modbus device: %s", modelName);
@@ -115,6 +117,12 @@ protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter typ
             device = devices[i];
             prepareRegisters();
             protocol = device->getProtocol();
+
+            // Clean up other devices not selected
+            for (size_t j = 0; j < deviceCount; ++j)
+            {
+                if (j != i) delete devices[j];
+            }
             return protocol;
         }
         delete devices[i];

@@ -5,8 +5,9 @@
 #include <ArduinoJson.h>
 #include "modbus_com.h"
 #include "device/modbus_device.h"
-#include "device/must_pv_ph18.h"
-#include "device/deye.h"
+#include "device/must_pv_ph18/must_pv_ph18.h"
+#include "device/deye/deye.h"
+#include "device/anenji/anenji.h"
 
 extern JsonObject deviceJson;
 extern JsonObject staticData;
