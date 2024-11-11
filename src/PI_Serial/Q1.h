@@ -109,9 +109,9 @@ bool PI_Serial::PIXX_Q1()
         String commandAnswer = this->requestData("Q1");
         get.raw.q1 = commandAnswer;
 
-        if (commandAnswer == "NAK")
+        if (commandAnswer == DESCR_req_NAK || commandAnswer == DESCR_req_NOA)
             return true;
-        if (commandAnswer == "ERCRC")
+        if (commandAnswer == DESCR_req_ERCRC)
             return false;
         switch (commandAnswer.length())
         {
@@ -159,27 +159,27 @@ bool PI_Serial::PIXX_Q1()
             for (unsigned int i = 0; i < q1LList_length; i++)
             {
                 if (!strs[i].isEmpty() && sizeof *q1List[i] != 0)
-                    liveData[(const __FlashStringHelper *)q1List[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
+                    liveData[q1List[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
             }
 
-            if (liveData[(const __FlashStringHelper *)DESCR_Inverter_Charge_State].is<JsonVariant>())
+            if (liveData[DESCR_Inverter_Charge_State].is<JsonVariant>())
             {
-                switch ((int)liveData[(const __FlashStringHelper *)DESCR_Inverter_Charge_State].as<unsigned int>())
+                switch ((int)liveData[DESCR_Inverter_Charge_State].as<unsigned int>())
                 {
                 default:
                     // liveData["Inverter_Charge_State"] = "no data";
                     break;
                 case 10:
-                    liveData[(const __FlashStringHelper *)DESCR_Inverter_Charge_State] = "No charging";
+                    liveData[DESCR_Inverter_Charge_State] = DESCR_No_Charging;
                     break;
                 case 11:
-                    liveData[(const __FlashStringHelper *)DESCR_Inverter_Charge_State] = "Bulk stage";
+                    liveData[DESCR_Inverter_Charge_State] = DESCR_Bulk_Stage;
                     break;
                 case 12:
-                    liveData[(const __FlashStringHelper *)DESCR_Inverter_Charge_State] = "Absorb";
+                    liveData[DESCR_Inverter_Charge_State] = DESCR_Absorb;
                     break;
                 case 13:
-                    liveData[(const __FlashStringHelper *)DESCR_Inverter_Charge_State] = "Float";
+                    liveData[DESCR_Inverter_Charge_State] = DESCR_Float;
                     break;
                 }
             }

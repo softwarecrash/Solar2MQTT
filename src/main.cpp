@@ -458,7 +458,15 @@ void loop()
     { // No use going to next step unless WIFI is up and running.
       if (commandFromUser != "")
       {
+        if(commandFromUser == "autodetect"){
+          writeLog("restart autodetect");
+          mppClient.Init();
+        } else if (commandFromUser.substring(0, 4) == "setp"){ 
+          writeLog("change protocol to: %d", (byte)(commandFromUser[4] - '0'));
+        mppClient.protocol = (byte)(commandFromUser[4] - '0');
+       } else {
         String tmp = mppClient.sendCommand(commandFromUser); // send a custom command to the device
+        }
         commandFromUser = "";
         mqtttimer = 0;
       }
@@ -523,6 +531,7 @@ void getJsonData()
   deviceJson[F("runtime")] = millis() / 1000;
   deviceJson[F("ws_clients")] = ws.count();
   deviceJson[F("detect_protocol")] = mppClient.protocol;
+  deviceJson[F("detect_raw_qpi")] = mppClient.get.raw.qpi;
 #ifdef TEMPSENS_PIN
   for (int i = 0; i < numOfTempSens; i++)
   {

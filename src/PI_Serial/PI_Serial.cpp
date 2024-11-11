@@ -172,9 +172,9 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         startChar = "(";
         serialIntfBaud = 2400;
         this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1);
-        String qpi = this->requestData("QPI");
-        writeLog("QPI:\t\t%s (Length: %d)", qpi, qpi.length());
-        if (qpi != "" && qpi.substring(0, 2) == "PI")
+        get.raw.qpi = this->requestData("QPI");
+        writeLog("QPI:\t\t%s (Length: %d)", get.raw.qpi, get.raw.qpi.length());
+        if (get.raw.qpi != "" && get.raw.qpi.substring(0, 2) == "PI")
         {
             writeLog("<Autodetect> Match protocol: PI3X");
             delimiter = " ";
@@ -183,9 +183,9 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         }
         startChar = "^Dxxx";
         this->my_serialIntf->begin(serialIntfBaud, SWSERIAL_8N1);
-        String P005PI = this->requestData("^P005PI");
-        writeLog("^P005PI:\t\t%s (Length: %d)", P005PI, P005PI.length());
-        if (P005PI != "" && P005PI == "18")
+        get.raw.qpi = this->requestData("^P005PI");
+        writeLog("^P005PI:\t\t%s (Length: %d)", get.raw.qpi, get.raw.qpi.length());
+        if (get.raw.qpi != "" && get.raw.qpi == "18")
         {
             writeLog("<Autodetect> Match protocol: PI18");
             delimiter = ",";
@@ -272,7 +272,7 @@ String PI_Serial::requestData(String command)
     }
     else if (commandBuffer == "") // catch empty answer, its similar to NAK
     {
-        commandBuffer = "NAK";
+        commandBuffer = "NOA";
     }
     else
     {
