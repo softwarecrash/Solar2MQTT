@@ -50,9 +50,6 @@
 #define DESCR_PV2_Charging_Power "PV2_Charging_Power"
 
 // QALL
-// #define DESCR_PV_Generation_Day "PV_Generation_Day"                           // OOOOOO
-// #define DESCR_PV_Generation_Sum "PV_Generation_Sum"                           // PPPPPP
-// #define DESCR_Inverter_Operation_Mode "Inverter_Operation_Mode"               // Q
 #define DESCR_Warning_Code "Warning_Code" // KK
 #define DESCR_Fault_Code "Fault_Code"     // SS
 // Q1
@@ -110,35 +107,6 @@
 #define DESCR_Fault "Fault"
 #define DESCR_Hybrid "Hybrid"
 #define DESCR_No_Data "No Data"
-// QPIWS PI30
-/* #define DESCR_Inverter_Fault "Inverter fault"
-#define DESCR_Bus_Over_Fault "Bus over fault"
-#define DESCR_Bus_Under_Fault "Bus under fault"
-#define DESCR_Bus_Soft_Fail_Fault "Bus soft fail fault"
-#define DESCR_Line_Fail_Warning "Line fail warning"
-#define DESCR_OPV_Short_Warning "OPV short warning"
-#define DESCR_Inverter_Voltage_Too_Low_Fault "Inverter voltage too low fault"
-#define DESCR_Inverter_Toltage_Too_High_Fault "Inverter voltage too high fault"
-#define DESCR_Over_Temperature_Fault "Over temperature fault"
-#define DESCR_Fan_Locked_Fault "Fan locked fault"
-#define DESCR_Battery_Voltage_Too_High_Fault "Battery voltage too high fault"
-#define DESCR_Battery_Low_Alarm_Warning "Battery low alarm warning"
-#define DESCR_Battery_Under_Shutdown_Warning "Battery under shutdown warning"
-#define DESCR_Overload_Fault "Overload fault"
-#define DESCR_EEPROM_Fault "EEPROM fault"
-#define DESCR_Inverter_Over_Current_Fault "Inverter over current fault"
-#define DESCR_Inverter_Soft_Fail_Fault "Inverter soft fail fault"
-#define DESCR_Self_Test_Fail_Fault "Self test fail fault"
-#define DESCR_OP_DC_Voltage_Over_Fault "OP DC voltage over fault"
-#define DESCR_Battery_Open_Fault "Battery open fault"
-#define DESCR_Current_Sensor_Fail_Fault "Current sensor fail fault"
-#define DESCR_Battery_Short_Fault "Battery short fault"
-#define DESCR_Power_Limit_Warning "Power limit warning"
-#define DESCR_PV_Voltage_High_Warning "PV voltage high warning"
-#define DESCR_MPPT_Overload_Fault "MPPT overload fault"
-#define DESCR_MPPT_Overload_Warning "MPPT overload warning"
-#define DESCR_Battery_Too_Low_To_Charge_Warning "Battery too low to charge warning" */
-// QPIGS
 
 #define DESCR_AC_In_Rating_Voltage "AC_In_Rating_Voltage"                       // BBB.B
 #define DESCR_AC_In_Rating_Current "AC_In_Rating_Current"                       // CC.C
