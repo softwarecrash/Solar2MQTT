@@ -813,5 +813,5 @@ void writeLog(const char* format, ...)
 
     // write msg to the log
     DBG_PRINTLN(msg);
-    DBG_WEBLN(msg);
+    DBG_WEB(msg);
 }

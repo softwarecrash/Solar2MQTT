@@ -19,7 +19,7 @@
 #define DESCR_PV_Input_Current "PV_Input_Current"                             // EE.E
 #define DESCR_PV_Input_Voltage "PV_Input_Voltage"                             // UUU.U
 #define DESCR_Battery_SCC_Volt "Battery_SCC_Volt"                             // WW.WW
-#define DESCR_Battery_Discharge_Current "Battery_Dischar*ge_Current"          // PPPP
+#define DESCR_Battery_Discharge_Current "Battery_Discharge_Current"          // PPPP
 #define DESCR_Status_Flag "Status_Flag"                                       // b0-b7
 #define DESCR_Battery_Voltage_Offset_Fans_On "Battery_Voltage_Offset_Fans_On" // QQ
 #define DESCR_EEPROM_Version "EEPROM_Version"                                 // VV

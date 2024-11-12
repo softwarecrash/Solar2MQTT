@@ -280,7 +280,7 @@ String PI_Serial::requestData(String command)
         connectionCounter++;
         commandBuffer = "ERCRC";
     }
-    writeLog("[C: %5S][CR: %4X][CC: %4X][L: %3u]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, commandBuffer.length());
+    writeLog("[C: %6S][CR: %4X][CC: %4X][L: %3u]", (const wchar_t *)command.c_str(), crcRecive, crcCalc, commandBuffer.length());
     return commandBuffer;
 }
 
