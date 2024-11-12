@@ -403,7 +403,7 @@ bool PI_Serial::isModbus()
 
 bool PI_Serial::checkQFLAG(const String& flags, char symbol) {
     bool enabled = false;
-    for (int i = 0; i < flags.length(); i++) {
+    for (unsigned int i = 0; i < flags.length(); i++) {
         char c = flags.charAt(i);
         if (c == 'E') enabled = true;
         else if (c == 'D') enabled = false;
