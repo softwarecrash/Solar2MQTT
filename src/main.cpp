@@ -3,7 +3,7 @@
 Solar2MQTT Project
 https://github.com/softwarecrash/Solar2MQTT
 */
-
+#include "descriptors.h"
 #include "main.h"
 #include <PubSubClient.h>
 #include <ArduinoJson.h>

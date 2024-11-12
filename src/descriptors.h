@@ -1,101 +1,16 @@
-/* // QPIGS
-#define DESCR_AC_in_Voltage  "AC_in_Voltage"                                   // BBB.B
-#define DESCR_AC_in_Frequenz  "AC_in_Frequenz"                                 // CC.C
-#define DESCR_AC_out_Voltage  "AC_out_Voltage"                                 // DDD.D
-#define DESCR_AC_out_Frequenz  "AC_out_Frequenz"                               // EE.E
-#define DESCR_AC_out_VA  "AC_out_VA"                                           // FFFF
-#define DESCR_AC_out_Watt  "AC_out_Watt"                                       // GGGG
-#define DESCR_AC_out_Percent  "AC_out_Percent"                                 // HHH
-#define DESCR_Inverter_Bus_Voltage  "Inverter_Bus_Voltage"                     // III
-#define DESCR_Battery_Voltage  "Battery_Voltage"                               // JJ.JJ
-#define DESCR_Battery_Charge_Current  "Battery_Charge_Current"                 // KKK
-#define DESCR_Battery_Percent  "Battery_Percent"                               // OOO
-#define DESCR_Inverter_Bus_Temperature  "Inverter_Bus_Temperature"             // TTTT
-#define DESCR_PV_Input_Current  "PV_Input_Current"                             // EE.E
-#define DESCR_PV_Input_Voltage  "PV_Input_Voltage"                             // UUU.U
-#define DESCR_Battery_SCC_Volt  "Battery_SCC_Volt"                             // WW.WW
-#define DESCR_Battery_Discharge_Current  "Battery_Discharge_Current"           // PPPP
-#define DESCR_Status_Flag  "Status_Flag"                                       // b0-b7
-#define DESCR_Battery_Voltage_Offset_Fans_On  "Battery_Voltage_Offset_Fans_On" // QQ
-#define DESCR_EEPROM_Version  "EEPROM_Version"                                 // VV
-#define DESCR_PV_Charging_Power  "PV_Charging_Power"                           // MMMM
-#define DESCR_Device_Status  "Device_Status"                                   // b8-b10
-#define DESCR_Solar_Feed_To_Grid_Status  "Solar_Feed_To_Grid_Status"           // Y
-#define DESCR_Country  "Country"                                               // ZZ
-#define DESCR_Solar_Feed_To_Grid_Power  "Solar_Feed_To_Grid_Power"             // AAAA
-// QALL
-#define DESCR_PV_Generation_Day  "PV_Generation_Day"                           // OOOOOO
-#define DESCR_PV_Generation_Sum  "PV_Generation_Sum"                           // PPPPPP
-#define DESCR_Inverter_Operation_Mode  "Inverter_Operation_Mode"               // Q
-#define DESCR_Warning_Code  "Warning_Code"                                     // KK
-#define DESCR_Fault_Code  "Fault_Code"                                         // SS */
-
-
-
-/* 
- // QPIGS static const char HTML_CONFIRM_RESET
-const char *const DESCR_AC_in_Voltage = "AC_in_Voltage";                                   // BBB.B
-const char *const DESCR_AC_in_Frequenz = "AC_in_Frequenz";                                 // CC.C
-const char *const DESCR_AC_out_Voltage = "AC_out_Voltage";                                 // DDD.D
-const char *const DESCR_AC_out_Frequenz = "AC_out_Frequenz";                               // EE.E
-const char *const DESCR_AC_out_VA = "AC_out_VA";                                           // FFFF
-const char *const DESCR_AC_out_Watt = "AC_out_Watt";                                       // GGGG
-const char *const DESCR_AC_out_Percent = "AC_out_Percent";                                 // HHH
-const char *const DESCR_Inverter_Bus_Voltage = "Inverter_Bus_Voltage";                     // III
-const char *const DESCR_Battery_Voltage = "Battery_Voltage";                               // JJ.JJ
-const char *const DESCR_Battery_Charge_Current = "Battery_Charge_Current";                 // KKK
-const char *const DESCR_Battery_Percent = "Battery_Percent";                               // OOO
-const char *const DESCR_Inverter_Bus_Temperature = "Inverter_Bus_Temperature";             // TTTT
-const char *const DESCR_PV_Input_Current = "PV_Input_Current";                             // EE.E
-const char *const DESCR_PV_Input_Voltage = "PV_Input_Voltage";                             // UUU.U
-const char *const DESCR_Battery_SCC_Volt = "Battery_SCC_Volt";                             // WW.WW
-const char *const DESCR_Battery_Discharge_Current = "Battery_Discharge_Current";           // PPPP
-const char *const DESCR_Status_Flag = "Status_Flag";                                       // b0-b7
-const char *const DESCR_Battery_Voltage_Offset_Fans_On = "Battery_Voltage_Offset_Fans_On"; // QQ
-const char *const DESCR_EEPROM_Version = "EEPROM_Version";                                 // VV
-const char *const DESCR_PV_Charging_Power = "PV_Charging_Power";                           // MMMM
-const char *const DESCR_Device_Status = "Device_Status";                                   // b8-b10
-const char *const DESCR_Solar_Feed_To_Grid_Status = "Solar_Feed_To_Grid_Status";           // Y
-const char *const DESCR_Country = "Country";                                               // ZZ
-const char *const DESCR_Solar_Feed_To_Grid_Power = "Solar_Feed_To_Grid_Power";             // AAAA
-// QALL
-const char *const DESCR_PV_Generation_Day = "PV_Generation_Day";                           // OOOOOO
-const char *const DESCR_PV_Generation_Sum = "PV_Generation_Sum";                           // PPPPPP
-const char *const DESCR_Inverter_Operation_Mode = "Inverter_Operation_Mode";               // Q
-const char *const DESCR_Warning_Code = "Warning_Code";                                     // KK
-const char *const DESCR_Fault_Code = "Fault_Code";                                         // SS 
-//Q1
-const char *const DESCR_Time_Until_Absorb_Charge = "Time_Until_Absorb_Charge"; // time since absorb start
-const char *const DESCR_Time_Until_Float_Charge = "Time_Until_Float_Charge";   // tiem since float charge start
-const char *const DESCR_SCC_Flag = "SCC_Flag";                                 // SCC Flag
-const char *const DESCR_AllowSccOnFlag = "AllowSccOnFlag";                     // AllowSccOnFlag
-const char *const DESCR_Charge_Average_Current = "Charge_Average_Current";     // ChargeAverageCurrent
-const char *const DESCR_Tracker_Temperature = "Tracker_Temperature";           // Temp sensor 1 SCC PWM temperature
-const char *const DESCR_Inverter_Temperature = "Inverter_Temperature";         // temp sensor 2
-const char *const DESCR_Battery_Temperature = "Battery_Temperature";           // temp sensor 3
-const char *const DESCR_Transformer_Temperature = "Transformer_Temperature";   //
-const char *const DESCR_Fan_Lock_Status = "Fan_Lock_Status";                   // error flag for blocked fan
-const char *const DESCR_Fan_Speed = "Fan_Speed";                               // Fan PWM speed
-const char *const DESCR_SCC_Charge_Power = "SCC_Charge_Power";                 // SCC charge power
-const char *const DESCR_Parallel_Warning = "Parallel_Warning";                 // Parallel Warning
-const char *const DESCR_Sync_Frequency = "Sync_Frequency";                     // Sync frequency
-const char *const DESCR_Inverter_Charge_State = "Inverter_Charge_State";       // charge state
-const char *const DESCR_unknown = "";                                          // unknown state */
-
-
-
+#pragma GCC diagnostic ignored "-Wunused-variable"
 //pi_Serial flags
 static const char* DESCR_req_NAK = "NAK"; 
 static const char* DESCR_req_NOA = "NOA"; 
 static const char* DESCR_req_ERCRC = "ERCRC"; 
- // QPIGS static const char* HTML_CONFIRM_RESET
-static const char* DESCR_AC_in_Voltage = "AC_in_Voltage";                                   // BBB.B
-static const char* DESCR_AC_in_Frequenz = "AC_in_Frequenz";                                 // CC.C
-static const char* DESCR_AC_out_Voltage = "AC_out_Voltage";                                 // DDD.D
-static const char* DESCR_AC_out_Frequenz = "AC_out_Frequenz";                               // EE.E
-static const char* DESCR_AC_out_VA = "AC_out_VA";                                           // FFFF
-static const char* DESCR_AC_out_Watt = "AC_out_Watt";                                       // GGGG
-static const char* DESCR_AC_out_Percent = "AC_out_Percent";                                 // HHH
+ // QPIGS
+static const char* DESCR_AC_In_Voltage = "AC_In_Voltage";                                   // BBB.B
+static const char* DESCR_AC_In_Frequenz = "AC_In_Frequenz";                                 // CC.C
+static const char* DESCR_AC_Out_Voltage = "AC_Out_Voltage";                                 // DDD.D
+static const char* DESCR_AC_Out_Frequenz = "AC_Out_Frequenz";                               // EE.E
+static const char* DESCR_AC_Out_VA = "AC_Out_VA";                                           // FFFF
+static const char* DESCR_AC_Out_Watt = "AC_Out_Watt";                                       // GGGG
+static const char* DESCR_AC_Out_Percent = "AC_Out_Percent";                                 // HHH
 static const char* DESCR_Inverter_Bus_Voltage = "Inverter_Bus_Voltage";                     // III
 static const char* DESCR_Battery_Voltage = "Battery_Voltage";                               // JJ.JJ
 static const char* DESCR_Battery_Charge_Current = "Battery_Charge_Current";                 // KKK
@@ -113,10 +28,34 @@ static const char* DESCR_Device_Status = "Device_Status";                       
 static const char* DESCR_Solar_Feed_To_Grid_Status = "Solar_Feed_To_Grid_Status";           // Y
 static const char* DESCR_Country = "Country";                                               // ZZ
 static const char* DESCR_Solar_Feed_To_Grid_Power = "Solar_Feed_To_Grid_Power";             // AAAA
+static const char* DESCR_Battery_SCC2_Volt = "Battery_SCC2_Volt";
+static const char* DESCR_MPPT1_Charger_Temperature = "MPPT1_Charger_Temperature";
+static const char* DESCR_MPPT2_Charger_Temperature = "MPPT2_Charger_Temperature";
+static const char* DESCR_PV1_Input_Power = "PV1_Input_Power";
+static const char* DESCR_PV2_Input_Power = "PV2_Input_Power";
+static const char* DESCR_PV1_Input_Voltage = "PV1_Input_Voltage";
+static const char* DESCR_PV2_Input_Voltage = "PV2_Input_Voltage";
+static const char* DESCR_Configuration_State = "Configuration_State";  
+static const char* DESCR_MPPT1_Charger_Status = "MPPT1_Charger_Status";  
+static const char* DESCR_MPPT2_CHarger_Status = "MPPT2_CHarger_Status";  
+static const char* DESCR_Load_Connection = "Load_Connection";
+static const char* DESCR_Battery_Power_Direction = "Battery_Power_Direction";
+static const char* DESCR_ACDC_Power_Direction = "ACDC_Power_Direction";
+static const char* DESCR_Line_Power_Direction = "Line_Power_Direction";
+static const char* DESCR_Local_Parallel_ID = "Local_Parallel_ID";
+static const char* DESCR_Battery_Load = "Battery_Load";
+static const char* DESCR_PV_Input_Power = "PV_Input_Power";
+//QPIGS2
+static const char* DESCR_PV2_Input_Current = "PV2_Input_Current";
+static const char* DESCR_PV2_Charging_Power = "PV2_Charging_Power";
+
+
+
+
 // QALL
-static const char* DESCR_PV_Generation_Day = "PV_Generation_Day";                           // OOOOOO
-static const char* DESCR_PV_Generation_Sum = "PV_Generation_Sum";                           // PPPPPP
-static const char* DESCR_Inverter_Operation_Mode = "Inverter_Operation_Mode";               // Q
+//static const char* DESCR_PV_Generation_Day = "PV_Generation_Day";                           // OOOOOO
+//static const char* DESCR_PV_Generation_Sum = "PV_Generation_Sum";                           // PPPPPP
+//static const char* DESCR_Inverter_Operation_Mode = "Inverter_Operation_Mode";               // Q
 static const char* DESCR_Warning_Code = "Warning_Code";                                     // KK
 static const char* DESCR_Fault_Code = "Fault_Code";                                         // SS 
 //Q1
@@ -174,3 +113,64 @@ static const char* DESCR_Battery = "Battery";
 static const char* DESCR_Fault = "Fault";
 static const char* DESCR_Hybrid = "Hybrid";
 static const char* DESCR_No_Data = "No Data";
+//QPIWS PI30
+/* static const char* DESCR_Inverter_Fault = "Inverter fault";
+static const char* DESCR_Bus_Over_Fault = "Bus over fault";
+static const char* DESCR_Bus_Under_Fault = "Bus under fault";
+static const char* DESCR_Bus_Soft_Fail_Fault = "Bus soft fail fault";
+static const char* DESCR_Line_Fail_Warning = "Line fail warning";
+static const char* DESCR_OPV_Short_Warning = "OPV short warning";
+static const char* DESCR_Inverter_Voltage_Too_Low_Fault = "Inverter voltage too low fault";
+static const char* DESCR_Inverter_Toltage_Too_High_Fault = "Inverter voltage too high fault";
+static const char* DESCR_Over_Temperature_Fault = "Over temperature fault";
+static const char* DESCR_Fan_Locked_Fault = "Fan locked fault";
+static const char* DESCR_Battery_Voltage_Too_High_Fault = "Battery voltage too high fault";
+static const char* DESCR_Battery_Low_Alarm_Warning = "Battery low alarm warning";
+static const char* DESCR_Battery_Under_Shutdown_Warning = "Battery under shutdown warning";
+static const char* DESCR_Overload_Fault = "Overload fault";
+static const char* DESCR_EEPROM_Fault = "EEPROM fault";
+static const char* DESCR_Inverter_Over_Current_Fault = "Inverter over current fault";
+static const char* DESCR_Inverter_Soft_Fail_Fault = "Inverter soft fail fault";
+static const char* DESCR_Self_Test_Fail_Fault = "Self test fail fault";
+static const char* DESCR_OP_DC_Voltage_Over_Fault = "OP DC voltage over fault";
+static const char* DESCR_Battery_Open_Fault = "Battery open fault";
+static const char* DESCR_Current_Sensor_Fail_Fault = "Current sensor fail fault";
+static const char* DESCR_Battery_Short_Fault = "Battery short fault";
+static const char* DESCR_Power_Limit_Warning = "Power limit warning";
+static const char* DESCR_PV_Voltage_High_Warning = "PV voltage high warning";
+static const char* DESCR_MPPT_Overload_Fault = "MPPT overload fault";
+static const char* DESCR_MPPT_Overload_Warning = "MPPT overload warning";
+static const char* DESCR_Battery_Too_Low_To_Charge_Warning = "Battery too low to charge warning"; */
+//QPIGS
+
+
+static const char* DESCR_AC_In_Rating_Voltage = "AC_In_Rating_Voltage";            // BBB.B
+static const char* DESCR_AC_In_Rating_Current = "AC_In_Rating_Current";            // CC.C
+static const char* DESCR_AC_Out_Rating_Voltage = "AC_Out_Rating_Voltage";           // DDD.D
+static const char* DESCR_AC_Out_Rating_Frequency = "AC_Out_Rating_Frequency";         // EE.E
+static const char* DESCR_AC_Out_Rating_Current = "AC_Out_Rating_Current";           // FF.F
+static const char* DESCR_AC_Out_Rating_Apparent_Power = "AC_Out_Rating_Apparent_Power";    // HHHH
+static const char* DESCR_AC_Out_Rating_Active_Power = "AC_Out_Rating_Active_Power";      // IIII
+static const char* DESCR_Battery_Rating_Voltage = "Battery_Rating_Voltage";          // JJ.J
+static const char* DESCR_Battery_Recharge_Voltage = "Battery_Recharge_Voltage";       // KK.K
+static const char* DESCR_Battery_Under_Voltage = "Battery_Under_Voltage";           // JJ.J
+static const char* DESCR_Battery_Bulk_Voltage = "Battery_Bulk_Voltage";            // KK.K
+static const char* DESCR_Battery_Float_Voltage = "Battery_Float_Voltage";           // LL.L
+static const char* DESCR_Battery_Type = "Battery_Type";                    // O
+static const char* DESCR_Current_Max_AC_Charging_Current = "Current_Max_AC_Charging_Current"; // PP
+static const char* DESCR_Current_Max_Charging_Current = "Current_Max_Charging_Current";    // QQ0
+static const char* DESCR_Input_Voltage_Range = "Input_Voltage_Range";             // O
+static const char* DESCR_Output_Source_Priority = "Output_Source_Priority";          // P
+static const char* DESCR_Charger_Source_Priority = "Charger_Source_Priority";         // Q
+static const char* DESCR_Parallel_Max_Num = "Parallel_Max_Num";                // R
+static const char* DESCR_Machine_Type = "Machine_Type";                    // SS
+static const char* DESCR_Topology = "Topology";                        // T
+static const char* DESCR_Output_Mode = "Output_mode";                     // U
+static const char* DESCR_Battery_Redischarge_Voltage = "Battery_Redischarge_Voltage";    // VV.V
+static const char* DESCR_PV_OK_Condition_For_Parallel = "PV_OK_Condition_For_Parallel";    // W
+static const char* DESCR_PV_Power_Balance = "PV_Power_Balance";                // X
+static const char* DESCR_Max_Charging_Time_At_CV_Stage = "Max_Charging_Time_At_CV_Stage";   // YYY
+static const char* DESCR_Operation_Logic = "Operation_Logic";                 // Z
+static const char* DESCR_Max_Discharging_Current = "Max_Discharging_Current";         // CCC
+static const char* DESCR_Solar_Power_Priority = "Solar_Power_Priority";         // Z
+static const char* DESCR_MPPT_String = "MPPT_String";         // a

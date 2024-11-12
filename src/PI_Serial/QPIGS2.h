@@ -1,8 +1,8 @@
 static const char *const qpigs2List[] = {
     // [PI34 / MPPT-3000], [PI30 HS MS MSX], [PI30 Revo], [PI30 PIP], [PI41 / LV5048]
-    "PV2_Input_Current",  // BBB.B
-    "PV2_Input_Voltage",  // CCC.C
-    "PV2_Charging_Power", // DDDD
+    DESCR_PV2_Input_Current,  // BBB.B
+    DESCR_PV2_Input_Voltage,  // CCC.C
+    DESCR_PV2_Charging_Power, // DDDD
 };
 
 bool PI_Serial::PIXX_QPIGS2()
@@ -13,11 +13,11 @@ bool PI_Serial::PIXX_QPIGS2()
     get.raw.qpigs2 = commandAnswer;
     byte commandAnswerLength = commandAnswer.length();
     String strs[30]; // buffer for string splitting
-    if (commandAnswer == "NAK")
+    if (commandAnswer == DESCR_req_NAK || commandAnswer == DESCR_req_NOA)
     {
       return true;
     }
-    if (commandAnswer == "ERCRC")
+    if (commandAnswer == DESCR_req_ERCRC)
     {
       return false;
     }
@@ -49,7 +49,7 @@ bool PI_Serial::PIXX_QPIGS2()
           liveData[qpigs2List[i]] = (int)(strs[i].toFloat() * 100 + 0.5) / 100.0;
       }
       // make some things pretty
-      liveData["PV2_Input_Power"] = (liveData["PV2_Input_Voltage"].as<unsigned short>() * liveData["PV2_Input_Current"].as<unsigned short>());
+      liveData[DESCR_PV2_Input_Power] = (liveData[DESCR_PV2_Input_Voltage].as<unsigned short>() * liveData[DESCR_PV2_Input_Current].as<unsigned short>());
     }
     return true;
   }

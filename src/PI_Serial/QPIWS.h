@@ -5,11 +5,11 @@ bool PI_Serial::PIXX_QPIWS()
         String commandAnswer = this->requestData("QPIWS");
         //String commandAnswer = "10000000001010000000000000000000";
         get.raw.qpiws = commandAnswer;
-        if (commandAnswer == "NAK")
+        if (commandAnswer == DESCR_req_NAK || commandAnswer == DESCR_req_NOA)
         {
             return true;
         }
-        if (commandAnswer == "ERCRC")
+        if (commandAnswer == DESCR_req_ERCRC)
         {
             return false;
         }
@@ -52,11 +52,11 @@ bool PI_Serial::PIXX_QPIWS()
                         qpiwsStr += "; ";
                     }
                 }
-                liveData["Fault_code"] = qpiwsStr;
+                liveData[DESCR_Fault_Code] = qpiwsStr;
             }
             else
             {
-                liveData["Fault_code"] = "Ok";
+                liveData[DESCR_Fault_Code] = "Ok";
             }
         }else {
             get.raw.qpiws = "Wrong Length(" + (String)get.raw.qpiws.length() + "), Contact Dev:" +get.raw.qpiws;
@@ -66,11 +66,11 @@ bool PI_Serial::PIXX_QPIWS()
     else if(protocol == PI18){
         String commandAnswer = this->requestData("^P005FWS");
         get.raw.qpiws = commandAnswer;
-        if (commandAnswer == "NAK")
+        if (commandAnswer == DESCR_req_NAK || commandAnswer == DESCR_req_NOA)
         {
             return true;
         }
-        if (commandAnswer == "ERCRC")
+        if (commandAnswer == DESCR_req_ERCRC)
         {
             return false;
         }
@@ -135,11 +135,11 @@ bool PI_Serial::PIXX_QPIWS()
                         qpiwsStr += "; ";
                     }
                 }
-                liveData["Fault_code"] = qpiwsStr;
+                liveData[DESCR_Fault_Code] = qpiwsStr;
             } 
             else
             {
-                liveData["Fault_code"] = "Ok";
+                liveData[DESCR_Fault_Code] = "Ok";
             }
         }else {
             get.raw.qpiws = "Wrong Length(" + (String)get.raw.qpiws.length() + "), Contact Dev:" +get.raw.qpiws;
