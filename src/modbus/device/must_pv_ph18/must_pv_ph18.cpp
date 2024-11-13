@@ -17,7 +17,7 @@ const char *MustPV_PH18::getName() const
 bool MustPV_PH18::retrieveModel(MODBUS_COM &mCom, char *modelBuffer, size_t bufferSize)
 {
     modelBuffer[0] = '\0'; // Clear the buffer
-    DynamicJsonDocument doc(100);
+    JsonDocument doc;
     JsonObject jsonObj = doc.to<JsonObject>(); // Create and get JsonObject
     modbus_register_info_t model_info = {
         .variant = &jsonObj,
@@ -54,7 +54,7 @@ size_t MustPV_PH18::getStaticRegistersCount() const
 
 void MustPV_PH18::generationSum(JsonObject *variant, uint16_t *registerValue, const modbus_register_t *reg, MODBUS_COM &mCom)
 {  
-    if ((*variant).containsKey(MUST_DEVICE_CHARGER_HIGH) && (*variant).containsKey(MUST_DEVICE_CHARGER_LOW))
+    if ((*variant)[MUST_DEVICE_CHARGER_HIGH].is<uint16_t>() && (*variant)[MUST_DEVICE_CHARGER_LOW].is<uint16_t>())
     {
         (*variant)[reg->name] = (*variant)[MUST_DEVICE_CHARGER_HIGH].as<uint16_t>() * 1000 + (*variant)[MUST_DEVICE_CHARGER_LOW].as<uint16_t>();
     }
