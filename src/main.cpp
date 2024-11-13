@@ -459,9 +459,21 @@ void loop()
         if(commandFromUser == "autodetect"){
           writeLog("restart autodetect");
           mppClient.Init();
-        } else if (commandFromUser.substring(0, 4) == "setp"){ 
-          writeLog("change protocol to: %d", (byte)(commandFromUser[4] - '0'));
-        mppClient.protocol = static_cast<protocol_type_t>(commandFromUser[4] - '0');
+        } else if (commandFromUser.startsWith("setp ")){  
+          // Extract the parameter substring after "setp "
+          String parameterString = commandFromUser.substring(5); 
+          int parameter = parameterString.toInt();
+          if (parameterString != "0" && parameter == 0) {
+              writeLog("Invalid parameter for 'setp' command."); 
+          }
+          else if (parameter >= NoD && parameter < PROTOCOL_TYPE_MAX) 
+          {
+              mppClient.protocol = static_cast<protocol_type_t>(parameter);
+              writeLog("Change protocol to: %s", protocolStrings[parameter]); 
+          }
+          else{
+            writeLog("Unknown protocol"); 
+          }
        } else {
         String tmp = mppClient.sendCommand(commandFromUser); // send a custom command to the device
         }

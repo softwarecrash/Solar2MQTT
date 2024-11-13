@@ -36,8 +36,19 @@ typedef enum
     PI30,
     MODBUS_MUST,
     MODBUS_DEYE,
-    MODBUS_ANENJI
+    MODBUS_ANENJI,
+    PROTOCOL_TYPE_MAX //Add a max value to mark the upper enum bound
 } protocol_type_t;
+
+//together with new protocol you will also need to define string
+constexpr const char* protocolStrings[] = {
+    "NoD",
+    "PI18",
+    "PI30",
+    "MODBUS_MUST",
+    "MODBUS_DEYE",
+    "MODBUS_ANENJI"
+};
 
 /**
  * @brief callback function for wifimanager save config data
