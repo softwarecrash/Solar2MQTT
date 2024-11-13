@@ -3,7 +3,7 @@
 Solar2MQTT Project
 https://github.com/softwarecrash/Solar2MQTT
 */
-
+#include "descriptors.h"
 #include "main.h"
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
@@ -60,10 +60,10 @@ String commandFromUser;
 String customResponse;
 
 bool firstPublish;
-DynamicJsonDocument Json(JSON_BUFFER); // main Json
-JsonObject deviceJson = Json.createNestedObject("EspData");    // basic device data
-JsonObject staticData = Json.createNestedObject("DeviceData"); // battery package data
-JsonObject liveData = Json.createNestedObject("LiveData");     // battery package data
+JsonDocument Json; // main Json
+JsonObject deviceJson = Json["EspData"].to<JsonObject>();    // basic device data
+JsonObject staticData = Json["DeviceData"].to<JsonObject>(); // battery package data
+JsonObject liveData = Json["LiveData"].to<JsonObject>();     // battery package data
 
 //----------------------------------------------------------------------
 void saveConfigCallback()
@@ -457,7 +457,15 @@ void loop()
     { // No use going to next step unless WIFI is up and running.
       if (commandFromUser != "")
       {
+        if(commandFromUser == "autodetect"){
+          writeLog("restart autodetect");
+          mppClient.Init();
+        } else if (commandFromUser.substring(0, 4) == "setp"){ 
+          writeLog("change protocol to: %d", (byte)(commandFromUser[4] - '0'));
+        mppClient.protocol = (byte)(commandFromUser[4] - '0');
+       } else {
         String tmp = mppClient.sendCommand(commandFromUser); // send a custom command to the device
+        }
         commandFromUser = "";
         mqtttimer = 0;
       }
@@ -517,11 +525,12 @@ void getJsonData()
   deviceJson[F("sw_version")] = SOFTWARE_VERSION;
   deviceJson[F("Free_Heap")] = ESP.getFreeHeap();
   deviceJson[F("HEAP_Fragmentation")] = ESP.getHeapFragmentation();
-  deviceJson[F("json_memory_usage")] = Json.memoryUsage();
-  deviceJson[F("json_capacity")] = Json.capacity();
+  //deviceJson[F("json_memory_usage")] = Json.memoryUsage();
+  //deviceJson[F("json_capacity")] = Json.capacity();
   deviceJson[F("runtime")] = millis() / 1000;
   deviceJson[F("ws_clients")] = ws.count();
   deviceJson[F("detect_protocol")] = mppClient.protocol;
+  deviceJson[F("detect_raw_qpi")] = mppClient.get.raw.qpi;
 #ifdef TEMPSENS_PIN
   for (int i = 0; i < numOfTempSens; i++)
   {
@@ -698,7 +707,7 @@ bool sendHaDiscovery()
   char topBuff[128];
   for (size_t i = 0; i < sizeof haStaticDescriptor / sizeof haStaticDescriptor[0]; i++)
   {
-    if (staticData.containsKey(haStaticDescriptor[i][0]))
+    if (staticData[haStaticDescriptor[i][0]].is<JsonVariant>())
     {
       String haPayLoad = String("{") +
                          "\"name\":\"" + haStaticDescriptor[i][0] + "\"," +
@@ -726,7 +735,7 @@ bool sendHaDiscovery()
 
   for (size_t i = 0; i < sizeof haLiveDescriptor / sizeof haLiveDescriptor[0]; i++)
   {
-    if (liveData.containsKey(haLiveDescriptor[i][0]))
+    if (liveData[haLiveDescriptor[i][0]].is<JsonVariant>())
     {
       String haPayLoad = String("{") +
                          "\"name\":\"" + haLiveDescriptor[i][0] + "\"," +
@@ -801,7 +810,7 @@ void writeLog(const char *format, ...)
   vsnprintf(msg, sizeof(msg), format, args); // do check return value
   va_end(args);
 
-  // write msg to the log
-  DBG_PRINTLN(msg);
-  DBG_WEBLN(msg);
+    // write msg to the log
+    DBG_PRINTLN(msg);
+    DBG_WEB(msg);
 }

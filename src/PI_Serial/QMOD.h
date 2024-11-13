@@ -4,17 +4,17 @@ bool PI_Serial::PIXX_QMOD()
   {
     String commandAnswer = this->requestData("QMOD");
     get.raw.qmod = commandAnswer;
-    if (commandAnswer == "NAK")
+    if (commandAnswer == DESCR_req_NAK || commandAnswer == DESCR_req_NOA)
     {
       return true;
     }
-    if (commandAnswer == "ERCRC")
+    if (commandAnswer == DESCR_req_ERCRC)
     {
       return false;
     }
     if (commandAnswer.length() == 1)
     {
-      liveData[DESCR_LIVE_INVERTER_OPERATION_MODE] = getModeDesc((char)commandAnswer.charAt(0));
+      liveData[DESCR_Inverter_Operation_Mode] = getModeDesc((char)commandAnswer.charAt(0));
     }
     return true;
   }
@@ -22,11 +22,11 @@ bool PI_Serial::PIXX_QMOD()
   {
     String commandAnswer = this->requestData("^P006MOD");
     get.raw.qmod = commandAnswer;
-    if (commandAnswer == "NAK")
+    if (commandAnswer == DESCR_req_NAK || commandAnswer == DESCR_req_NOA)
     {
       return true;
     }
-    if (commandAnswer == "ERCRC")
+    if (commandAnswer == DESCR_req_ERCRC)
     {
       return false;
     }
@@ -35,25 +35,25 @@ bool PI_Serial::PIXX_QMOD()
       switch (commandAnswer.toInt())
       {
       case 0:
-        liveData[DESCR_LIVE_INVERTER_OPERATION_MODE] = "Power on";
+        liveData[DESCR_Inverter_Operation_Mode] = DESCR_Power_On;
         break;
       case 1:
-        liveData[DESCR_LIVE_INVERTER_OPERATION_MODE] = "Standby";
+        liveData[DESCR_Inverter_Operation_Mode] = DESCR_Standby;
         break;
       case 2:
-        liveData[DESCR_LIVE_INVERTER_OPERATION_MODE] = "Bypass";
+        liveData[DESCR_Inverter_Operation_Mode] = DESCR_Bypass;
         break;
       case 3:
-        liveData[DESCR_LIVE_INVERTER_OPERATION_MODE] = "Battery";
+        liveData[DESCR_Inverter_Operation_Mode] = DESCR_Battery;
         break;
       case 4:
-        liveData[DESCR_LIVE_INVERTER_OPERATION_MODE] = "Fault";
+        liveData[DESCR_Inverter_Operation_Mode] = DESCR_Fault;
         break;
       case 5:
-        liveData[DESCR_LIVE_INVERTER_OPERATION_MODE] = "Hybrid";
+        liveData[DESCR_Inverter_Operation_Mode] = DESCR_Hybrid;
         break;
       default:
-        liveData[DESCR_LIVE_INVERTER_OPERATION_MODE] = "No data";
+        liveData[DESCR_Inverter_Operation_Mode] = DESCR_No_Data;
         break;
       }
 

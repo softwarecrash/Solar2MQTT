@@ -1,7 +1,12 @@
 #ifndef PI_SERIAL_H
 #define PI_SERIAL_H
+#include "descriptors.h"
 #include "vector"
 #include "SoftwareSerial.h"
+
+#define ARDUINOJSON_USE_DOUBLE 1
+#define ARDUINOJSON_USE_LONG_LONG 1
+//#define ARDUINOJSON_ENABLE_PROGMEM 1
 #include <ArduinoJson.h>
 #include <modbus/modbus.h>
 
