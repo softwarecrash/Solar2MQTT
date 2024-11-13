@@ -143,14 +143,19 @@
             ["batt_load", "Battery_Load", "A"],
             ["ivmode", "Inverter_Operation_Mode", ""]
         ];
+        //lowercase data entries
+        data = Object.fromEntries(
+            Object.entries(data).map(([k, v]) => [k.toLowerCase(), v])
+        );
 
         mappings.forEach(([id, dataKey, unit, round = false]) => {
-            const value = round ? Math.round(data[dataKey]) : data[dataKey];
+            const key = dataKey.toLowerCase();
+            const value = round ? Math.round(data[key]) : data[key];
             document.getElementById(id).innerHTML = value + unit;
         });
 
 
-        $('#packSOC').width(data.Battery_Percent + '%%').attr('aria-valuenow', data.Battery_Percent);
+        $('#packSOC').width(data.battery_percent + '%%').attr('aria-valuenow', data.battery_percent);
 
         dataFields.forEach(dRDiv => {
             const spans = dRDiv.querySelectorAll('.dF span');
