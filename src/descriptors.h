@@ -32,6 +32,20 @@
 #define DESCR_Battery_SCC2_Volt "Battery_SCC2_Volt"
 #define DESCR_MPPT1_Charger_Temperature "MPPT1_Charger_Temperature"
 #define DESCR_MPPT2_Charger_Temperature "MPPT2_Charger_Temperature"
+
+#define DESCR_Negative_battery_voltage "Negative_battery_voltage"
+#define DESCR_Output_current "Output_current"
+#define DESCR_Output_load_percent "Output_load_percent"
+#define DESCR_Output_load_percent "Output_load_percent"
+#define DESCR_Output_power "Output_power"
+
+#define DESCR_AC_output_current "AC_output_current"
+#define DESCR_AC_output_frequency "AC_output_frequency"
+#define DESCR_AC_output_power "AC_output_power"
+#define DESCR_AC_output_voltage "AC_output_voltage" 
+
+#define DESCR_Positive_battery_voltage "Positive_battery_voltage" 
+
 #define DESCR_PV1_Input_Power "PV1_Input_Power"
 #define DESCR_PV2_Input_Power "PV2_Input_Power"
 #define DESCR_PV1_Input_Voltage "PV1_Input_Voltage"

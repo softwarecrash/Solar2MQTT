@@ -22,7 +22,7 @@ private:
     inline static const char *const _name = "Anenji";
 
     inline static const modbus_register_t registers_live[] = {
-        {201, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, DESCR_LIVE_INVERTER_OPERATION_MODE, 0, {.bitfield = {
+        {201, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, DESCR_Inverter_Operation_Mode, 0, {.bitfield = {
                                                                                                              "Power On",
                                                                                                              "Standby",
                                                                                                              "Mains",
@@ -31,19 +31,19 @@ private:
                                                                                                              "Charging",
                                                                                                              "Fault",
                                                                                                          }}},
-        {223, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_LIVE_PV_INPUT_POWER},
-        {219, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_LIVE_PV_INPUT_VOLTAGE},
-        {220, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_LIVE_PV_INPUT_CURRENT},
+        {223, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_PV_Input_Power},
+        {219, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_PV_Input_Voltage},
+        {220, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_PV2_Input_Current},
  
-        {229, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_LIVE_BATTERY_PERCENT},
-        {215, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_LIVE_BATTERY_VOLTAGE},
-        {227, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_LIVE_INVERTER_TEMPERATURE},
-        {226, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_LIVE_TRANSFORMER_TEMPERATURE},
-        {225, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_LIVE_OUTPUT_LOAD_PERCENT}, 
+        {229, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_Battery_Percent},
+        {215, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_Battery_Voltage},
+        {227, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_Inverter_Temperature},
+        {226, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_Transformer_Temperature},
+        {225, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_Output_load_percent}, 
     };
 
     inline static const modbus_register_t registers_static[] = { 
-         {322, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, DESCR_STAT_BATTERY_TYPE, 0, {.bitfield = {
+         {322, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, DESCR_Battery_Type, 0, {.bitfield = {
                                                                                             "AGM",
                                                                                             "FLD",
                                                                                             "USER",

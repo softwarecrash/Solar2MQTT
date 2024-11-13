@@ -3,7 +3,6 @@
 Solar2MQTT Project
 https://github.com/softwarecrash/Solar2MQTT
 */
-#include "descriptors.h"
 #include "main.h"
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
@@ -462,7 +461,7 @@ void loop()
           mppClient.Init();
         } else if (commandFromUser.substring(0, 4) == "setp"){ 
           writeLog("change protocol to: %d", (byte)(commandFromUser[4] - '0'));
-        mppClient.protocol = (byte)(commandFromUser[4] - '0');
+        mppClient.protocol = static_cast<protocol_type_t>(commandFromUser[4] - '0');
        } else {
         String tmp = mppClient.sendCommand(commandFromUser); // send a custom command to the device
         }

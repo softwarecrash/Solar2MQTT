@@ -21,32 +21,33 @@ private:
      static const protocol_type_t _protocol = MODBUS_DEYE;
     inline static const char *const _name = "DEYE";
 
-    inline static const modbus_register_t registers_live[] = {
-        {59, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, DESCR_LIVE_INVERTER_OPERATION_MODE, 0, {.bitfield = {
-                                                                                                             "Standby",
-                                                                                                             "Self Test",
-                                                                                                             "Normal",
-                                                                                                             "Alerts",
-                                                                                                             "Fault",
-                                                                                                         }}},
+inline static const modbus_register_t registers_live[] = {
+    {59, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, DESCR_Inverter_Operation_Mode, 0, {.bitfield = {
+                                                                                                        "Standby",
+                                                                                                        "Self Test",
+                                                                                                        "Normal",
+                                                                                                        "Alerts",
+                                                                                                        "Fault",
+                                                                                                    }}},
 
-        {109, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_LIVE_PV_INPUT_VOLTAGE},
-        {110, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_LIVE_PV_INPUT_CURRENT},
-        {186, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_LIVE_PV_INPUT_POWER},
+    {109, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_PV_Input_Voltage},
+    {110, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_PV_Input_Current},
+    {186, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_PV_Input_Power},
 
-        {175, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_LIVE_OUTPUT_POWER},
-        {178, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_LIVE_AC_OUTPUT_POWER},
+    {175, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_Output_power},
+    {178, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_AC_output_power},
 
-        {90, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_LIVE_INVERTER_TEMPERATURE, -100},
-        {182, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_LIVE_BATTERY_TEMPERATURE, -100},
+    {90, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_Inverter_Temperature, -100},
+    {182, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_Battery_Temperature, -100},
 
-        {183, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_TWO_DECIMAL, DESCR_LIVE_BATTERY_VOLTAGE},
-        {184, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_LIVE_BATTERY_PERCENT},
-    };
+    {183, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_TWO_DECIMAL, DESCR_Battery_Voltage},
+    {184, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_Battery_Percent},
+};
 
-    inline static const modbus_register_t registers_static[] = {
-        {16, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U32_ONE_DECIMAL, DESCR_STAT_AC_OUT_RATING_ACTIVE_POWER},
-    };
+inline static const modbus_register_t registers_static[] = {
+    {16, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U32_ONE_DECIMAL, DESCR_AC_Out_Rating_Active_Power},
+};
+
 
     inline static const modbus_register_t registers_device_serial[] = {
         {3, MODBUS_TYPE_HOLDING, REGISTER_TYPE_ASCII, "SN1"},
