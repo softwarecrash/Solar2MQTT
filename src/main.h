@@ -1,5 +1,8 @@
+#ifndef MAIN_H
+#define MAIN_H
 
 #include <WebSerialLite.h>
+#include "descriptors.h"
 #define ARDUINOJSON_USE_DOUBLE 1
 #define ARDUINOJSON_USE_LONG_LONG 1
 //#define ARDUINOJSON_ENABLE_PROGMEM 1
@@ -25,6 +28,27 @@
 #define DBG Serial
 #define DBG_BEGIN(...) DBG.begin(__VA_ARGS__)
 #define DBG_PRINTLN(...) DBG.println(__VA_ARGS__)
+
+typedef enum
+{
+    NoD,
+    PI18,
+    PI30,
+    MODBUS_MUST,
+    MODBUS_DEYE,
+    MODBUS_ANENJI,
+    PROTOCOL_TYPE_MAX //Add a max value to mark the upper enum bound
+} protocol_type_t;
+
+//together with new protocol you will also need to define string
+constexpr const char* protocolStrings[] = {
+    "NoD",
+    "PI18",
+    "PI30",
+    "MODBUS_MUST",
+    "MODBUS_DEYE",
+    "MODBUS_ANENJI"
+};
 
 /**
  * @brief callback function for wifimanager save config data
@@ -165,10 +189,11 @@ static const char *const haLiveDescriptor[][4]{
     {DESCR_AC_Out_VA, DESCR_export, "VA", "apparent_power"},
     {DESCR_AC_Out_Voltage, DESCR_export, DESCR_V, DESCR_voltage},
     {DESCR_AC_Out_Watt, DESCR_export, DESCR_W, DESCR_power},
-    {"AC_output_current", DESCR_export, DESCR_A, DESCR_current},
-    {"AC_output_frequency", DESCR_export, DESCR_Hz, DESCR_frequency},
-    {"AC_output_power", DESCR_export, DESCR_W, DESCR_power},
-    {"AC_output_voltage", DESCR_export, DESCR_V, DESCR_voltage},
+
+    {DESCR_AC_output_current, DESCR_export, DESCR_A, DESCR_current},
+    {DESCR_AC_output_frequency, DESCR_export, DESCR_Hz, DESCR_frequency},
+    {DESCR_AC_output_power, DESCR_export, DESCR_W, DESCR_power},
+    {DESCR_AC_output_voltage, DESCR_export, DESCR_V, DESCR_voltage},
     //{"ACDC_Power_Direction","sign-direction","",""},
     {"Battery_capacity", "battery-high", "%", "battery"},
     //{"Battery_Charge_Current","battery-charging-high",DESCR_A,DESCR_current},
@@ -202,12 +227,12 @@ static const char *const haLiveDescriptor[][4]{
     {DESCR_MPPT1_Charger_Temperature, DESCR_thermometer_lines, "°C", "temperature"},
     //{"MPPT2_CHarger_Status","car-turbocharger","",""},
     {DESCR_MPPT2_Charger_Temperature, DESCR_thermometer_lines, "°C", "temperature"},
-    {"Negative_battery_voltage", "battery-minus-outline", DESCR_V, DESCR_voltage},
-    {"Output_current", DESCR_export, DESCR_A, DESCR_current},
-    {"Output_load_percent", DESCR_export, "%", "battery"},
-    {"Output_power", DESCR_export, DESCR_W, DESCR_power},
+    {DESCR_Negative_battery_voltage, "battery-minus-outline", DESCR_V, DESCR_voltage},
+    {DESCR_Output_current, DESCR_export, DESCR_A, DESCR_current},
+    {DESCR_Output_load_percent, DESCR_export, "%", "battery"},
+    {DESCR_Output_power, DESCR_export, DESCR_W, DESCR_power},
     //{"PBUS_voltage","",DESCR_V,DESCR_voltage},
-    {"Positive_battery_voltage", DESCR_car_battery, DESCR_V, DESCR_voltage},
+    {DESCR_Positive_battery_voltage, DESCR_car_battery, DESCR_V, DESCR_voltage},
     {DESCR_PV_Charging_Power, DESCR_solar_power_variant, DESCR_W, DESCR_power},
     {DESCR_PV_Generation_Day, DESCR_solar_power_variant, DESCR_Wh, DESCR_energy},
     {DESCR_PV_Generation_Month, DESCR_solar_power_variant, DESCR_Wh, DESCR_energy},
@@ -233,3 +258,5 @@ static const char *const haLiveDescriptor[][4]{
     {DESCR_Tracker_Temperature, DESCR_thermometer_lines, "°C", "temperature"},
     {DESCR_Transformer_Temperature, DESCR_thermometer_lines, "°C", "temperature"},
     {DESCR_Warning_Code, "alert-outline", "", ""}};
+
+    #endif

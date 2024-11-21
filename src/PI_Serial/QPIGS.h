@@ -71,14 +71,14 @@ const char *const qpigs_90[] = {
         "Battery_Charge_Current",         // KKK
         "Battery_Percent",                // OOO
         "Inverter_Bus_Temperature",       // TTTT
-        "PV_Input_Current",               // EE.E
-        "PV_Input_Voltage",               // UUU.U
+        DESCR_LIVE_PV_INPUT_CURRENT,               // EE.E
+        DESCR_LIVE_PV_INPUT_VOLTAGE,               // UUU.U
         "Battery_SCC_Volt",               // WW.WW
         "Battery_Discharge_Current",      // PPPP
         "Status_Flag",                    // b0-b7
         "Battery_voltage_offset_fans_on", // QQ
         "EEPROM_Version",                 // VV
-        "PV_Charging_Power",              // MMMM
+        DESCR_LIVE_PV_CHARGING_POWER,              // MMMM
         "Device_Status",                  // b8-b10
         "Solar_feed_to_Grid_status",      // Y
         "Country",                        // ZZ

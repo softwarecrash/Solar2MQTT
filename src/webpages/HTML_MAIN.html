@@ -98,8 +98,7 @@
     var alertListArr = [];
     var alertListitem = 0;
     var kickRefresh = true;
-    var dataFields = document.getElementsByClassName("dF");
-    var dataRows = document.getElementsByClassName("dR");
+    var dataFields = document.querySelectorAll('.dR');
 
     function initWebSocket() {
         //console.log('Trying to open a WebSocket connection...');
@@ -124,50 +123,55 @@
     }
     function onMessage(event) {
         var data = JSON.parse(event.data);
-        document.getElementById("packSOC").innerHTML = data.Battery_Percent + '%%';
-        $('#packSOC').width(data.Battery_Percent + '%%').attr('aria-valuenow', data.Battery_Percent);
+        const mappings = [
+            ["packSOC", "Battery_Percent", "%%"],
+            ["pv_volt", "PV_Input_Voltage", "V"],
+            ["pv_current", "PV_Input_Current", "A"],
+            ["pv_power", "PV_Charging_Power", "W", true],  // 'true' indicates rounding
+            ["pv2_volt", "PV2_Input_Voltage", "V"],
+            ["pv2_current", "PV2_Input_Current", "A"],
+            ["pv2_power", "PV2_Charging_Power", "W", true],
+            ["grid_volt", "AC_in_Voltage", "V"],
+            ["grid_hz", "AC_in_Frequenz", "Hz"],
+            ["ac_out_volt", "AC_out_Voltage", "V"],
+            ["ac_out_hz", "AC_out_Frequenz", "Hz"],
+            ["ac_out_power", "AC_out_Watt", "W"],
+            ["ac_out_percent", "AC_out_percent", "%%"],
+            ["heatsink_temp", "Inverter_Bus_Temperature", "°C"],
+            ["batt_volt", "Battery_Voltage", "V"],
+            ["batt_percent", "Battery_Percent", "%%"],
+            ["batt_load", "Battery_Load", "A"],
+            ["ivmode", "Inverter_Operation_Mode", ""]
+        ];
+        //lowercase data entries
+        data = Object.fromEntries(
+            Object.entries(data).map(([k, v]) => [k.toLowerCase(), v])
+        );
 
-        document.getElementById("pv_volt").innerHTML = data.PV_Input_Voltage + 'V ';
-        document.getElementById("pv_current").innerHTML = data.PV_Input_Current + 'A  ';
-        document.getElementById("pv_power").innerHTML = Math.round(data.PV_Charging_Power) + 'W  ';
+        mappings.forEach(([id, dataKey, unit, round = false]) => {
+            const key = dataKey.toLowerCase();
+            const value = round ? Math.round(data[key]) : data[key];
+            document.getElementById(id).innerHTML = value + unit;
+        });
 
-        document.getElementById("pv2_volt").innerHTML = data.PV2_Input_Voltage + 'V ';
-        document.getElementById("pv2_current").innerHTML = data.PV2_Input_Current + 'A  ';
-        document.getElementById("pv2_power").innerHTML = Math.round(data.PV2_Charging_Power) + 'W  ';
 
-        document.getElementById("grid_volt").innerHTML = data.AC_in_Voltage + 'V ';
-        document.getElementById("grid_hz").innerHTML = data.AC_in_Frequenz + 'Hz  ';
+        $('#packSOC').width(data.battery_percent + '%%').attr('aria-valuenow', data.battery_percent);
 
-        document.getElementById("ac_out_volt").innerHTML = data.AC_out_Voltage + 'V ';
-        document.getElementById("ac_out_hz").innerHTML = data.AC_out_Frequenz + 'Hz ';
-
-        document.getElementById("ac_out_power").innerHTML = data.AC_out_Watt + 'W ';
-        document.getElementById("ac_out_percent").innerHTML = data.AC_out_percent + '%%';
-
-        document.getElementById("heatsink_temp").innerHTML = data.Inverter_Bus_Temperature + '°C ';
-
-        document.getElementById("batt_volt").innerHTML = data.Battery_Voltage + 'V ';
-        document.getElementById("batt_percent").innerHTML = data.Battery_Percent + '%% ';
-        document.getElementById("batt_load").innerHTML = data.Battery_Load + 'A ';
-
-        document.getElementById("ivmode").innerHTML = data.Inverter_Operation_Mode;
-
-        for (var i = 0; i < dataFields.length; i++) {
-            if (dataFields[i].innerHTML.indexOf("undefined") > -1) {
-                dataFields[i].style.display = 'none';
-            } else {
-                dataFields[i].style.display = '';
+        dataFields.forEach(dRDiv => {
+            const spans = dRDiv.querySelectorAll('.dF span');
+            let allUndefined = true;
+            if (spans.length) {
+                spans.forEach(span => {
+                    const isInvalid = span.innerHTML.startsWith('undefined') || span.innerHTML.startsWith('NaN');
+                    span.style.display = isInvalid ? 'none' : '';
+                    if (!isInvalid) allUndefined = false;
+                });
             }
-        }
-        
-        for (var i = 0; i < dataRows.length; i++) {
-            if (dataRows[i].innerHTML.indexOf("undefined") > -1) {
-                dataRows[i].style.display = 'none';
-            } else {
-                dataRows[i].style.display = '';
+            else {
+                allUndefined = dRDiv.querySelector('.dF').innerHTML.startsWith('undefined');
             }
-        }
-        
+            dRDiv.style.display = allUndefined ? 'none' : '';
+        });
     }
 
     /*

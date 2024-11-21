@@ -3,7 +3,6 @@
 Solar2MQTT Project
 https://github.com/softwarecrash/Solar2MQTT
 */
-#include "descriptors.h"
 #include "main.h"
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
@@ -190,38 +189,38 @@ void setup()
   // wm.setConnectTimeout(15);       // how long to try to connect for before continuing
   // wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
   wm.setSaveConfigCallback(saveConfigCallback);
-/*
-  DEBUG_PRINTLN();
-  DEBUG_PRINTF("Device Name:\t");
-  DEBUG_PRINTLN(settings.data.deviceName);
-  DEBUG_PRINTF("Mqtt Server:\t");
-  DEBUG_PRINTLN(settings.data.mqttServer);
-  DEBUG_PRINTF("Mqtt Port:\t");
-  DEBUG_PRINTLN(settings.data.mqttPort);
-  DEBUG_PRINTF("Mqtt User:\t");
-  DEBUG_PRINTLN(settings.data.mqttUser);
-  DEBUG_PRINTF("Mqtt Passwort:\t");
-  DEBUG_PRINTLN(settings.data.mqttPassword);
-  DEBUG_PRINTF("Mqtt Interval:\t");
-  DEBUG_PRINTLN(settings.data.mqttRefresh);
-  DEBUG_PRINTF("Mqtt Topic:\t");
-  DEBUG_PRINTLN(settings.data.mqttTopic);
-  DEBUG_WEBLN();
-  DEBUG_WEBF("Device Name:\t");
-  DEBUG_WEBLN(settings.data.deviceName);
-  DEBUG_WEBF("Mqtt Server:\t");
-  DEBUG_WEBLN(settings.data.mqttServer);
-  DEBUG_WEBF("Mqtt Port:\t");
-  DEBUG_WEBLN(settings.data.mqttPort);
-  DEBUG_WEBF("Mqtt User:\t");
-  DEBUG_WEBLN(settings.data.mqttUser);
-  DEBUG_WEBF("Mqtt Passwort:\t");
-  DEBUG_WEBLN(settings.data.mqttPassword);
-  DEBUG_WEBF("Mqtt Interval:\t");
-  DEBUG_WEBLN(settings.data.mqttRefresh);
-  DEBUG_WEBF("Mqtt Topic:\t");
-  DEBUG_WEBLN(settings.data.mqttTopic);
-*/
+  /*
+    DEBUG_PRINTLN();
+    DEBUG_PRINTF("Device Name:\t");
+    DEBUG_PRINTLN(settings.data.deviceName);
+    DEBUG_PRINTF("Mqtt Server:\t");
+    DEBUG_PRINTLN(settings.data.mqttServer);
+    DEBUG_PRINTF("Mqtt Port:\t");
+    DEBUG_PRINTLN(settings.data.mqttPort);
+    DEBUG_PRINTF("Mqtt User:\t");
+    DEBUG_PRINTLN(settings.data.mqttUser);
+    DEBUG_PRINTF("Mqtt Passwort:\t");
+    DEBUG_PRINTLN(settings.data.mqttPassword);
+    DEBUG_PRINTF("Mqtt Interval:\t");
+    DEBUG_PRINTLN(settings.data.mqttRefresh);
+    DEBUG_PRINTF("Mqtt Topic:\t");
+    DEBUG_PRINTLN(settings.data.mqttTopic);
+    DEBUG_WEBLN();
+    DEBUG_WEBF("Device Name:\t");
+    DEBUG_WEBLN(settings.data.deviceName);
+    DEBUG_WEBF("Mqtt Server:\t");
+    DEBUG_WEBLN(settings.data.mqttServer);
+    DEBUG_WEBF("Mqtt Port:\t");
+    DEBUG_WEBLN(settings.data.mqttPort);
+    DEBUG_WEBF("Mqtt User:\t");
+    DEBUG_WEBLN(settings.data.mqttUser);
+    DEBUG_WEBF("Mqtt Passwort:\t");
+    DEBUG_WEBLN(settings.data.mqttPassword);
+    DEBUG_WEBF("Mqtt Interval:\t");
+    DEBUG_WEBLN(settings.data.mqttRefresh);
+    DEBUG_WEBF("Mqtt Topic:\t");
+    DEBUG_WEBLN(settings.data.mqttTopic);
+  */
   // create custom wifimanager fields
 
   AsyncWiFiManagerParameter custom_mqtt_server("mqtt_server", "MQTT server", NULL, 40);
@@ -339,14 +338,13 @@ void setup()
     server.on("/set", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                 if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
-                String message;
+                 
                 if (request->hasParam("CC")) {
-                  message = request->getParam("CC")->value();
-                  commandFromUser = (message);
+                    const AsyncWebParameter *p = request->getParam("CC");
+                    commandFromUser = p->value();
                 }
                 if (request->hasParam("ha")) {
-                  message = request->getParam("ha")->value();
-                  haDiscTrigger = true;
+                    haDiscTrigger = true;
                 }
                 request->send(200, "text/plain", "message received"); });
 
@@ -407,7 +405,7 @@ void setup()
                       { request->send(418, "text/plain", "418 I'm a teapot"); });
 
     // set the device name
-    
+
     MDNS.begin(settings.data.deviceName);
     MDNS.addService("http", "tcp", 80);
     ws.onEvent(onEvent);
@@ -461,9 +459,21 @@ void loop()
         if(commandFromUser == "autodetect"){
           writeLog("restart autodetect");
           mppClient.Init();
-        } else if (commandFromUser.substring(0, 4) == "setp"){ 
-          writeLog("change protocol to: %d", (byte)(commandFromUser[4] - '0'));
-        mppClient.protocol = (byte)(commandFromUser[4] - '0');
+        } else if (commandFromUser.startsWith("setp ")){  
+          // Extract the parameter substring after "setp "
+          String parameterString = commandFromUser.substring(5); 
+          int parameter = parameterString.toInt();
+          if (parameterString != "0" && parameter == 0) {
+              writeLog("Invalid parameter for 'setp' command."); 
+          }
+          else if (parameter >= NoD && parameter < PROTOCOL_TYPE_MAX) 
+          {
+              mppClient.protocol = static_cast<protocol_type_t>(parameter);
+              writeLog("Change protocol to: %s", protocolStrings[parameter]); 
+          }
+          else{
+            writeLog("Unknown protocol"); 
+          }
        } else {
         String tmp = mppClient.sendCommand(commandFromUser); // send a custom command to the device
         }
@@ -471,7 +481,7 @@ void loop()
         mqtttimer = 0;
       }
       ws.cleanupClients(); // clean unused client connections
-      mppClient.loop(); // Call the PI Serial Library loop
+      mppClient.loop();    // Call the PI Serial Library loop
       mqttclient.loop();
       if ((haDiscTrigger || settings.data.haDiscovery) && measureJson(Json) > jsonSize)
       {
@@ -486,7 +496,7 @@ void loop()
   if (restartNow && millis() >= (RestartTimer + 500))
   {
     ESP.restart();
-  } 
+  }
   notificationLED(); // notification LED routine
 }
 
@@ -565,7 +575,7 @@ bool connectMQTT()
   if (!mqttclient.connected())
   {
     firstPublish = false;
-    
+
     if (mqttclient.connect(mqttClientId, settings.data.mqttUser, settings.data.mqttPassword, (topicBuilder(buff, "Alive")), 0, true, "false", true))
     {
       if (mqttclient.connected())
@@ -612,7 +622,7 @@ bool sendtoMQTT()
     if (mppClient.get.raw.commandAnswer.length() > 0)
     {
       mqttclient.publish((String(settings.data.mqttTopic) + String("/DeviceControl/Set_Command_answer")).c_str(), (mppClient.get.raw.commandAnswer).c_str());
-      writeLog("raw command answer: ",mppClient.get.raw.commandAnswer);
+      writeLog("raw command answer: ", mppClient.get.raw.commandAnswer);
       mppClient.get.raw.commandAnswer = "";
     }
 #ifdef TEMPSENS_PIN
@@ -802,14 +812,14 @@ bool sendHaDiscovery()
   return true;
 }
 
-void writeLog(const char* format, ...)
+void writeLog(const char *format, ...)
 {
-    char       msg[100];
-    va_list    args;
+  char msg[100];
+  va_list args;
 
-    va_start(args, format);
-    vsnprintf(msg, sizeof(msg), format, args); // do check return value
-    va_end(args);
+  va_start(args, format);
+  vsnprintf(msg, sizeof(msg), format, args); // do check return value
+  va_end(args);
 
     // write msg to the log
     DBG_PRINTLN(msg);
