@@ -31,6 +31,8 @@ private:
                                                                                                              "Charging",
                                                                                                              "Fault",
                                                                                                          }}},
+        //needs adding
+        //https://github.com/softwarecrash/Solar2MQTT/blob/2c86b8f609c82d5e52808cfe2810b10b61730c85/src/modbus/device/anenji/anenji.h
         {223, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_PV_Input_Power},
         {219, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_PV_Input_Voltage},
         {220, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_PV2_Input_Current},
