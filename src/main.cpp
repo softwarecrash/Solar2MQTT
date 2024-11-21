@@ -18,6 +18,7 @@ https://github.com/softwarecrash/Solar2MQTT
 #ifdef TEMPSENS_PIN
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <NonBlockingDallas.h>
 #endif
 
 PI_Serial mppClient(INVERTER_RX, INVERTER_TX);
@@ -31,7 +32,8 @@ Settings settings;
 
 #ifdef TEMPSENS_PIN
 OneWire oneWire(TEMPSENS_PIN);
-DallasTemperature tempSens(&oneWire);
+DallasTemperature dallasTemp(&oneWire);
+NonBlockingDallas tempSens(&dallasTemp);
 DeviceAddress tempDeviceAddress;
 uint8_t numOfTempSens;
 #endif
@@ -430,15 +432,8 @@ void setup()
   resetCounter(false);
 
 #ifdef TEMPSENS_PIN
-  tempSens.begin();
-  numOfTempSens = tempSens.getDeviceCount();
-  for (int i = 0; i < numOfTempSens; i++)
-  {
-    if (tempSens.getAddress(tempDeviceAddress, i))
-    {
-      tempSens.setResolution(tempDeviceAddress, 9);
-    }
-  }
+    tempSens.begin(NonBlockingDallas::resolution_12, TIME_INTERVAL);
+    tempSens.onTemperatureChange(handleTemperatureChange);
 #endif
 }
 
@@ -480,6 +475,7 @@ void loop()
         commandFromUser = "";
         mqtttimer = 0;
       }
+      tempSens.update();
       ws.cleanupClients(); // clean unused client connections
       mppClient.loop();    // Call the PI Serial Library loop
       mqttclient.loop();
@@ -515,10 +511,7 @@ bool prozessData()
   if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000) || mqtttimer == 0)
   {
 #ifdef TEMPSENS_PIN
-    if (numOfTempSens > 0)
-    {
-      tempSens.requestTemperatures();
-    }
+tempSens.requestTemperature();
 #endif
     sendtoMQTT(); // Update data to MQTT server if we should
     mqtttimer = millis();
@@ -543,15 +536,11 @@ void getJsonData()
   deviceJson[F("detect_protocol")] = mppClient.protocol;
   deviceJson[F("detect_raw_qpi")] = mppClient.get.raw.qpi;
 #ifdef TEMPSENS_PIN
-  for (int i = 0; i < numOfTempSens; i++)
+    if (tempSens.indexExist(tempSens.getSensorsCount() - 1))
   {
-    if (tempSens.getAddress(tempDeviceAddress, i))
+    for (size_t i = 0; i < tempSens.getSensorsCount(); i++)
     {
-      float tempC = tempSens.getTempC(tempDeviceAddress);
-      if (tempC != DEVICE_DISCONNECTED_C)
-      {
-        deviceJson["DS18B20_" + String(i + 1)] = tempC;
-      }
+      deviceJson["DS18B20_" + String(i + 1)] = tempSens.getTemperatureC(i);
     }
   }
 #endif
@@ -625,7 +614,7 @@ bool sendtoMQTT()
       writeLog("raw command answer: ", mppClient.get.raw.commandAnswer);
       mppClient.get.raw.commandAnswer = "";
     }
-#ifdef TEMPSENS_PIN
+/* #ifdef TEMPSENS_PIN
     for (int i = 0; i < numOfTempSens; i++)
     {
       if (tempSens.getAddress(tempDeviceAddress, i))
@@ -639,7 +628,7 @@ bool sendtoMQTT()
         }
       }
     }
-#endif
+#endif */
 // RAW
     mqttclient.publish(topicBuilder(buff, "RAW/Q1"), (mppClient.get.raw.q1).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS"), (mppClient.get.raw.qpigs).c_str());
@@ -773,9 +762,9 @@ bool sendHaDiscovery()
   }
 #ifdef TEMPSENS_PIN
   // Ext Temp sensors
-  for (int i = 0; i < numOfTempSens; i++)
+  if (tempSens.indexExist(tempSens.getSensorsCount() - 1))
   {
-    if (tempSens.getAddress(tempDeviceAddress, i))
+    for (size_t i = 0; i < tempSens.getSensorsCount(); i++)
     {
       String haDeviceDescription = String("\"dev\":") +
                                    "{\"ids\":[\"" + mqttClientId + "\"]," +
@@ -810,6 +799,15 @@ bool sendHaDiscovery()
   }
 #endif
   return true;
+}
+
+void handleTemperatureChange(int deviceIndex, int32_t temperatureRAW)
+{
+  writeLog("<DS18x> DS18B20_%d RAW:%d Celsius:%f Fahrenheit:%f", deviceIndex+1, temperatureRAW, tempSens.rawToCelsius(temperatureRAW), tempSens.rawToFahrenheit(temperatureRAW));
+  char msgBuffer[32];
+  char buff[256]; // temp buffer for the topic string
+
+  mqttclient.publish(topicBuilder(buff, "DS18B20_", itoa((deviceIndex)+1, msgBuffer, 10)), dtostrf(tempSens.rawToCelsius(temperatureRAW), 4, 2, msgBuffer));
 }
 
 void writeLog(const char *format, ...)

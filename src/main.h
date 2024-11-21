@@ -17,6 +17,7 @@
 #define INVERTER_TX 13
 #define INVERTER_RX 12
 #define TEMPSENS_PIN 4 // DS18B20 Pin; D2 on Wemos D1 Mini
+#define TIME_INTERVAL 1500 // Time interval among sensor readings [milliseconds]
 #endif
 
 #define LED_PIN 02 // D4 with the LED on Wemos D1 Mini
@@ -104,6 +105,11 @@ void getJsonData();
 void mqttcallback(char *top, unsigned char *payload, unsigned int length);
 
 bool sendHaDiscovery();
+/**
+ * @brief function for ext. TempSensors
+ */
+void handleTemperatureChange(int deviceIndex, int32_t temperatureRAW);
+
 
 /**
  * @brief this function act like s/n/printf() and give the output to the configured serial and webserial
