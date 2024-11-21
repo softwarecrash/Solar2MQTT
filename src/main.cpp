@@ -61,7 +61,7 @@ String commandFromUser;
 String customResponse;
 
 bool firstPublish;
-JsonDocument Json; // main Json
+JsonDocument Json;                                           // main Json
 JsonObject deviceJson = Json["EspData"].to<JsonObject>();    // basic device data
 JsonObject staticData = Json["DeviceData"].to<JsonObject>(); // battery package data
 JsonObject liveData = Json["LiveData"].to<JsonObject>();     // battery package data
@@ -172,7 +172,7 @@ bool resetCounter(bool count)
 void setup()
 {
   // make a compatibility mode for some crap routers?
-  //WiFi.setPhyMode(WIFI_PHY_MODE_11G);
+  // WiFi.setPhyMode(WIFI_PHY_MODE_11G);
   analogWrite(LED_PIN, 0);
 #ifdef isUART_HARDWARE
   analogWrite(LED_COM, 0);
@@ -424,16 +424,16 @@ void setup()
   }
 
   analogWrite(LED_PIN, 255);
-  #ifdef isUART_HARDWARE
-    analogWrite(LED_COM, 255);
-    analogWrite(LED_SRV, 255);
-    analogWrite(LED_NET, 255);
-  #endif
+#ifdef isUART_HARDWARE
+  analogWrite(LED_COM, 255);
+  analogWrite(LED_SRV, 255);
+  analogWrite(LED_NET, 255);
+#endif
   resetCounter(false);
 
 #ifdef TEMPSENS_PIN
-    tempSens.begin(NonBlockingDallas::resolution_12, TIME_INTERVAL);
-    tempSens.onTemperatureChange(handleTemperatureChange);
+  tempSens.begin(NonBlockingDallas::resolution_12, TIME_INTERVAL);
+  tempSens.onTemperatureChange(handleTemperatureChange);
 #endif
 }
 
@@ -451,31 +451,41 @@ void loop()
     { // No use going to next step unless WIFI is up and running.
       if (commandFromUser != "")
       {
-        if(commandFromUser == "autodetect"){
+        if (commandFromUser == "autodetect")
+        {
           writeLog("restart autodetect");
           mppClient.Init();
-        } else if (commandFromUser.startsWith("setp ")){  
+        }
+        else if (commandFromUser.startsWith("setp "))
+        {
           // Extract the parameter substring after "setp "
-          String parameterString = commandFromUser.substring(5); 
+          String parameterString = commandFromUser.substring(5);
           int parameter = parameterString.toInt();
-          if (parameterString != "0" && parameter == 0) {
-              writeLog("Invalid parameter for 'setp' command."); 
-          }
-          else if (parameter >= NoD && parameter < PROTOCOL_TYPE_MAX) 
+          if (parameterString != "0" && parameter == 0)
           {
-              mppClient.protocol = static_cast<protocol_type_t>(parameter);
-              writeLog("Change protocol to: %s", protocolStrings[parameter]); 
+            writeLog("Invalid parameter for 'setp' command.");
           }
-          else{
-            writeLog("Unknown protocol"); 
+          else if (parameter >= NoD && parameter < PROTOCOL_TYPE_MAX)
+          {
+            mppClient.protocol = static_cast<protocol_type_t>(parameter);
+            writeLog("Change protocol to: %s", protocolStrings[parameter]);
           }
-       } else {
-        String tmp = mppClient.sendCommand(commandFromUser); // send a custom command to the device
+          else
+          {
+            writeLog("Unknown protocol");
+          }
+        }
+        else
+        {
+          String tmp = mppClient.sendCommand(commandFromUser); // send a custom command to the device
         }
         commandFromUser = "";
         mqtttimer = 0;
       }
+#ifdef TEMPSENS_PIN
       tempSens.update();
+#endif
+
       ws.cleanupClients(); // clean unused client connections
       mppClient.loop();    // Call the PI Serial Library loop
       mqttclient.loop();
@@ -511,7 +521,7 @@ bool prozessData()
   if (millis() - mqtttimer > (settings.data.mqttRefresh * 1000) || mqtttimer == 0)
   {
 #ifdef TEMPSENS_PIN
-tempSens.requestTemperature();
+    tempSens.requestTemperature();
 #endif
     sendtoMQTT(); // Update data to MQTT server if we should
     mqtttimer = millis();
@@ -529,14 +539,14 @@ void getJsonData()
   deviceJson[F("sw_version")] = SOFTWARE_VERSION;
   deviceJson[F("Free_Heap")] = ESP.getFreeHeap();
   deviceJson[F("HEAP_Fragmentation")] = ESP.getHeapFragmentation();
-  //deviceJson[F("json_memory_usage")] = Json.memoryUsage();
-  //deviceJson[F("json_capacity")] = Json.capacity();
+  // deviceJson[F("json_memory_usage")] = Json.memoryUsage();
+  // deviceJson[F("json_capacity")] = Json.capacity();
   deviceJson[F("runtime")] = millis() / 1000;
   deviceJson[F("ws_clients")] = ws.count();
   deviceJson[F("detect_protocol")] = mppClient.protocol;
   deviceJson[F("detect_raw_qpi")] = mppClient.get.raw.qpi;
 #ifdef TEMPSENS_PIN
-    if (tempSens.indexExist(tempSens.getSensorsCount() - 1))
+  if (tempSens.indexExist(tempSens.getSensorsCount() - 1))
   {
     for (size_t i = 0; i < tempSens.getSensorsCount(); i++)
     {
@@ -614,22 +624,22 @@ bool sendtoMQTT()
       writeLog("raw command answer: ", mppClient.get.raw.commandAnswer);
       mppClient.get.raw.commandAnswer = "";
     }
-/* #ifdef TEMPSENS_PIN
-    for (int i = 0; i < numOfTempSens; i++)
-    {
-      if (tempSens.getAddress(tempDeviceAddress, i))
-      {
-        float tempC = tempSens.getTempC(tempDeviceAddress);
-        if (tempC != DEVICE_DISCONNECTED_C)
+    /* #ifdef TEMPSENS_PIN
+        for (int i = 0; i < numOfTempSens; i++)
         {
-          char valBuffer[8];
-          sprintf(msgBuffer1, "%s/DS18B20_%i", settings.data.mqttTopic, (i + 1));
-          mqttclient.publish(msgBuffer1, dtostrf(tempC, 4, 1, valBuffer));
+          if (tempSens.getAddress(tempDeviceAddress, i))
+          {
+            float tempC = tempSens.getTempC(tempDeviceAddress);
+            if (tempC != DEVICE_DISCONNECTED_C)
+            {
+              char valBuffer[8];
+              sprintf(msgBuffer1, "%s/DS18B20_%i", settings.data.mqttTopic, (i + 1));
+              mqttclient.publish(msgBuffer1, dtostrf(tempC, 4, 1, valBuffer));
+            }
+          }
         }
-      }
-    }
-#endif */
-// RAW
+    #endif */
+    // RAW
     mqttclient.publish(topicBuilder(buff, "RAW/Q1"), (mppClient.get.raw.q1).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS"), (mppClient.get.raw.qpigs).c_str());
     mqttclient.publish(topicBuilder(buff, "RAW/QPIGS2"), (mppClient.get.raw.qpigs2).c_str());
@@ -803,11 +813,12 @@ bool sendHaDiscovery()
 
 void handleTemperatureChange(int deviceIndex, int32_t temperatureRAW)
 {
-  writeLog("<DS18x> DS18B20_%d RAW:%d Celsius:%f Fahrenheit:%f", deviceIndex+1, temperatureRAW, tempSens.rawToCelsius(temperatureRAW), tempSens.rawToFahrenheit(temperatureRAW));
+  #ifdef TEMPSENS_PIN
+  writeLog("<DS18x> DS18B20_%d RAW:%d Celsius:%f Fahrenheit:%f", deviceIndex + 1, temperatureRAW, tempSens.rawToCelsius(temperatureRAW), tempSens.rawToFahrenheit(temperatureRAW));
   char msgBuffer[32];
   char buff[256]; // temp buffer for the topic string
-
-  mqttclient.publish(topicBuilder(buff, "DS18B20_", itoa((deviceIndex)+1, msgBuffer, 10)), dtostrf(tempSens.rawToCelsius(temperatureRAW), 4, 2, msgBuffer));
+  mqttclient.publish(topicBuilder(buff, "DS18B20_", itoa((deviceIndex) + 1, msgBuffer, 10)), dtostrf(tempSens.rawToCelsius(temperatureRAW), 4, 2, msgBuffer));
+#endif
 }
 
 void writeLog(const char *format, ...)
@@ -819,7 +830,7 @@ void writeLog(const char *format, ...)
   vsnprintf(msg, sizeof(msg), format, args); // do check return value
   va_end(args);
 
-    // write msg to the log
-    DBG_PRINTLN(msg);
-    DBG_WEB(msg);
+  // write msg to the log
+  DBG_PRINTLN(msg);
+  DBG_WEB(msg);
 }
