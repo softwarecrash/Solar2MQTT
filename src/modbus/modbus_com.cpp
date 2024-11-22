@@ -29,7 +29,8 @@ MODBUS_COM::MODBUS_COM()
         pinMode(_dir_pin, OUTPUT);
     }
     this->postTransmission();
-
+    //set the default timeout
+    _mb.setResponseTimeout(MODBUS_TIMEOUT);
     // Callbacks allow us to configure the RS485 transceiver correctly
     _mb.preTransmission(preTransmission);
     _mb.postTransmission(postTransmission);

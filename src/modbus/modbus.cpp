@@ -18,7 +18,7 @@ bool MODBUS::Init()
         writeLog("No serial specificed!");
         return false;
     }
-    this->my_serialIntf->setTimeout(2000);
+    //this->my_serialIntf->setTimeout(2000);
  
     return true;
 }
