@@ -24,7 +24,28 @@ bool PI_Serial::PIXX_QFLAG()
             staticData[DESCR_LCD_Backlight_Enabled] = checkQFLAG(commandAnswer, 'x');
             staticData[DESCR_Primary_Source_Interrupt_Alarm_Enabled] = checkQFLAG(commandAnswer, 'y');
             staticData[DESCR_Record_Fault_Code_Enabled] = checkQFLAG(commandAnswer, 'z');
-        }else {
+            
+        } else if(commandAnswerLength == 14){
+            //https://github.com/softwarecrash/Solar2MQTT/issues/181
+            /*
+            l (Data_Log_Pop_Up)???
+            g
+            d
+            */
+            staticData[DESCR_Buzzer_Enabled] = checkQFLAG(commandAnswer, 'a');
+            staticData[DESCR_Overload_Bypass_Enabled] = checkQFLAG(commandAnswer, 'b');
+            //staticData[DESCR_unknown] = checkQFLAG(commandAnswer, 'd');
+            //staticData[DESCR_unknown] = checkQFLAG(commandAnswer, 'g');
+            staticData[DESCR_Power_Saving_Enabled] = checkQFLAG(commandAnswer, 'j');
+            staticData[DESCR_LCD_Reset_To_Default_Enabled] = checkQFLAG(commandAnswer, 'k');
+            //staticData[DESCR_Data_Log_Pop_Up] = checkQFLAG(commandAnswer, 'l');
+            staticData[DESCR_Overload_Restart_Enabled] = checkQFLAG(commandAnswer, 'u');
+            staticData[DESCR_Over_Temperature_Restart_Enabled] = checkQFLAG(commandAnswer, 'v');
+            staticData[DESCR_LCD_Backlight_Enabled] = checkQFLAG(commandAnswer, 'x');
+            staticData[DESCR_Primary_Source_Interrupt_Alarm_Enabled] = checkQFLAG(commandAnswer, 'y');
+            staticData[DESCR_Record_Fault_Code_Enabled] = checkQFLAG(commandAnswer, 'z');
+
+        } else {
             get.raw.qflag = "Wrong Length(" + (String)get.raw.qflag.length() + "), Contact Dev:" +get.raw.qflag;
         }
         return true;
