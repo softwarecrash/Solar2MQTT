@@ -81,7 +81,8 @@ void notifyClients()
     AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
     if (buffer)
     {
-      serializeJson(liveData, (char *)buffer->get(), len + 1);
+      assert(buffer);
+      serializeJson(liveData, buffer->get(), len);
       wsClient->text(buffer);
     }
     writeLog("WS data send");

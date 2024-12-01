@@ -7,6 +7,7 @@
 #include "modbus_registers.h"
 
 #define MODBUS_RETRIES 2
+#define MODBUS_TIMEOUT 150
 
 #define RS485_DIR_PIN 14 // D5
 #define RS485_ESP01_DIR_PIN 0

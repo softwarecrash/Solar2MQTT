@@ -18,7 +18,7 @@ bool MODBUS::Init()
         writeLog("No serial specificed!");
         return false;
     }
-    this->my_serialIntf->setTimeout(2000);
+    //this->my_serialIntf->setTimeout(2000);
  
     return true;
 }
@@ -101,7 +101,7 @@ protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter typ
 
     writeLog("Try Autodetect Modbus device");
 
-    ModbusDevice *devices[] = {new MustPV_PH18(), new Deye(), new Anenji()};
+    ModbusDevice *devices[] = { new Deye(), new Anenji(), new MustPV_PH18()};
     const size_t deviceCount = sizeof(devices) / sizeof(devices[0]);
     
     for (size_t i = 0; i < deviceCount; ++i)
