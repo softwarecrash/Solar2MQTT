@@ -110,6 +110,7 @@ bool MODBUS_COM::getModbusResultMsg(uint8_t result)
 bool MODBUS_COM::getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity, uint16_t *value_ptr, uint16_t readBytes)
 {
     // writeLog("Requesting data");
+    uint16_t data;
     for (uint8_t i = 0; i < MODBUS_RETRIES; i++)
     {
         if (MODBUS_RETRIES > 1)
@@ -122,7 +123,11 @@ bool MODBUS_COM::getModbusValue(uint16_t register_id, modbus_entity_t modbus_ent
             bool is_received = getModbusResultMsg(result);
             if (is_received)
             {
-                *value_ptr = _mb.getResponseBuffer(0);
+                data = _mb.getResponseBuffer(0);
+                if (_dataFilter){
+                    data = _dataFilter(data);
+                }
+                *value_ptr = data;
                 return true;
             }
         }
@@ -177,7 +182,7 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
     {
         return false; // Return false if invalid input
     }
-    // writeLog("Register id=%d type=0x%x name=%s", reg->id, reg->type, reg->name);
+     writeLog("Register id=%d type=0x%x name=%s", reg->id, reg->type, reg->name);
     uint16_t raw_value = 0;
 
     if (reg->type == REGISTER_TYPE_VIRTUAL_CALLBACK)
@@ -204,7 +209,7 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
 
     if (getModbusValue(reg->id, reg->modbus_entity, &raw_value, readBytes))
     {
-        //writeLog("Raw value: %s=%#06x\n", reg->name, raw_value);
+        writeLog("Raw value: %s=%#06x\n", reg->name, raw_value);
 
         switch (reg->type)
         {
@@ -357,4 +362,10 @@ bool MODBUS_COM::isAllRegistersRead(modbus_register_info_t &register_info)
         return true;
     }
     return false;
+}
+
+
+void MODBUS_COM::setDataFilter(std::function<uint16_t(uint16_t)> func)
+{
+    _dataFilter = func;
 }

@@ -101,7 +101,7 @@ protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter typ
 
     writeLog("Try Autodetect Modbus device");
 
-    ModbusDevice *devices[] = { new Deye(), new Anenji(), new MustPV_PH18()};
+    ModbusDevice *devices[] = { new Deye(), new Anenji(), new MustPV_PH18(), new Pow_Hvm(), new Pow_Hvm_Lip()};
     const size_t deviceCount = sizeof(devices) / sizeof(devices[0]);
     
     for (size_t i = 0; i < deviceCount; ++i)

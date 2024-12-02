@@ -38,16 +38,19 @@ public:
     response_type_t parseModbusToJson(modbus_register_info_t &register_info, bool skip_reg_on_error = true);
     bool isAllRegistersRead(modbus_register_info_t &register_info);
     ModbusMaster *getModbusMaster();
-    
+    void setDataFilter(std::function<uint16_t(uint16_t)> func); 
+    bool getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity, uint16_t *value_ptr, uint16_t readBytes = 1);
+
 private:
     String toBinary(uint16_t input);
     bool decodeDiematicDecimal(uint16_t int_input, int8_t decimals, float *value_ptr);
     bool getModbusResultMsg(uint8_t result);
-    bool getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity, uint16_t *value_ptr, uint16_t readBytes = 1);
 
     static void preTransmission();
     static void postTransmission();
 
+
+    std::function<uint16_t(uint16_t)> _dataFilter; 
     ModbusMaster _mb;
 };
 

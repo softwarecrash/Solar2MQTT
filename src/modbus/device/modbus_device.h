@@ -36,7 +36,8 @@ public:
 protected:
     long _baudRate;
     uint32_t _modbusAddr;
-    protocol_type_t _protocol;
+    protocol_type_t _protocol;  
+    std::function<uint16_t(uint16_t)> _dataFilter;
 };
 
 

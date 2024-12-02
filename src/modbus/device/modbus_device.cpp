@@ -28,6 +28,7 @@ void ModbusDevice::init(SoftwareSerial &serial, MODBUS_COM &mCom)
     writeLog("Init %s protocol, baud %d, modbusAddr %d", getName(), getBaudRate(), getModbusAddr());
     serial.begin(getBaudRate(), SWSERIAL_8N1);
     mCom.getModbusMaster()->begin(getModbusAddr(), serial);
+    mCom.setDataFilter(_dataFilter);
 }
 
 bool ModbusDevice::retrieveModel(MODBUS_COM &mCom, char *modelBuffer, size_t bufferSize)
