@@ -97,19 +97,19 @@ String MODBUS::requestData(String command)
 protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter type
 {
     protocol_type_t protocol = NoD;
-    char modelName[20];
+    char modelName[30];
 
     writeLog("Try Autodetect Modbus device");
 
-    ModbusDevice *devices[] = { new Deye(), new Anenji(), new MustPV_PH18(), new Pow_Hvm(), new Pow_Hvm_Lip()};
+    ModbusDevice *devices[] = { new Deye(), new Anenji(), new MustPV_PH18(), new Pow_Hvm()};
     const size_t deviceCount = sizeof(devices) / sizeof(devices[0]);
     
     for (size_t i = 0; i < deviceCount; ++i)
     {
         devices[i]->init(*my_serialIntf, _mCom); 
-        devices[i]->retrieveModel(_mCom, modelName, sizeof(modelName));
+        bool ret = devices[i]->retrieveModel(_mCom, modelName, sizeof(modelName));
         
-        if (strlen(modelName) != 0)
+        if (ret && strlen(modelName) != 0)
         {
             writeLog("<Autodetect> Found Modbus device: %s", modelName);
             staticData["Device_Model"] = modelName;
@@ -121,11 +121,17 @@ protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter typ
             // Clean up other devices not selected
             for (size_t j = 0; j < deviceCount; ++j)
             {
-                if (j != i) delete devices[j];
+                writeLog("j:%d",j);
+                if (j != i && devices[i] != nullptr) { 
+                    writeLog("delete device");
+                    delete devices[j];
+                    devices[j] = nullptr; 
+                }
             }
             return protocol;
         }
         delete devices[i];
+        devices[i] = nullptr;
     }
 
     return protocol;

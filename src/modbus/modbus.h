@@ -8,8 +8,7 @@
 #include "device/must_pv_ph18/must_pv_ph18.h"
 #include "device/deye/deye.h"
 #include "device/anenji/anenji.h"
-#include "device/pow-hvm/pow-hvm.h"
-#include "device/pow-hvm-lip/pow-hvm-lip.h"
+#include "device/pow-hvm/pow-hvm.h" 
 
 extern JsonObject deviceJson;
 extern JsonObject staticData;

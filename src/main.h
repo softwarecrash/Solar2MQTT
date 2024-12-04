@@ -38,8 +38,7 @@ typedef enum
     MODBUS_MUST,
     MODBUS_DEYE,
     MODBUS_ANENJI,
-    MODBUS_POW_HVM,
-    MODBUS_Pow_HVM_LIP,
+    MODBUS_POW_HVM, 
     PROTOCOL_TYPE_MAX //Add a max value to mark the upper enum bound
 } protocol_type_t;
 
@@ -51,8 +50,7 @@ constexpr const char* protocolStrings[] = {
     "MODBUS_MUST",
     "MODBUS_DEYE",
     "MODBUS_ANENJI",
-    "MODBUS_POW_HVM",
-    "MODBUS_POW_HVM_LIP",
+    "MODBUS_POW_HVM"
 };
 
 /**

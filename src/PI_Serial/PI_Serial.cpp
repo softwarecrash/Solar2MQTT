@@ -398,7 +398,7 @@ char *PI_Serial::getModeDesc(char mode) // get the char from QMOD and make reada
 
 bool PI_Serial::isModbus()
 {
-    return protocol == MODBUS_MUST || protocol == MODBUS_DEYE;
+    return protocol == MODBUS_MUST || protocol == MODBUS_DEYE ||  protocol == MODBUS_ANENJI || protocol == MODBUS_POW_HVM;
 }
 
 bool PI_Serial::checkQFLAG(const String& flags, char symbol) {

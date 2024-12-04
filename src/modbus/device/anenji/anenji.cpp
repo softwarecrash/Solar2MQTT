@@ -18,30 +18,21 @@ const char *Anenji::getName() const
 
 bool Anenji::retrieveModel(MODBUS_COM &mCom, char *modelBuffer, size_t bufferSize)
 {
-    modelBuffer[0] = '\0'; // Clear the buffer
-    JsonDocument doc;
-    JsonObject jsonObj = doc.to<JsonObject>(); // Create and get JsonObject
-    modbus_register_info_t model_info = {
-        .variant = &jsonObj,
-        .registers = registers_device_serial,
-        .array_size = sizeof(registers_device_serial) / sizeof(modbus_register_t),
-        .curr_register = 0};
+    uint16_t raw_value = 0;
+    String serialCode = "";
+    if (mCom.getModbusValue(202, MODBUS_TYPE_HOLDING, &raw_value, 1)){ 
+        if ( mCom.getModbusValue(186, MODBUS_TYPE_HOLDING, &raw_value, 12)){
+            writeLog("got serial\n"); 
+            uint16_t registers[12];
+            for (int i = 0; i < 12; ++i) {
+                registers[i] = mCom.getModbusMaster()->getResponseBuffer(i);
+            }
 
-    for (size_t i = 0; i < model_info.array_size; i++)
-    {
-        mCom.parseModbusToJson(model_info, false);
-        if (mCom.isAllRegistersRead(model_info))
-        {
-            const char *sn1 = doc["SN1"];
-            const char *sn2 = doc["SN2"];
-            const char *sn3 = doc["SN3"];
-            const char *sn4 = doc["SN4"];
-            const char *sn5 = doc["SN5"];
-            const char *sn6 = doc["SN6"];
-            snprintf(modelBuffer, bufferSize, "%s%s%s%s%s%s", sn1, sn2, sn3, sn4, sn5, sn6);
-            return true;
+            serialCode = mCom.convertRegistersToASCII(registers, 12);
+            Serial.println("Serial Code: " + serialCode);
         }
-        delay(50);
+        snprintf(modelBuffer, bufferSize, "%s %s", getName(), serialCode.c_str());
+        return true;
     }
     return false;
 }

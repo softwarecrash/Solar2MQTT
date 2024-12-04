@@ -182,7 +182,7 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
     {
         return false; // Return false if invalid input
     }
-     writeLog("Register id=%d type=0x%x name=%s", reg->id, reg->type, reg->name);
+    //writeLog("Register id=%d type=0x%x name=%s", reg->id, reg->type, reg->name);
     uint16_t raw_value = 0;
 
     if (reg->type == REGISTER_TYPE_VIRTUAL_CALLBACK)
@@ -209,7 +209,7 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
 
     if (getModbusValue(reg->id, reg->modbus_entity, &raw_value, readBytes))
     {
-        writeLog("Raw value: %s=%#06x\n", reg->name, raw_value);
+        //writeLog("Raw value: %s=%#06x\n", reg->name, raw_value);
 
         switch (reg->type)
         {
@@ -221,6 +221,17 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
             // writeLog("Value: %u", raw_value);
             (*variant)[reg->name] = static_cast<int16_t>(raw_value) + reg->offset;
             break;
+        case REGISTER_TYPE_INT16_ONE_DECIMAL:
+            // writeLog("Value: %u", raw_value); 
+            final_value =( static_cast<int16_t>(raw_value) / 10.0 )+ reg->offset;
+            (*variant)[reg->name] = final_value;
+            break;
+        case REGISTER_TYPE_INT16_TWO_DECIMAL:
+            // writeLog("Value: %u", raw_value);
+            final_value =( static_cast<int16_t>(raw_value) / 100.0 )+ reg->offset;
+            (*variant)[reg->name] = final_value;
+            break;
+
         case REGISTER_TYPE_U32:
             // writeLog("Value: %u", raw_value);
             (*variant)[reg->name] = (raw_value + (_mb.getResponseBuffer(1) << 16)) + reg->offset;
@@ -294,14 +305,8 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
             break;
         }
         case REGISTER_TYPE_ASCII:
-        {
-            String out = "";
-            char high_byte = (raw_value >> 8) & 0xFF;
-            char low_byte = raw_value & 0xFF;
-
-            out += high_byte;
-            out += low_byte;
-            (*variant)[reg->name] = out;
+        { 
+            (*variant)[reg->name] = convertRegistersToASCII(&raw_value,1);
             break;
         }
         case REGISTER_TYPE_CALLBACK:
@@ -368,4 +373,18 @@ bool MODBUS_COM::isAllRegistersRead(modbus_register_info_t &register_info)
 void MODBUS_COM::setDataFilter(std::function<uint16_t(uint16_t)> func)
 {
     _dataFilter = func;
+}
+
+String MODBUS_COM::convertRegistersToASCII(uint16_t* registers, size_t count) {
+    String result = "";
+
+    for (size_t i = 0; i < count; ++i) {
+        char highByte = (char)((registers[i] >> 8) & 0xFF);
+        char lowByte = (char)(registers[i] & 0xFF);
+
+        if (highByte != '\0') result += highByte;
+        if (lowByte != '\0') result += lowByte;
+    }
+
+    return result;
 }

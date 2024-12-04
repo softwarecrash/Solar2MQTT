@@ -40,7 +40,7 @@ public:
     ModbusMaster *getModbusMaster();
     void setDataFilter(std::function<uint16_t(uint16_t)> func); 
     bool getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity, uint16_t *value_ptr, uint16_t readBytes = 1);
-
+    String convertRegistersToASCII(uint16_t* registers, size_t count);
 private:
     String toBinary(uint16_t input);
     bool decodeDiematicDecimal(uint16_t int_input, int8_t decimals, float *value_ptr);

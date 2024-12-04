@@ -3,6 +3,15 @@
 
 #include <modbus/device/modbus_device.h>
 
+/*
+    should work with devices on https://powmr.com/products/powmr-wifi-module-wifi-6-2-lip dongle
+
+    also possible should work 
+    ISolar SMG II
+    EASUN SMG II
+    PowMr POW-HVM5.5K-48V / POW-HVM5.5K-48V-P
+*/
+
 class Anenji : public ModbusDevice
 {
 public:
@@ -31,37 +40,73 @@ private:
                                                                                                              "Charging",
                                                                                                              "Fault",
                                                                                                          }}},
-        //needs adding
-        //https://github.com/softwarecrash/Solar2MQTT/blob/2c86b8f609c82d5e52808cfe2810b10b61730c85/src/modbus/device/anenji/anenji.h
+                                                                                                         
+         {202, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_AC_In_Voltage},
+         {203, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_TWO_DECIMAL, DESCR_AC_In_Frequenz}, 
+        {205, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_AC_Out_Voltage},
+        {206, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_Output_current},
+        {207, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_TWO_DECIMAL, DESCR_AC_Out_Frequenz},
+        {208, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_Output_power},
+        {209, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, "Inverter_Charging_Power"},
+        {210, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, "Outpu_Effective_Voltage"},
+        {211, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, "Output_Effective_Current"},
+        {212, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_TWO_DECIMAL, "Output_Frequency"},
+        {213, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_AC_Out_Rating_Active_Power},
+        {214, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_AC_Out_Rating_Apparent_Power}, 
+        {215, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_Battery_Voltage},     
+        {216, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, "Battery_Current"},
+        {217, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, "Battery_Power"},
+        {219, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_PV_Input_Voltage},
+        {220, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_PV_Input_Current},
         {223, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_PV_Input_Power},
-        {219, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_PV_Input_Voltage},
-        {220, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_PV2_Input_Current},
- 
-        {229, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_Battery_Percent},
-        {215, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_Battery_Voltage},
-        {227, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_Inverter_Temperature},
-        {226, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_Transformer_Temperature},
+        {224, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_PV_Charging_Power},
         {225, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_Output_load_percent}, 
+        {226, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_Transformer_Temperature},
+        {227, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_Inverter_Temperature},
+        {229, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_Battery_Percent},
+        {232, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_Charge_Average_Current},
+        {233, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, "Inverter_Charging_Current"},
+        {234, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, "PV_Charging_Current"},
     };
 
     inline static const modbus_register_t registers_static[] = { 
-         {322, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, DESCR_Battery_Type, 0, {.bitfield = {
-                                                                                            "AGM",
-                                                                                            "FLD",
-                                                                                            "USER",
-                                                                                            "SMK1",
-                                                                                            "PYL",
-                                                                                            "FOX",
-                                                                                        }}},
-    };
+     
+        {300, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_Output_Mode, 0, {.bitfield = {
+                                                                                    "Single",
+                                                                                    "Parallel",
+                                                                                    "3 Phase-P1",
+                                                                                    "3 Phase-P2",
+                                                                                    "3 Phase-P3",
+                                                                                    "Split Phase-P1",
+                                                                                    "Split Phase-P2"}}},
+        {301, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_Output_Source_Priority, 0, {.bitfield = {
+                                                                                    "Utility first (USB)",
+                                                                                    "Solar first (SUB)",
+                                                                                    "SBU priority",
+                                                                                }}},
+        {302, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_Input_Voltage_Range, 0, {.bitfield = {
+            "Wide", "Narrow"}}},
+        {303, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, "Buzzer Mode", 0, {.bitfield = {
+            "Mute", "Warning", "Fault", "Fault Only"}}},
+        {305, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, "LCD Backlight", 0, {.bitfield = {
+            "Timed Off", "Always On"}}},
+        {306, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, "LCD Return to Homepage", 0, {.bitfield = {
+            "Do Not Return", "Return After 1 Minute"}}},
+        {307, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_Power_Saving_Enabled, 0, {.bitfield = {
+            "Off", "On"}}},
+        {308, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_Overload_Restart_Enabled, 0, {.bitfield = {
+            "No Restart", "Automatic Restart"}}},
+        {310, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_Overload_Bypass_Enabled, 0, {.bitfield = {
+            "Disable", "Enable"}}},
+        {322, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, DESCR_Battery_Type, 0, {.bitfield = {
+            "AGM", "FLD", "USER", "SMK1", "PYL", "FOX"}}},
+        {320, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_AC_output_voltage},
+        {321, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_TWO_DECIMAL, DESCR_AC_output_frequency},
+        {332, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_Current_Max_Charging_Current},
+        {333, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_Current_Max_AC_Charging_Current},
 
-    inline static const modbus_register_t registers_device_serial[] = {
-        {186, MODBUS_TYPE_HOLDING, REGISTER_TYPE_ASCII, "SN1"},
-        {188, MODBUS_TYPE_HOLDING, REGISTER_TYPE_ASCII, "SN2"},
-        {190, MODBUS_TYPE_HOLDING, REGISTER_TYPE_ASCII, "SN3"},
-        {192, MODBUS_TYPE_HOLDING, REGISTER_TYPE_ASCII, "SN4"},
-        {194, MODBUS_TYPE_HOLDING, REGISTER_TYPE_ASCII, "SN5"},
-        {196, MODBUS_TYPE_HOLDING, REGISTER_TYPE_ASCII, "SN6"}};
+
+    }; 
 };
 
 #endif
