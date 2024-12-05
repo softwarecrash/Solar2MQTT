@@ -94,6 +94,8 @@ public:
     void callback(std::function<void()> func);
     std::function<void()> requestCallback;
 
+    void setProtocol(protocol_type_t protocol);
+    bool isModbus();
  
 
 private: 
@@ -156,7 +158,6 @@ private:
     bool PIXX_QMN();
     bool PIXX_QFLAG();
 
-    bool isModbus();
 
     static bool checkQFLAG(const String& flags, char symbol);
 };

@@ -468,7 +468,7 @@ void loop()
           }
           else if (parameter >= NoD && parameter < PROTOCOL_TYPE_MAX)
           {
-            mppClient.protocol = static_cast<protocol_type_t>(parameter);
+            mppClient.setProtocol(static_cast<protocol_type_t>(parameter));
             writeLog("Change protocol to: %s", protocolStrings[parameter]);
           }
           else

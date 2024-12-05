@@ -23,6 +23,40 @@ bool MODBUS::Init()
     return true;
 }
 
+void MODBUS::setProtocol(protocol_type_t protocol){
+    if (device != nullptr)
+    {
+        delete device;
+        device = nullptr;
+    }
+     switch (protocol)
+    {
+    case MODBUS_DEYE:
+        device = new Deye();
+        break;
+    case MODBUS_ANENJI:
+        device = new Anenji();
+        break;
+    case MODBUS_MUST:
+        device = new MustPV_PH18();
+        break;
+    case MODBUS_POW_HVM:
+        device = new Pow_Hvm();
+        break;
+    default: 
+        break;
+    }
+
+    if (device != nullptr)
+    {
+        device->init(*my_serialIntf, _mCom); 
+    }
+    else
+    {
+        writeLog("Unsupported protocol or failed to initialize device.");
+    }
+}
+
 void MODBUS::prepareRegisters()
 {
     const modbus_register_t *registers_live = device->getLiveRegisters();
@@ -95,44 +129,28 @@ String MODBUS::requestData(String command)
 // Private Functions
 //----------------------------------------------------------------------
 protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter type
-{
-    protocol_type_t protocol = NoD;
-    char modelName[30];
-
-    writeLog("Try Autodetect Modbus device");
-
-    ModbusDevice *devices[] = { new Deye(), new Anenji(), new MustPV_PH18(), new Pow_Hvm()};
-    const size_t deviceCount = sizeof(devices) / sizeof(devices[0]);
+{ 
+    char modelName[30]; 
+    writeLog("Try Autodetect Modbus device"); 
+    const size_t deviceCount = sizeof(modbus_protocols) / sizeof(modbus_protocols[0]); 
     
     for (size_t i = 0; i < deviceCount; ++i)
     {
-        devices[i]->init(*my_serialIntf, _mCom); 
-        bool ret = devices[i]->retrieveModel(_mCom, modelName, sizeof(modelName));
+        setProtocol(modbus_protocols[i]);
+ 
+        bool ret = device->retrieveModel(_mCom, modelName, sizeof(modelName));
         
         if (ret && strlen(modelName) != 0)
         {
             writeLog("<Autodetect> Found Modbus device: %s", modelName);
             staticData["Device_Model"] = modelName;
-            
-            device = devices[i];
+             
             prepareRegisters();
-            protocol = device->getProtocol();
-
-            // Clean up other devices not selected
-            for (size_t j = 0; j < deviceCount; ++j)
-            {
-                writeLog("j:%d",j);
-                if (j != i && devices[i] != nullptr) { 
-                    writeLog("delete device");
-                    delete devices[j];
-                    devices[j] = nullptr; 
-                }
-            }
-            return protocol;
+            return modbus_protocols[i];
         }
-        delete devices[i];
-        devices[i] = nullptr;
+        delete device;
+        device = nullptr;
     }
 
-    return protocol;
+    return NoD;
 }

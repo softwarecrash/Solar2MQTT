@@ -204,6 +204,19 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
     writeLog("----------------- End Autodetect -----------------");
 }
 
+
+void PI_Serial::setProtocol(protocol_type_t protocol){
+  if( isModbus()){
+    if (modbus == nullptr){
+        modbus = new MODBUS(this->my_serialIntf);
+        modbus->Init();
+        modbus->setProtocol(protocol);
+    }
+  }
+  this->protocol = protocol;
+}
+
+
 bool PI_Serial::sendCustomCommand()
 {
     if (customCommandBuffer == "")
@@ -398,7 +411,12 @@ char *PI_Serial::getModeDesc(char mode) // get the char from QMOD and make reada
 
 bool PI_Serial::isModbus()
 {
-    return protocol == MODBUS_MUST || protocol == MODBUS_DEYE ||  protocol == MODBUS_ANENJI || protocol == MODBUS_POW_HVM;
+   for (size_t i = 0; i < sizeof(modbus_protocols) / sizeof(modbus_protocols[0]); i++) {
+        if (modbus_protocols[i] == protocol) {
+            return true;
+        }
+    }
+    return false; 
 }
 
 bool PI_Serial::checkQFLAG(const String& flags, char symbol) {

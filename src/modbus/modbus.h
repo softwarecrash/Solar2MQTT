@@ -14,9 +14,19 @@ extern JsonObject deviceJson;
 extern JsonObject staticData;
 extern JsonObject liveData;
 
+// List of protocol types to try
+constexpr  protocol_type_t modbus_protocols[] = {
+    MODBUS_DEYE,
+    MODBUS_ANENJI,
+    MODBUS_MUST,
+    MODBUS_POW_HVM
+};
+
 class MODBUS
 {
 public:
+
+
     const uint8_t MAX_CONNECTION_ATTEMPTS = 10;
     bool requestStaticData = true;
     bool connection = false;
@@ -52,6 +62,7 @@ public:
      * @details sends the command over the specified serial connection
      */
     String requestData(String command);
+    void setProtocol(protocol_type_t protocol);
 
 private:
     unsigned long previousTime = 0;
