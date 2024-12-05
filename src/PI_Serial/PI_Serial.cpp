@@ -37,11 +37,7 @@ bool PI_Serial::Init()
     }
     autoDetect();
     if (isModbus())
-    {
-        if (requestCallback)
-        {
-            modbus->callback(requestCallback);
-        }
+    { 
         return true;
     }
     this->my_serialIntf->setTimeout(500);
@@ -197,23 +193,30 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
     this->my_serialIntf->end();
     if (protocol == NoD)
     {
-        modbus = new MODBUS(this->my_serialIntf);
-        modbus->Init();
+        initModbus();
         protocol = modbus->autoDetect();
     } 
     writeLog("----------------- End Autodetect -----------------");
 }
 
 
-void PI_Serial::setProtocol(protocol_type_t protocol){
+void PI_Serial::setProtocol(protocol_type_t protocol){ 
+  this->protocol = protocol;
   if( isModbus()){
+    initModbus();
+    modbus->setProtocol(protocol);
+  }
+}
+
+void PI_Serial::initModbus(){
     if (modbus == nullptr){
         modbus = new MODBUS(this->my_serialIntf);
         modbus->Init();
-        modbus->setProtocol(protocol);
+        if (requestCallback)
+        {
+            modbus->callback(requestCallback);
+        }
     }
-  }
-  this->protocol = protocol;
 }
 
 

@@ -27,20 +27,16 @@ bool Deye::retrieveModel(MODBUS_COM &mCom, char *modelBuffer, size_t bufferSize)
         .array_size = sizeof(registers_device_serial) / sizeof(modbus_register_t),
         .curr_register = 0};
 
-    for (size_t i = 0; i < model_info.array_size; i++)
+    mCom.parseModbusToJson(model_info, false);
+    if (mCom.isAllRegistersRead(model_info))
     {
-        mCom.parseModbusToJson(model_info, false);
-        if (mCom.isAllRegistersRead(model_info))
-        {
-            const char *sn1 = doc["SN1"];
-            const char *sn2 = doc["SN2"];
-            const char *sn3 = doc["SN3"];
-            const char *sn4 = doc["SN4"];
-            const char *sn5 = doc["SN5"];
-            snprintf(modelBuffer, bufferSize, "%s%s%s%s%s", sn1, sn2, sn3, sn4, sn5);
-            return true;
-        }
-        delay(50);
+        const char *sn1 = doc["SN1"];
+        const char *sn2 = doc["SN2"];
+        const char *sn3 = doc["SN3"];
+        const char *sn4 = doc["SN4"];
+        const char *sn5 = doc["SN5"];
+        snprintf(modelBuffer, bufferSize, "%s%s%s%s%s", sn1, sn2, sn3, sn4, sn5);
+        return true;
     }
     return false;
 }

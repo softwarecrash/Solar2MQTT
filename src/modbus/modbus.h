@@ -62,7 +62,7 @@ public:
      * @details sends the command over the specified serial connection
      */
     String requestData(String command);
-    void setProtocol(protocol_type_t protocol);
+    bool setProtocol(protocol_type_t protocol);
 
 private:
     unsigned long previousTime = 0;

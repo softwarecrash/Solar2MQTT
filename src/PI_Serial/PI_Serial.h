@@ -129,6 +129,9 @@ private:
      */
     void autoDetect();
 
+    /*call this before use modbus devices */
+    void initModbus();
+
     /**
      * @brief Sends a complete packet with the specified command
      * @details calculates the checksum and sends the command over the specified serial connection
