@@ -38,7 +38,7 @@ bool PI_Serial::PIXX_QFLAG()
             //staticData[DESCR_unknown] = checkQFLAG(commandAnswer, 'g');
             staticData[DESCR_Power_Saving_Enabled] = checkQFLAG(commandAnswer, 'j');
             staticData[DESCR_LCD_Reset_To_Default_Enabled] = checkQFLAG(commandAnswer, 'k');
-            //staticData[DESCR_Data_Log_Pop_Up] = checkQFLAG(commandAnswer, 'l');
+            staticData[DESCR_Data_Log_Pop_Up] = checkQFLAG(commandAnswer, 'l');
             staticData[DESCR_Overload_Restart_Enabled] = checkQFLAG(commandAnswer, 'u');
             staticData[DESCR_Over_Temperature_Restart_Enabled] = checkQFLAG(commandAnswer, 'v');
             staticData[DESCR_LCD_Backlight_Enabled] = checkQFLAG(commandAnswer, 'x');

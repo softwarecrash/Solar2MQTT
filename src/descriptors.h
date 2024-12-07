@@ -110,7 +110,7 @@
 #define DESCR_LCD_Backlight_Enabled "LCD_Backlight_Enabled"
 #define DESCR_Primary_Source_Interrupt_Alarm_Enabled "Primary_Source_Interrupt_Alarm_Enabled"
 #define DESCR_Record_Fault_Code_Enabled "Record_Fault_Code_Enabled"
-#define DESCR_ ""
+#define DESCR_Data_Log_Pop_Up "DESCR_Data_Log_Pop_Up"
 // QMN
 #define DESCR_Device_Model "Device_Model"
 // QMOD
