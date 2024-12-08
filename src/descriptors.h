@@ -83,7 +83,7 @@
 #define DESCR_Parallel_Warning "Parallel_Warning"                 // Parallel Warning
 #define DESCR_Sync_Frequency "Sync_Frequency"                     // Sync frequency
 #define DESCR_Inverter_Charge_State "Inverter_Charge_State"       // charge state
-#define DESCR_unknown ""                                          // unknown state
+#define DESCR_unknown "unknown"                                   // unknown state
 // Inverter_Charge_State states
 #define DESCR_No_Charging "No charging"
 #define DESCR_Bulk_Stage "Bulk stage"
