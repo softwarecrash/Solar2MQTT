@@ -388,3 +388,28 @@ String MODBUS_COM::convertRegistersToASCII(uint16_t* registers, size_t count) {
 
     return result;
 }
+
+bool MODBUS_COM::writeRegister(uint16_t registerAddress, uint16_t value) {
+
+    // Log the value
+    writeLog("Writing to register %d: Value %d", registerAddress, value);
+
+    // Clear the transmit buffer
+    _mb.clearTransmitBuffer();
+
+    // Set the transmit buffer with the scaled value
+    _mb.setTransmitBuffer(0, value);
+
+    // Write the single register
+    uint8_t result = _mb.writeMultipleRegisters(registerAddress, 1);
+
+    // Check the result
+    if (result == _mb.ku8MBSuccess) {
+        writeLog("Modbus write successful: Register %d, Value %.2f", registerAddress, value);
+        return true;
+    } else {
+        getModbusResultMsg(result);
+        return false;
+    }
+
+}

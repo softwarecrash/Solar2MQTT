@@ -583,6 +583,7 @@ bool connectMQTT()
         mqttclient.publish(topicBuilder(buff, "Alive"), "true", true); // LWT online message must be retained!
         mqttclient.publish(topicBuilder(buff, "IP"), (const char *)(WiFi.localIP().toString()).c_str(), true);
         mqttclient.subscribe(topicBuilder(buff, "DeviceControl/Set_Command"));
+        mqttclient.subscribe(topicBuilder(buff, "DeviceControl/Set_ModbusRegister"));
         if (strlen(settings.data.mqttTriggerPath) >= 1)
         {
           mqttclient.subscribe(settings.data.mqttTriggerPath);
@@ -698,6 +699,11 @@ void mqttcallback(char *top, unsigned char *payload, unsigned int length)
     writeLog("Command recived: ", messageTemp);
     commandFromUser = messageTemp;
   }
+  if (strcmp(top, topicBuilder(buff, "DeviceControl/Set_ModbusRegister")) == 0 && messageTemp.length() > 0) {
+
+      writeLog("Command recived: ", messageTemp);
+      commandFromUser = messageTemp;
+}
 }
 
 bool sendHaDiscovery()

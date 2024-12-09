@@ -43,6 +43,7 @@ private:
                                                                                                          
          {202, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_AC_In_Voltage},
          {203, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_TWO_DECIMAL, DESCR_AC_In_Frequenz}, 
+         {204, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, "Input_power"}, 
         {205, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_AC_Out_Voltage},
         {206, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_Output_current},
         {207, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_TWO_DECIMAL, DESCR_AC_Out_Frequenz},
@@ -102,6 +103,11 @@ private:
             "AGM", "FLD", "USER", "SMK1", "PYL", "FOX"}}},
         {320, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_AC_output_voltage},
         {321, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_TWO_DECIMAL, DESCR_AC_output_frequency},
+        {324, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_Battery_Bulk_Voltage},
+        {325, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_Battery_Float_Voltage},
+        {327, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_Battery_Under_Voltage},
+        {331, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_Charger_Source_Priority, 0, {.bitfield = {
+            "Utility", "PV priority", "PV is at the same level as the Utility", "Only PV charging is allowed"}}},
         {332, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_Current_Max_Charging_Current},
         {333, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_Current_Max_AC_Charging_Current},
 
