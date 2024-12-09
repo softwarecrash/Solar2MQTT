@@ -8,13 +8,18 @@
 #define DESCR_AC_In_Voltage "AC_In_Voltage"                                   // BBB.B
 #define DESCR_AC_In_Frequenz "AC_In_Frequenz"                                 // CC.C
 #define DESCR_AC_Out_Voltage "AC_Out_Voltage"                                 // DDD.D
+#define DESCR_AC_Out_Effective_Voltage "AC_Out_Effective_Voltage"              // DDD.D
 #define DESCR_AC_Out_Frequenz "AC_Out_Frequenz"                               // EE.E
 #define DESCR_AC_Out_VA "AC_Out_VA"                                           // FFFF
 #define DESCR_AC_Out_Watt "AC_Out_Watt"                                       // GGGG
 #define DESCR_AC_Out_Percent "AC_Out_Percent"                                 // HHH
 #define DESCR_Inverter_Bus_Voltage "Inverter_Bus_Voltage"                     // III
 #define DESCR_Battery_Voltage "Battery_Voltage"                               // JJ.JJ
+#define DESCR_Battery_avg_Voltage "Battery_avg_Voltage"                               // JJ.JJ
+#define DESCR_Battery_avg_Current "Battery_avg_Current"                 // KKK
+#define DESCR_Battery_avg_Power "Battery_avg_Power"                 // KKK
 #define DESCR_Battery_Charge_Current "Battery_Charge_Current"                 // KKK
+#define DESCR_Inverter_avg_Charge_Current "Inverter_charging_avg"                 // KKK
 #define DESCR_Battery_Percent "Battery_Percent"                               // OOO
 #define DESCR_Inverter_Bus_Temperature "Inverter_Bus_Temperature"             // TTTT
 #define DESCR_PV_Input_Current "PV_Input_Current"                             // EE.E
@@ -25,6 +30,8 @@
 #define DESCR_Battery_Voltage_Offset_Fans_On "Battery_Voltage_Offset_Fans_On" // QQ
 #define DESCR_EEPROM_Version "EEPROM_Version"                                 // VV
 #define DESCR_PV_Charging_Power "PV_Charging_Power"                           // MMMM
+#define DESCR_PV_Charging_avg_Power "PV_Charging_avg_Power"                           // MMMM
+#define DESCR_Inverter_Charging_Power "Inverter_Charging_Power"                        // MMMM
 #define DESCR_Device_Status "Device_Status"                                   // b8-b10
 #define DESCR_Solar_Feed_To_Grid_Status "Solar_Feed_To_Grid_Status"           // Y
 #define DESCR_Country "Country"                                               // ZZ
@@ -35,6 +42,7 @@
 
 #define DESCR_Negative_battery_voltage "Negative_battery_voltage"
 #define DESCR_Output_current "Output_current"
+#define DESCR_Output_effective_current "Output_effective_current"
 #define DESCR_Output_load_percent "Output_load_percent"
 #define DESCR_Output_load_percent "Output_load_percent"
 #define DESCR_Output_power "Output_power"
@@ -60,6 +68,7 @@
 #define DESCR_Local_Parallel_ID "Local_Parallel_ID"
 #define DESCR_Battery_Load "Battery_Load"
 #define DESCR_PV_Input_Power "PV_Input_Power"
+#define DESCR_Input_Power "Input_Power"
 // QPIGS2
 #define DESCR_PV2_Input_Current "PV2_Input_Current"
 #define DESCR_PV2_Charging_Power "PV2_Charging_Power"
