@@ -20,7 +20,7 @@
 #define DESCR_PV_Input_Current "PV_Input_Current"                             // EE.E
 #define DESCR_PV_Input_Voltage "PV_Input_Voltage"                             // UUU.U
 #define DESCR_Battery_SCC_Volt "Battery_SCC_Volt"                             // WW.WW
-#define DESCR_Battery_Discharge_Current "Battery_Discharge_Current"          // PPPP
+#define DESCR_Battery_Discharge_Current "Battery_Discharge_Current"           // PPPP
 #define DESCR_Status_Flag "Status_Flag"                                       // b0-b7
 #define DESCR_Battery_Voltage_Offset_Fans_On "Battery_Voltage_Offset_Fans_On" // QQ
 #define DESCR_EEPROM_Version "EEPROM_Version"                                 // VV
@@ -42,9 +42,9 @@
 #define DESCR_AC_output_current "AC_output_current"
 #define DESCR_AC_output_frequency "AC_output_frequency"
 #define DESCR_AC_output_power "AC_output_power"
-#define DESCR_AC_output_voltage "AC_output_voltage" 
+#define DESCR_AC_output_voltage "AC_output_voltage"
 
-#define DESCR_Positive_battery_voltage "Positive_battery_voltage" 
+#define DESCR_Positive_battery_voltage "Positive_battery_voltage"
 
 #define DESCR_PV1_Input_Power "PV1_Input_Power"
 #define DESCR_PV2_Input_Power "PV2_Input_Power"
@@ -110,7 +110,7 @@
 #define DESCR_LCD_Backlight_Enabled "LCD_Backlight_Enabled"
 #define DESCR_Primary_Source_Interrupt_Alarm_Enabled "Primary_Source_Interrupt_Alarm_Enabled"
 #define DESCR_Record_Fault_Code_Enabled "Record_Fault_Code_Enabled"
-#define DESCR_Data_Log_Pop_Up "DESCR_Data_Log_Pop_Up"
+#define DESCR_Data_Log_Pop_Up "Data_Log_Pop_Up"
 // QMN
 #define DESCR_Device_Model "Device_Model"
 // QMOD
