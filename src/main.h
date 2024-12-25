@@ -209,7 +209,7 @@ static const char *const haLiveDescriptor[][4]{
     //{"Battery_SCC2_Volt","battery-high",DESCR_V,DESCR_voltage},
     {DESCR_Battery_Temperature, ICON_thermometer_lines, "°C", "temperature"},
     {DESCR_Battery_Voltage, "battery-high", ICON_V, ICON_voltage},
-    {DESCR_Battery_Voltage_Offset_Fans_On, "fan", "", ""},
+    //{DESCR_Battery_Voltage_Offset_Fans_On, "fan", "", ""}, //disabled for some malefunction and unnescary data
     //{"Configuration_State","state-machine","",""},
     //{"Country","earth","",""},
     {DESCR_Device_Status, "state-machine", "", ""},
