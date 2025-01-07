@@ -1,7 +1,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <WebSerialLite.h>
+//#include <WebSerialLite.h>
+#include <MycilaWebSerial.h>
 #include "descriptors.h"
 #define ARDUINOJSON_USE_DOUBLE 1
 #define ARDUINOJSON_USE_LONG_LONG 1
@@ -23,8 +24,8 @@
 #define LED_PIN 02 // D4 with the LED on Wemos D1 Mini
 
 #define DBG_BAUD 115200
-#define DBG_WEBLN(...) WebSerial.println(__VA_ARGS__)
-#define DBG_WEB(...) WebSerial.print(__VA_ARGS__)
+#define DBG_WEBLN(...) webSerial.println(__VA_ARGS__)
+#define DBG_WEB(...) webSerial.print(__VA_ARGS__)
 #define SOFTWARE_VERSION SWVERSION
 #define DBG Serial
 #define DBG_BEGIN(...) DBG.begin(__VA_ARGS__)

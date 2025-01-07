@@ -29,6 +29,7 @@ AsyncWebSocket ws("/ws");
 AsyncWebSocketClient *wsClient;
 DNSServer dns;
 Settings settings;
+WebSerial webSerial;
 
 #ifdef TEMPSENS_PIN
 OneWire oneWire(TEMPSENS_PIN);
@@ -107,6 +108,8 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
     getJsonData();
     notifyClients();
     break;
+    case WS_EVT_PING:
+    break;
   case WS_EVT_DISCONNECT:
     wsClient = nullptr;
     ws.cleanupClients(); // clean unused client connections
@@ -131,7 +134,7 @@ void recvMsg(uint8_t *data, size_t len)
     d += char(data[i]);
   }
   commandFromUser = (d);
-  WebSerial.println("Sending [" + d + "] to Device");
+  webSerial.println("Sending [" + d + "] to Device");
 }
 
 bool resetCounter(bool count)
@@ -413,8 +416,8 @@ void setup()
     MDNS.addService("http", "tcp", 80);
     ws.onEvent(onEvent);
     server.addHandler(&ws);
-    WebSerial.begin(&server);
-    WebSerial.onMessage(recvMsg);
+    webSerial.begin(&server);
+    webSerial.onMessage(recvMsg);
 
     server.begin();
 
