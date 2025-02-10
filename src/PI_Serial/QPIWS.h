@@ -13,7 +13,7 @@ bool PI_Serial::PIXX_QPIWS()
         {
             return false;
         }
-        if (commandAnswer.length() == 32)
+        if (commandAnswer.length() == 32 || commandAnswer.length() == 31)
         {
             std::vector<String> qpiwsStrings;
             if ((char)commandAnswer.charAt(1) == '1') qpiwsStrings.emplace_back("Inverter fault"); // 2
