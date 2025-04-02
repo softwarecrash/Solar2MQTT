@@ -78,12 +78,12 @@ void notifyClients()
 {
   if (wsClient != nullptr && wsClient->canSend())
   {
-    size_t len = measureJson(liveData);
+    size_t len = measureJson(Json);
     AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
     if (buffer)
     {
       assert(buffer);
-      serializeJson(liveData, buffer->get(), len);
+      serializeJson(Json, buffer->get(), len);///befor only liveData send
       wsClient->text(buffer);
     }
     writeLog("WS data send");
@@ -452,7 +452,8 @@ void loop()
   {
     // Make sure wifi is in the right mode
     if (WiFi.status() == WL_CONNECTED)
-    { // No use going to next step unless WIFI is up and running.
+    { 
+      // No use going to next step unless WIFI is up and running.
       if (commandFromUser != "")
       {
         if (commandFromUser == "autodetect")
