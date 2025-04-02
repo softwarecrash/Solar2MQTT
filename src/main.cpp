@@ -538,8 +538,10 @@ bool prozessData()
 
 void getJsonData()
 {
+/*   
+  for testing only
   liveData[F("PV_Input_Voltage")] = 230;
-  liveData[F("Battery_Percent")] = 80;
+  liveData[F("Battery_Percent")] = 80; */
 
   deviceJson[F("Device_name")] = settings.data.deviceName;
   deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
