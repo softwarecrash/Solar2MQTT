@@ -145,18 +145,18 @@
             ["ivmode", "Inverter_Operation_Mode", ""]
         ];
         //lowercase data entries
-        data = Object.fromEntries(
-            Object.entries(data).map(([k, v]) => [k.toLowerCase(), v])
+        data.LiveData = Object.fromEntries(
+            Object.entries(data.LiveData).map(([k, v]) => [k.toLowerCase(), v])
         );
 
         mappings.forEach(([id, dataKey, unit, round = false]) => {
             const key = dataKey.toLowerCase();
-            const value = round ? Math.round(data[key]) : data[key];
+            const value = round ? Math.round(data.LiveData[key]) : data.LiveData[key];
             document.getElementById(id).innerHTML = value + unit;
         });
 
 
-        $('#packSOC').width(data.battery_percent + '%%').attr('aria-valuenow', data.battery_percent);
+        $('#packSOC').width(data.LiveData.battery_percent + '%%').attr('aria-valuenow', data.LiveData.battery_percent);
 
         dataFields.forEach(dRDiv => {
             const spans = dRDiv.querySelectorAll('.dF span');

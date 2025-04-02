@@ -538,6 +538,9 @@ bool prozessData()
 
 void getJsonData()
 {
+  liveData[F("PV_Input_Voltage")] = 230;
+  liveData[F("Battery_Percent")] = 80;
+
   deviceJson[F("Device_name")] = settings.data.deviceName;
   deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
   deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
