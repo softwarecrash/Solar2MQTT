@@ -88,6 +88,12 @@ bool connectMQTT();
 bool sendtoMQTT();
 
 /**
+ * @brief send the data async to mqtt
+ *
+ */
+bool sendtoMQTTasync();
+
+/**
  * @brief get the basic device data
  *
  */
