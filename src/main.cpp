@@ -64,7 +64,7 @@ void notifyClients()
 {
   if (wsClient != nullptr && wsClient->canSend())
   {
-    liveData["wifi_RSSI"] = WiFi.RSSI();
+    liveData["Wifi_RSSI"] = WiFi.RSSI();
     size_t len = measureJson(liveData);
     AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
     if (buffer)
@@ -72,7 +72,7 @@ void notifyClients()
       serializeJson(liveData, (char *)buffer->get(), len + 1);
       wsClient->text(buffer);
     }
-    liveData.remove("wifi_RSSI");
+    liveData.remove("Wifi_RSSI");
     writeLog("WS data send");
   }
 }
