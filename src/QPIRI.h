@@ -107,7 +107,7 @@ bool PI_Serial::PIXX_QPIRI()
       return false;
     }
     if (commandAnswer.length() > 80 &&
-        commandAnswer.length() <= 108)
+        commandAnswer.length() < 105)
     {
 
       byte protocolNum = 0;
@@ -354,9 +354,8 @@ bool PI_Serial::PIXX_QPIRI()
         break;
       case 1:
         staticData["Output_mode"] = "parallel output";
-        break;
       case 2:
-        staticData["Output_mode"] = "Phase 1 of three phase output";
+        staticData["Output_mode"] = "Phase 1 of three phaseoutput";
         break;
       case 3:
         staticData["Output_mode"] = "Phase 2 of three phase output";
