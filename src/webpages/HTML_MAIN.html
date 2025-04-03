@@ -1,0 +1,256 @@
+%pre_head_template%
+
+<figure class="text-center">
+    <h2 id="device_name">%pre_device_name%  <svg class="wifi-symbol" viewBox="0 15 64 64" xmlns="http://www.w3.org/2000/svg" width="32" height="32"><title id="wifiTitle">WiFi-Signal</title><path id="level5" d="M8 32 A33 32 0 0 1 56 32" stroke="black" stroke-width="4" fill="none" /><path id="level4" d="M14 38 A26 26 0 0 1 50 38" stroke="black" stroke-width="4" fill="none" /><path id="level3" d="M20 44 A18 20 0 0 1 44 44" stroke="black" stroke-width="4" fill="none" /><path id="level2" d="M26 50 A10 14 0 0 1 38 50" stroke="black" stroke-width="4" fill="none"/><circle id="level1" cx="32" cy="56" r="3" fill="black"/></svg></h2>
+</figure>
+<!--
+<div class="dR row gx-0 mb-1" id="alert" style="padding-bottom: 0rem;padding-top: 0px; display: none;">
+    <div id="alert" class="" role="alert" style="text-align: center;">
+        <i id="alert_icon" class=""></i>
+        <span id="alert_message"></span>
+    </div>
+</div>
+-->
+<div class="dR row gx-0 mb-2">
+    <div class="col" id="ClickSOC">
+        <div class="progress" style="height:1.8rem;">
+            <div id="packSOC" class="progress-bar dF" role="progressbar" style="width:0%;height:1.8rem;"
+                aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+    </div>
+</div>
+
+<div class="dR row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
+    <div class="col">Solar:</div>
+    <div class="col dF">
+        <span id="pv_volt"></span>
+        <span id="pv_current"></span>
+        <span id="pv_power"></span>
+    </div>
+</div>
+
+<div class="dR row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
+    <div class="col">Solar2:</div>
+    <div class="col dF">
+        <span id="pv2_volt"></span>
+        <span id="pv2_current"></span>
+        <span id="pv2_power"></span>
+    </div>
+</div>
+
+<div class="dR row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
+    <div class="col">Grid:</div>
+    <div class="col dF">
+        <span id="grid_volt"></span>
+        <span id="grid_hz"></span>
+    </div>
+</div>
+
+<div class="dR row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
+    <div class="col">AC out:</div>
+    <div class="col dF">
+        <span id="ac_out_volt"></span>
+        <span id="ac_out_hz"></span>
+        <span id="ac_out_power"></span>
+        <span id="ac_out_percent"></span>
+    </div>
+</div>
+
+<div class="dR row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
+    <div class="col">Temperature:</div>
+    <div class="col dF">
+        <span id="heatsink_temp"></span>
+    </div>
+</div>
+
+<div class="dR row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
+    <div class="col">Battery:</div>
+    <div class="col dF">
+        <span id="batt_volt"></span>
+        <span id="batt_load"></span>
+        <span id="batt_percent"></span>
+    </div>
+</div>
+
+<div class="dR row gx-0 mb-2 bg-light rounded bg-opacity-50 px-2">
+    <div class="col">Inverter mode:</div>
+    <div class="col dF">
+        <span id="ivmode"></span>
+    </div>
+</div>
+
+<div class="d-grid gap-2">
+    <a class="btn btn-primary btn-block" href="/settings" role="button">Settings</a>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        initWebSocket();
+        initButton();
+        //setInterval(refreshAlert, 5000);
+    });
+    var gateway = `ws://${window.location.host}/ws`;
+    var websocket;
+    var ctx;
+    var cellChart;
+    var createBarChart = true;
+    var alertListArr = [];
+    var alertListitem = 0;
+    var kickRefresh = true;
+    var dataFields = document.getElementsByClassName("dF");
+    var dataRows = document.getElementsByClassName("dR");
+    var wifiSvg = '<svg class="wifi-symbol" viewBox="0 15 64 64" xmlns="http://www.w3.org/2000/svg" width="32" height="32"><title id="wifiTitle">WiFi-Signal</title><path id="level5" d="M8 32 A33 32 0 0 1 56 32" stroke="black" stroke-width="4" fill="none" /><path id="level4" d="M14 38 A26 26 0 0 1 50 38" stroke="black" stroke-width="4" fill="none" /><path id="level3" d="M20 44 A18 20 0 0 1 44 44" stroke="black" stroke-width="4" fill="none" /><path id="level2" d="M26 50 A10 14 0 0 1 38 50" stroke="black" stroke-width="4" fill="none"/><circle id="level1" cx="32" cy="56" r="3" fill="black"/></svg>';
+
+    function initWebSocket() {
+        //console.log('Trying to open a WebSocket connection...');
+        websocket = new WebSocket(gateway);
+        websocket.onopen = onOpen;
+        websocket.onclose = onClose;
+        websocket.onerror = onError;
+        websocket.onmessage = onMessage;
+    }
+    function onOpen(event) {
+        console.log('Connection opened');
+        setInterval(checkWS, 5000);
+    }
+    function onClose(event) {
+        //document.getElementById("status").innerHTML = 'WS Closed';
+        console.log('Connection closed');
+        setTimeout(initWebSocket, 3000);
+    }
+    function onError(event) {
+        //document.getElementById("status").innerHTML = 'WS Lost';
+        console.log('Connection lost');
+    }
+    function onMessage(event) {
+        var data = JSON.parse(event.data);
+        document.getElementById("packSOC").innerHTML = data.Battery_Percent + '%%';
+        $('#packSOC').width(data.Battery_Percent + '%%').attr('aria-valuenow', data.Battery_Percent);
+
+        document.getElementById("pv_volt").innerHTML = data.PV_Input_Voltage + 'V ';
+        document.getElementById("pv_current").innerHTML = data.PV_Input_Current + 'A  ';
+        document.getElementById("pv_power").innerHTML = Math.round(data.PV_Charging_Power) + 'W  ';
+
+        document.getElementById("pv2_volt").innerHTML = data.PV2_Input_Voltage + 'V ';
+        document.getElementById("pv2_current").innerHTML = data.PV2_Input_Current + 'A  ';
+        document.getElementById("pv2_power").innerHTML = Math.round(data.PV2_Charging_Power) + 'W  ';
+
+        document.getElementById("grid_volt").innerHTML = data.AC_in_Voltage + 'V ';
+        document.getElementById("grid_hz").innerHTML = data.AC_in_Frequenz + 'Hz  ';
+
+        document.getElementById("ac_out_volt").innerHTML = data.AC_out_Voltage + 'V ';
+        document.getElementById("ac_out_hz").innerHTML = data.AC_out_Frequenz + 'Hz ';
+
+        document.getElementById("ac_out_power").innerHTML = data.AC_out_Watt + 'W ';
+        document.getElementById("ac_out_percent").innerHTML = data.AC_out_percent + '%%';
+
+        document.getElementById("heatsink_temp").innerHTML = data.Inverter_Bus_Temperature + '°C ';
+
+        document.getElementById("batt_volt").innerHTML = data.Battery_Voltage + 'V ';
+        document.getElementById("batt_percent").innerHTML = data.Battery_Percent + '%% ';
+        document.getElementById("batt_load").innerHTML = data.Battery_Load + 'A ';
+
+        document.getElementById("ivmode").innerHTML = data.Inverter_Operation_Mode;
+
+        for (var i = 0; i < dataFields.length; i++) {
+            if (dataFields[i].innerHTML.indexOf("undefined") > -1) {
+                dataFields[i].style.display = 'none';
+            } else {
+                dataFields[i].style.display = '';
+            }
+        }
+        
+        for (var i = 0; i < dataRows.length; i++) {
+            if (dataRows[i].innerHTML.indexOf("undefined") > -1) {
+                dataRows[i].style.display = 'none';
+            } else {
+                dataRows[i].style.display = '';
+            }
+        }
+        setWiFiSignal(data.Wifi_RSSI);
+    }
+
+    /*
+    function alert(data) {
+        alertListArr = [];
+        if (data.Device.ESP_VCC < 2.8) {
+            alertListArr.push("ESP Volt to Low");
+        }
+        // if (!data.Pack.Fail_Codes.length == 0) {
+        //     var i;
+        //    var i_list = data.Pack.Fail_Codes.split(',');
+        //   for (var i_index in i_list) {
+        //        i = i_list[i_index];
+        //      alertListArr.push(i_list[i_index]);
+        //  }
+        // }
+        if (alertListArr.length == 0) {
+            document.getElementById("alert").style.display = 'none';
+        } else {
+            document.getElementById("alert").style.display = '';
+        }
+        if (kickRefresh) {
+            refreshAlert();
+            kickRefresh = false;
+        }
+    }
+
+    function refreshAlert() {
+        var alertValue;
+        if (alertListitem < alertListArr.length - 1) {
+            alertValue = (alertListArr[alertListitem]);
+            alertListitem++;
+        } else {
+            alertValue = (alertListArr[alertListitem]);
+            alertListitem = 0;
+        }
+        if (typeof alertValue !== 'undefined') {
+            if (alertValue[alertValue.length - 1] == "1") {
+
+                document.getElementById("alert_icon").className = "bi bi-info-circle-fill";
+                document.getElementById("alert").className = "row gx-0 mb-2 alert alert-info";
+            } else if (alertValue[alertValue.length - 1] == "2") {
+                document.getElementById("alert_icon").className = "bi bi-exclamation-circle-fill";
+                document.getElementById("alert").className = "row gx-0 mb-2 alert alert-warning";
+            } else {
+                document.getElementById("alert_icon").className = "bi bi-x-circle-fill";
+                document.getElementById("alert").className = "row gx-0 mb-2 alert alert-danger";
+            }
+        }
+        document.getElementById('alert_message').innerHTML = (alertValue);
+    }
+*/
+    function initButton() {
+
+    }
+    function checkWS() {
+        if (websocket.readyState !== WebSocket.CLOSED) {
+            websocket.send("A9");
+        }
+    }
+
+    const minRSSI = -85, maxRSSI = -60;
+    function setWiFiSignal(rssi) {
+    const lv = ['level1','level2','level3','level4','level5'],
+          c = ['red','orange','gold','yellowgreen','green'],
+          p = Math.max(0, Math.min(100, Math.round((rssi - minRSSI) * 100 / (maxRSSI - minRSSI)))),
+          lvl = Math.floor(p / 25),
+          col = c[Math.min(lvl, 4)];
+
+    const svg = document.querySelector(".wifi-symbol");
+    if (svg) {
+      const title = svg.querySelector("title");
+      if (title) title.textContent = p + "%% Strength";
+    }
+
+    lv.forEach((id, i) => {
+      const e = document.getElementById(id);
+      if (e) (e.tagName === "circle" ? e.setAttribute("fill", i <= lvl ? col : "#ccc")
+                                     : e.setAttribute("stroke", i <= lvl ? col : "#ccc"));
+    });
+  }
+</script>
+
+%pre_foot_template%
+<p hidden></p>
