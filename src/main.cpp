@@ -6,9 +6,11 @@ https://github.com/softwarecrash/Solar2MQTT
 #include "main.h"
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
-#include <ESP8266mDNS.h>
+//#include <ESP8266mDNS.h>
 #include <ESPAsyncWiFiManager.h>
-#include <ESPAsyncTCP.h>
+#include <AsyncTCP.h>
+#include <WiFi.h>
+#include <DNSServer.h>
 #include <ESPAsyncWebServer.h>
 #include "Settings.h"
 #include "html.h"
@@ -52,7 +54,7 @@ uint8_t numOfTempSens;
 // new importetd
 char mqttClientId[80];
 char mqttClientIdNew[80];//new for async mqtt client
-ADC_MODE(ADC_VCC);
+//ADC_MODE(ADC_VCC);
 
 // flag for saving data
 unsigned long mqtttimer = 0;
@@ -150,7 +152,7 @@ void recvMsg(uint8_t *data, size_t len)
 bool resetCounter(bool count)
 {
 
-  if (count)
+/*   if (count)
   {
     if (ESP.getResetInfoPtr()->reason == 6)
     {
@@ -179,7 +181,7 @@ bool resetCounter(bool count)
     bootcount = 0;
     ESP.rtcUserMemoryWrite(16, &bootcount, sizeof(bootcount));
   }
-  writeLog("Bootcount:%d Reboot reason:%d", bootcount, ESP.getResetInfoPtr()->reason);
+  writeLog("Bootcount:%d Reboot reason:%d", bootcount, ESP.getResetInfoPtr()->reason); */
   return true;
 }
 
@@ -199,12 +201,12 @@ void setup()
   WiFi.persistent(true); // fix wifi save bug
   WiFi.hostname(settings.data.deviceName);
   AsyncWiFiManager wm(&server, &dns);
-  sprintf(mqttClientId, "%s-%06X", settings.data.deviceName, ESP.getChipId());
+  sprintf(mqttClientId, "%s-%06X", settings.data.deviceName, ESP.getChipModel());
 
 
 
 
-  sprintf(mqttClientIdNew, "%s-%06X_async", settings.data.deviceName, ESP.getChipId());
+  sprintf(mqttClientIdNew, "%s-%06X_async", settings.data.deviceName, ESP.getChipModel());
   mqttClient.setClientId(mqttClientIdNew);
   mqttClient.setServer(settings.data.mqttServer, settings.data.mqttPort);
   mqttClient.setCredentials(settings.data.mqttUser, settings.data.mqttPassword);
@@ -328,7 +330,7 @@ void setup()
                 request->send(response);
                 delay(1000);
                 settings.reset();
-                ESP.eraseConfig();
+                //ESP.eraseConfig();
                 ESP.restart(); });
 
     server.on("/settingsedit", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -375,7 +377,7 @@ void setup()
                 }
                 request->send(200, "text/plain", "message received"); });
 
-    server.on(
+    /* server.on(
         "/update", HTTP_POST, [](AsyncWebServerRequest *request)
         {
           if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
@@ -426,15 +428,15 @@ void setup()
             }
             Serial.setDebugOutput(false);
           }
-        });
+        }); */
 
     server.onNotFound([](AsyncWebServerRequest *request)
                       { request->send(418, "text/plain", "418 I'm a teapot"); });
 
     // set the device name
 
-    MDNS.begin(settings.data.deviceName);
-    MDNS.addService("http", "tcp", 80);
+/*     MDNS.begin(settings.data.deviceName);
+    MDNS.addService("http", "tcp", 80); */
     ws.onEvent(onEvent);
     server.addHandler(&ws);
     webSerial.begin(&server);
@@ -468,11 +470,11 @@ void setup()
 
 void loop()
 {
-  MDNS.update();
-  if (Update.isRunning())
-  {
+  /* MDNS.update(); */
+/*   if (Update.isRunning())
+  { 
     workerCanRun = false; // lockout, atfer true need reboot
-  }
+  }*/
   if (workerCanRun)
   {
     // Make sure wifi is in the right mode
@@ -534,7 +536,7 @@ void loop()
     ESP.restart();
   }
   notificationLED(); // notification LED routine
-}
+ }
 
 bool prozessData()
 {
@@ -571,11 +573,11 @@ void getJsonData()
   liveData[F("Battery_Percent")] = 80; */
 
   deviceJson[F("Device_name")] = settings.data.deviceName;
-  deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
+  //deviceJson[F("ESP_VCC")] = ESP.getVcc() / 1000.0;
   deviceJson[F("Wifi_RSSI")] = WiFi.RSSI();
   deviceJson[F("sw_version")] = SOFTWARE_VERSION;
   deviceJson[F("Free_Heap")] = ESP.getFreeHeap();
-  deviceJson[F("HEAP_Fragmentation")] = ESP.getHeapFragmentation();
+  //deviceJson[F("HEAP_Fragmentation")] = ESP.getHeapFragmentation();
   // deviceJson[F("json_memory_usage")] = Json.memoryUsage();
   // deviceJson[F("json_capacity")] = Json.capacity();
   deviceJson[F("runtime")] = millis() / 1000;
