@@ -190,11 +190,8 @@ bool resetCounter(bool count)
 #include <ESPAsyncWebServer.h>
 #include <memory>
 
-#define CHUNK_SIZE 512  // Maximale Größe eines Chunks
+#define CHUNK_SIZE 512
 
-//extern String htmlProcessor(const String &var);  // deine Template-Funktion
-
-// interne Template-Verarbeitung, wie sie ESPAsyncWebServer macht
 String resolveTemplate(const String& input) {
   String result;
   int start = 0;
@@ -222,19 +219,15 @@ String resolveTemplate(const String& input) {
 }
 
 void sendChunkedHtmlPage(AsyncWebServerRequest *request, const char *htmlBodyPROGMEM) {
-  // Wenn du HEAD/FOOT nicht verwendest, einfach nur { htmlBodyPROGMEM } nehmen
   const char *chunks[3] = { HTML_HEAD, htmlBodyPROGMEM, HTML_FOOT };
 
-  // Eigene Chunkliste pro Request
   auto chunkData = std::make_shared<std::array<const char*, 3>>();
   (*chunkData)[0] = chunks[0];
   (*chunkData)[1] = chunks[1];
   (*chunkData)[2] = chunks[2];
 
-  // Fortschritt pro Client
   auto state = std::make_shared<std::pair<int, size_t>>(0, 0);
 
-  // temporärer Textpuffer für verarbeiteten Text
   auto tempBuf = std::make_shared<String>();
 
   AsyncWebServerResponse *response = request->beginChunkedResponse("text/html",
@@ -249,7 +242,6 @@ void sendChunkedHtmlPage(AsyncWebServerRequest *request, const char *htmlBodyPRO
           continue;
         }
 
-        // Nächsten Teil aus PROGMEM holen
         tempBuf->clear();
         size_t copyLen = totalLen - state->second;
         if (copyLen > CHUNK_SIZE) copyLen = CHUNK_SIZE;
@@ -259,24 +251,21 @@ void sendChunkedHtmlPage(AsyncWebServerRequest *request, const char *htmlBodyPRO
           *tempBuf += c;
         }
 
-        // Template verarbeiten (deine htmlProcessor-Funktion)
         String processed = resolveTemplate(*tempBuf);
 
-        // In den Response-Buffer schreiben
         size_t sendLen = processed.length();
         if (sendLen > maxLen) sendLen = maxLen;
         memcpy(buffer, processed.c_str(), sendLen);
 
-        // Fortschritt im Flash-HTML aktualisieren
         state->second += copyLen;
 
         return sendLen;
       }
 
-      return 0;  // fertig
+      return 0;
     });
 
-  response->setContentLength(0);  // 0 = chunked transfer
+  response->setContentLength(0);
   request->send(response);
 }
 
