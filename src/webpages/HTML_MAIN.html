@@ -94,7 +94,7 @@
 
 <script>
     $(document).ready(function () {
-        initWebSocket();
+        setTimeout(initWebSocket(), 500);
     });
     var gateway = `ws://${window.location.host}/ws`;
     var websocket;
@@ -128,7 +128,7 @@
     }
     function onMessage(event) {
         var data = JSON.parse(event.data);
-        setWiFiSignal(data.EspData.Wifi_RSSI);
+        setWiFiSignal(data.Wifi_RSSI);
         const mappings = [
             ["packSOC", "Battery_Percent", "%%"],
             ["pv_volt", "PV_Input_Voltage", "V"],
@@ -150,18 +150,18 @@
             ["ivmode", "Inverter_Operation_Mode", ""]
         ];
         //lowercase data entries
-        data.LiveData = Object.fromEntries(
-            Object.entries(data.LiveData).map(([k, v]) => [k.toLowerCase(), v])
+        data = Object.fromEntries(
+            Object.entries(data).map(([k, v]) => [k.toLowerCase(), v])
         );
 
         mappings.forEach(([id, dataKey, unit, round = false]) => {
             const key = dataKey.toLowerCase();
-            const value = round ? Math.round(data.LiveData[key]) : data.LiveData[key];
+            const value = round ? Math.round(data[key]) : data[key];
             document.getElementById(id).innerHTML = value + unit;
         });
 
 
-        $('#packSOC').width(data.LiveData.battery_percent + '%%').attr('aria-valuenow', data.LiveData.battery_percent);
+        $('#packSOC').width(data.battery_percent + '%%').attr('aria-valuenow', data.battery_percent);
 
         dataFields.forEach(dRDiv => {
             const spans = dRDiv.querySelectorAll('.dF span');

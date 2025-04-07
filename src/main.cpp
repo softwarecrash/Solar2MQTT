@@ -83,7 +83,7 @@ void saveConfigCallback()
   shouldSaveConfig = true;
 }
 
-void notifyClients()
+/* void notifyClients()
 {
   if (wsClient != nullptr && wsClient->canSend())
   {
@@ -95,14 +95,55 @@ void notifyClients()
     } else if (buffer)
     {
       assert(buffer);
-/*       serializeJson(Json, (char *)buffer->get(), len + 1);///befor only liveData send
-      wsClient->text(buffer); */
       serializeJson(Json, buffer->get(), buffer->length() + 1);
       wsClient->text(buffer);
     }
     writeLog("WS data send");
   }
+} */
+
+
+void notifyClients()
+{
+  if (wsClient != nullptr && wsClient->canSend())
+  {
+    JsonDocument json;
+    json[F("PV_Input_Voltage")] = liveData[F("PV_Input_Voltage")];
+    json[F("PV_Input_Current")] = liveData[F("PV_Input_Current")];
+    json[F("PV_Charging_Power")] = liveData[F("PV_Charging_Power")];
+    json[F("PV2_Input_Voltage")] = liveData[F("PV2_Input_Voltage")];
+    json[F("PV2_Input_Current")] = liveData[F("PV2_Input_Current")];
+    json[F("PV2_Charging_Power")] = liveData[F("PV2_Charging_Power")];
+    json[F("AC_In_Voltage")] = liveData[F("AC_In_Voltage")];
+    json[F("AC_In_Frequenz")] = liveData[F("AC_In_Frequenz")];
+    json[F("AC_Out_Voltage")] = liveData[F("AC_Out_Voltage")];
+    json[F("AC_Out_Frequenz")] = liveData[F("AC_Out_Frequenz")];
+    json[F("AC_Out_Percent")] = liveData[F("AC_Out_Percent")];
+    json[F("Inverter_Bus_Temperature")] = liveData[F("Inverter_Bus_Temperature")];
+    json[F("Battery_Voltage")] = liveData[F("Battery_Voltage")];
+    json[F("Inverter_Bus_Temperature")] = liveData[F("Inverter_Bus_Temperature")];
+    json[F("Battery_Percent")] = liveData[F("Battery_Percent")];
+    json[F("Inverter_Operation_Mode")] = liveData[F("Inverter_Operation_Mode")];
+    json[F("Battery_Percent")] = liveData[F("Battery_Percent")];
+    json[F("Wifi_RSSI")] = WiFi.RSSI();
+    
+
+    size_t len = measureJson(json);
+    AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
+    if (buffer == nullptr) {
+      writeLog("WS buffer allocation failed!");
+      return;
+    } else if (buffer)
+    {
+      assert(buffer);
+      serializeJson(json, buffer->get(), buffer->length() + 1);
+      wsClient->text(buffer);
+    }
+    writeLog("WS data send");
+  }
 }
+
+
 
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 {
