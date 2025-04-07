@@ -89,10 +89,15 @@ void notifyClients()
   {
     size_t len = measureJson(Json);
     AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
-    if (buffer)
+    if (buffer == nullptr) {
+      writeLog("WS buffer allocation failed!");
+      return;
+    } else if (buffer)
     {
-      //assert(buffer);
-      serializeJson(Json, (char *)buffer->get(), len + 1);///befor only liveData send
+      assert(buffer);
+/*       serializeJson(Json, (char *)buffer->get(), len + 1);///befor only liveData send
+      wsClient->text(buffer); */
+      serializeJson(Json, buffer->get(), buffer->length() + 1);
       wsClient->text(buffer);
     }
     writeLog("WS data send");
@@ -182,6 +187,103 @@ bool resetCounter(bool count)
   return true;
 }
 
+#include <ESPAsyncWebServer.h>
+#include <memory>
+
+#define CHUNK_SIZE 512  // Maximale Größe eines Chunks
+
+//extern String htmlProcessor(const String &var);  // deine Template-Funktion
+
+// interne Template-Verarbeitung, wie sie ESPAsyncWebServer macht
+String resolveTemplate(const String& input) {
+  String result;
+  int start = 0;
+
+  while (true) {
+    int open = input.indexOf('%', start);
+    if (open == -1) {
+      result += input.substring(start);
+      break;
+    }
+
+    int close = input.indexOf('%', open + 1);
+    if (close == -1) {
+      result += input.substring(start);
+      break;
+    }
+
+    result += input.substring(start, open);
+    String varName = input.substring(open + 1, close);
+    result += htmlProcessor(varName);
+    start = close + 1;
+  }
+
+  return result;
+}
+
+void sendChunkedHtmlPage(AsyncWebServerRequest *request, const char *htmlBodyPROGMEM) {
+  // Wenn du HEAD/FOOT nicht verwendest, einfach nur { htmlBodyPROGMEM } nehmen
+  const char *chunks[3] = { HTML_HEAD, htmlBodyPROGMEM, HTML_FOOT };
+
+  // Eigene Chunkliste pro Request
+  auto chunkData = std::make_shared<std::array<const char*, 3>>();
+  (*chunkData)[0] = chunks[0];
+  (*chunkData)[1] = chunks[1];
+  (*chunkData)[2] = chunks[2];
+
+  // Fortschritt pro Client
+  auto state = std::make_shared<std::pair<int, size_t>>(0, 0);
+
+  // temporärer Textpuffer für verarbeiteten Text
+  auto tempBuf = std::make_shared<String>();
+
+  AsyncWebServerResponse *response = request->beginChunkedResponse("text/html",
+    [chunkData, state, tempBuf](uint8_t *buffer, size_t maxLen, size_t) -> size_t {
+      while (state->first < 3) {
+        const char *chunk = (*chunkData)[state->first];
+        size_t totalLen = strlen_P(chunk);
+
+        if (state->second >= totalLen) {
+          state->first++;
+          state->second = 0;
+          continue;
+        }
+
+        // Nächsten Teil aus PROGMEM holen
+        tempBuf->clear();
+        size_t copyLen = totalLen - state->second;
+        if (copyLen > CHUNK_SIZE) copyLen = CHUNK_SIZE;
+
+        for (size_t i = 0; i < copyLen; ++i) {
+          char c = pgm_read_byte(chunk + state->second + i);
+          *tempBuf += c;
+        }
+
+        // Template verarbeiten (deine htmlProcessor-Funktion)
+        String processed = resolveTemplate(*tempBuf);
+
+        // In den Response-Buffer schreiben
+        size_t sendLen = processed.length();
+        if (sendLen > maxLen) sendLen = maxLen;
+        memcpy(buffer, processed.c_str(), sendLen);
+
+        // Fortschritt im Flash-HTML aktualisieren
+        state->second += copyLen;
+
+        return sendLen;
+      }
+
+      return 0;  // fertig
+    });
+
+  response->setContentLength(0);  // 0 = chunked transfer
+  request->send(response);
+}
+
+
+
+
+
 void setup()
 {
   // make a compatibility mode for some crap routers?
@@ -252,12 +354,18 @@ void setup()
   // check is WiFi connected
   if (apRunning)
   {
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+    server.on("/old", HTTP_GET, [](AsyncWebServerRequest *request)
               {
               if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
               AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_MAIN, htmlProcessor);
               request->send(response); });
 
+
+
+              server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+                if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
+                sendChunkedHtmlPage(request, HTML_MAIN);});
+      
 
     server.on("/livejson", HTTP_GET, [](AsyncWebServerRequest *request)
               {
@@ -291,17 +399,26 @@ void setup()
                 ESP.eraseConfig();
                 ESP.restart(); });
 
-    server.on("/settingsedit", HTTP_GET, [](AsyncWebServerRequest *request)
+/*     server.on("/settingsedit", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                 if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_SETTINGS_EDIT, htmlProcessor);
-                request->send(response); });
+                request->send(response); }); */
 
-    server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request)
+                server.on("/settingsedit", HTTP_GET, [](AsyncWebServerRequest *request) {
+                  if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
+                  sendChunkedHtmlPage(request, HTML_SETTINGS_EDIT);});
+
+/*     server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request)
               {
                 if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
                 AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_SETTINGS, htmlProcessor);
-                request->send(response); });
+                request->send(response); }); */
+
+                server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request) {
+                  if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
+                  sendChunkedHtmlPage(request, HTML_SETTINGS);});
+
 
     server.on("/settingssave", HTTP_POST, [](AsyncWebServerRequest *request)
               {
@@ -433,6 +550,8 @@ void loop()
     // Make sure wifi is in the right mode
     if (WiFi.status() == WL_CONNECTED)
     { 
+      //for testing only
+      //Serial.println(ESP.getFreeHeap());
       // No use going to next step unless WIFI is up and running.
       if (commandFromUser != "")
       {

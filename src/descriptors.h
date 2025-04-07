@@ -5,7 +5,10 @@
 #define DESCR_req_NOA "NOA"
 #define DESCR_req_ERCRC "ERCRC"
 // QPIGS
+//#define DESCR_AC_In_Voltage "AC_In_Voltage"                                   // BBB.B
+
 #define DESCR_AC_In_Voltage "AC_In_Voltage"                                   // BBB.B
+
 #define DESCR_AC_In_Frequenz "AC_In_Frequenz"                                 // CC.C
 #define DESCR_AC_Out_Voltage "AC_Out_Voltage"                                 // DDD.D
 #define DESCR_AC_Out_Frequenz "AC_Out_Frequenz"                               // EE.E
