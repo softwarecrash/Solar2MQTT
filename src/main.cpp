@@ -15,10 +15,10 @@ https://github.com/softwarecrash/Solar2MQTT
 #include "htmlProzessor.h"
 #include "PI_Serial/PI_Serial.h"
 
-#include <AsyncMqttClient.h>
+/* #include <AsyncMqttClient.h>
 AsyncMqttClient mqttClient;
 bool mqttswitch = true;
-
+ */
 
 #ifdef TEMPSENS_PIN
 #include <OneWire.h>
@@ -51,7 +51,6 @@ uint8_t numOfTempSens;
 
 // new importetd
 char mqttClientId[80];
-char mqttClientIdNew[80];//new for async mqtt client
 ADC_MODE(ADC_VCC);
 
 // flag for saving data
@@ -92,8 +91,8 @@ void notifyClients()
     AsyncWebSocketMessageBuffer *buffer = ws.makeBuffer(len);
     if (buffer)
     {
-      assert(buffer);
-      serializeJson(Json, buffer->get(), len);///befor only liveData send
+      //assert(buffer);
+      serializeJson(Json, (char *)buffer->get(), len + 1);///befor only liveData send
       wsClient->text(buffer);
     }
     writeLog("WS data send");
@@ -115,7 +114,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
   {
   case WS_EVT_CONNECT:
     wsClient = client;
-    getJsonData();
+    //getJsonData();
     notifyClients();
     break;
     case WS_EVT_PING:
@@ -203,51 +202,11 @@ void setup()
 
 
 
-
-  sprintf(mqttClientIdNew, "%s-%06X_async", settings.data.deviceName, ESP.getChipId());
-  mqttClient.setClientId(mqttClientIdNew);
-  mqttClient.setServer(settings.data.mqttServer, settings.data.mqttPort);
-  mqttClient.setCredentials(settings.data.mqttUser, settings.data.mqttPassword);
-
-
-
-
   wm.setMinimumSignalQuality(20); // filter weak wifi signals
   // wm.setConnectTimeout(15);       // how long to try to connect for before continuing
   // wm.setConfigPortalTimeout(120); // auto close configportal after n seconds
   wm.setSaveConfigCallback(saveConfigCallback);
-  /*
-    DEBUG_PRINTLN();
-    DEBUG_PRINTF("Device Name:\t");
-    DEBUG_PRINTLN(settings.data.deviceName);
-    DEBUG_PRINTF("Mqtt Server:\t");
-    DEBUG_PRINTLN(settings.data.mqttServer);
-    DEBUG_PRINTF("Mqtt Port:\t");
-    DEBUG_PRINTLN(settings.data.mqttPort);
-    DEBUG_PRINTF("Mqtt User:\t");
-    DEBUG_PRINTLN(settings.data.mqttUser);
-    DEBUG_PRINTF("Mqtt Passwort:\t");
-    DEBUG_PRINTLN(settings.data.mqttPassword);
-    DEBUG_PRINTF("Mqtt Interval:\t");
-    DEBUG_PRINTLN(settings.data.mqttRefresh);
-    DEBUG_PRINTF("Mqtt Topic:\t");
-    DEBUG_PRINTLN(settings.data.mqttTopic);
-    DEBUG_WEBLN();
-    DEBUG_WEBF("Device Name:\t");
-    DEBUG_WEBLN(settings.data.deviceName);
-    DEBUG_WEBF("Mqtt Server:\t");
-    DEBUG_WEBLN(settings.data.mqttServer);
-    DEBUG_WEBF("Mqtt Port:\t");
-    DEBUG_WEBLN(settings.data.mqttPort);
-    DEBUG_WEBF("Mqtt User:\t");
-    DEBUG_WEBLN(settings.data.mqttUser);
-    DEBUG_WEBF("Mqtt Passwort:\t");
-    DEBUG_WEBLN(settings.data.mqttPassword);
-    DEBUG_WEBF("Mqtt Interval:\t");
-    DEBUG_WEBLN(settings.data.mqttRefresh);
-    DEBUG_WEBF("Mqtt Topic:\t");
-    DEBUG_WEBLN(settings.data.mqttTopic);
-  */
+
   // create custom wifimanager fields
 
   AsyncWiFiManagerParameter custom_mqtt_server("mqtt_server", "MQTT server", NULL, 40);
@@ -298,6 +257,7 @@ void setup()
               if(strlen(settings.data.httpUser) > 0 && !request->authenticate(settings.data.httpUser, settings.data.httpPass)) return request->requestAuthentication();
               AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", HTML_MAIN, htmlProcessor);
               request->send(response); });
+
 
     server.on("/livejson", HTTP_GET, [](AsyncWebServerRequest *request)
               {
@@ -445,11 +405,6 @@ void setup()
     mppClient.callback(prozessData);
     mppClient.Init(); // init the PI_serial Library
     mqtttimer = (settings.data.mqttRefresh * 1000) * (-1);
-
-
-
-
-
   }
 
   analogWrite(LED_PIN, 255);
@@ -516,7 +471,7 @@ void loop()
       tempSens.update();
 #endif
 
-      ws.cleanupClients(); // clean unused client connections
+      //ws.cleanupClients(); // clean unused client connections
       mppClient.loop();    // Call the PI Serial Library loop
       mqttclient.loop();
       if ((haDiscTrigger || settings.data.haDiscovery) && measureJson(Json) > jsonSize)
@@ -602,20 +557,12 @@ char *topicBuilder(char *buffer, char const *path, char const *numering = "")
   strcat(buffer, numering);
   return buffer;
 }
-char *topicBuilderasync(char *buffer, char const *path, char const *numering = "")
-{                                                  // buffer, topic
-  const char *mainTopic = settings.data.mqttTopic; // get the main topic path
-  strcpy(buffer, mainTopic);
-  strcat(buffer, "_async/");
-  strcat(buffer, path);
-  strcat(buffer, numering);
-  return buffer;
-}
+
 bool connectMQTT()
 {
   if (strcmp(settings.data.mqttServer, "") == 0)
     return false;
-  char buff[256];
+  char buff[128];
   if (!mqttclient.connected())
   {
     firstPublish = false;
@@ -645,7 +592,7 @@ bool connectMQTT()
 
 bool sendtoMQTT()
 {
-  char buff[256]; // temp buffer for the topic string
+  char buff[128]; // temp buffer for the topic string
   if (!connectMQTT())
   {
     writeLog("No connection to MQTT Server: ", mqttclient.state());
@@ -654,7 +601,7 @@ bool sendtoMQTT()
   }
   if (!settings.data.mqttJson)
   {
-    char msgBuffer1[200];
+    char msgBuffer1[128];
     for (JsonPair jsonDev : Json.as<JsonObject>())
     {
       for (JsonPair jsondat : jsonDev.value().as<JsonObject>())
@@ -719,96 +666,9 @@ bool sendtoMQTT()
   return true;
 }
 
-bool sendtoMQTTasync()
-{
-  writeLog("Async MQTT Server function run");
-  char buff[256]; // temp buffer for the topic string
-  if (!mqttClient.connected())
-  {
-    mqttClient.connect();//async mqtt
-    writeLog("No connection to Async MQTT Server: ");
-    firstPublish = false;
-    return false;
-  }
-  if (!settings.data.mqttJson)
-  {
-    char msgBuffer1[200];
-    for (JsonPair jsonDev : Json.as<JsonObject>())
-    {
-      for (JsonPair jsondat : jsonDev.value().as<JsonObject>())
-      {
-        sprintf(msgBuffer1, "%s_async/%s/%s", settings.data.mqttTopic, jsonDev.key().c_str(), jsondat.key().c_str());
-        mqttClient.publish(msgBuffer1,2,false, jsondat.value().as<String>().c_str());
-      }
-
-    }
-    if (mppClient.get.raw.commandAnswer.length() > 0)
-    {
-      mqttClient.publish((String(settings.data.mqttTopic) + String("/DeviceControl/Set_Command_answer")).c_str(),1,false, (mppClient.get.raw.commandAnswer).c_str());
-      writeLog("raw command answer: ", mppClient.get.raw.commandAnswer);
-      mppClient.get.raw.commandAnswer = "";
-    }
-    /* #ifdef TEMPSENS_PIN
-        for (int i = 0; i < numOfTempSens; i++)
-        {
-          if (tempSens.getAddress(tempDeviceAddress, i))
-          {
-            float tempC = tempSens.getTempC(tempDeviceAddress);
-            if (tempC != DEVICE_DISCONNECTED_C)
-            {
-              char valBuffer[8];
-              sprintf(msgBuffer1, "%s/DS18B20_%i", settings.data.mqttTopic, (i + 1));
-              mqttclient.publish(msgBuffer1, dtostrf(tempC, 4, 1, valBuffer));
-            }
-          }
-        }
-    #endif */
-    // RAW
-
-    mqttClient.publish(topicBuilderasync(buff, "IP"),2,false, (WiFi.localIP().toString()).c_str());
-
-    mqttClient.publish(topicBuilderasync(buff, "RAW/Q1"),2, false, (mppClient.get.raw.q1).c_str());
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QPIGS"),1, false, (mppClient.get.raw.qpigs).c_str());
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QPIGS2"),1, false, (mppClient.get.raw.qpigs2).c_str());
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QPIRI"),1, false, (mppClient.get.raw.qpiri).c_str());
-
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QT"),1, false, (mppClient.get.raw.qt).c_str());
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QET"),1, false, (mppClient.get.raw.qet).c_str());
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QEY"),1, false, (mppClient.get.raw.qey).c_str());
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QEM"),1, false, (mppClient.get.raw.qem).c_str());
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QED"),1, false, (mppClient.get.raw.qed).c_str());
-
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QLT"),1, false, (mppClient.get.raw.qt).c_str());
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QLY"),1, false, (mppClient.get.raw.qly).c_str());
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QLM"),1, false, (mppClient.get.raw.qlm).c_str());
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QLD"),1, false, (mppClient.get.raw.qld).c_str());
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QPI"),1, false, (mppClient.get.raw.qpi).c_str());
-
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QMOD"),1, false, (mppClient.get.raw.qmod).c_str());
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QALL"),1, false, (mppClient.get.raw.qall).c_str());
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QMN"),1, false, mppClient.get.raw.qmn.c_str());
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QPIWS"),1, false, mppClient.get.raw.qpiws.c_str());
-    mqttClient.publish(topicBuilderasync(buff, "RAW/QFLAG"),1, false, mppClient.get.raw.qflag.c_str());
-  }
-  else
-  {
-    //mqttclient.beginPublish(topicBuilder(buff, "Data"), measureJson(Json), false);
-    //serializeJson(Json, mqttclient);
-    //mqttclient.endPublish();
-  }
-  //mqttclient.publish(topicBuilder(buff, "Alive"), "true", true); // LWT online message must be retained!
-  mqttClient.setWill(topicBuilderasync(buff, "Alive"),1,false,"false");
-  mqttClient.publish(topicBuilderasync(buff, "Alive"),1,false,"true");
-  //mqttClient.publish(topicBuilderasync(buff, "EspData/Wifi_RSSI"),1,false, String(WiFi.RSSI()).c_str());
-  firstPublish = true;
-
-  return true;
-}
-
-
 void mqttcallback(char *top, unsigned char *payload, unsigned int length)
 {
-  char buff[256];
+  char buff[128];
   String messageTemp;
   for (unsigned int i = 0; i < length; i++)
   {
@@ -948,7 +808,7 @@ void handleTemperatureChange(int deviceIndex, int32_t temperatureRAW)
   #ifdef TEMPSENS_PIN
   writeLog("<DS18x> DS18B20_%d RAW:%d Celsius:%f Fahrenheit:%f", deviceIndex + 1, temperatureRAW, tempSens.rawToCelsius(temperatureRAW), tempSens.rawToFahrenheit(temperatureRAW));
   char msgBuffer[32];
-  char buff[256]; // temp buffer for the topic string
+  char buff[128]; // temp buffer for the topic string
   mqttclient.publish(topicBuilder(buff, "DS18B20_", itoa((deviceIndex) + 1, msgBuffer, 10)), dtostrf(tempSens.rawToCelsius(temperatureRAW), 4, 2, msgBuffer));
 #endif
 }

@@ -1,7 +1,15 @@
 %pre_head_template%
 
 <figure class="text-center">
-    <h2 id="device_name">%pre_device_name%<svg class="wifi-symbol" viewBox="0 15 64 64" xmlns="http://www.w3.org/2000/svg" width="32" height="32"><title id="wifiTitle">WiFi-Signal</title><path id="level5" d="M8 32 A33 32 0 0 1 56 32" stroke="black" stroke-width="4" fill="none" /><path id="level4" d="M14 38 A26 26 0 0 1 50 38" stroke="black" stroke-width="4" fill="none" /><path id="level3" d="M20 44 A18 20 0 0 1 44 44" stroke="black" stroke-width="4" fill="none" /><path id="level2" d="M26 50 A10 14 0 0 1 38 50" stroke="black" stroke-width="4" fill="none"/><circle id="level1" cx="32" cy="56" r="3" fill="black"/></svg></h2>
+    <h2 id="device_name">%pre_device_name%<svg class="wifi-symbol" viewBox="0 15 64 64"
+            xmlns="http://www.w3.org/2000/svg" width="32" height="32">
+            <title id="wifiTitle">WiFi-Signal</title>
+            <path id="level5" d="M8 32 A33 32 0 0 1 56 32" stroke="black" stroke-width="4" fill="none" />
+            <path id="level4" d="M14 38 A26 26 0 0 1 50 38" stroke="black" stroke-width="4" fill="none" />
+            <path id="level3" d="M20 44 A18 20 0 0 1 44 44" stroke="black" stroke-width="4" fill="none" />
+            <path id="level2" d="M26 50 A10 14 0 0 1 38 50" stroke="black" stroke-width="4" fill="none" />
+            <circle id="level1" cx="32" cy="56" r="3" fill="black" />
+        </svg></h2>
 </figure>
 <!--
 <div class="dR row gx-0 mb-1" id="alert" style="padding-bottom: 0rem;padding-top: 0px; display: none;">
@@ -87,8 +95,6 @@
 <script>
     $(document).ready(function () {
         initWebSocket();
-        initButton();
-        //setInterval(refreshAlert, 5000);
     });
     var gateway = `ws://${window.location.host}/ws`;
     var websocket;
@@ -110,7 +116,6 @@
     }
     function onOpen(event) {
         console.log('Connection opened');
-        setInterval(checkWS, 5000);
     }
     function onClose(event) {
         //document.getElementById("status").innerHTML = 'WS Closed';
@@ -173,7 +178,7 @@
             }
             dRDiv.style.display = allUndefined ? 'none' : '';
         });
-        
+
     }
 
     /*
@@ -226,34 +231,27 @@
         document.getElementById('alert_message').innerHTML = (alertValue);
     }
 */
-    function initButton() {
 
-    }
-    function checkWS() {
-        if (websocket.readyState !== WebSocket.CLOSED) {
-            websocket.send("A9");
-        }
-    }
     const minRSSI = -85, maxRSSI = -60;
-  function setWiFiSignal(rssi) {
-    const lv = ['level1','level2','level3','level4','level5'],
-          c = ['red','orange','gold','yellowgreen','green'],
-          p = Math.max(0, Math.min(100, Math.round((rssi - minRSSI) * 100 / (maxRSSI - minRSSI)))),
-          lvl = Math.floor(p / 25),
-          col = c[Math.min(lvl, 4)];
+    function setWiFiSignal(rssi) {
+        const lv = ['level1', 'level2', 'level3', 'level4', 'level5'],
+            c = ['red', 'orange', 'gold', 'yellowgreen', 'green'],
+            p = Math.max(0, Math.min(100, Math.round((rssi - minRSSI) * 100 / (maxRSSI - minRSSI)))),
+            lvl = Math.floor(p / 25),
+            col = c[Math.min(lvl, 4)];
 
-    const svg = document.querySelector(".wifi-symbol");
-    if (svg) {
-      const title = svg.querySelector("title");
-      if (title) title.textContent = p + "%% Strength";
+        const svg = document.querySelector(".wifi-symbol");
+        if (svg) {
+            const title = svg.querySelector("title");
+            if (title) title.textContent = p + "%% Strength";
+        }
+
+        lv.forEach((id, i) => {
+            const e = document.getElementById(id);
+            if (e) (e.tagName === "circle" ? e.setAttribute("fill", i <= lvl ? col : "#ccc")
+                : e.setAttribute("stroke", i <= lvl ? col : "#ccc"));
+        });
     }
-
-    lv.forEach((id, i) => {
-      const e = document.getElementById(id);
-      if (e) (e.tagName === "circle" ? e.setAttribute("fill", i <= lvl ? col : "#ccc")
-                                     : e.setAttribute("stroke", i <= lvl ? col : "#ccc"));
-    });
-  }
 </script>
 
 %pre_foot_template%
