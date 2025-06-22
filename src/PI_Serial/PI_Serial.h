@@ -1,20 +1,21 @@
-#include "SoftwareSerial.h"
 #ifndef PI_SERIAL_H
 #define PI_SERIAL_H
 #include "vector"
+#include "SoftwareSerial.h"
 #include <ArduinoJson.h>
 #include <modbus/modbus.h>
+
 extern JsonObject deviceJson;
 extern JsonObject staticData;
 extern JsonObject liveData;
-
+  
 class PI_Serial
 {
 public:
     const char *startChar = "(";
     const char *delimiter = " ";
     bool requestStaticData = true;
-    byte protocol = NoD;
+    protocol_type_t protocol = NoD;
     bool connection = false;
 
     struct
@@ -88,13 +89,7 @@ public:
     void callback(std::function<void()> func);
     std::function<void()> requestCallback;
 
-    enum protocolType
-    {
-        NoD,
-        PI18,
-        PI30,
-        MODBUS_MUST
-    };
+ 
 
 private: 
     unsigned int serialIntfBaud;
