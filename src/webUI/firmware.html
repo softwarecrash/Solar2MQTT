@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Firmware & Backup</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any" />
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    .btn-slot { position: relative; width: 100%; min-height: 46px; }
+    .btn-slot > .btn,
+    .btn-slot > .progress-wrap { position: absolute; inset: 0; }
+    .btn-slot > .progress-wrap { margin-top: 0; padding: 6px 10px; display: none; }
+
+    .btn-slot .progress-bar {
+      display: block;
+      width: 100%;
+      height: 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .btn-slot .progress-bar > span {
+      display: block;
+      width: 0%;
+      height: 100%;
+      background: var(--ea-primary);
+      transition: width .25s ease;
+    }
+
+    .btn-slot .progress-label {
+      margin-top: 6px;
+      font-size: 11px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--ea-text-2);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particleCanvas"></canvas>
+
+  <div id="container">
+    <header id="header">
+      <a href="/"><img id="logo" src="/logo.svg" alt="Solar2MQTT Logo" /></a>
+      <h1>Firmware &amp; Backup</h1>
+    </header>
+
+    <div id="statusbar"></div>
+    <script src="/statusbar.js?v=33"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        StatusBar.mount('#statusbar');
+      });
+    </script>
+
+    <div class="panel">
+      <h2>Online Update</h2>
+      <p class="hint">
+        Check for updates from GitHub and install the latest OTA package.
+      </p>
+
+      <div class="button-stack actions">
+        <div class="btn-slot">
+          <button type="button" class="btn" id="otaUpdateBtn" disabled>Update Now</button>
+          <div class="progress-wrap" id="otaProgressWrap" aria-live="polite">
+            <div class="progress-bar"><span id="otaProgressBar"></span></div>
+            <div class="progress-label">
+              <span id="otaProgressText">0%</span>
+              <span id="otaProgressSize">0 / 0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detailSplitter">Manual Firmware Update</div>
+      <p class="hint">
+        Select a firmware file (*.ota) and start the update.
+        The device will reboot automatically after a successful upload.
+      </p>
+
+      <div class="field-group">
+        <input type="file" id="fwFile" accept=".ota" style="display:none" />
+      </div>
+
+      <div class="button-stack actions">
+        <div class="btn-slot">
+          <button type="button" class="btn" id="fwUploadBtn">Choose Firmware (.ota)</button>
+          <div class="progress-wrap" id="fwProgressWrap" aria-live="polite">
+            <div class="progress-bar"><span id="fwProgressBar"></span></div>
+            <div class="progress-label">
+              <span id="fwProgressText">0%</span>
+              <span id="fwProgressSize">0 / 0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="fwStatus" class="hint" style="margin-top:0.5rem;"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Backup &amp; Restore</h2>
+      <p class="hint">
+        Download all settings as JSON or restore from a previously saved file.
+        On restore the device will save settings and may reboot if required.
+      </p>
+
+      <div class="field-group">
+        <button type="button" class="btn" onclick="downloadSettings()">Download configuration</button>
+      </div>
+
+      <div class="field-group">
+        <label for="settingsFile">Restore configuration</label>
+        <input type="file" id="settingsFile" accept=".json" onchange="onSettingsFileSelected()" />
+      </div>
+
+      <div style="display:flex; gap:0.5rem; margin-top:0.25rem;">
+        <label>
+          <input type="checkbox" id="mergeSettings" checked />
+          Merge with existing settings
+        </label>
+      </div>
+
+      <div id="settingsStatus" class="hint" style="margin-top:0.5rem;"></div>
+
+      <div class="button-stack" style="margin-top:1.5rem;">
+        <button type="button" class="btn btn-outline" onclick="location.href='/menu'">Back to menu</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/backgroundCanvas.js"></script>
+  <script>
+    function setFwStatus(message, isError) {
+      const element = document.getElementById('fwStatus');
+      element.textContent = message || '';
+      element.style.color = isError ? 'var(--ea-warning)' : 'var(--ea-text-2)';
+    }
+
+    function formatBytes(bytes) {
+      if (!bytes || bytes <= 0) return "0 B";
+      const units = ["B", "KB", "MB", "GB"];
+      let idx = 0;
+      let value = bytes;
+      while (value >= 1024 && idx < units.length - 1) {
+        value /= 1024;
+        idx++;
+      }
+      return value.toFixed(value >= 10 || idx === 0 ? 0 : 1) + " " + units[idx];
+    }
+
+    function setProgress(percent, loaded, total) {
+      const pct = Math.max(0, Math.min(100, percent || 0));
+      document.getElementById("fwProgressBar").style.width = pct.toFixed(1) + "%";
+      document.getElementById("fwProgressText").textContent = pct.toFixed(0) + "%";
+      document.getElementById("fwProgressSize").textContent =
+        formatBytes(loaded || 0) + " / " + formatBytes(total || 0);
+    }
+
+    function setFirmwareBusy(busy) {
+      const btn = document.getElementById("fwUploadBtn");
+      const wrap = document.getElementById("fwProgressWrap");
+      btn.disabled = busy;
+      document.getElementById("fwFile").disabled = busy;
+      btn.style.display = busy ? "none" : "block";
+      wrap.style.display = busy ? "block" : "none";
+    }
+
+    function setOtaProgress(percent, loaded, total) {
+      const pct = Math.max(0, Math.min(100, percent || 0));
+      document.getElementById("otaProgressBar").style.width = pct.toFixed(1) + "%";
+      document.getElementById("otaProgressText").textContent = pct.toFixed(0) + "%";
+      document.getElementById("otaProgressSize").textContent =
+        formatBytes(loaded || 0) + " / " + formatBytes(total || 0);
+    }
+
+    let otaSuccessRedirected = false;
+    let rebootWatchActive = false;
+    let rebootWatchTimer = null;
+    let rebootWatchSeenDown = false;
+    let rebootWatchBaseUptime = null;
+
+    async function fetchPingStatus() {
+      try {
+        const res = await fetch("/api/ping?ts=" + Date.now(), { cache: "no-store" });
+        if (!res.ok) return { ok: false };
+        const json = await res.json();
+        return {
+          ok: true,
+          uptimeMs: Number(json.uptimeMs) || 0
+        };
+      } catch {
+        return { ok: false };
+      }
+    }
+
+    function stopRebootWatch() {
+      if (rebootWatchTimer) {
+        clearTimeout(rebootWatchTimer);
+        rebootWatchTimer = null;
+      }
+      rebootWatchActive = false;
+    }
+
+    async function watchRebootAndRedirect() {
+      if (rebootWatchActive) return;
+
+      rebootWatchActive = true;
+      rebootWatchSeenDown = false;
+      rebootWatchBaseUptime = null;
+
+      const first = await fetchPingStatus();
+      if (first.ok) {
+        rebootWatchBaseUptime = first.uptimeMs;
+      } else {
+        rebootWatchSeenDown = true;
+      }
+
+      const startedAt = Date.now();
+      const deadlineMs = 3 * 60 * 1000;
+      setFwStatus("Firmware installed. Waiting for restart...", false);
+
+      const tick = async () => {
+        const ping = await fetchPingStatus();
+        if (!ping.ok) {
+          rebootWatchSeenDown = true;
+          setFwStatus("Device restarting...", false);
+          rebootWatchTimer = setTimeout(tick, 900);
+          return;
+        }
+
+        const rebootByUptime =
+          rebootWatchBaseUptime !== null &&
+          ping.uptimeMs > 0 &&
+          ping.uptimeMs + 3000 < rebootWatchBaseUptime;
+
+        if (rebootWatchSeenDown || rebootByUptime) {
+          stopRebootWatch();
+          location.href = "/";
+          return;
+        }
+
+        if ((Date.now() - startedAt) > deadlineMs) {
+          stopRebootWatch();
+          location.href = "/";
+          return;
+        }
+
+        rebootWatchTimer = setTimeout(tick, 900);
+      };
+
+      rebootWatchTimer = setTimeout(tick, 900);
+    }
+
+    function updateOtaUi(json) {
+      if (!json) return;
+      const updateBtn = document.getElementById("otaUpdateBtn");
+      const progressWrap = document.getElementById("otaProgressWrap");
+
+      const state = json.state || "idle";
+      const busy = !!json.busy;
+      const latest = json.latest || "-";
+      const error = json.error || "";
+
+      if (state === "checking") {
+        updateBtn.textContent = "Checking for update...";
+        updateBtn.disabled = true;
+      } else if (state === "update_available") {
+        updateBtn.textContent = "Update to v" + latest;
+        updateBtn.disabled = busy;
+      } else if (state === "downloading") {
+        updateBtn.textContent = "Updating...";
+        updateBtn.disabled = true;
+      } else if (state === "success") {
+        updateBtn.textContent = "Update complete";
+        updateBtn.disabled = true;
+        if (!otaSuccessRedirected) {
+          otaSuccessRedirected = true;
+          setOtaProgress(100, json.bytesTotal || json.bytesDone || 0, json.bytesTotal || json.bytesDone || 0);
+          setFwStatus("OTA complete. Waiting for restart...", false);
+          watchRebootAndRedirect();
+        }
+      } else if (state === "error") {
+        updateBtn.textContent = error ? "Update error" : "Update failed";
+        updateBtn.disabled = true;
+      } else if (state === "up_to_date") {
+        updateBtn.textContent = "Up to date";
+        updateBtn.disabled = true;
+      } else {
+        updateBtn.textContent = "Update Now";
+        updateBtn.disabled = true;
+      }
+
+      const showProgress = (state === "downloading" || state === "success");
+      progressWrap.style.display = showProgress ? "block" : "none";
+      updateBtn.style.display = showProgress ? "none" : "block";
+
+      setOtaProgress(json.progress || 0, json.bytesDone || 0, json.bytesTotal || 0);
+    }
+
+    let otaPollHandle = null;
+    function startOtaPoll() {
+      if (otaPollHandle) return;
+      otaPollHandle = setInterval(fetchOtaStatus, 1500);
+    }
+
+    function stopOtaPoll() {
+      if (!otaPollHandle) return;
+      clearInterval(otaPollHandle);
+      otaPollHandle = null;
+    }
+
+    async function fetchOtaStatus() {
+      try {
+        const res = await fetch("/ota/status", { cache: "no-store" });
+        if (!res.ok) return;
+        const json = await res.json();
+        updateOtaUi(json);
+        if (!json.busy) stopOtaPoll();
+      } catch {
+        stopOtaPoll();
+      }
+    }
+
+    async function requestOtaCheck() {
+      try {
+        const res = await fetch("/ota/check", { method: "POST", cache: "no-store" });
+        if (res.ok) {
+          updateOtaUi(await res.json());
+          startOtaPoll();
+        } else {
+          setFwStatus("Update check failed: " + res.status, true);
+        }
+      } catch {
+        setFwStatus("Update check failed.", true);
+      }
+    }
+
+    function startFirmwareUpload(file) {
+      setFirmwareBusy(true);
+      setProgress(0, 0, file.size || 0);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/update_firmware");
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable) {
+          setProgress((event.loaded / event.total) * 100, event.loaded, event.total);
+        }
+      });
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          setFirmwareBusy(true);
+          setProgress(100, file.size || 0, file.size || 0);
+          setFwStatus("Firmware uploaded. Rebooting...", false);
+          watchRebootAndRedirect();
+        } else {
+          setFirmwareBusy(false);
+          setFwStatus("Firmware upload failed: " + xhr.status, true);
+        }
+      };
+      xhr.onerror = () => {
+        setFirmwareBusy(false);
+        setFwStatus("Firmware upload failed.", true);
+      };
+
+      const data = new FormData();
+      data.append("firmware", file);
+      xhr.send(data);
+    }
+
+    document.getElementById("fwUploadBtn").addEventListener("click", () => {
+      if (document.getElementById("fwUploadBtn").disabled) return;
+      document.getElementById("fwFile").click();
+    });
+
+    document.getElementById("fwFile").addEventListener("change", () => {
+      const file = document.getElementById("fwFile").files[0];
+      if (!file) return;
+      startFirmwareUpload(file);
+    });
+
+    document.getElementById("otaUpdateBtn").addEventListener("click", async () => {
+      try {
+        const res = await fetch("/ota/update", { method: "POST", cache: "no-store" });
+        if (res.ok) {
+          updateOtaUi(await res.json());
+          setFwStatus("Update started. Downloading...", false);
+          startOtaPoll();
+        } else {
+          setFwStatus("Update start failed: " + res.status, true);
+        }
+      } catch {
+        setFwStatus("Update start failed.", true);
+      }
+    });
+
+    (function () {
+      fetchOtaStatus();
+      requestOtaCheck();
+    })();
+
+    function setSettingsStatus(message, isError) {
+      const element = document.getElementById('settingsStatus');
+      element.textContent = message || '';
+      element.style.color = isError ? 'var(--ea-warning)' : 'var(--ea-text-2)';
+    }
+
+    function downloadSettings() {
+      setSettingsStatus('Preparing configuration download...', false);
+
+      fetch('/api/settings/backup?pretty=1', { method: 'GET' })
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error('HTTP error ' + res.status);
+          }
+          return res.text();
+        })
+        .then((text) => {
+          const blob = new Blob([text], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          const ts = new Date().toISOString().replace(/[:.]/g, '-');
+          link.href = url;
+          link.download = 'solar2mqtt-settings-' + ts + '.json';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          setSettingsStatus('Configuration downloaded successfully.', false);
+        })
+        .catch((error) => {
+          setSettingsStatus('Failed to download configuration: ' + error.message, true);
+        });
+    }
+
+    function onSettingsFileSelected() {
+      const input = document.getElementById('settingsFile');
+      if (!input.files || !input.files.length) {
+        return;
+      }
+
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      setSettingsStatus('Reading configuration file...', false);
+
+      reader.onload = function(event) {
+        try {
+          const jsonText = event.target.result;
+          JSON.parse(jsonText);
+
+          const merge = document.getElementById('mergeSettings').checked ? 1 : 0;
+          const save = 1;
+
+          setSettingsStatus('Uploading configuration...', false);
+
+          fetch('/api/settings/restore?merge=' + merge + '&save=' + save, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'text/plain;charset=utf-8'
+            },
+            body: jsonText
+          })
+          .then((res) => res.json().catch(() => ({})))
+          .then((data) => {
+            if (!data || !data.success) {
+              const message = data && data.message ? data.message : 'Unknown error';
+              throw new Error(message);
+            }
+            setSettingsStatus('Configuration restored successfully. Device may reboot...', false);
+          })
+          .catch((error) => {
+            setSettingsStatus('Restore failed: ' + error.message, true);
+          });
+        } catch (error) {
+          setSettingsStatus('File is not valid JSON: ' + error.message, true);
+        }
+      };
+
+      reader.onerror = function() {
+        setSettingsStatus('Error reading file.', true);
+      };
+
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+</html>

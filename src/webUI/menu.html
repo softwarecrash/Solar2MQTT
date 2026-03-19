@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Solar2MQTT Menu</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <canvas id="particleCanvas"></canvas>
+
+  <div id="container">
+    <div id="header">
+      <a href="/"><img id="logo" src="/logo.svg" alt="Solar2MQTT Logo"></a>
+      <h1>Menu</h1>
+    </div>
+
+    <div id="statusbar"></div>
+
+    <div class="button-stack">
+      <button type="button" class="btn" onclick="location.href='/wifisetup'">Network Settings</button>
+      <button type="button" class="btn" onclick="location.href='/mqttsettings'">MQTT Settings</button>
+      <button type="button" class="btn" onclick="location.href='/devicesettings'">Device Settings</button>
+      <button type="button" class="btn" onclick="location.href='/firmwareupdate'">Firmware Update</button>
+      <button type="button" class="btn" onclick="location.href='/debug'">Debug Tools</button>
+      <button type="button" class="btn" onclick="window.open('/webserial', '_blank', 'noopener')">Web Serial</button>
+      <button type="button" class="btn btn-outline" onclick="location.href='/'">Back</button>
+    </div>
+  </div>
+
+  <div id="toast"><span id="toast-icon">i</span><span id="toast-msg"></span></div>
+  <script src="/statusbar.js"></script>
+  <script src="/backgroundCanvas.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

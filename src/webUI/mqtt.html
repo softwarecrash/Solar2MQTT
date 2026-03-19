@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Solar2MQTT MQTT</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <canvas id="particleCanvas"></canvas>
+
+  <div id="container">
+    <div id="header">
+      <a href="/"><img id="logo" src="/logo.svg" alt="Solar2MQTT Logo"></a>
+      <h1>MQTT Settings</h1>
+    </div>
+
+    <div id="statusbar"></div>
+
+    <form id="mqttForm" class="panel">
+      <div class="panel-title">MQTT Configuration</div>
+
+      <div class="detailSplitter">Connection</div>
+
+      <label for="mqttHost">MQTT Host</label>
+      <input type="text" id="mqttHost" name="host" autocomplete="off" placeholder="broker.example.com">
+
+      <label for="mqttPort">Port</label>
+      <input type="number" id="mqttPort" name="port" inputmode="numeric" placeholder="1883">
+
+      <label for="mqttUser">User (optional)</label>
+      <input type="text" id="mqttUser" name="user" autocomplete="username" placeholder="MQTT username">
+
+      <label for="mqttPassword">Password (optional)</label>
+      <input type="password" id="mqttPassword" name="password" autocomplete="new-password">
+
+      <label for="mqttTopic">Base topic</label>
+      <input type="text" id="mqttTopic" name="topic" autocomplete="off" placeholder="solar2mqtt">
+
+      <label for="mqttTriggerTopic">Trigger topic</label>
+      <input type="text" id="mqttTriggerTopic" name="triggerTopic" autocomplete="off" placeholder="solar2mqtt/trigger">
+
+      <label for="mqttRefresh">Send interval [s]</label>
+      <input type="number" id="mqttRefresh" name="refresh" inputmode="numeric" placeholder="0">
+
+      <p class="field-note">MQTT is active when a broker host is configured.</p>
+
+      <div class="detailSplitter">Security</div>
+
+      <label class="switch-row" for="mqttSSL">
+        <span>Use SSL/TLS</span>
+        <input type="checkbox" id="mqttSSL" name="ssl" value="1" class="ea-switch">
+      </label>
+
+      <div class="detailSplitter">Payload</div>
+
+      <label class="switch-row" for="mqttJsonMode">
+        <span>Enable JSON mode</span>
+        <input type="checkbox" id="mqttJsonMode" name="jsonMode" value="1" class="ea-switch">
+      </label>
+      <p class="field-note">Publishes grouped JSON payloads instead of only single values.</p>
+
+      <div class="detailSplitter">Integrations</div>
+
+      <label class="switch-row" for="mqttHA">
+        <span>Enable Home Assistant discovery</span>
+        <input type="checkbox" id="mqttHA" name="ha" value="1" class="ea-switch">
+      </label>
+      <p class="field-note">Discovery topics are only published when this switch is enabled.</p>
+
+      <div class="button-stack actions">
+        <button type="submit" class="btn">Save</button>
+        <a class="btn btn-outline" href="/menu">Back</a>
+      </div>
+    </form>
+  </div>
+
+  <div id="toast"><span id="toast-icon">i</span><span id="toast-msg"></span></div>
+  <script src="/statusbar.js"></script>
+  <script src="/backgroundCanvas.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

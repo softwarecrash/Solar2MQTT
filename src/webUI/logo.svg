@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Solar2MQTT Logo">
+  <g fill="none" stroke="#58b8ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="17" cy="15" r="4.5" fill="#58b8ff" stroke="none"/>
+    <path d="M17 5v3M17 22v3M7 15h3M24 15h3M10.5 8.5l2.2 2.2M21.3 19.3l2.2 2.2M10.5 21.5l2.2-2.2M21.3 10.7l2.2-2.2"/>
+
+    <path d="M28 25l20-8 8 19-20 8z"/>
+    <path d="M33 23l8 20M40 20l8 20M30 31l23-9M33 38l23-9"/>
+
+    <path d="M37 44l-7 10M37 44l9 10M24 54h28"/>
+    <circle cx="37" cy="44" r="2.2" fill="#58b8ff" stroke="none"/>
+
+    <path d="M25 45c3.4-4.8 8.8-7.7 14.9-7.7 3.8 0 7.4 1.2 10.4 3.5"/>
+    <path d="M48.4 35.6 50 40l-4.4-1.1"/>
+  </g>
+</svg>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Solar2MQTT Web Serial</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <canvas id="particleCanvas"></canvas>
+
+  <div id="container">
+    <div id="header">
+      <a href="/"><img id="logo" src="/logo.svg" alt="Solar2MQTT Logo"></a>
+      <h1>Web Serial</h1>
+    </div>
+
+    <div id="statusbar"></div>
+
+    <div class="panel">
+      <div class="panel-title">Browser Console</div>
+      <p class="hint">Live log output via the `/webserialws` WebSocket endpoint.</p>
+
+      <textarea id="log" rows="26" class="mono" readonly></textarea>
+
+      <div class="detailSplitter">Send Command</div>
+      <form id="tx" class="command-row">
+        <input id="msg" placeholder="Send command">
+        <button type="submit" class="btn">Send</button>
+      </form>
+    </div>
+
+    <div class="button-stack">
+      <a class="btn btn-outline" href="/menu">Back</a>
+    </div>
+  </div>
+
+  <div id="toast"><span id="toast-icon">i</span><span id="toast-msg"></span></div>
+  <script src="/statusbar.js"></script>
+  <script src="/backgroundCanvas.js"></script>
+  <script src="/app.js"></script>
+  <script>
+    function appendLog(text) {
+      const log = document.getElementById("log");
+      log.value += text;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    const wsProtocol = location.protocol === "https:" ? "wss" : "ws";
+    const ws = new WebSocket(`${wsProtocol}://${location.host}/webserialws`);
+
+    ws.onmessage = (event) => {
+      appendLog(event.data);
+    };
+
+    document.getElementById("tx").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input = document.getElementById("msg");
+      ws.send(input.value);
+      input.value = "";
+    });
+  </script>
+</body>
+</html>

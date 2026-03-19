@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Solar2MQTT Debug</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <canvas id="particleCanvas"></canvas>
+
+  <div id="container">
+    <div id="header">
+      <a href="/"><img id="logo" src="/logo.svg" alt="Solar2MQTT Logo"></a>
+      <h1>Debug Tools</h1>
+    </div>
+
+    <div id="statusbar"></div>
+
+    <div class="panel">
+      <div class="panel-title">Command Sender</div>
+      <form id="commandForm" class="command-row">
+        <input id="commandInput" type="text" name="command" autocomplete="off" spellcheck="false" placeholder="QPI, autodetect, setp 1, sim on/off/status">
+        <button type="submit" class="btn">Send</button>
+      </form>
+
+      <div class="detailSplitter">Actions</div>
+      <div class="button-grid">
+        <button id="loopbackBtn" type="button" class="btn">Loopback Test</button>
+        <button id="haBtn" type="button" class="btn">HA Discovery</button>
+        <button id="reportBtn" type="button" class="btn">Download Report</button>
+        <button id="previewReportBtn" type="button" class="btn">Preview Report</button>
+        <button id="previewDataBtn" type="button" class="btn">Preview JSON</button>
+        <button id="rebootBtn" type="button" class="btn">Reboot</button>
+        <button id="resetBtn" type="button" class="btn btn-danger">Factory Reset</button>
+        <a class="btn btn-outline" href="/webserial" target="_blank" rel="noopener">Web Serial</a>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="detailSplitter">Command Answer</div>
+      <pre id="commandAnswer" class="mono">-</pre>
+    </div>
+
+    <div class="panel">
+      <div class="detailSplitter">Loopback Status</div>
+      <pre id="loopbackInfo" class="mono">-</pre>
+    </div>
+
+    <div class="panel">
+      <div class="detailSplitter">Data Preview</div>
+      <p id="dataPreviewMeta" class="hint">Loaded automatically ...</p>
+      <pre id="dataPreview" class="mono">Loading ...</pre>
+    </div>
+
+    <div class="panel">
+      <div class="detailSplitter">Report Preview</div>
+      <p id="reportPreviewMeta" class="hint">Loaded automatically ...</p>
+      <pre id="reportPreview" class="mono">Loading ...</pre>
+    </div>
+
+    <div class="button-stack">
+      <a class="btn btn-outline" href="/menu">Back</a>
+    </div>
+  </div>
+
+  <div id="toast"><span id="toast-icon">i</span><span id="toast-msg"></span></div>
+  <script src="/statusbar.js"></script>
+  <script src="/backgroundCanvas.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
