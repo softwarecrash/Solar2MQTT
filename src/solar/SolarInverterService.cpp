@@ -173,6 +173,12 @@ void SolarInverterService::queueCommand(const String &command)
         return;
     }
 
+    if (_client != nullptr)
+    {
+        _client->get.raw.commandAnswer = "";
+        _state.updateRaw("CommandAnswer", "");
+    }
+
     if (handleSimulationCommand(normalizedCommand))
     {
         return;
@@ -186,6 +192,9 @@ void SolarInverterService::queueCommand(const String &command)
             return;
         }
     }
+
+    _client->get.raw.commandAnswer = "";
+    _state.updateRaw("CommandAnswer", "");
 
     if (_simulationEnabled)
     {

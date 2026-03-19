@@ -334,6 +334,10 @@ bool PI_Serial::loop()
                 requestStaticData = true;
                 requestCounter = 0;
                 previousTime = millis();
+                if (requestCallback)
+                {
+                    requestCallback();
+                }
                 return true;
             }
             if (isModbus())

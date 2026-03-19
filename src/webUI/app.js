@@ -580,6 +580,26 @@ async function loadReportPreview() {
   setText("reportPreviewMeta", `Last updated: ${new Date().toLocaleTimeString("en-GB")}`);
 }
 
+function getCommandAnswerValue(data) {
+  const answer = data?.RawData?.CommandAnswer;
+  return typeof answer === "string" ? answer.trim() : "";
+}
+
+async function waitForCommandAnswer(timeoutMs = 3500, intervalMs = 150) {
+  const startedAt = Date.now();
+  let lastData = {};
+
+  while ((Date.now() - startedAt) < timeoutMs) {
+    lastData = (await fetchJson("/api/data")) || {};
+    if (getCommandAnswerValue(lastData)) {
+      return lastData;
+    }
+    await new Promise((resolve) => window.setTimeout(resolve, intervalMs));
+  }
+
+  return lastData;
+}
+
 function focusPreview(previewId) {
   const preview = byId(previewId);
   if (!preview) {
@@ -682,8 +702,20 @@ window.addEventListener("DOMContentLoaded", async () => {
     if (commandInput) {
       commandInput.value = "";
     }
-    await loadDataPreview();
-    showNotice("Command sent.");
+    const data = await waitForCommandAnswer();
+    setText("commandAnswer", data.RawData?.CommandAnswer || "-");
+
+    const preview = byId("dataPreview");
+    if (preview) {
+      preview.textContent = JSON.stringify(data || {}, null, 2);
+    }
+    setText("dataPreviewMeta", `Last updated: ${new Date().toLocaleTimeString("en-GB")}`);
+
+    if (getCommandAnswerValue(data)) {
+      showNotice("Command answer received.");
+    } else {
+      showNotice("Command sent. No answer received yet.", true);
+    }
   });
 
   bindSubmit("otaForm", async () => {
