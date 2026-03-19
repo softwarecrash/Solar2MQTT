@@ -2,68 +2,168 @@
 
 #include "core/LogSerial.h"
 
-Ds18b20Service *Ds18b20Service::s_instance = nullptr;
+#include <algorithm>
+#include <math.h>
+
+namespace
+{
+constexpr size_t kMaxSensors = 15;
+constexpr uint32_t kExpirationSeconds = 5;
+
+bool nearlyEqual(float lhs, float rhs)
+{
+    return fabsf(lhs - rhs) < 0.01f;
+}
+} // namespace
 
 Ds18b20Service::Ds18b20Service()
-    : _oneWire(0), _dallas(&_oneWire), _nonBlocking(&_dallas), _active(false), _sensorCount(0)
+    : _active(false), _sensorCount(0)
 {
 }
 
 void Ds18b20Service::begin(uint8_t pin, JsonObject target)
 {
+    _target = target;
+    _sensors.clear();
+    _oneWire.reset();
+    _sensorCount = 0;
+    clearTargetRange(1);
+
     if (pin == static_cast<uint8_t>(-1))
     {
         _active = false;
+        LogSerial.println("[DS18B20] Disabled");
         return;
     }
 
-    _oneWire = OneWire(pin);
-    _dallas = DallasTemperature(&_oneWire);
-    _nonBlocking = NonBlockingDallas(&_dallas);
-    _target = target;
-    _active = true;
-    s_instance = this;
+    _oneWire = std::make_unique<OneWire32>(pin);
+    if (!_oneWire)
+    {
+        _active = false;
+        LogSerial.println("[DS18B20] Failed to allocate OneWire32");
+        return;
+    }
 
-    _dallas.begin();
-    _nonBlocking.begin(NonBlockingDallas::resolution_12, 1500);
-    _sensorCount = _nonBlocking.getSensorsCount();
+    uint64_t addresses[kMaxSensors] = {};
+    size_t found = 0;
+    for (uint8_t attempt = 0; attempt < 10 && found == 0; ++attempt)
+    {
+        found = _oneWire->search(addresses, kMaxSensors);
+        if (found == 0)
+        {
+            delay(1);
+        }
+    }
+
+    if (found > 1)
+    {
+        std::sort(addresses, addresses + found);
+    }
+
+    _sensors.reserve(found);
+    for (size_t index = 0; index < found; ++index)
+    {
+        SensorSlot slot;
+        slot.address = addresses[index];
+        slot.sensor = std::make_unique<Mycila::DS18>();
+        if (!slot.sensor)
+        {
+            continue;
+        }
+
+        slot.sensor->begin(_oneWire.get(), slot.address);
+        slot.sensor->setExpirationDelay(kExpirationSeconds);
+        _sensors.push_back(std::move(slot));
+        LogSerial.printf("[DS18B20] Sensor %u address: %016llX\n",
+                         static_cast<unsigned>(_sensors.size()),
+                         static_cast<unsigned long long>(addresses[index]));
+    }
+
+    _sensorCount = _sensors.size();
+    _active = _sensorCount > 0;
+
     LogSerial.printf("[DS18B20] Sensors found: %u\n", static_cast<unsigned>(_sensorCount));
-
-    _nonBlocking.onTemperatureChange([](int deviceIndex, int32_t temperatureRaw)
-                                     {
-        if (!s_instance)
-        {
-            return;
-        }
-
-        const float temperatureC = s_instance->_nonBlocking.rawToCelsius(temperatureRaw);
-        char key[16];
-        snprintf(key, sizeof(key), "DS18B20_%u", static_cast<unsigned>(deviceIndex + 1));
-        s_instance->_target[key] = temperatureC;
-        if (s_instance->_callback)
-        {
-            s_instance->_callback(static_cast<uint8_t>(deviceIndex + 1), temperatureC);
-        } });
-
-    _nonBlocking.onDeviceDisconnected([](int deviceIndex)
-                                      {
-        if (!s_instance)
-        {
-            return;
-        }
-
-        char key[16];
-        snprintf(key, sizeof(key), "DS18B20_%u", static_cast<unsigned>(deviceIndex + 1));
-        s_instance->_target[key] = nullptr; });
-
-    delay(100);
-    _nonBlocking.requestTemperature();
+    if (!_active)
+    {
+        clearTargetRange(1);
+    }
 }
 
 void Ds18b20Service::loop()
 {
-    if (_active)
+    if (!_active)
     {
-        _nonBlocking.update();
+        return;
     }
+
+    for (size_t index = 0; index < _sensors.size(); ++index)
+    {
+        SensorSlot &slot = _sensors[index];
+        if (!slot.sensor)
+        {
+            continue;
+        }
+
+        slot.sensor->read();
+        const std::optional<float> temperature = slot.sensor->getTemperature();
+        if (temperature.has_value())
+        {
+            if (!slot.hasValue || !nearlyEqual(slot.lastTemperature, *temperature))
+            {
+                slot.lastTemperature = *temperature;
+                slot.hasValue = true;
+                publishValue(index + 1, *temperature);
+            }
+            continue;
+        }
+
+        if (slot.hasValue)
+        {
+            slot.hasValue = false;
+            clearValue(index + 1);
+        }
+    }
+}
+
+void Ds18b20Service::clearTargetRange(size_t fromIndex)
+{
+    if (_target.isNull())
+    {
+        return;
+    }
+
+    for (size_t index = fromIndex; index <= kMaxSensors; ++index)
+    {
+        char key[16];
+        snprintf(key, sizeof(key), "DS18B20_%u", static_cast<unsigned>(index));
+        _target.remove(key);
+    }
+}
+
+void Ds18b20Service::publishValue(size_t index, float temperature)
+{
+    if (_target.isNull())
+    {
+        return;
+    }
+
+    char key[16];
+    snprintf(key, sizeof(key), "DS18B20_%u", static_cast<unsigned>(index));
+    _target[key] = temperature;
+    if (_callback)
+    {
+        _callback(static_cast<uint8_t>(index), temperature);
+    }
+}
+
+void Ds18b20Service::clearValue(size_t index)
+{
+    if (_target.isNull())
+    {
+        return;
+    }
+
+    char key[16];
+    snprintf(key, sizeof(key), "DS18B20_%u", static_cast<unsigned>(index));
+    _target[key] = nullptr;
 }

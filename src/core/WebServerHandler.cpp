@@ -153,11 +153,16 @@ void WebServerHandler::begin()
 
 void WebServerHandler::notifyStatusBar()
 {
+    if (_inverterService.isBusy())
+    {
+        return;
+    }
+
     JsonDocument doc;
     buildStatusJson(doc);
-    String payload;
-    serializeJson(doc, payload);
-    _wsStatus.textAll(payload);
+    _lastStatusPayload = "";
+    serializeJson(doc, _lastStatusPayload);
+    _wsStatus.textAll(_lastStatusPayload);
 }
 
 bool WebServerHandler::isAuthorized(AsyncWebServerRequest *request)
@@ -231,6 +236,12 @@ void WebServerHandler::registerRoutes()
         if (!isAuthorized(request))
         {
             return request->requestAuthentication();
+        }
+
+        if (_inverterService.isBusy() && _lastStatusPayload.length() > 0)
+        {
+            request->send(200, "application/json", _lastStatusPayload);
+            return;
         }
 
         JsonDocument doc;
@@ -771,10 +782,17 @@ void WebServerHandler::setupStatusWebSocket()
                       {
         if (type == WS_EVT_CONNECT)
         {
+            if (_inverterService.isBusy() && _lastStatusPayload.length() > 0)
+            {
+                client->text(_lastStatusPayload);
+                return;
+            }
+
             JsonDocument doc;
             buildStatusJson(doc);
             String payload;
             serializeJson(doc, payload);
+            _lastStatusPayload = payload;
             client->text(payload);
         } });
 

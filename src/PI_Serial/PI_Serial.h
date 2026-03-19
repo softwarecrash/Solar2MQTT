@@ -1,6 +1,7 @@
 #ifndef PI_SERIAL_H
 #define PI_SERIAL_H
 #include "descriptors.h"
+#include <atomic>
 #include <HardwareSerial.h>
 #include <stdlib.h>
 #include <string.h>
@@ -193,9 +194,10 @@ public:
 
 private: 
     unsigned int serialIntfBaud;
-    volatile uint8_t busyCount = 0;
-    volatile bool suspendSerial = false;
-    volatile bool abortAutoDetect = false;
+    std::atomic<uint8_t> busyCount{0};
+    std::atomic_bool suspendSerial{false};
+    std::atomic_bool abortAutoDetect{false};
+    bool cycleBackupActive = false;
 
     unsigned long previousTime = 0;
     unsigned long delayTime = 100;
@@ -206,6 +208,8 @@ private:
     byte qexCounter = 0;
     
     String customCommandBuffer;
+    JsonDocument cycleLiveBackup;
+    JsonDocument cycleStaticBackup;
 
     MODBUS *modbus = nullptr;
 
@@ -227,11 +231,16 @@ private:
      */
     void autoDetect();
 
+    void beginCycleBackup();
+    void restoreCycleBackup();
+    void clearCycleBackup();
     void refineProtocol();
     bool requestUnsupportedPiStatic();
     bool requestUnsupportedPiDynamic();
     bool requestAndStoreRaw(const char *command, String &target, bool &hadSuccessfulReply);
     bool isValidResponse(const String &response) const;
+    void logStaticSummary() const;
+    void logDynamicSummary() const;
 
     /**
      * @brief Sends a complete packet with the specified command

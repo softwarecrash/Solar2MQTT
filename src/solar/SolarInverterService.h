@@ -20,6 +20,7 @@ public:
     void queueCommand(const String &command);
 
     bool isConnected() const;
+    bool isBusy() const;
     protocol_type_t protocol() const;
     const char *protocolName() const;
     bool simulationEnabled() const { return _simulationEnabled; }

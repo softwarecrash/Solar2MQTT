@@ -39,6 +39,7 @@ private:
     Ticker _statusTicker;
     bool _mqttConnected;
     bool _inverterConnected;
+    String _lastStatusPayload;
 
     bool isAuthorized(AsyncWebServerRequest *request);
     void registerRoutes();

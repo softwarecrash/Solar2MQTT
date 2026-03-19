@@ -2,9 +2,10 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include <DallasTemperature.h>
-#include <NonBlockingDallas.h>
-#include <OneWire.h>
+#include <MycilaDS18.h>
+
+#include <memory>
+#include <vector>
 
 class Ds18b20Service
 {
@@ -18,11 +19,20 @@ public:
     void setCallback(std::function<void(uint8_t, float)> callback) { _callback = callback; }
 
 private:
-    static Ds18b20Service *s_instance;
+    struct SensorSlot
+    {
+        uint64_t address = 0;
+        std::unique_ptr<Mycila::DS18> sensor;
+        bool hasValue = false;
+        float lastTemperature = 0.0f;
+    };
 
-    OneWire _oneWire;
-    DallasTemperature _dallas;
-    NonBlockingDallas _nonBlocking;
+    void clearTargetRange(size_t fromIndex);
+    void publishValue(size_t index, float temperature);
+    void clearValue(size_t index);
+
+    std::unique_ptr<OneWire32> _oneWire;
+    std::vector<SensorSlot> _sensors;
     JsonObject _target;
     std::function<void(uint8_t, float)> _callback;
     bool _active;

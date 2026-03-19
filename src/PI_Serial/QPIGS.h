@@ -163,6 +163,13 @@ bool PI_Serial::PIXX_QPIGS()
     get.raw.qall = "";
     String commandAnswerQALL = this->requestData("QALL");
     get.raw.qall = commandAnswerQALL;
+    if (commandAnswerQALL == DESCR_req_ERCRC)
+    {
+      // A corrupted QALL frame must invalidate the whole cycle. Otherwise
+      // partially refreshed QPIGS data can leak inconsistent derived values
+      // (for example bogus PV power) into the live state.
+      return false;
+    }
     String commandAnswerQPIGS = this->requestData("QPIGS");
     get.raw.qpigs = commandAnswerQPIGS;
     if (commandAnswerQPIGS == DESCR_req_NAK || commandAnswerQPIGS == DESCR_req_NOA)

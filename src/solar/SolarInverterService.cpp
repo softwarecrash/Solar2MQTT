@@ -321,6 +321,11 @@ bool SolarInverterService::isConnected() const
     return _client != nullptr && _client->connection;
 }
 
+bool SolarInverterService::isBusy() const
+{
+    return _client != nullptr && _client->isBusy();
+}
+
 protocol_type_t SolarInverterService::protocol() const
 {
     if (_simulationEnabled)

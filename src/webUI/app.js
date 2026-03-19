@@ -168,8 +168,6 @@ const OVERVIEW_GROUPS = [
     fields: [
       { label: "Mode", keys: ["Inverter_Operation_Mode"], numeric: false },
       { label: "Charge", keys: ["Inverter_Charge_State"], numeric: false },
-      { label: "Fault", keys: ["Fault_Code"], numeric: false },
-      { label: "Warn", keys: ["Warning_Code"], numeric: false },
     ],
   },
 ];

@@ -3,10 +3,6 @@
 #include "PI_Serial.h"
 
 #include <ctype.h>
-
-#include "CRC16.h"
-#include "CRC.h"
-CRC16 crc;
 // static
 #include "QPI.h"
 #include "QPIRI.h"
@@ -23,6 +19,32 @@ extern void writeLog(const char *format, ...);
 
 namespace
 {
+String sanitizeLogText(const String &value, size_t maxLen = 64)
+{
+    String sanitized;
+    sanitized.reserve(maxLen);
+
+    for (size_t i = 0; i < value.length() && sanitized.length() < maxLen; ++i)
+    {
+        const unsigned char c = static_cast<unsigned char>(value.charAt(i));
+        if (c >= 32 && c <= 126)
+        {
+            sanitized += static_cast<char>(c);
+        }
+        else
+        {
+            sanitized += '.';
+        }
+    }
+
+    if (value.length() > maxLen)
+    {
+        sanitized += "...";
+    }
+
+    return sanitized;
+}
+
 int countDelimitedFields(const String &payload, char delimiter)
 {
     if (payload.isEmpty() || payload == DESCR_req_NAK || payload == DESCR_req_NOA || payload == DESCR_req_ERCRC)
@@ -120,6 +142,114 @@ bool isEchoedCommand(const String &response, const String &command, const char *
 
     return response.startsWith(command);
 }
+
+uint16_t calculatePiCrc(const uint8_t *data, size_t len)
+{
+    if (data == nullptr || len == 0)
+    {
+        return 0;
+    }
+
+    static constexpr uint16_t crcTable[16] = {
+        0x0000, 0x1021, 0x2042, 0x3063,
+        0x4084, 0x50A5, 0x60C6, 0x70E7,
+        0x8108, 0x9129, 0xA14A, 0xB16B,
+        0xC18C, 0xD1AD, 0xE1CE, 0xF1EF};
+
+    uint16_t crc = 0;
+    const uint8_t *ptr = data;
+    while (len-- != 0)
+    {
+        uint8_t nibble = static_cast<uint8_t>((crc >> 8) >> 4);
+        crc <<= 4;
+        crc ^= crcTable[nibble ^ (*ptr >> 4)];
+
+        nibble = static_cast<uint8_t>((crc >> 8) >> 4);
+        crc <<= 4;
+        crc ^= crcTable[nibble ^ (*ptr & 0x0F)];
+        ++ptr;
+    }
+
+    uint8_t crcLow = lowByte(crc);
+    uint8_t crcHigh = highByte(crc);
+    if (crcLow == 0x28 || crcLow == 0x0D || crcLow == 0x0A)
+    {
+        ++crcLow;
+    }
+    if (crcHigh == 0x28 || crcHigh == 0x0D || crcHigh == 0x0A)
+    {
+        ++crcHigh;
+    }
+
+    return static_cast<uint16_t>(crcHigh << 8) | crcLow;
+}
+
+void copyJsonObject(JsonObject target, JsonObjectConst source)
+{
+    target.clear();
+    if (source.isNull())
+    {
+        return;
+    }
+
+    for (JsonPairConst entry : source)
+    {
+        target[entry.key()] = entry.value();
+    }
+}
+
+String variantToLogString(JsonVariantConst value)
+{
+    if (value.isNull())
+    {
+        return "";
+    }
+
+    String text;
+    serializeJson(value, text);
+    if (text.length() >= 2 && text.charAt(0) == '"' && text.charAt(text.length() - 1) == '"')
+    {
+        text = text.substring(1, text.length() - 1);
+    }
+    return sanitizeLogText(text, 48);
+}
+
+String lookupLogValue(JsonObjectConst object, const char *key)
+{
+    if (object.isNull() || key == nullptr || key[0] == '\0')
+    {
+        return "";
+    }
+
+    return variantToLogString(object[key]);
+}
+
+String firstLogValue(JsonObjectConst object, std::initializer_list<const char *> keys)
+{
+    for (const char *key : keys)
+    {
+        const String value = lookupLogValue(object, key);
+        if (!value.isEmpty())
+        {
+            return value;
+        }
+    }
+    return "";
+}
+
+String metricLogValue(JsonObjectConst object, std::initializer_list<const char *> keys, const char *suffix)
+{
+    String value = firstLogValue(object, keys);
+    if (value.isEmpty())
+    {
+        return "-";
+    }
+    if (suffix != nullptr && suffix[0] != '\0')
+    {
+        value += suffix;
+    }
+    return value;
+}
 } // namespace
 //---------------------------------------------------------------------- 
 //  Public Functions
@@ -190,7 +320,7 @@ bool PI_Serial::Init()
 
 bool PI_Serial::loop()
 {
-    if (suspendSerial)
+    if (suspendSerial.load(std::memory_order_relaxed))
     {
         return false;
     }
@@ -200,6 +330,7 @@ bool PI_Serial::loop()
         {
             if (sendCustomCommand())
             {
+                clearCycleBackup();
                 requestStaticData = true;
                 requestCounter = 0;
                 previousTime = millis();
@@ -223,6 +354,7 @@ bool PI_Serial::loop()
                         {
                             requestCounter = 0;
                             requestStaticData = false;
+                            logStaticSummary();
                         }
                     }
                     else
@@ -240,6 +372,7 @@ bool PI_Serial::loop()
                         {
                             requestCounter = 0;
                             refineProtocol();
+                            logDynamicSummary();
                             if (requestCallback)
                             {
                                 requestCallback();
@@ -258,19 +391,57 @@ bool PI_Serial::loop()
                 switch (requestStaticData)
                 {
                 case true:
+                    if (requestCounter == 0)
+                    {
+                        beginCycleBackup();
+                    }
                     switch (requestCounter)
                     {
                     case 0:
-                        requestCounter = PIXX_QPIRI() ? (requestCounter + 1) : 0;
+                        if (PIXX_QPIRI())
+                        {
+                            requestCounter++;
+                        }
+                        else
+                        {
+                            restoreCycleBackup();
+                            requestCounter = 0;
+                        }
                         break;
                     case 1:
-                        requestCounter = PIXX_QMN() ? (requestCounter + 1) : 0;
+                        if (PIXX_QMN())
+                        {
+                            requestCounter++;
+                        }
+                        else
+                        {
+                            restoreCycleBackup();
+                            requestCounter = 0;
+                        }
                         break;
                     case 2:
-                        requestCounter = PIXX_QPI() ? (requestCounter + 1) : 0;
+                        if (PIXX_QPI())
+                        {
+                            requestCounter++;
+                        }
+                        else
+                        {
+                            restoreCycleBackup();
+                            requestCounter = 0;
+                        }
                         break;
                     case 3:
-                        requestCounter = PIXX_QFLAG() ? (requestCounter + 1) : 0;
+                        if (PIXX_QFLAG())
+                        {
+                            requestCounter++;
+                            clearCycleBackup();
+                            logStaticSummary();
+                        }
+                        else
+                        {
+                            restoreCycleBackup();
+                            requestCounter = 0;
+                        }
                         requestCounter = 0;
                         requestStaticData = false;
                         break;
@@ -278,32 +449,94 @@ bool PI_Serial::loop()
                     break;
 
                 case false:
+                    if (requestCounter == 0)
+                    {
+                        beginCycleBackup();
+                    }
                     switch (requestCounter)
                     {
                     case 0:
-                        requestCounter = PIXX_QPIGS() ? (requestCounter + 1) : 0;
+                        if (PIXX_QPIGS())
+                        {
+                            requestCounter++;
+                        }
+                        else
+                        {
+                            restoreCycleBackup();
+                            requestCounter = 0;
+                        }
                         break;
                     case 1:
-                        requestCounter = PIXX_QPIGS2() ? (requestCounter + 1) : 0;
+                        if (PIXX_QPIGS2())
+                        {
+                            requestCounter++;
+                        }
+                        else
+                        {
+                            restoreCycleBackup();
+                            requestCounter = 0;
+                        }
                         break;
                     case 2:
-                        requestCounter = PIXX_QMOD() ? (requestCounter + 1) : 0;
+                        if (PIXX_QMOD())
+                        {
+                            requestCounter++;
+                        }
+                        else
+                        {
+                            restoreCycleBackup();
+                            requestCounter = 0;
+                        }
                         break;
                     case 3:
-                        requestCounter = PIXX_Q1() ? (requestCounter + 1) : 0;
+                        if (PIXX_Q1())
+                        {
+                            requestCounter++;
+                        }
+                        else
+                        {
+                            restoreCycleBackup();
+                            requestCounter = 0;
+                        }
                         break;
                     case 4:
-                        requestCounter = PIXX_QEX() ? (requestCounter + 1) : 0;
+                        if (PIXX_QEX())
+                        {
+                            requestCounter++;
+                        }
+                        else
+                        {
+                            restoreCycleBackup();
+                            requestCounter = 0;
+                        }
                         break;
                     case 5:
-                        requestCounter = PIXX_QPIWS() ? (requestCounter + 1) : 0;
+                        if (PIXX_QPIWS())
+                        {
+                            requestCounter++;
+                        }
+                        else
+                        {
+                            restoreCycleBackup();
+                            requestCounter = 0;
+                        }
                         break;
                     case 6:
-                        requestCounter = PIXX_QPIRI() ? (requestCounter + 1) : 0;
+                        if (PIXX_QPIRI())
+                        {
+                            requestCounter++;
+                        }
+                        else
+                        {
+                            restoreCycleBackup();
+                            requestCounter = 0;
+                        }
                         break;
                     case 7:
                         refineProtocol();
+                        logDynamicSummary();
                         requestCallback();
+                        clearCycleBackup();
                         requestCounter = 0;
                         break;
                     }
@@ -322,6 +555,7 @@ bool PI_Serial::loop()
         }
         else
         {
+            clearCycleBackup();
             autoDetect();
             previousTime = millis();
             requestCallback();
@@ -329,6 +563,103 @@ bool PI_Serial::loop()
         }
     }
     return true;
+}
+
+void PI_Serial::beginCycleBackup()
+{
+    cycleLiveBackup.clear();
+    cycleStaticBackup.clear();
+    copyJsonObject(cycleLiveBackup.to<JsonObject>(), JsonObjectConst(liveData));
+    copyJsonObject(cycleStaticBackup.to<JsonObject>(), JsonObjectConst(staticData));
+    cycleBackupActive = true;
+}
+
+void PI_Serial::restoreCycleBackup()
+{
+    if (!cycleBackupActive)
+    {
+        return;
+    }
+
+    copyJsonObject(liveData, cycleLiveBackup.as<JsonObjectConst>());
+    copyJsonObject(staticData, cycleStaticBackup.as<JsonObjectConst>());
+    clearCycleBackup();
+}
+
+void PI_Serial::clearCycleBackup()
+{
+    cycleBackupActive = false;
+    cycleLiveBackup.clear();
+    cycleStaticBackup.clear();
+}
+
+void PI_Serial::logStaticSummary() const
+{
+    const String protocolName = sanitizeLogText(String(protocolToString(protocol)), 20);
+    const String protocolId = firstLogValue(JsonObjectConst(staticData), {DESCR_Protocol_ID});
+    const String model = firstLogValue(JsonObjectConst(staticData), {DESCR_Device_Model});
+
+    if (isRawOnlyPiProtocol(protocol))
+    {
+        writeLog("[PI][STATIC] proto=%s id=%s model=%s raw(qpiri=%u qpigs=%u qmod=%u qpiws=%u)",
+                 protocolName.c_str(),
+                 protocolId.isEmpty() ? "-" : protocolId.c_str(),
+                 model.isEmpty() ? "-" : model.c_str(),
+                 static_cast<unsigned>(get.raw.qpiri.length()),
+                 static_cast<unsigned>(get.raw.qpigs.length()),
+                 static_cast<unsigned>(get.raw.qmod.length()),
+                 static_cast<unsigned>(get.raw.qpiws.length()));
+        return;
+    }
+
+    writeLog("[PI][STATIC] proto=%s id=%s model=%s",
+             protocolName.c_str(),
+             protocolId.isEmpty() ? "-" : protocolId.c_str(),
+             model.isEmpty() ? "-" : model.c_str());
+}
+
+void PI_Serial::logDynamicSummary() const
+{
+    const JsonObjectConst live = JsonObjectConst(liveData);
+    const String protocolName = sanitizeLogText(String(protocolToString(protocol)), 20);
+    const String mode = firstLogValue(live, {DESCR_Inverter_Operation_Mode, DESCR_Inverter_Charge_State});
+    const String pv = metricLogValue(live, {DESCR_PV_Input_Power, DESCR_PV_Charging_Power, DESCR_SCC_Charge_Power}, "W");
+    const String load = metricLogValue(live, {DESCR_AC_Out_Watt}, "W");
+    const String batteryVoltage = metricLogValue(live, {DESCR_Battery_Voltage, DESCR_Positive_Battery_Voltage}, "V");
+    const String batteryPercent = metricLogValue(live, {DESCR_Battery_Percent}, "%");
+    const String chargeCurrent = metricLogValue(live, {DESCR_Battery_Charge_Current}, "A");
+    const String fault = firstLogValue(live, {DESCR_Fault_Code, DESCR_Warning_Code});
+
+    if (isRawOnlyPiProtocol(protocol) &&
+        pv == "-" &&
+        load == "-" &&
+        batteryVoltage == "-" &&
+        batteryPercent == "-")
+    {
+        writeLog("[PI][OK] proto=%s raw(qpiri=%u qpigs=%u qmod=%u qpiws=%u)",
+                 protocolName.c_str(),
+                 static_cast<unsigned>(get.raw.qpiri.length()),
+                 static_cast<unsigned>(get.raw.qpigs.length()),
+                 static_cast<unsigned>(get.raw.qmod.length()),
+                 static_cast<unsigned>(get.raw.qpiws.length()));
+        return;
+    }
+
+    String battery = batteryVoltage;
+    if (batteryPercent != "-")
+    {
+        battery += "/";
+        battery += batteryPercent;
+    }
+
+    writeLog("[PI][OK] proto=%s mode=%s pv=%s load=%s batt=%s chg=%s fault=%s",
+             protocolName.c_str(),
+             mode.isEmpty() ? "-" : mode.c_str(),
+             pv.c_str(),
+             load.c_str(),
+             battery.c_str(),
+             chargeCurrent.c_str(),
+             fault.isEmpty() ? "-" : fault.c_str());
 }
 
 void PI_Serial::callback(std::function<void()> func)
@@ -379,35 +710,35 @@ bool PI_Serial::loopbackTest(String &details)
 
 void PI_Serial::setSuspend(bool enabled)
 {
-    suspendSerial = enabled;
+    suspendSerial.store(enabled, std::memory_order_relaxed);
     if (enabled)
     {
-        abortAutoDetect = true;
+        abortAutoDetect.store(true, std::memory_order_relaxed);
     }
     else
     {
-        abortAutoDetect = false;
+        abortAutoDetect.store(false, std::memory_order_relaxed);
     }
 }
 
 bool PI_Serial::isSuspended() const
 {
-    return suspendSerial;
+    return suspendSerial.load(std::memory_order_relaxed);
 }
 
 bool PI_Serial::isBusy() const
 {
-    return busyCount > 0;
+    return busyCount.load(std::memory_order_relaxed) > 0;
 }
 //----------------------------------------------------------------------
 // Private Functions
 //----------------------------------------------------------------------
 void PI_Serial::autoDetect() // function for autodetect the inverter type
 {
-    busyCount++;
-    if (abortAutoDetect || suspendSerial)
+    busyCount.fetch_add(1, std::memory_order_relaxed);
+    if (abortAutoDetect.load(std::memory_order_relaxed) || suspendSerial.load(std::memory_order_relaxed))
     {
-        writeLog("Autodetect aborted");
+        writeLog("[PI][DETECT] aborted");
         goto autodetect_done;
     }
     protocol = NoD;
@@ -416,24 +747,22 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         delete modbus;
         modbus = nullptr;
     }
-    writeLog("----------------- Start Autodetect -----------------");
+    writeLog("[PI][DETECT] start");
     for (size_t i = 0; i < 3; i++) // try 3 times to detect the inverter
     {
-        if (abortAutoDetect || suspendSerial)
+        if (abortAutoDetect.load(std::memory_order_relaxed) || suspendSerial.load(std::memory_order_relaxed))
         {
-            writeLog("Autodetect aborted");
+            writeLog("[PI][DETECT] aborted");
             goto autodetect_done;
         }
-        writeLog("Try Autodetect Protocol");
 
         startChar = "(";
         serialIntfBaud = 2400;
         this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
         get.raw.qpi = this->requestData("QPI");
-        writeLog("QPI:\t\t%s (Length: %d)", get.raw.qpi, get.raw.qpi.length());
-        if (abortAutoDetect || suspendSerial)
+        if (abortAutoDetect.load(std::memory_order_relaxed) || suspendSerial.load(std::memory_order_relaxed))
         {
-            writeLog("Autodetect aborted");
+            writeLog("[PI][DETECT] aborted");
             goto autodetect_done;
         }
         int numericProtocolId = 0;
@@ -444,29 +773,29 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
             {
             case 15:
                 protocol = PI15;
-                writeLog("<Autodetect> Match protocol: PI15");
+                writeLog("[PI][DETECT] match=PI15");
                 break;
             case 16:
                 protocol = PI16;
-                writeLog("<Autodetect> Match protocol: PI16");
+                writeLog("[PI][DETECT] match=PI16");
                 break;
             case 18:
                 protocol = PI18;
                 delimiter = ",";
                 startChar = "^Dxxx";
-                writeLog("<Autodetect> Match protocol: PI18");
+                writeLog("[PI][DETECT] match=PI18");
                 break;
             case 41:
                 protocol = PI41;
-                writeLog("<Autodetect> Match protocol: PI41");
+                writeLog("[PI][DETECT] match=PI41");
                 break;
             case 30:
                 protocol = PI30;
-                writeLog("<Autodetect> Match protocol: PI30");
+                writeLog("[PI][DETECT] match=PI30");
                 break;
             default:
                 protocol = PI30_UNKNOWN;
-                writeLog("<Autodetect> Match protocol: unsupported PI%d", numericProtocolId);
+                writeLog("[PI][DETECT] match=PI%d (unsupported family)", numericProtocolId);
                 break;
             }
             break;
@@ -474,15 +803,14 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         startChar = "^Dxxx";
         this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
         get.raw.qpi = this->requestData("^P005PI");
-        writeLog("^P005PI:\t\t%s (Length: %d)", get.raw.qpi, get.raw.qpi.length());
-        if (abortAutoDetect || suspendSerial)
+        if (abortAutoDetect.load(std::memory_order_relaxed) || suspendSerial.load(std::memory_order_relaxed))
         {
-            writeLog("Autodetect aborted");
+            writeLog("[PI][DETECT] aborted");
             goto autodetect_done;
         }
         if (get.raw.qpi != "" && get.raw.qpi == "18")
         {
-            writeLog("<Autodetect> Match protocol: PI18");
+            writeLog("[PI][DETECT] match=PI18");
             delimiter = ",";
             protocol = PI18;
             break;
@@ -495,7 +823,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         if (isValidResponse(get.raw.qpiri))
         {
             protocol = PI30_UNKNOWN;
-            writeLog("<Autodetect> Unknown PI-family device answered QPIRI");
+            writeLog("[PI][DETECT] unknown PI-family answered QPIRI");
             break;
         }
 
@@ -503,7 +831,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         if (isValidResponse(get.raw.qpigs))
         {
             protocol = PI30_UNKNOWN;
-            writeLog("<Autodetect> Unknown PI-family device answered QPIGS");
+            writeLog("[PI][DETECT] unknown PI-family answered QPIGS");
             break;
         }
 
@@ -511,13 +839,15 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         if (isValidResponse(get.raw.qmod))
         {
             protocol = PI30_UNKNOWN;
-            writeLog("<Autodetect> Unknown PI-family device answered QMOD");
+            writeLog("[PI][DETECT] unknown PI-family answered QMOD");
             break;
         }
         this->my_serialIntf->end();
     }
     this->my_serialIntf->end();
-    if (protocol == NoD && !abortAutoDetect && !suspendSerial)
+    if (protocol == NoD &&
+        !abortAutoDetect.load(std::memory_order_relaxed) &&
+        !suspendSerial.load(std::memory_order_relaxed))
     {
         modbus = new MODBUS(this->my_serialIntf, _rxPin, _txPin);
         if (modbus != nullptr)
@@ -531,11 +861,11 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
             }
         }
     } 
-    writeLog("----------------- End Autodetect -----------------");
+    writeLog("[PI][DETECT] done proto=%s", protocolToString(protocol));
 autodetect_done:
-    if (busyCount > 0)
+    if (busyCount.load(std::memory_order_relaxed) > 0)
     {
-        busyCount--;
+        busyCount.fetch_sub(1, std::memory_order_relaxed);
     }
 }
 
@@ -597,7 +927,7 @@ void PI_Serial::refineProtocol()
 
     if (protocol != previousProtocol)
     {
-        writeLog("<Autodetect> Refined protocol to %s", protocolToString(protocol));
+        writeLog("[PI][DETECT] refined=%s", protocolToString(protocol));
     }
 }
 
@@ -739,7 +1069,7 @@ String PI_Serial::requestData(String command)
     uint16_t crcCalc = 0;
     uint16_t crcRecive = 0;
 
-    busyCount++;
+    busyCount.fetch_add(1, std::memory_order_relaxed);
     while (this->my_serialIntf->available() > 0)
     {
         this->my_serialIntf->read();
@@ -795,60 +1125,26 @@ String PI_Serial::requestData(String command)
     }
     else if (isEchoedCommand(commandBuffer, command, startChar))
     {
-        writeLog("Echo detected on %s, ignoring loopback response", command.c_str());
+        writeLog("[PI][WARN] echo cmd=%s ignored", command.c_str());
         commandBuffer = "NOA";
     }
     else
     {
-        writeLog("ERROR Send: >%s< Recive: >%s<", command, commandBuffer);
+        const String sanitizedReply = sanitizeLogText(commandBuffer, 72);
+        writeLog("[PI][ERR] cmd=%s crc_rx=%04X crc_calc=%04X len=%u recv=\"%s\"",
+                 command.c_str(),
+                 crcRecive,
+                 crcCalc,
+                 static_cast<unsigned>(cbLen),
+                 sanitizedReply.c_str());
         connectionCounter++;
         commandBuffer = "ERCRC";
     }
-    writeLog("[C: %6s][CR: %4X][CC: %4X][L: %3u]", command.c_str(), crcRecive, crcCalc, commandBuffer.length());
-    if (busyCount > 0)
+    if (busyCount.load(std::memory_order_relaxed) > 0)
     {
-        busyCount--;
+        busyCount.fetch_sub(1, std::memory_order_relaxed);
     }
     return commandBuffer;
-}
-
-uint16_t cal_crc_half(uint8_t *pin, uint8_t len)
-// https://forums.aeva.asn.au/viewtopic.php?t=4332&start=25
-{
-    uint16_t crc;
-    uint8_t da;
-    uint8_t *ptr;
-    uint8_t bCRCHign;
-    uint8_t bCRCLow;
-    uint16_t crc_ta[16] =
-        {
-            0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
-            0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef};
-    ptr = pin;
-    crc = 0;
-    while (len-- != 0)
-    {
-        da = static_cast<uint8_t>((crc >> 8)) >> 4;
-        crc <<= 4;
-        crc ^= crc_ta[da ^ (*ptr >> 4)];
-        da = static_cast<uint8_t>((crc >> 8)) >> 4;
-        crc <<= 4;
-        crc ^= crc_ta[da ^ (*ptr & 0x0f)];
-        ptr++;
-    }
-    bCRCLow = crc;
-    bCRCHign = static_cast<uint8_t>(crc >> 8);
-    if (bCRCLow == 0x28 || bCRCLow == 0x0d || bCRCLow == 0x0a)
-    {
-        bCRCLow++;
-    }
-    if (bCRCHign == 0x28 || bCRCHign == 0x0d || bCRCHign == 0x0a)
-    {
-        bCRCHign++;
-    }
-    crc = static_cast<uint16_t>(bCRCHign) << 8;
-    crc += bCRCLow;
-    return crc;
 }
 
 uint16_t PI_Serial::getCRC(String data) // get a calculated crc from a string
@@ -863,27 +1159,7 @@ byte PI_Serial::getCHK(String data) // get a calculatedt CHK
 
 uint16_t PI_Serial::getCRC(const char *data, size_t len) // get a calculated crc from a buffer
 {
-    crc.reset();
-    crc.setPolynome(0x1021);
-    if (data && len)
-    {
-        crc.add((uint8_t *)data, len);
-    }
-    crc.calc();
-    uint8_t CRCLow = lowByte(crc.calc());
-    uint8_t CRCHigh = highByte(crc.calc());
-    uint16_t CRCre;
-    if (CRCLow == 0x28 || CRCLow == 0x0d || CRCLow == 0x0a)
-    {
-        CRCLow++;
-    }
-    if (CRCHigh == 0x28 || CRCHigh == 0x0d || CRCHigh == 0x0a)
-    {
-        CRCHigh++;
-    }
-    CRCre = ((uint16_t)CRCHigh) << 8;
-    CRCre += CRCLow;
-    return (CRCre);
+    return calculatePiCrc(reinterpret_cast<const uint8_t *>(data), len);
 }
 
 byte PI_Serial::getCHK(const char *data, size_t len) // get a calculatedt CHK from a buffer
