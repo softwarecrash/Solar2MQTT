@@ -794,7 +794,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   });
 
   bindClick("rebootBtn", async () => {
-    await fetchJson("/api/reboot", { method: "POST" });
     window.location.href = "/reboot";
   });
 

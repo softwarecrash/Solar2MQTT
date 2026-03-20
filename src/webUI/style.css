@@ -660,19 +660,27 @@ pre {
 
 .overview-values {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
+  align-items: center;
   gap: 8px;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .value-chip {
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  flex: 0 0 auto;
   padding: 7px 10px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: rgba(88, 184, 255, 0.08);
+  white-space: nowrap;
 }
 
 .value-chip small {
@@ -686,6 +694,20 @@ pre {
 .value-chip strong {
   font-size: 0.9rem;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+.overview-values::-webkit-scrollbar {
+  height: 6px;
+}
+
+.overview-values::-webkit-scrollbar-thumb {
+  background: rgba(128, 166, 201, 0.28);
+  border-radius: 999px;
+}
+
+.overview-values::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .overview-empty {
