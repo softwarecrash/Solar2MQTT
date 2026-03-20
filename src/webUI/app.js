@@ -159,8 +159,6 @@ const OVERVIEW_GROUPS = [
     fields: [
       { label: "V", keys: ["Battery_Voltage", "Positive_Battery_Voltage"], unit: "V", decimals: 1 },
       { label: "A", keys: ["Battery_Load"], unit: "A", decimals: 1 },
-      { label: "Chg", keys: ["Battery_Charge_Current"], unit: "A", decimals: 1 },
-      { label: "Dis", keys: ["Battery_Discharge_Current"], unit: "A", decimals: 1 },
       { label: "%", keys: ["Battery_Percent"], unit: "%", decimals: 0 },
     ],
   },
@@ -169,7 +167,6 @@ const OVERVIEW_GROUPS = [
     fields: [
       { label: "Inv", keys: ["Inverter_Temperature", "Inverter_Bus_Temperature"], unit: "C", decimals: 0 },
       { label: "Bat", keys: ["Battery_Temperature"], unit: "C", decimals: 0 },
-      { label: "Track", keys: ["Tracker_Temperature", "MPPT1_Charger_Temperature"], unit: "C", decimals: 0 },
       { label: "Trf", keys: ["Transformer_Temperature"], unit: "C", decimals: 0 },
     ],
   },
@@ -280,6 +277,21 @@ function ratioToPercent(current, maximum) {
 
 function joinMeta(parts) {
   return parts.filter(Boolean).join(" | ");
+}
+
+function normalizeOverviewLabel(field) {
+  const label = typeof field.label === "string" ? field.label.trim() : "";
+  const unit = typeof field.unit === "string" ? field.unit.trim() : "";
+
+  if (!label) {
+    return "";
+  }
+
+  if (unit && label.toLowerCase() === unit.toLowerCase()) {
+    return "";
+  }
+
+  return label;
 }
 
 function totalSolarPower(data) {
@@ -405,13 +417,15 @@ function createOverviewRow(title, entries) {
     const chip = document.createElement("div");
     chip.className = "value-chip";
 
-    const key = document.createElement("small");
-    key.textContent = entry.label;
-
     const value = document.createElement("strong");
     value.textContent = entry.value;
 
-    chip.appendChild(key);
+    if (entry.label) {
+      const key = document.createElement("small");
+      key.textContent = entry.label;
+      chip.appendChild(key);
+    }
+
     chip.appendChild(value);
     values.appendChild(chip);
   });
@@ -444,7 +458,7 @@ function renderOverview(data) {
             ? String(value).trim()
             : formatReading(value, field.unit || "", field.decimals ?? 0);
 
-        return display ? { label: field.label, value: display } : null;
+        return display ? { label: normalizeOverviewLabel(field), value: display } : null;
       })
       .filter(Boolean);
 

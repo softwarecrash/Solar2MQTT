@@ -644,8 +644,8 @@ pre {
 
 .overview-row {
   display: grid;
-  grid-template-columns: minmax(96px, 116px) minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: minmax(88px, 108px) minmax(0, 1fr);
+  gap: 8px;
   align-items: start;
   padding: 11px 12px;
   border: 1px solid var(--border);
@@ -660,23 +660,22 @@ pre {
 
 .overview-values {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   justify-content: flex-end;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
   min-width: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 2px;
-  -webkit-overflow-scrolling: touch;
+  overflow: visible;
 }
 
 .value-chip {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  flex: 0 0 auto;
-  padding: 7px 10px;
+  justify-content: center;
+  gap: 4px;
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 5px 7px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: rgba(88, 184, 255, 0.08);
@@ -685,29 +684,20 @@ pre {
 
 .value-chip small {
   color: var(--ea-text-2);
-  font-size: 0.74rem;
+  font-size: clamp(0.78rem, 1.8vw, 0.88rem);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  line-height: 1;
+  letter-spacing: 0;
   text-transform: uppercase;
+  flex: 0 0 auto;
 }
 
 .value-chip strong {
-  font-size: 0.9rem;
+  min-width: 0;
+  font-size: clamp(0.78rem, 1.8vw, 0.88rem);
   font-weight: 600;
+  line-height: 1;
   white-space: nowrap;
-}
-
-.overview-values::-webkit-scrollbar {
-  height: 6px;
-}
-
-.overview-values::-webkit-scrollbar-thumb {
-  background: rgba(128, 166, 201, 0.28);
-  border-radius: 999px;
-}
-
-.overview-values::-webkit-scrollbar-track {
-  background: transparent;
 }
 
 .overview-empty {
@@ -764,12 +754,7 @@ select option {
     grid-template-columns: 1fr;
   }
 
-  .meter-grid,
-  .overview-row {
+  .meter-grid {
     grid-template-columns: 1fr;
-  }
-
-  .overview-values {
-    justify-content: flex-start;
   }
 }

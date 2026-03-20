@@ -1,0 +1,65 @@
+name: Sync Wiki
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'wiki/**'
+      - '.github/workflows/wiki-sync.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Sync wiki folder to GitHub Wiki
+        env:
+          WIKI_URL: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git
+        run: |
+          set -euo pipefail
+
+          if [ ! -d "wiki" ]; then
+            echo "wiki/ folder not found, nothing to sync."
+            exit 0
+          fi
+
+          temp_dir="$(mktemp -d)"
+          trap 'rm -rf "$temp_dir"' EXIT
+
+          if ! git clone "$WIKI_URL" "$temp_dir"; then
+            echo "::error::GitHub Wiki could not be cloned. Enable the repository wiki and create the first wiki page manually once so the .wiki.git backend exists."
+            exit 1
+          fi
+
+          rsync -a --delete --exclude '.git/' wiki/ "$temp_dir/"
+
+          cd "$temp_dir"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet --exit-code && git diff --cached --quiet --exit-code; then
+            echo "Wiki already up to date."
+            exit 0
+          fi
+
+          git add --all
+
+          if git diff --cached --quiet --exit-code; then
+            echo "No wiki changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Sync wiki from repository"
+          git push origin HEAD
