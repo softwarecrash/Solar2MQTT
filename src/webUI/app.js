@@ -703,17 +703,11 @@ window.addEventListener("DOMContentLoaded", async () => {
   bindSubmit("networkForm", async (form) => {
     await postForm("/api/settings/network", form);
     showNotice("Network settings saved. Restart is being prepared.");
-    window.setTimeout(() => {
-      window.location.href = "/reboot";
-    }, 500);
   });
 
   bindSubmit("mqttForm", async (form) => {
     await postForm("/api/settings/mqtt", form);
     showNotice("MQTT settings saved. Restart is being prepared.");
-    window.setTimeout(() => {
-      window.location.href = "/reboot";
-    }, 500);
   });
 
   bindSubmit("deviceForm", async (form) => {
@@ -753,9 +747,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     formData.append("update", fileInput.files[0]);
     await fetchJson("/update", { method: "POST", body: formData });
     showNotice("Firmware uploaded. Restart is being prepared.");
-    window.setTimeout(() => {
-      window.location.href = "/reboot";
-    }, 500);
   });
 
   bindSubmit("restoreForm", async () => {
@@ -772,9 +763,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
 
     showNotice("Settings imported. Restart is being prepared.");
-    window.setTimeout(() => {
-      window.location.href = "/reboot";
-    }, 500);
   });
 
   bindClick("loopbackBtn", async () => {
@@ -808,10 +796,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   });
 
   bindClick("rebootBtn", async () => {
-    window.location.href = "/reboot";
-  });
-
-  bindClick("rebootNowBtn", async () => {
     await fetchJson("/api/reboot", { method: "POST" });
     showNotice("Reboot triggered.");
   });

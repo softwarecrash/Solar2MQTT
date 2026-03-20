@@ -228,7 +228,6 @@ void WebServerHandler::registerRoutes()
     serveAsset("/firmwareupdate", firmware_html_gz_mime, firmware_html_gz, firmware_html_gz_len);
     serveAsset("/debug", debug_html_gz_mime, debug_html_gz, debug_html_gz_len);
     serveAsset("/confirmreset", confirmreset_html_gz_mime, confirmreset_html_gz, confirmreset_html_gz_len);
-    serveAsset("/reboot", reboot_html_gz_mime, reboot_html_gz, reboot_html_gz_len);
     serveAsset("/webserial", webserial_html_gz_mime, webserial_html_gz, webserial_html_gz_len);
     serveAsset("/app.js", app_js_gz_mime, app_js_gz, app_js_gz_len);
     serveAsset("/style.css", style_css_gz_mime, style_css_gz, style_css_gz_len);
