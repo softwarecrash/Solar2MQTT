@@ -132,7 +132,10 @@ WebServerHandler::WebServerHandler(AsyncWebServer &server,
       _otaUpdater(otaUpdater),
       _wsStatus("/ws-status"),
       _mqttConnected(false),
-      _inverterConnected(false)
+      _inverterConnected(false),
+      _statusDirty(true),
+      _lastStatusRefreshMs(0),
+      _statusPayloadMutex(xSemaphoreCreateMutex())
 {
     s_self = this;
 }
@@ -143,26 +146,30 @@ void WebServerHandler::begin()
     setupStatusWebSocket();
     LogSerial.begin(&_server, MONITOR_SPEED, 256);
     _server.begin();
-    _statusTicker.attach_ms(1000, []()
-                            {
-        if (WebServerHandler::s_self != nullptr)
-        {
-            WebServerHandler::s_self->notifyStatusBar();
-        } });
 }
 
-void WebServerHandler::notifyStatusBar()
+void WebServerHandler::loop()
 {
+    const uint32_t now = millis();
+    if (!_statusDirty.load(std::memory_order_relaxed) &&
+        (now - _lastStatusRefreshMs) < 1000UL)
+    {
+        return;
+    }
+
     if (_inverterService.isBusy())
     {
         return;
     }
 
-    JsonDocument doc;
-    buildStatusJson(doc);
-    _lastStatusPayload = "";
-    serializeJson(doc, _lastStatusPayload);
-    _wsStatus.textAll(_lastStatusPayload);
+    refreshStatusPayload();
+    _lastStatusRefreshMs = now;
+    _statusDirty.store(false, std::memory_order_relaxed);
+}
+
+void WebServerHandler::notifyStatusBar()
+{
+    _statusDirty.store(true, std::memory_order_relaxed);
 }
 
 bool WebServerHandler::isAuthorized(AsyncWebServerRequest *request)
@@ -238,14 +245,21 @@ void WebServerHandler::registerRoutes()
             return request->requestAuthentication();
         }
 
-        if (_inverterService.isBusy() && _lastStatusPayload.length() > 0)
+        const String cachedPayload = lastStatusPayloadCopy();
+        if (cachedPayload.length() > 0)
         {
-            request->send(200, "application/json", _lastStatusPayload);
+            request->send(200, "application/json", cachedPayload);
             return;
         }
 
         JsonDocument doc;
-        buildStatusJson(doc);
+        doc["mqttConnected"] = _mqttConnected;
+        doc["inverterConnected"] = _inverterConnected;
+        doc["wifiConnected"] = _wifiManager.getConnectionState();
+        doc["apMode"] = _wifiManager.isInApMode();
+        doc["ip"] = _wifiManager.ipAddress();
+        doc["protocol"] = _inverterService.protocolName();
+        doc["deviceName"] = _settings.get.deviceName();
         String json;
         serializeJson(doc, json);
         request->send(200, "application/json", json); });
@@ -303,6 +317,8 @@ void WebServerHandler::registerRoutes()
         device["uartRx"] = _settings.get.inverterRxPin();
         device["uartTx"] = _settings.get.inverterTxPin();
         device["uartDir"] = _settings.get.inverterDirPin();
+        device["statusLedPin"] = _settings.get.statusLedPin();
+        device["statusLedBrightness"] = _settings.get.statusLedBrightness();
         device["pollIntervalMs"] = _settings.get.pollIntervalMs();
 
         String json;
@@ -483,6 +499,8 @@ void WebServerHandler::registerRoutes()
             if (name == "uartRx") _settings.set.inverterRxPin(value.toInt());
             else if (name == "uartTx") _settings.set.inverterTxPin(value.toInt());
             else if (name == "uartDir") _settings.set.inverterDirPin(value.toInt());
+            else if (name == "statusLedPin") _settings.set.statusLedPin(value.toInt());
+            else if (name == "statusLedBrightness") _settings.set.statusLedBrightness(static_cast<uint16_t>(value.toInt()));
             else if (name == "pollIntervalMs") _settings.set.pollIntervalMs(value.toInt());
         }
 
@@ -782,18 +800,11 @@ void WebServerHandler::setupStatusWebSocket()
                       {
         if (type == WS_EVT_CONNECT)
         {
-            if (_inverterService.isBusy() && _lastStatusPayload.length() > 0)
+            const String payload = lastStatusPayloadCopy();
+            if (payload.length() > 0)
             {
-                client->text(_lastStatusPayload);
-                return;
+                client->text(payload);
             }
-
-            JsonDocument doc;
-            buildStatusJson(doc);
-            String payload;
-            serializeJson(doc, payload);
-            _lastStatusPayload = payload;
-            client->text(payload);
         } });
 
     _server.addHandler(&_wsStatus);
@@ -801,6 +812,9 @@ void WebServerHandler::setupStatusWebSocket()
 
 void WebServerHandler::buildStatusJson(JsonDocument &doc)
 {
+    JsonDocument snapshot;
+    _state.snapshotTo(snapshot);
+
     const bool wifiConnected = _wifiManager.getConnectionState();
     const bool apMode = _wifiManager.isInApMode();
     const int wifiRssi = _wifiManager.rssi();
@@ -814,8 +828,8 @@ void WebServerHandler::buildStatusJson(JsonDocument &doc)
     doc["protocol"] = _inverterService.protocolName();
     doc["simulation"] = _inverterService.simulationEnabled();
     doc["simulationProtocol"] = _inverterService.simulationEnabled() ? "PI30" : "";
-    doc["deviceName"] = _state.doc()["EspData"]["Device_name"];
-    doc["fw"] = _state.doc()["EspData"]["sw_version"];
+    doc["deviceName"] = snapshot["EspData"]["Device_name"];
+    doc["fw"] = snapshot["EspData"]["sw_version"];
     doc["wifi"]["connected"] = wifiConnected;
     doc["wifi"]["apMode"] = apMode;
     doc["wifi"]["rssi"] = wifiRssi;
@@ -829,9 +843,52 @@ void WebServerHandler::buildStatusJson(JsonDocument &doc)
     doc["loopback"]["done"] = _inverterService.loopbackDone();
     doc["loopback"]["ok"] = _inverterService.loopbackOk();
     doc["loopback"]["message"] = _inverterService.loopbackMessage();
-    copyObjectSection(doc, "EspData", _state.doc()["EspData"].as<JsonObjectConst>());
-    copyObjectSection(doc, "DeviceData", _state.doc()["DeviceData"].as<JsonObjectConst>());
-    copyObjectSection(doc, "LiveData", _state.doc()["LiveData"].as<JsonObjectConst>());
+    copyObjectSection(doc, "EspData", snapshot["EspData"].as<JsonObjectConst>());
+    copyObjectSection(doc, "DeviceData", snapshot["DeviceData"].as<JsonObjectConst>());
+    copyObjectSection(doc, "LiveData", snapshot["LiveData"].as<JsonObjectConst>());
+}
+
+void WebServerHandler::refreshStatusPayload()
+{
+    JsonDocument doc;
+    buildStatusJson(doc);
+
+    String payload;
+    payload.reserve(2048);
+    serializeJson(doc, payload);
+    setLastStatusPayload(payload);
+    _wsStatus.textAll(payload);
+}
+
+String WebServerHandler::lastStatusPayloadCopy()
+{
+    if (_statusPayloadMutex == nullptr)
+    {
+        return _lastStatusPayload;
+    }
+
+    String payload;
+    if (xSemaphoreTake(_statusPayloadMutex, portMAX_DELAY) == pdTRUE)
+    {
+        payload = _lastStatusPayload;
+        xSemaphoreGive(_statusPayloadMutex);
+    }
+    return payload;
+}
+
+void WebServerHandler::setLastStatusPayload(const String &payload)
+{
+    if (_statusPayloadMutex == nullptr)
+    {
+        _lastStatusPayload = payload;
+        return;
+    }
+
+    if (xSemaphoreTake(_statusPayloadMutex, portMAX_DELAY) == pdTRUE)
+    {
+        _lastStatusPayload = payload;
+        xSemaphoreGive(_statusPayloadMutex);
+    }
 }
 
 void WebServerHandler::sendAsset(AsyncWebServerRequest *request, const char *mime, const uint8_t *data, size_t len)

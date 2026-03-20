@@ -94,6 +94,16 @@ function fillForm(formId, values) {
   });
 }
 
+function syncRangeValue(inputId, outputId) {
+  const input = byId(inputId);
+  const output = byId(outputId);
+  if (!input || !output) {
+    return;
+  }
+
+  output.textContent = input.value ?? "-";
+}
+
 const OVERVIEW_GROUPS = [
   {
     title: "Solar",
@@ -548,6 +558,7 @@ async function loadSettings() {
   fillForm("networkForm", data.network);
   fillForm("mqttForm", data.mqtt);
   fillForm("deviceForm", data.device);
+  syncRangeValue("statusLedBrightness", "statusLedBrightnessValue");
 }
 
 async function loadStatus() {
@@ -693,7 +704,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   bindSubmit("deviceForm", async (form) => {
     await postForm("/api/settings/device", form);
-    showNotice("UART configuration applied.");
+    showNotice("Device settings applied.");
   });
 
   bindSubmit("commandForm", async (form) => {
@@ -805,6 +816,14 @@ window.addEventListener("DOMContentLoaded", async () => {
     await fetchJson("/api/factory-reset", { method: "POST" });
     showNotice("Factory reset triggered.");
   });
+
+  const ledBrightness = byId("statusLedBrightness");
+  if (ledBrightness) {
+    ledBrightness.addEventListener("input", () => {
+      syncRangeValue("statusLedBrightness", "statusLedBrightnessValue");
+    });
+    syncRangeValue("statusLedBrightness", "statusLedBrightnessValue");
+  }
 
   await Promise.allSettled([loadDataPreview(), loadReportPreview()]);
 });

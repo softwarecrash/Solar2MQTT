@@ -260,6 +260,24 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(88, 184, 255, 0.16);
 }
 
+.range-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--ea-primary);
+}
+
+.range-value {
+  min-width: 44px;
+  text-align: right;
+  color: var(--ea-text-2);
+  font-variant-numeric: tabular-nums;
+}
+
 textarea {
   resize: vertical;
 }

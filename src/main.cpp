@@ -8,6 +8,7 @@
 #include "core/MqttHandler.h"
 #include "core/SettingsPrefs.h"
 #include "core/SolarState.h"
+#include "core/StatusLedService.h"
 #include "core/WebServerHandler.h"
 #include "core/WiFiManager.h"
 #include "main.h"
@@ -41,6 +42,7 @@ WiFiManager wifiManager(server);
 SolarInverterService inverterService(solarState);
 Ds18b20Service ds18b20Service;
 MqttHandler mqttHandler(solarState, wifiManager, inverterService);
+StatusLedService statusLedService;
 GitHubOtaUpdater otaUpdater(OTA_GITHUB_OWNER, OTA_GITHUB_REPO, STRVERSION, BUILD_VARIANT);
 WebServerHandler webServerHandler(server, wifiManager, solarState, inverterService, mqttHandler, otaUpdater);
 
@@ -78,6 +80,8 @@ void setup()
 
     _settings.begin();
     solarState.begin();
+    statusLedService.begin(_settings.get.statusLedPin(),
+                           static_cast<uint8_t>(_settings.get.statusLedBrightness()));
 
     FactoryResetManager::begin(10000, 6);
     wifiManager.begin();
@@ -112,11 +116,14 @@ void loop()
     inverterService.loop();
     ds18b20Service.loop();
     mqttHandler.loop();
+    webServerHandler.loop();
 
     if (g_pendingInverterReconfigure && static_cast<int32_t>(millis() - g_inverterReconfigureAt) >= 0)
     {
         g_pendingInverterReconfigure = false;
         inverterService.reconfigure();
+        statusLedService.configure(_settings.get.statusLedPin(),
+                                   static_cast<uint8_t>(_settings.get.statusLedBrightness()));
         mqttHandler.triggerFullStatePublish();
     }
 
@@ -135,4 +142,9 @@ void loop()
     updateRuntimeState();
     webServerHandler.setMqttConnected(mqttHandler.isConnected());
     webServerHandler.setInverterConnected(inverterService.isConnected());
+    webServerHandler.loop();
+    statusLedService.loop(wifiManager.getConnectionState(),
+                          strlen(_settings.get.mqttHost()) > 0,
+                          mqttHandler.isConnected(),
+                          inverterService.isConnected());
 }
