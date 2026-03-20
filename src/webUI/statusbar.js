@@ -38,6 +38,19 @@
       </svg>`;
   }
 
+  function iconEthernet(color, title) {
+    return `
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ethernet">
+        <title>${safe(title)}</title>
+        <rect x="14" y="8" width="36" height="32" rx="4" ry="4" fill="none" stroke="${color}" stroke-width="3"/>
+        <rect x="18" y="12" width="4" height="8" fill="${color}"/>
+        <rect x="26" y="12" width="4" height="8" fill="${color}"/>
+        <rect x="34" y="12" width="4" height="8" fill="${color}"/>
+        <rect x="42" y="12" width="4" height="8" fill="${color}"/>
+        <path d="M18 40 L24 56 H40 L46 40 Z" fill="none" stroke="${color}" stroke-width="3"/>
+      </svg>`;
+  }
+
   function iconMqtt(color, title) {
     return `
       <svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="MQTT">
@@ -155,7 +168,12 @@
     node.setAttribute("aria-label", title || role);
   }
 
-  function setWiFi(rssi, apMode) {
+  function setWiFi(rssi, apMode, ethActive) {
+    if (ethActive) {
+      setIndicator("wifi", iconEthernet(okColor(), "Ethernet connected"), "ok", "Ethernet connected");
+      return;
+    }
+
     if (apMode) {
       setIndicator("wifi", iconAp(warnColor(), "AP mode active"), "warn", "AP mode active");
       return;
@@ -222,13 +240,17 @@
     }
 
     const wifiData = message.wifi && typeof message.wifi === "object" ? message.wifi : {};
+    const ethActive =
+      typeof wifiData.ethActive === "boolean"
+        ? wifiData.ethActive
+        : message.ethActive === true;
     const rssi =
       typeof wifiData.rssi === "number"
         ? wifiData.rssi
         : (message.EspData && typeof message.EspData.Wifi_RSSI === "number" ? message.EspData.Wifi_RSSI : null);
     const apMode = typeof wifiData.apMode === "boolean" ? wifiData.apMode : message.apMode === true;
 
-    setWiFi(rssi, apMode);
+    setWiFi(rssi, apMode, ethActive);
     setMqtt(message.mqtt === true || message.mqttConnected === true);
     setInverter(message.inverter === true || message.inverterConnected === true);
     setService(apMode);

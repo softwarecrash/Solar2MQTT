@@ -3,7 +3,6 @@
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
 #include <Update.h>
-#include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <esp_timer.h>
 #include <freertos/FreeRTOS.h>
@@ -27,8 +26,9 @@ GitHubOtaUpdater::GitHubOtaUpdater(const char *owner,
 {
 }
 
-void GitHubOtaUpdater::begin()
+void GitHubOtaUpdater::begin(std::function<bool()> networkConnected)
 {
+    _networkConnected = std::move(networkConnected);
     if (_lockHandle == nullptr)
     {
         _lockHandle = xSemaphoreCreateMutex();
@@ -168,9 +168,9 @@ void GitHubOtaUpdater::downloadTask(void *param)
 
 void GitHubOtaUpdater::doCheck()
 {
-    if (WiFi.status() != WL_CONNECTED)
+    if (!_networkConnected || !_networkConnected())
     {
-        setState(State::Error, "WiFi not connected");
+        setState(State::Error, "Network not connected");
         return;
     }
 
@@ -263,9 +263,9 @@ void GitHubOtaUpdater::doCheck()
 
 void GitHubOtaUpdater::doDownload()
 {
-    if (WiFi.status() != WL_CONNECTED)
+    if (!_networkConnected || !_networkConnected())
     {
-        setState(State::Error, "WiFi not connected");
+        setState(State::Error, "Network not connected");
         return;
     }
 
@@ -315,7 +315,7 @@ void GitHubOtaUpdater::doDownload()
         return;
     }
 
-    WiFiClient *stream = http.getStreamPtr();
+    auto *stream = http.getStreamPtr();
     uint8_t buffer[1024];
     int remaining = total;
 

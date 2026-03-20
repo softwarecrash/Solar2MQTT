@@ -1,9 +1,15 @@
 #include "core/WiFiManager.h"
 
+#include "pins.h"
+
 #include <DNSServer.h>
 #include <ESPmDNS.h>
 #include <WiFi.h>
 #include <ctype.h>
+
+#if HAS_LAN
+#include <ETH.h>
+#endif
 
 #include "core/LogSerial.h"
 #include "core/SettingsPrefs.h"
@@ -14,6 +20,90 @@ namespace
 {
 DNSServer dnsServer;
 IPAddress apIp(192, 168, 4, 1);
+
+#if HAS_LAN
+bool s_ethConnected = false;
+
+const char *currentNetworkHostName()
+{
+    static char host[64];
+    const char *source = _settings.get.deviceName();
+    if (!source || !*source)
+    {
+        source = SOURCE_NAME;
+    }
+
+    size_t index = 0;
+    bool lastDash = false;
+    while (*source && index < sizeof(host) - 1)
+    {
+        const unsigned char c = static_cast<unsigned char>(*source++);
+        if (isalnum(c))
+        {
+            host[index++] = static_cast<char>(tolower(c));
+            lastDash = false;
+        }
+        else if (!lastDash && index > 0)
+        {
+            host[index++] = '-';
+            lastDash = true;
+        }
+    }
+
+    while (index > 0 && host[index - 1] == '-')
+    {
+        index--;
+    }
+
+    if (index == 0)
+    {
+        strcpy(host, "solar2mqtt");
+        return host;
+    }
+
+    host[index] = '\0';
+    return host;
+}
+
+void onNetworkEvent(WiFiEvent_t event)
+{
+    switch (event)
+    {
+    case ARDUINO_EVENT_ETH_START:
+        LogSerial.println(F("[Network] ETH started"));
+        ETH.setHostname(currentNetworkHostName());
+        break;
+    case ARDUINO_EVENT_ETH_CONNECTED:
+        LogSerial.println(F("[Network] ETH connected (PHY link)"));
+        break;
+    case ARDUINO_EVENT_ETH_GOT_IP:
+        s_ethConnected = true;
+        LogSerial.printf("[Network] ETH got IP: %s\n", ETH.localIP().toString().c_str());
+        break;
+    case ARDUINO_EVENT_ETH_DISCONNECTED:
+        s_ethConnected = false;
+        LogSerial.println(F("[Network] ETH disconnected"));
+        break;
+    case ARDUINO_EVENT_ETH_STOP:
+        s_ethConnected = false;
+        LogSerial.println(F("[Network] ETH stopped"));
+        break;
+    default:
+        break;
+    }
+}
+
+String resolveEthIpString()
+{
+    const IPAddress ethIp = ETH.localIP();
+    if (ETH.linkUp() && ethIp != IPAddress(0, 0, 0, 0))
+    {
+        return ethIp.toString();
+    }
+
+    return "";
+}
+#endif
 
 int hexNibble(char c)
 {
@@ -60,11 +150,23 @@ bool parseBssid(const char *value, uint8_t out[6])
 }
 } // namespace
 
-WiFiManager::WiFiManager(AsyncWebServer &server) : _server(server), _isApMode(false) {}
+WiFiManager::WiFiManager(AsyncWebServer &server)
+    : _server(server),
+      _isApMode(false),
+      _ethActive(false)
+{
+}
 
 void WiFiManager::begin()
 {
-    if (!connectToWifi())
+    bool haveEthernet = false;
+
+#if HAS_LAN
+    WiFi.onEvent(onNetworkEvent);
+    haveEthernet = initEthernet();
+#endif
+
+    if (!haveEthernet && !connectToWifi())
     {
         startApMode();
         _isApMode = true;
@@ -73,7 +175,9 @@ void WiFiManager::begin()
     if (MDNS.begin(networkHostName()))
     {
         MDNS.addService("http", "tcp", 80);
-        LogSerial.printf("[WiFi] mDNS started: http://%s.local\n", networkHostName());
+        LogSerial.printf("[Network] mDNS started: http://%s.local (IP: %s)\n",
+                         networkHostName(),
+                         ipAddress().c_str());
     }
 }
 
@@ -91,6 +195,19 @@ void WiFiManager::loop()
     }
     lastCheck = millis();
 
+    if (isEthActive())
+    {
+        if (_isApMode)
+        {
+            LogSerial.println(F("[Network] Ethernet active, stopping AP mode"));
+            dnsServer.stop();
+            WiFi.softAPdisconnect(true);
+            WiFi.mode(WIFI_STA);
+            _isApMode = false;
+        }
+        return;
+    }
+
     if (WiFi.status() == WL_CONNECTED)
     {
         if (_isApMode)
@@ -105,13 +222,13 @@ void WiFiManager::loop()
 
     if (!_isApMode)
     {
-        LogSerial.println(F("[WiFi] Lost STA connection, switching to AP"));
+        LogSerial.println(F("[Network] Lost STA connection, switching to AP"));
         startApMode();
         _isApMode = true;
     }
     else if (connectToWifi())
     {
-        LogSerial.println(F("[WiFi] Reconnected to STA"));
+        LogSerial.println(F("[Network] Reconnected to STA"));
         dnsServer.stop();
         WiFi.softAPdisconnect(true);
         WiFi.mode(WIFI_STA);
@@ -121,12 +238,39 @@ void WiFiManager::loop()
 
 bool WiFiManager::getConnectionState() const
 {
-    return WiFi.status() == WL_CONNECTED;
+    return isEthActive() || WiFi.status() == WL_CONNECTED;
 }
 
 bool WiFiManager::isInApMode() const
 {
     return _isApMode;
+}
+
+bool WiFiManager::isEthActive() const
+{
+#if HAS_LAN
+    return _ethActive && s_ethConnected && ETH.linkUp() && ETH.localIP() != IPAddress(0, 0, 0, 0);
+#else
+    return false;
+#endif
+}
+
+bool WiFiManager::hasLanSupport() const
+{
+#if HAS_LAN
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool WiFiManager::ethernetEnabled() const
+{
+#if HAS_LAN
+    return _settings.get.ethEnabled();
+#else
+    return false;
+#endif
 }
 
 int WiFiManager::rssi() const
@@ -136,18 +280,113 @@ int WiFiManager::rssi() const
 
 String WiFiManager::ipAddress() const
 {
+#if HAS_LAN
+    const String ethIp = resolveEthIpString();
+    if (ethIp.length() > 0)
+    {
+        return ethIp;
+    }
+#endif
+
     if (WiFi.status() == WL_CONNECTED)
     {
         return WiFi.localIP().toString();
     }
+
     return WiFi.softAPIP().toString();
+}
+
+bool WiFiManager::initEthernet()
+{
+#if !HAS_LAN
+    return false;
+#else
+    if (!_settings.get.ethEnabled())
+    {
+        LogSerial.println(F("[Network] Ethernet disabled in settings"));
+        _ethActive = false;
+        return false;
+    }
+
+    IPAddress ip;
+    IPAddress gw;
+    IPAddress sn;
+    IPAddress dns;
+    const bool useStatic =
+        ip.fromString(_settings.get.staticIP()) &&
+        gw.fromString(_settings.get.staticGW()) &&
+        sn.fromString(_settings.get.staticSN()) &&
+        dns.fromString(_settings.get.staticDNS()) &&
+        ip != IPAddress(0, 0, 0, 0);
+
+    if (useStatic)
+    {
+        ETH.config(ip, gw, sn, dns);
+        LogSerial.printf("[Network] ETH static IP %s / GW %s / SN %s / DNS %s\n",
+                         ip.toString().c_str(),
+                         gw.toString().c_str(),
+                         sn.toString().c_str(),
+                         dns.toString().c_str());
+    }
+    else
+    {
+        LogSerial.println(F("[Network] ETH using DHCP"));
+    }
+
+    ETH.setHostname(networkHostName());
+    s_ethConnected = false;
+
+#if defined(ETH_SPI_W5500) && ETH_SPI_W5500
+    LogSerial.println(F("[Network] Initializing Ethernet (W5500 SPI)..."));
+    const bool ok = ETH.begin(ETH_PHY_W5500,
+                              ETH_PHY_ADDR_AUTO,
+                              PIN_ETH_SPI_CS,
+                              PIN_ETH_SPI_INT,
+                              PIN_ETH_SPI_RST,
+                              SPI2_HOST,
+                              PIN_ETH_SPI_SCLK,
+                              PIN_ETH_SPI_MISO,
+                              PIN_ETH_SPI_MOSI);
+#else
+    LogSerial.println(F("[Network] Initializing Ethernet (LAN8720)..."));
+    const bool ok = ETH.begin(ETH_PHY_LAN8720,
+                              PIN_ETH_PHY_ADDR,
+                              PIN_ETH_MDC,
+                              PIN_ETH_MDIO,
+                              PIN_ETH_POWER,
+                              ETH_CLOCK_GPIO0_IN);
+#endif
+
+    if (!ok)
+    {
+        LogSerial.println(F("[Network] Ethernet init failed, falling back to WiFi"));
+        _ethActive = false;
+        return false;
+    }
+
+    _ethActive = true;
+
+    const uint32_t start = millis();
+    while ((millis() - start) < 10000UL)
+    {
+        if (isEthActive())
+        {
+            LogSerial.printf("[Network] Ethernet ready, IP: %s\n", ipAddress().c_str());
+            return true;
+        }
+        delay(100);
+    }
+
+    LogSerial.println(F("[Network] Ethernet IP timeout, falling back to WiFi"));
+    return false;
+#endif
 }
 
 bool WiFiManager::connectToWifi()
 {
     if (strlen(_settings.get.wifiSsid0()) == 0 && strlen(_settings.get.wifiSsid1()) == 0)
     {
-        LogSerial.println(F("[WiFi] No SSIDs configured"));
+        LogSerial.println(F("[Network] No SSIDs configured"));
         return false;
     }
 
@@ -195,7 +434,7 @@ bool WiFiManager::connectToWifi()
         uint8_t bssid[6] = {};
         const bool lockBssid = _settings.get.wifiBssidLock() && parseBssid(candidate.bssid, bssid);
 
-        LogSerial.printf("[WiFi] Trying SSID: %s\n", candidate.ssid);
+        LogSerial.printf("[Network] Trying SSID: %s\n", candidate.ssid);
         if (lockBssid)
         {
             WiFi.begin(candidate.ssid, candidate.password, 0, bssid, true);
@@ -209,7 +448,7 @@ bool WiFiManager::connectToWifi()
         {
             if (WiFi.status() == WL_CONNECTED)
             {
-                LogSerial.printf("[WiFi] Connected, IP: %s\n", WiFi.localIP().toString().c_str());
+                LogSerial.printf("[Network] WiFi connected, IP: %s\n", WiFi.localIP().toString().c_str());
                 return true;
             }
             delay(500);
@@ -223,14 +462,18 @@ void WiFiManager::startApMode()
 {
     WiFi.disconnect(true, true);
     WiFi.mode(WIFI_AP_STA);
+    WiFi.persistent(false);
     WiFi.softAPConfig(apIp, apIp, IPAddress(255, 255, 255, 0));
     WiFi.softAP(String(SOURCE_NAME) + "-AP");
     dnsServer.start(53, "*", apIp);
-    LogSerial.printf("[WiFi] AP started on %s\n", WiFi.softAPIP().toString().c_str());
+    LogSerial.printf("[Network] AP started on %s\n", WiFi.softAPIP().toString().c_str());
 }
 
 const char *WiFiManager::networkHostName() const
 {
+#if HAS_LAN
+    return currentNetworkHostName();
+#else
     static char host[64];
     const char *source = _settings.get.deviceName();
     if (!source || !*source)
@@ -268,4 +511,5 @@ const char *WiFiManager::networkHostName() const
 
     host[index] = '\0';
     return host;
+#endif
 }

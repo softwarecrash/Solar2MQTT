@@ -13,14 +13,19 @@ public:
 
     bool getConnectionState() const;
     bool isInApMode() const;
+    bool isEthActive() const;
+    bool hasLanSupport() const;
+    bool ethernetEnabled() const;
     int rssi() const;
     String ipAddress() const;
 
 private:
     AsyncWebServer &_server;
     bool _isApMode;
+    bool _ethActive;
 
     bool connectToWifi();
     void startApMode();
+    bool initEthernet();
     const char *networkHostName() const;
 };

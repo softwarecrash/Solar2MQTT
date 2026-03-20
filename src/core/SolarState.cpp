@@ -69,6 +69,7 @@ void SolarState::begin()
     status()["mqttConnected"] = false;
     status()["wifiConnected"] = false;
     status()["inverterConnected"] = false;
+    status()["ethActive"] = false;
     status()["apMode"] = false;
 }
 
@@ -120,12 +121,14 @@ void SolarState::updateRuntime(const char *deviceName,
                                bool inverterConnected,
                                bool wifiConnected,
                                bool mqttConnected,
+                               bool ethActive,
                                bool apMode,
                                int wifiRssi,
                                const String &ipAddress)
 {
     ensureObjects();
     JsonDocument &doc = g_stateDoc;
+    const char *networkType = ethActive ? "Ethernet" : (apMode ? "AP" : (wifiConnected ? "WiFi" : "Offline"));
 
     doc["EspData"]["Device_name"] = deviceName ? deviceName : "";
     doc["EspData"]["Wifi_RSSI"] = wifiRssi;
@@ -140,13 +143,17 @@ void SolarState::updateRuntime(const char *deviceName,
     doc["EspData"]["IP"] = ipAddress;
     doc["EspData"]["WiFiStatus"] = wifiConnected;
     doc["EspData"]["MQTTStatus"] = mqttConnected;
+    doc["EspData"]["Ethernet_Active"] = ethActive;
+    doc["EspData"]["Network_Type"] = networkType;
     doc["EspData"]["AP_Mode"] = apMode;
     doc["EspData"]["Inverter_Connected"] = inverterConnected;
 
     doc["Status"]["wifiConnected"] = wifiConnected;
     doc["Status"]["mqttConnected"] = mqttConnected;
     doc["Status"]["inverterConnected"] = inverterConnected;
+    doc["Status"]["ethActive"] = ethActive;
     doc["Status"]["apMode"] = apMode;
+    doc["Status"]["networkType"] = networkType;
     doc["Status"]["protocol"] = protocolToString(protocol);
     doc["Status"]["protocolRawOnly"] = isRawOnlyPiProtocol(protocol);
     doc["Status"]["protocolUnknown"] = (protocol == PI30_UNKNOWN);

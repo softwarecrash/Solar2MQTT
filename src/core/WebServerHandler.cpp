@@ -255,6 +255,7 @@ void WebServerHandler::registerRoutes()
         doc["mqttConnected"] = _mqttConnected;
         doc["inverterConnected"] = _inverterConnected;
         doc["wifiConnected"] = _wifiManager.getConnectionState();
+        doc["ethActive"] = _wifiManager.isEthActive();
         doc["apMode"] = _wifiManager.isInApMode();
         doc["ip"] = _wifiManager.ipAddress();
         doc["protocol"] = _inverterService.protocolName();
@@ -299,6 +300,8 @@ void WebServerHandler::registerRoutes()
         network["staticDNS"] = _settings.get.staticDNS();
         network["webUIuser"] = _settings.get.webUIuser();
         network["webUIPassword"] = _settings.get.webUIPassword();
+        network["ethEnabled"] = _settings.get.ethEnabled();
+        network["lanSupported"] = _wifiManager.hasLanSupport();
 
         JsonObject mqtt = doc["mqtt"].to<JsonObject>();
         mqtt["host"] = _settings.get.mqttHost();
@@ -352,6 +355,9 @@ void WebServerHandler::registerRoutes()
 
         doc["webUser"] = _settings.get.webUIuser();
         doc["webPass"] = _settings.get.webUIPassword();
+        doc["lanSupported"] = _wifiManager.hasLanSupport();
+        doc["ethEnabled"] = _settings.get.ethEnabled();
+        doc["ethActive"] = _wifiManager.isEthActive();
 
         String json;
         serializeJson(doc, json);
@@ -411,6 +417,7 @@ void WebServerHandler::registerRoutes()
             else if (name == "staticDNS") _settings.set.staticDNS(value);
             else if (name == "webUIuser") _settings.set.webUIuser(value);
             else if (name == "webUIPassword") _settings.set.webUIPassword(value);
+            else if (name == "ethEnabled") _settings.set.ethEnabled(value.toInt() != 0);
         }
 
         _settings.save();
@@ -445,6 +452,7 @@ void WebServerHandler::registerRoutes()
             else if (name == "dns") _settings.set.staticDNS(value);
             else if (name == "webUser") _settings.set.webUIuser(value);
             else if (name == "webPass") _settings.set.webUIPassword(value);
+            else if (name == "ethEnabled") _settings.set.ethEnabled(value.toInt() != 0);
         }
 
         _settings.save();
@@ -815,15 +823,19 @@ void WebServerHandler::buildStatusJson(JsonDocument &doc)
     _state.snapshotTo(snapshot);
 
     const bool wifiConnected = _wifiManager.getConnectionState();
+    const bool ethActive = _wifiManager.isEthActive();
     const bool apMode = _wifiManager.isInApMode();
     const int wifiRssi = _wifiManager.rssi();
     const String ip = _wifiManager.ipAddress();
+    const char *networkType = ethActive ? "ethernet" : (apMode ? "ap" : (wifiConnected ? "wifi" : "offline"));
 
     doc["mqttConnected"] = _mqttConnected;
     doc["inverterConnected"] = _inverterConnected;
     doc["wifiConnected"] = wifiConnected;
+    doc["ethActive"] = ethActive;
     doc["apMode"] = apMode;
     doc["ip"] = ip;
+    doc["networkType"] = networkType;
     doc["protocol"] = _inverterService.protocolName();
     doc["simulation"] = _inverterService.simulationEnabled();
     doc["simulationProtocol"] = _inverterService.simulationEnabled() ? "PI30" : "";
@@ -832,6 +844,8 @@ void WebServerHandler::buildStatusJson(JsonDocument &doc)
     doc["wifi"]["connected"] = wifiConnected;
     doc["wifi"]["apMode"] = apMode;
     doc["wifi"]["rssi"] = wifiRssi;
+    doc["wifi"]["ethActive"] = ethActive;
+    doc["wifi"]["type"] = networkType;
     doc["mqtt"] = _mqttConnected;
     doc["inverter"] = _inverterConnected;
     doc["service"]["apMode"] = apMode;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <functional>
 
 class GitHubOtaUpdater
 {
@@ -21,7 +22,7 @@ public:
                      const char *currentVersion,
                      const char *buildVariant);
 
-    void begin();
+    void begin(std::function<bool()> networkConnected);
     bool requestCheck();
     bool startUpdate();
     String statusJson() const;
@@ -60,4 +61,5 @@ private:
 
     void *_lockHandle = nullptr;
     void *_task = nullptr;
+    std::function<bool()> _networkConnected;
 };

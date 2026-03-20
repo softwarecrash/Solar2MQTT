@@ -17,6 +17,7 @@
   X(STRING, "network", "staticDNS", staticDNS, "", 0, 0) \
   X(STRING, "network", "webUIuser", webUIuser, "", 0, 0) \
   X(STRING, "network", "webUIPassword", webUIPassword, "", 0, 0) \
+  X(BOOL,   "network", "ethEnabled", ethEnabled, HAS_LAN, 0, 1) \
   X(BOOL,   "mqtt", "SSLenabled", mqttSSL, false, 0, 1) \
   X(STRING, "mqtt", "host", mqttHost, "", 0, 0) \
   X(STRING, "mqtt", "user", mqttUser, "", 0, 0) \

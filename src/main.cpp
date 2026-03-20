@@ -55,6 +55,7 @@ void updateRuntimeState()
                              inverterService.isConnected(),
                              wifiManager.getConnectionState(),
                              mqttHandler.isConnected(),
+                             wifiManager.isEthActive(),
                              wifiManager.isInApMode(),
                              wifiManager.rssi(),
                              wifiManager.ipAddress());
@@ -85,7 +86,7 @@ void setup()
 
     FactoryResetManager::begin(10000, 6);
     wifiManager.begin();
-    otaUpdater.begin();
+    otaUpdater.begin([]() { return wifiManager.getConnectionState(); });
 
     inverterService.setCallback([]()
                                 {

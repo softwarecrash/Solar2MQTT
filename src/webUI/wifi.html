@@ -139,11 +139,19 @@
     </div>
 
     <form id="wifiForm" class="panel" autocomplete="off">
-      <div class="panel-title">Wi-Fi Configuration</div>
+      <div class="panel-title">Network Configuration</div>
 
       <button type="button" class="btn btn-outline" id="advancedToggleBtn" aria-expanded="false">Advanced Network Settings</button>
 
       <div id="advancedNetworkFields">
+        <label class="switch-row" for="ethEnabled" id="ethEnabledRow" hidden>
+          <span>Prefer Ethernet when available</span>
+          <input type="checkbox" id="ethEnabled" name="ethEnabled" value="1" class="ea-switch" />
+        </label>
+        <p class="field-note" id="ethEnabledNote" hidden>
+          If an Ethernet link is available, wired networking is used first. Wi-Fi remains available as fallback.
+        </p>
+
         <label for="devicename">Device Name</label>
         <input type="text" id="devicename" autocomplete="off" required />
 
@@ -494,6 +502,10 @@
 
         document.getElementById("webUser").value = c.webUser || "";
         document.getElementById("webPass").value = c.webPass || "";
+        const lanSupported = c.lanSupported === true;
+        document.getElementById("ethEnabledRow").hidden = !lanSupported;
+        document.getElementById("ethEnabledNote").hidden = !lanSupported;
+        document.getElementById("ethEnabled").checked = (c.ethEnabled === true);
 
         selectedSsid = c.ssid0 || "";
         selectedBssid = c.bssid0 || "";
@@ -541,6 +553,7 @@
         `&subnet=${encodeURIComponent(document.getElementById("subnet").value)}` +
         `&gateway=${encodeURIComponent(document.getElementById("gateway").value)}` +
         `&dns=${encodeURIComponent(document.getElementById("dns").value)}` +
+        `&ethEnabled=${encodeURIComponent(document.getElementById("ethEnabled").checked ? "1" : "0")}` +
         `&webUser=${encodeURIComponent(document.getElementById("webUser").value)}` +
         `&webPass=${encodeURIComponent(document.getElementById("webPass").value)}`
       );
