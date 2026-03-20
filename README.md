@@ -29,6 +29,7 @@
 
 
 **Main screen:**
+![alt text](Docs/README/status.png)
 
 ![image](https://github.com/softwarecrash/Solar2MQTT/assets/17761850/de945ad5-29ad-476e-9562-a0eba1b4f2ce)
 

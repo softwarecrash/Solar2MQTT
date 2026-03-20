@@ -35,12 +35,6 @@ Typical PI serial examples:
 - `QALL`
 - `autodetect`
 
-Runtime-only simulator commands:
-
-- `sim on`
-- `sim off`
-- `sim status`
-
 ## Notes
 
 - Simulator commands are not stored. After reboot the device returns to normal hardware mode.
