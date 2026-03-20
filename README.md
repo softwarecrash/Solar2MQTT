@@ -29,21 +29,23 @@
 
 
 **Main screen:**
+
 ![alt text](Docs/README/status.png)
 
-![image](https://github.com/softwarecrash/Solar2MQTT/assets/17761850/de945ad5-29ad-476e-9562-a0eba1b4f2ce)
+**Menu:**
 
-**Settings:**
-
-![image](https://github.com/softwarecrash/Solar2MQTT/assets/17761850/075d1e66-3912-4a33-b7d3-a52da99c8553)
+![alt text](Docs/README/menu.png)
 
 **Config:**
 
-![image](https://github.com/softwarecrash/Solar2MQTT/assets/17761850/823093bf-8abe-4b7e-913f-7bac9420d108)
+![alt text](Docs/README/mqtt.png)
+![alt text](Docs/README/device.png)
 
+![alt text](Docs/README/wifi.png)
+![alt text](Docs/README/wifi-extendet.png)
 
-
-
+![alt text](Docs/README/firmware.png)
+![alt text](Docs/README/debug.png)
 
 # How to use:
 - flash your ESP8266 (recommended Wemos D1 Mini) with our [Flash2MQTT-Tool](https://all-solutions.github.io/Flash2MQTT/?get=Solar2MQTT) or with [Tasmotizer](https://github.com/tasmota/tasmotizer/releases)
