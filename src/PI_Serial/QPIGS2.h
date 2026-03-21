@@ -52,7 +52,9 @@ bool PI_Serial::PIXX_QPIGS2()
           liveData[qpigs2ListL2[i]] = pi_parse_float2(fieldsQPIGS2[i]);
         }
       }
-      liveData[DESCR_PV2_Input_Power] = (liveData[DESCR_PV2_Input_Voltage].as<unsigned short>() * liveData[DESCR_PV2_Input_Current].as<unsigned short>());
+      liveData[DESCR_PV2_Input_Power] = pi_compute_power(
+        liveData[DESCR_PV2_Input_Voltage].as<double>(),
+        liveData[DESCR_PV2_Input_Current].as<double>());
       refineProtocol();
     }
     else if (StringCount >= (int)(sizeof qpigs2List / sizeof qpigs2List[0]))
@@ -63,7 +65,9 @@ bool PI_Serial::PIXX_QPIGS2()
           liveData[qpigs2List[i]] = pi_parse_float2(fieldsQPIGS2[i]);
       }
       // make some things pretty
-      liveData[DESCR_PV2_Input_Power] = (liveData[DESCR_PV2_Input_Voltage].as<unsigned short>() * liveData[DESCR_PV2_Input_Current].as<unsigned short>());
+      liveData[DESCR_PV2_Input_Power] = pi_compute_power(
+        liveData[DESCR_PV2_Input_Voltage].as<double>(),
+        liveData[DESCR_PV2_Input_Current].as<double>());
       refineProtocol();
     }
     return true;

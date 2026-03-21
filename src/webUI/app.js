@@ -15,6 +15,10 @@ function setText(id, value) {
   }
 }
 
+function setMeterLabel(name, value) {
+  setText(`meter${name}Label`, value);
+}
+
 function hasAny(ids) {
   return ids.some((id) => byId(id));
 }
@@ -110,7 +114,7 @@ const OVERVIEW_GROUPS = [
     fields: [
       { label: "V", keys: ["PV_Input_Voltage", "PV1_Input_Voltage"], unit: "V", decimals: 1 },
       { label: "A", keys: ["PV_Input_Current"], unit: "A", decimals: 1 },
-      { label: "W", keys: ["PV_Input_Power", "PV1_Input_Power", "PV_Charging_Power"], unit: "W", decimals: 0 },
+      { label: "W", solarChannel: 1, unit: "W", decimals: 0 },
     ],
   },
   {
@@ -118,7 +122,7 @@ const OVERVIEW_GROUPS = [
     fields: [
       { label: "V", keys: ["PV2_Input_Voltage"], unit: "V", decimals: 1 },
       { label: "A", keys: ["PV2_Input_Current"], unit: "A", decimals: 1 },
-      { label: "W", keys: ["PV2_Input_Power", "PV2_Charging_Power"], unit: "W", decimals: 0 },
+      { label: "W", solarChannel: 2, unit: "W", decimals: 0 },
     ],
   },
   {
@@ -232,6 +236,32 @@ function formatReading(value, unit = "", decimals = 0) {
   return unit ? `${text} ${unit}` : text;
 }
 
+function formatCompactReading(value, unit = "", decimals = 0) {
+  if (!isDataValuePresent(value)) {
+    return null;
+  }
+
+  const numericText = formatNumber(value, decimals);
+  const text = numericText !== null ? numericText : String(value).trim();
+  return unit ? `${text}${unit}` : text;
+}
+
+function formatSignedReading(value, unit = "", decimals = 0, compact = false) {
+  const number = parseNumber(value);
+  if (number === null) {
+    return null;
+  }
+
+  const absText = compact
+    ? formatCompactReading(Math.abs(number), unit, decimals)
+    : formatReading(Math.abs(number), unit, decimals);
+  if (!absText) {
+    return null;
+  }
+
+  return `${number >= 0 ? "+" : "-"}${absText}`;
+}
+
 function pickDataValue(data, keys, sections = ["LiveData", "DeviceData", "EspData", "Status"]) {
   const keyList = Array.isArray(keys) ? keys : [keys];
 
@@ -279,6 +309,55 @@ function joinMeta(parts) {
   return parts.filter(Boolean).join(" | ");
 }
 
+function getSolarChannelInfo(data, channel = 1) {
+  const isSecond = channel === 2;
+  const voltage = pickDataNumber(data, isSecond ? ["PV2_Input_Voltage"] : ["PV_Input_Voltage", "PV1_Input_Voltage"], ["LiveData"]);
+  const current = pickDataNumber(data, isSecond ? ["PV2_Input_Current"] : ["PV_Input_Current"], ["LiveData"]);
+  const measuredPower = pickDataNumber(
+    data,
+    isSecond ? ["PV2_Input_Power", "PV2_Charging_Power"] : ["PV_Input_Power", "PV1_Input_Power", "PV_Charging_Power"],
+    ["LiveData"]
+  );
+  const computedPower =
+    voltage !== null && current !== null
+      ? Math.round(voltage * current)
+      : null;
+
+  let power = measuredPower;
+  if ((power === null || (power === 0 && computedPower !== null && computedPower > 0)) && computedPower !== null) {
+    power = computedPower;
+  }
+
+  return {
+    voltage,
+    current,
+    power,
+    hasData: voltage !== null || current !== null || power !== null,
+  };
+}
+
+function solarMetaText(data) {
+  const solar1 = getSolarChannelInfo(data, 1);
+  const solar2 = getSolarChannelInfo(data, 2);
+  const hasSecondTracker = solar2.hasData;
+  const solar1Meta = [
+    formatCompactReading(solar1.voltage, "V", 1),
+    formatCompactReading(solar1.current, "A", 1),
+  ].filter(Boolean).join(" ");
+  const solar2Meta = [
+    formatCompactReading(solar2.voltage, "V", 1),
+    formatCompactReading(solar2.current, "A", 1),
+  ].filter(Boolean).join(" ");
+
+  if (hasSecondTracker) {
+    return [solar1Meta ? `S1:${solar1Meta}` : null, solar2Meta ? `S2:${solar2Meta}` : null]
+      .filter(Boolean)
+      .join("  ");
+  }
+
+  return solar1Meta;
+}
+
 function normalizeOverviewLabel(field) {
   const label = typeof field.label === "string" ? field.label.trim() : "";
   const unit = typeof field.unit === "string" ? field.unit.trim() : "";
@@ -295,19 +374,27 @@ function normalizeOverviewLabel(field) {
 }
 
 function totalSolarPower(data) {
-  const chargingPower = pickDataNumber(data, ["PV_Charging_Power", "SCC_Charge_Power"], ["LiveData"]);
-  if (chargingPower !== null) {
-    return chargingPower;
-  }
-
-  const pv1Power = pickDataNumber(data, ["PV_Input_Power", "PV1_Input_Power"], ["LiveData"]);
-  const pv2Power = pickDataNumber(data, ["PV2_Input_Power", "PV2_Charging_Power"], ["LiveData"]);
+  const pv1Power = getSolarChannelInfo(data, 1).power;
+  const pv2Power = getSolarChannelInfo(data, 2).power;
 
   if (pv1Power !== null && pv2Power !== null) {
     return pv1Power + pv2Power;
   }
 
-  return pv1Power ?? pv2Power;
+  if (pv1Power !== null) {
+    return pv1Power;
+  }
+
+  if (pv2Power !== null) {
+    return pv2Power;
+  }
+
+  const chargingPower = pickDataNumber(data, ["PV_Charging_Power", "SCC_Charge_Power"], ["LiveData"]);
+  if (chargingPower !== null) {
+    return chargingPower;
+  }
+
+  return null;
 }
 
 function setMeter(name, valueText, percent, metaText) {
@@ -337,9 +424,17 @@ function renderMeters(data) {
 
   const batteryPercent = pickDataNumber(data, ["Battery_Percent"], ["LiveData"]);
   const batteryVoltage = pickDataValue(data, ["Battery_Voltage", "Positive_Battery_Voltage"], ["LiveData"]);
-  const batteryLoad = pickDataValue(data, ["Battery_Load"], ["LiveData"]);
+  const batteryLoad =
+    pickDataNumber(data, ["Battery_Load"], ["LiveData"]) ??
+    (() => {
+      const charge = pickDataNumber(data, ["Battery_Charge_Current"], ["LiveData"]);
+      const discharge = pickDataNumber(data, ["Battery_Discharge_Current"], ["LiveData"]);
+      if (charge === null && discharge === null) {
+        return null;
+      }
+      return (charge ?? 0) - (discharge ?? 0);
+    })();
   const chargeCurrent = pickDataNumber(data, ["Battery_Charge_Current"], ["LiveData"]);
-  const dischargeCurrent = pickDataValue(data, ["Battery_Discharge_Current"], ["LiveData"]);
   const loadPercent =
     pickDataNumber(data, ["AC_Out_Percent", "Output_Load_Percent"], ["LiveData"]) ??
     ratioToPercent(
@@ -348,16 +443,22 @@ function renderMeters(data) {
     );
   const loadPower = pickDataValue(data, ["AC_Out_Watt", "AC_Output_Power", "Output_Power"], ["LiveData"]);
   const loadVoltage = pickDataValue(data, ["AC_Out_Voltage", "AC_Output_Voltage"], ["LiveData"]);
+  const solar1 = getSolarChannelInfo(data, 1);
+  const solar2 = getSolarChannelInfo(data, 2);
   const solarPower = totalSolarPower(data);
   const solarPercent = ratioToPercent(
     solarPower,
     pickDataNumber(data, ["AC_Out_Rating_Active_Power"], ["DeviceData"])
   );
-  const solarVoltage = pickDataValue(data, ["PV_Input_Voltage", "PV1_Input_Voltage"], ["LiveData"]);
-  const solarCurrent = pickDataValue(data, ["PV_Input_Current"], ["LiveData"]);
+  const solarMeta = solarMetaText(data);
   const chargePower = pickDataValue(data, ["SCC_Charge_Power", "PV_Charging_Power"], ["LiveData"]);
   const maxChargeCurrent = pickDataNumber(data, ["Current_Max_Charging_Current"], ["DeviceData"]);
-  const chargePercent = ratioToPercent(chargeCurrent, maxChargeCurrent);
+  const effectiveChargeCurrent = batteryLoad ?? chargeCurrent;
+  const isDischarging = effectiveChargeCurrent !== null && effectiveChargeCurrent < 0;
+  const chargePercent =
+    effectiveChargeCurrent !== null && maxChargeCurrent !== null && maxChargeCurrent > 0
+      ? clampPercent((Math.abs(effectiveChargeCurrent) / maxChargeCurrent) * 100)
+      : ratioToPercent(chargeCurrent, maxChargeCurrent);
 
   setMeter(
     "Battery",
@@ -365,8 +466,7 @@ function renderMeters(data) {
     batteryPercent,
     joinMeta([
       formatReading(batteryVoltage, "V", 1),
-      formatReading(batteryLoad, "A", 1),
-      chargeCurrent !== null ? `Charge ${formatReading(chargeCurrent, "A", 1)}` : null,
+      formatSignedReading(batteryLoad, "A", 1),
     ]) || "Battery data unavailable"
   );
 
@@ -382,23 +482,25 @@ function renderMeters(data) {
 
   setMeter(
     "Solar",
-    solarPower !== null ? `${Math.round(solarPower)} W` : formatReading(solarVoltage, "V", 1),
+    solarPower !== null
+      ? `${Math.round(solarPower)} W`
+      : formatReading(solar1.voltage ?? solar2.voltage, "V", 1),
     solarPercent,
-    joinMeta([
-      formatReading(solarVoltage, "V", 1),
-      formatReading(solarCurrent, "A", 1),
-    ]) || "Solar data unavailable"
+    solarMeta || "Solar data unavailable"
   );
 
   setMeter(
     "Charge",
-    chargeCurrent !== null ? `${formatNumber(chargeCurrent, 1)} A` : formatReading(chargePower, "W", 0),
+    effectiveChargeCurrent !== null
+      ? formatSignedReading(effectiveChargeCurrent, "A", 1)
+      : formatReading(chargePower, "W", 0),
     chargePercent,
     joinMeta([
-      maxChargeCurrent !== null ? `Max ${formatReading(maxChargeCurrent, "A", 0)}` : null,
-      formatReading(dischargeCurrent, "A", 1) ? `Dis ${formatReading(dischargeCurrent, "A", 1)}` : null,
+      !isDischarging && maxChargeCurrent !== null ? `Max ${formatCompactReading(maxChargeCurrent, "A", 0)}` : null,
+      effectiveChargeCurrent !== null ? `Now ${formatSignedReading(effectiveChargeCurrent, "A", 1, true)}` : null,
     ]) || "Charge data unavailable"
   );
+  setMeterLabel("Charge", isDischarging ? "Discharge" : "Charge");
 }
 
 function createOverviewRow(title, entries) {
@@ -448,7 +550,12 @@ function renderOverview(data) {
   OVERVIEW_GROUPS.forEach((group) => {
     const entries = group.fields
       .map((field) => {
-        const value = pickDataValue(data, field.keys, field.sections);
+        let value = null;
+        if (field.solarChannel) {
+          value = getSolarChannelInfo(data, field.solarChannel).power;
+        } else {
+          value = pickDataValue(data, field.keys, field.sections);
+        }
         if (!isDataValuePresent(value)) {
           return null;
         }

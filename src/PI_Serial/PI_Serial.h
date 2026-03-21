@@ -72,6 +72,20 @@ static inline double pi_parse_double(const char *s)
     return strtod(s, nullptr);
 }
 
+static inline int pi_round_to_int(double value)
+{
+    if (value >= 0.0)
+    {
+        return static_cast<int>(value + 0.5);
+    }
+    return static_cast<int>(value - 0.5);
+}
+
+static inline int pi_compute_power(double voltage, double current)
+{
+    return pi_round_to_int(voltage * current);
+}
+
 template <size_t N>
 static inline void pi_clear_json_fields(JsonObject object, const char *const (&fields)[N])
 {

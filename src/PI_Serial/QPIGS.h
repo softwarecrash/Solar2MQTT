@@ -227,7 +227,9 @@ bool PI_Serial::PIXX_QPIGS()
       }
       // make some things pretty
       liveData[DESCR_Battery_Load] = (liveData[DESCR_Battery_Charge_Current].as<unsigned short>() - liveData[DESCR_Battery_Discharge_Current].as<unsigned short>());
-      liveData[DESCR_PV_Input_Power] = (liveData[DESCR_PV_Input_Voltage].as<unsigned short>() * liveData[DESCR_PV_Input_Current].as<unsigned short>());
+      liveData[DESCR_PV_Input_Power] = pi_compute_power(
+        liveData[DESCR_PV_Input_Voltage].as<double>(),
+        liveData[DESCR_PV_Input_Current].as<double>());
       refineProtocol();
     }
     else if (StringCount >= (int)qpigs_90_length)
@@ -242,7 +244,9 @@ bool PI_Serial::PIXX_QPIGS()
         }
       }
       liveData[DESCR_Battery_Load] = (liveData[DESCR_Battery_Charge_Current].as<unsigned short>() - liveData[DESCR_Battery_Discharge_Current].as<unsigned short>());
-      liveData[DESCR_PV_Input_Power] = (liveData[DESCR_PV_Input_Voltage].as<unsigned short>() * liveData[DESCR_PV_Input_Current].as<unsigned short>());
+      liveData[DESCR_PV_Input_Power] = pi_compute_power(
+        liveData[DESCR_PV_Input_Voltage].as<double>(),
+        liveData[DESCR_PV_Input_Current].as<double>());
       refineProtocol();
     }
     else if (StringCount >= (int)qpigs_21_length)
@@ -266,7 +270,9 @@ bool PI_Serial::PIXX_QPIGS()
       }
       else
       {
-        liveData[DESCR_PV_Input_Power] = (liveData[DESCR_PV_Input_Voltage].as<unsigned short>() * liveData[DESCR_PV_Input_Current].as<unsigned short>());
+        liveData[DESCR_PV_Input_Power] = pi_compute_power(
+          liveData[DESCR_PV_Input_Voltage].as<double>(),
+          liveData[DESCR_PV_Input_Current].as<double>());
       }
       refineProtocol();
     }

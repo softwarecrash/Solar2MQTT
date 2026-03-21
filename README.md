@@ -1,6 +1,7 @@
 # Solar2MQTT [![GitHub release](https://img.shields.io/github/release/softwarecrash/Solar2MQTT?include_prereleases=&sort=semver&color=blue)](https://github.com/softwarecrash/Solar2MQTT/releases/latest) [![Discord](https://img.shields.io/discord/1007020337482973254?logo=discord&label=Discord)](https://discord.gg/fb2nZWDExz)
 
 # Features:
+- Support WiFi or LAN Modules
 - captive portal for wifi and MQTT config
 - config in webinterface
 - Full Controll with [Custom commands](https://github.com/softwarecrash/Solar2MQTT/wiki/Set-parameters)
@@ -8,11 +9,11 @@
 - classic MQTT datapoints or Json string over MQTT
 - get Json over web at /livejson?
 - firmware update over webinterface
-- debug log on Wemos USB or Webserial
+- debug log over USB or Webserial
 - [blink codes](https://github.com/softwarecrash/Solar2MQTT/wiki/Blink-Codes) for the current state of the ESP
 - [Reset functions](https://github.com/softwarecrash/Solar2MQTT/wiki/Reset)
 - [Support Home Assistant](https://github.com/softwarecrash/Solar2MQTT/wiki/HomeAssistant-integration)
-- with Teapod
+
 
 
 
