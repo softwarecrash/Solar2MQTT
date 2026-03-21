@@ -1,10 +1,29 @@
 #include "core/LogSerial.h"
 
+namespace
+{
+void waitForConsole(unsigned long timeoutMs)
+{
+#if ARDUINO_USB_CDC_ON_BOOT
+    const unsigned long started = millis();
+    while (!Serial && (millis() - started) < timeoutMs)
+    {
+        delay(10);
+    }
+    delay(20);
+#else
+    (void)timeoutMs;
+#endif
+}
+} // namespace
+
 LogSerialClass LogSerial;
 
 void LogSerialClass::begin(unsigned long baud)
 {
     Serial.begin(baud);
+    _started = true;
+    waitForConsole(1200);
 }
 
 void LogSerialClass::begin(AsyncWebServer *server, unsigned long baud, size_t bufferSize)
@@ -12,6 +31,8 @@ void LogSerialClass::begin(AsyncWebServer *server, unsigned long baud, size_t bu
     if (!Serial)
     {
         Serial.begin(baud);
+        _started = true;
+        waitForConsole(1200);
     }
 
     webSerial.begin(server, nullptr, "/webserialws");
@@ -68,5 +89,5 @@ size_t LogSerialClass::write(const uint8_t *buffer, size_t size)
 
 LogSerialClass::operator bool()
 {
-    return static_cast<bool>(Serial);
+    return _started;
 }

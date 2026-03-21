@@ -841,6 +841,8 @@ void WebServerHandler::buildStatusJson(JsonDocument &doc)
     doc["simulationProtocol"] = _inverterService.simulationEnabled() ? "PI30" : "";
     doc["deviceName"] = snapshot["EspData"]["Device_name"];
     doc["fw"] = snapshot["EspData"]["sw_version"];
+    doc["buildVariant"] = BUILD_VARIANT;
+    doc["build"] = BUILD_VARIANT;
     doc["wifi"]["connected"] = wifiConnected;
     doc["wifi"]["apMode"] = apMode;
     doc["wifi"]["rssi"] = wifiRssi;

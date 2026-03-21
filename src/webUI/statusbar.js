@@ -101,7 +101,7 @@
         <div class="status-item"><a class="status-link" href="/mqttsettings"><div class="indicator" data-role="mqtt"></div></a></div>
         <div class="status-item"><a class="status-link" href="/devicesettings"><div class="indicator" data-role="inverter"></div></a></div>
         <div class="status-item"><a class="status-link" href="/firmwareupdate"><div class="indicator" data-role="service"></div></a></div>
-        <div class="status-version-overlay"><span data-role="version"></span></div>
+        <div class="status-version-overlay"><span data-role="version"></span><span data-role="build"></span></div>
       </div>`;
   }
 
@@ -145,7 +145,7 @@
     setMqtt(false);
     setInverter(false);
     setService(false);
-    setVersion("");
+    setVersion("", "");
     return root;
   }
 
@@ -222,15 +222,20 @@
     setIndicator("service", iconService(color, title), klass, title);
   }
 
-  function setVersion(version) {
+  function setVersion(version, buildVariant) {
     ensureMounted();
     if (!root) {
       return;
     }
 
-    const node = root.querySelector("[data-role=\"version\"]");
-    if (node) {
-      node.textContent = version ? `V${version}` : "";
+    const versionNode = root.querySelector("[data-role=\"version\"]");
+    if (versionNode) {
+      versionNode.textContent = version ? `V${version}` : "";
+    }
+
+    const buildNode = root.querySelector("[data-role=\"build\"]");
+    if (buildNode) {
+      buildNode.textContent = buildVariant || "";
     }
   }
 
@@ -254,7 +259,7 @@
     setMqtt(message.mqtt === true || message.mqttConnected === true);
     setInverter(message.inverter === true || message.inverterConnected === true);
     setService(apMode);
-    setVersion(message.fw || (message.EspData && message.EspData.sw_version) || "");
+    setVersion(message.fw || (message.EspData && message.EspData.sw_version) || "", message.buildVariant || message.build || "");
   }
 
   function scheduleReconnect() {

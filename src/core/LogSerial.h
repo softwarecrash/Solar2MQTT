@@ -24,6 +24,9 @@ public:
 
     using Print::write;
     operator bool();
+
+private:
+    bool _started = false;
 };
 
 extern LogSerialClass LogSerial;

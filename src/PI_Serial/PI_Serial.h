@@ -215,6 +215,7 @@ private:
 
     unsigned long previousTime = 0;
     unsigned long delayTime = 100;
+    unsigned long nextDetectAt = 0;
     byte requestCounter = 0;
 
     long long int connectionCounter = 0;

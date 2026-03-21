@@ -324,7 +324,30 @@ bool PI_Serial::loop()
     {
         return false;
     }
-    if (millis() - previousTime > delayTime)
+
+    const unsigned long now = millis();
+    constexpr unsigned long kNoDeviceRetryMs = 30000UL;
+
+    if (protocol == NoD)
+    {
+        if (now < nextDetectAt)
+        {
+            return false;
+        }
+
+        clearCycleBackup();
+        autoDetect();
+        previousTime = now;
+        nextDetectAt = (protocol == NoD) ? (now + kNoDeviceRetryMs) : (now + delayTime);
+        if (requestCallback)
+        {
+            requestCallback();
+        }
+        connection = false;
+        return true;
+    }
+
+    if (now - previousTime > delayTime)
     {
         if (protocol != NoD)
         {
@@ -556,14 +579,6 @@ bool PI_Serial::loop()
                 connection = (connectionCounter < 10) ? true : false;
             }
             previousTime = millis();
-        }
-        else
-        {
-            clearCycleBackup();
-            autoDetect();
-            previousTime = millis();
-            requestCallback();
-            connection = false;
         }
     }
     return true;

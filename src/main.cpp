@@ -35,6 +35,8 @@ bool g_pendingFactoryReset = false;
 uint32_t g_factoryResetAt = 0;
 bool g_pendingInverterReconfigure = false;
 uint32_t g_inverterReconfigureAt = 0;
+uint8_t g_bootBannerRepeats = 0;
+uint32_t g_bootBannerNextAt = 0;
 
 SolarState solarState;
 AsyncWebServer server(80);
@@ -48,6 +50,12 @@ WebServerHandler webServerHandler(server, wifiManager, solarState, inverterServi
 
 namespace
 {
+void printBootBanner()
+{
+    LogSerial.printf("[Boot] %s %s (%s) t=%lu ms\n", SOURCE_NAME, STRVERSION, BUILD_VARIANT, static_cast<unsigned long>(millis()));
+    LogSerial.printf("[Boot] Heap free: %u bytes\n", static_cast<unsigned>(ESP.getFreeHeap()));
+}
+
 void updateRuntimeState()
 {
     solarState.updateRuntime(_settings.get.deviceName(),
@@ -77,6 +85,9 @@ void updateRuntimeState()
 void setup()
 {
     LogSerial.begin(MONITOR_SPEED);
+    printBootBanner();
+    g_bootBannerRepeats = 1;
+    g_bootBannerNextAt = millis() + 1500;
     delay(150);
 
     _settings.begin();
@@ -112,12 +123,18 @@ void setup()
 
 void loop()
 {
+    if (g_bootBannerRepeats < 4 && static_cast<int32_t>(millis() - g_bootBannerNextAt) >= 0)
+    {
+        ++g_bootBannerRepeats;
+        g_bootBannerNextAt = millis() + 1500;
+        printBootBanner();
+    }
+
     FactoryResetManager::loop();
     wifiManager.loop();
     inverterService.loop();
     ds18b20Service.loop();
     mqttHandler.loop();
-    webServerHandler.loop();
 
     if (g_pendingInverterReconfigure && static_cast<int32_t>(millis() - g_inverterReconfigureAt) >= 0)
     {
@@ -148,4 +165,6 @@ void loop()
                           strlen(_settings.get.mqttHost()) > 0,
                           mqttHandler.isConnected(),
                           inverterService.isConnected());
+
+    delay(1);
 }
