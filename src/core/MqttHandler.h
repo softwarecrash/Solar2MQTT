@@ -60,13 +60,14 @@ private:
     void publishObjectSection(const char *sectionName, JsonObjectConst object);
     void publishRawState(JsonObjectConst rawObject);
     void publishHaDiscovery(bool force);
-    void publishHaSection(const char *stateSection,
+    void publishHaSection(JsonDocument &snapshot,
+                          const char *stateSection,
                           JsonObjectConst object,
                           const HaEntityDescriptor *descriptors,
                           size_t descriptorCount,
                           std::vector<String> &currentTopics,
                           bool force);
-    void publishHaDs18b20(JsonObjectConst espData, std::vector<String> &currentTopics, bool force);
+    void publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst espData, std::vector<String> &currentTopics, bool force);
     bool hasHaDiscoveryTopic(const String &topic) const;
     void setupSubscriptions();
     String baseTopic() const;

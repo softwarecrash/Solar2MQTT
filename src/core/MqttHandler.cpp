@@ -62,11 +62,39 @@ String buildUniqueId(const char *baseTopic, const char *sectionName, const char 
     return String(baseTopic) + "." + sectionName + "." + key;
 }
 
-void populateDeviceInfo(JsonDocument &doc)
+String getDiscoveryModel(JsonDocument &snapshot)
+{
+    JsonObjectConst deviceData = snapshot["DeviceData"].as<JsonObjectConst>();
+    JsonObjectConst status = snapshot["Status"].as<JsonObjectConst>();
+
+    const char *deviceModel = deviceData[DESCR_Device_Model] | nullptr;
+    if (deviceModel != nullptr && deviceModel[0] != '\0')
+    {
+        return String(deviceModel);
+    }
+
+    const char *machineType = deviceData[DESCR_Machine_Type] | nullptr;
+    if (machineType != nullptr && machineType[0] != '\0')
+    {
+        return String(machineType);
+    }
+
+    const char *protocol = status["protocol"] | nullptr;
+    if (protocol != nullptr && protocol[0] != '\0')
+    {
+        return String(protocol);
+    }
+
+    return "Solar Inverter";
+}
+
+void populateDeviceInfo(JsonDocument &doc, JsonDocument &snapshot)
 {
     JsonObject device = doc["dev"].to<JsonObject>();
     device["ids"][0] = _settings.get.deviceName();
     device["name"] = _settings.get.deviceName();
+    device["mf"] = "SoftWareCrash";
+    device["mdl"] = getDiscoveryModel(snapshot);
     device["sw"] = STRVERSION;
 }
 
@@ -392,19 +420,21 @@ void MqttHandler::publishHaDiscovery(bool force)
     std::vector<String> currentTopics;
     currentTopics.reserve(_haDiscoveryTopics.size() + 16);
 
-    publishHaSection("DeviceData",
+    publishHaSection(snapshot,
+                     "DeviceData",
                      snapshot["DeviceData"].as<JsonObjectConst>(),
                      HA_STATIC_DESCRIPTORS,
                      sizeof(HA_STATIC_DESCRIPTORS) / sizeof(HaEntityDescriptor),
                      currentTopics,
                      force);
-    publishHaSection("LiveData",
+    publishHaSection(snapshot,
+                     "LiveData",
                      snapshot["LiveData"].as<JsonObjectConst>(),
                      HA_LIVE_DESCRIPTORS,
                      sizeof(HA_LIVE_DESCRIPTORS) / sizeof(HaEntityDescriptor),
                      currentTopics,
                      force);
-    publishHaDs18b20(snapshot["EspData"].as<JsonObjectConst>(), currentTopics, force);
+    publishHaDs18b20(snapshot, snapshot["EspData"].as<JsonObjectConst>(), currentTopics, force);
 
     if (!force)
     {
@@ -422,7 +452,8 @@ void MqttHandler::publishHaDiscovery(bool force)
     _haDiscoveryTopics = currentTopics;
 }
 
-void MqttHandler::publishHaSection(const char *stateSection,
+void MqttHandler::publishHaSection(JsonDocument &snapshot,
+                                   const char *stateSection,
                                    JsonObjectConst object,
                                    const HaEntityDescriptor *descriptors,
                                    size_t descriptorCount,
@@ -477,7 +508,7 @@ void MqttHandler::publishHaSection(const char *stateSection,
             doc["dev_cla"] = descriptor->deviceClass;
         }
 
-        populateDeviceInfo(doc);
+        populateDeviceInfo(doc, snapshot);
 
         String payload;
         serializeJson(doc, payload);
@@ -487,7 +518,7 @@ void MqttHandler::publishHaSection(const char *stateSection,
     }
 }
 
-void MqttHandler::publishHaDs18b20(JsonObjectConst espData, std::vector<String> &currentTopics, bool force)
+void MqttHandler::publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst espData, std::vector<String> &currentTopics, bool force)
 {
     const String topicBase = baseTopic();
     const String availabilityTopic = topicBase + "/Alive";
@@ -518,7 +549,7 @@ void MqttHandler::publishHaDs18b20(JsonObjectConst espData, std::vector<String> 
         doc["unit_of_meas"] = HA_UNIT_CELSIUS;
         doc["dev_cla"] = "temperature";
 
-        populateDeviceInfo(doc);
+        populateDeviceInfo(doc, snapshot);
 
         String payload;
         serializeJson(doc, payload);
