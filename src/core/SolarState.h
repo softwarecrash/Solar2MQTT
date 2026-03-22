@@ -34,6 +34,7 @@ public:
                        const String &ipAddress);
 
     void updateRaw(const char *key, const String &value);
+    void writeDebugReport(Print &out);
     String buildDebugReport();
 
 private:

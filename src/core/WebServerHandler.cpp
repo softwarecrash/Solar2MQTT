@@ -598,8 +598,11 @@ void WebServerHandler::registerRoutes()
         {
             return request->requestAuthentication();
         }
-        const String report = _state.buildDebugReport();
-        request->send(200, "text/plain", report); });
+        AsyncResponseStream *response = request->beginResponseStream("text/plain; charset=utf-8");
+        response->addHeader("Cache-Control", "no-store");
+        response->addHeader("Content-Disposition", "attachment; filename=solar2mqtt-debug.txt");
+        _state.writeDebugReport(*response);
+        request->send(response); });
 
     _server.on("/api/settings/backup", HTTP_GET, [this](AsyncWebServerRequest *request)
                {

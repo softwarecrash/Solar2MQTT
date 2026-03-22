@@ -661,13 +661,22 @@ async function postForm(url, form) {
 
 async function download(url, filename, type) {
   const response = await request(url);
-  const blob = await response.blob();
-  const typedBlob = type ? new Blob([blob], { type }) : blob;
+  const payload = await response.arrayBuffer();
+  const contentType = type || response.headers.get("content-type") || "application/octet-stream";
+  const blob = new Blob([payload], { type: contentType });
   const anchor = document.createElement("a");
-  anchor.href = URL.createObjectURL(typedBlob);
+  const objectUrl = URL.createObjectURL(blob);
+
+  anchor.href = objectUrl;
   anchor.download = filename;
+  anchor.style.display = "none";
+  document.body.appendChild(anchor);
   anchor.click();
-  URL.revokeObjectURL(anchor.href);
+
+  window.setTimeout(() => {
+    URL.revokeObjectURL(objectUrl);
+    anchor.remove();
+  }, 1000);
 }
 
 async function loadSettings() {

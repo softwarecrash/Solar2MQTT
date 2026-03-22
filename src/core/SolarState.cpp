@@ -46,19 +46,19 @@ void copyObjectSection(JsonDocument &target, const char *key, JsonObjectConst so
     }
 }
 
-void appendSection(String &out, const char *name, JsonObjectConst object)
+void appendSection(Print &out, const char *name, JsonObjectConst object)
 {
-    out += "[";
-    out += name;
-    out += "]\n";
+    out.print("[");
+    out.print(name);
+    out.print("]\n");
     for (JsonPairConst entry : object)
     {
-        out += entry.key().c_str();
-        out += "=";
+        out.print(entry.key().c_str());
+        out.print("=");
         serializeJson(entry.value(), out);
-        out += "\n";
+        out.print("\n");
     }
-    out += "\n";
+    out.print("\n");
 }
 } // namespace
 
@@ -173,6 +173,19 @@ void SolarState::updateRaw(const char *key, const String &value)
     refreshBindings();
 }
 
+void SolarState::writeDebugReport(Print &out)
+{
+    JsonDocument snapshot;
+    snapshotTo(snapshot);
+
+    out.print("Solar2MQTT Debug Report\n\n");
+    appendSection(out, "RawData", snapshot["RawData"].as<JsonObjectConst>());
+    appendSection(out, "EspData", snapshot["EspData"].as<JsonObjectConst>());
+    appendSection(out, "DeviceData", snapshot["DeviceData"].as<JsonObjectConst>());
+    appendSection(out, "LiveData", snapshot["LiveData"].as<JsonObjectConst>());
+    appendSection(out, "Status", snapshot["Status"].as<JsonObjectConst>());
+}
+
 String SolarState::buildDebugReport()
 {
     JsonDocument snapshot;
@@ -181,10 +194,27 @@ String SolarState::buildDebugReport()
     String out;
     out.reserve(4096);
     out += "Solar2MQTT Debug Report\n\n";
-    appendSection(out, "RawData", snapshot["RawData"].as<JsonObjectConst>());
-    appendSection(out, "EspData", snapshot["EspData"].as<JsonObjectConst>());
-    appendSection(out, "DeviceData", snapshot["DeviceData"].as<JsonObjectConst>());
-    appendSection(out, "LiveData", snapshot["LiveData"].as<JsonObjectConst>());
-    appendSection(out, "Status", snapshot["Status"].as<JsonObjectConst>());
+
+    auto appendSectionToString = [&out](const char *name, JsonObjectConst object)
+    {
+        out += "[";
+        out += name;
+        out += "]\n";
+        for (JsonPairConst entry : object)
+        {
+            out += entry.key().c_str();
+            out += "=";
+            serializeJson(entry.value(), out);
+            out += "\n";
+        }
+        out += "\n";
+    };
+
+    appendSectionToString("RawData", snapshot["RawData"].as<JsonObjectConst>());
+    appendSectionToString("EspData", snapshot["EspData"].as<JsonObjectConst>());
+    appendSectionToString("DeviceData", snapshot["DeviceData"].as<JsonObjectConst>());
+    appendSectionToString("LiveData", snapshot["LiveData"].as<JsonObjectConst>());
+    appendSectionToString("Status", snapshot["Status"].as<JsonObjectConst>());
+
     return out;
 }
