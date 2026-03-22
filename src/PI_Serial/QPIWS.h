@@ -3,6 +3,7 @@ bool PI_Serial::PIXX_QPIWS()
     if (isPi30LikeProtocol(protocol))
     {
         liveData.remove(DESCR_Fault_Code);
+        liveData.remove(DESCR_Warning_Code);
 
         String commandAnswer = this->requestData("QPIWS");
         get.raw.qpiws = commandAnswer;
@@ -14,6 +15,90 @@ bool PI_Serial::PIXX_QPIWS()
         {
             return false;
         }
+
+        if (get.raw.qall.length() > 0 &&
+            get.raw.qall != DESCR_req_NAK &&
+            get.raw.qall != DESCR_req_NOA &&
+            get.raw.qall != DESCR_req_ERCRC)
+        {
+            char bufQALL[256];
+            get.raw.qall.toCharArray(bufQALL, sizeof(bufQALL));
+            char *fieldsQALL[24];
+            const int qallFieldCount = pi_split_fields(bufQALL, delimiter[0], fieldsQALL, 24);
+            const bool hasExplicitQallStatus =
+                qallFieldCount >= 18 &&
+                strlen(fieldsQALL[15]) == 1 &&
+                strlen(fieldsQALL[16]) == 2 &&
+                strlen(fieldsQALL[17]) == 2;
+
+            if (hasExplicitQallStatus)
+            {
+                auto decodeQallWarningCode = [](const char *code) -> const char * {
+                    if (code == nullptr || code[0] == '\0' || strcmp(code, "00") == 0)
+                        return nullptr;
+                    if (strcmp(code, "01") == 0) return "Low battery";
+                    if (strcmp(code, "02") == 0) return "Mains low voltage";
+                    if (strcmp(code, "03") == 0) return "Mains high voltage";
+                    if (strcmp(code, "04") == 0) return "Overload";
+                    if (strcmp(code, "05") == 0) return "Over temperature";
+                    if (strcmp(code, "06") == 0) return "Fan lock";
+                    if (strcmp(code, "07") == 0) return "Battery overvoltage";
+                    if (strcmp(code, "21") == 0) return "PV low pressure";
+                    if (strcmp(code, "22") == 0) return "PV overvoltage";
+                    if (strcmp(code, "23") == 0) return "PV overcurrent";
+                    if (strcmp(code, "24") == 0) return "PV over temperature";
+                    if (strcmp(code, "25") == 0) return "PV overload";
+                    if (strcmp(code, "26") == 0) return "PV boost failed";
+                    return nullptr;
+                };
+                auto decodeQallFaultCode = [](const char *code) -> const char * {
+                    if (code == nullptr || code[0] == '\0' || strcmp(code, "00") == 0)
+                        return nullptr;
+                    if (strcmp(code, "01") == 0) return "BUS overvoltage";
+                    if (strcmp(code, "02") == 0) return "Inverter overvoltage";
+                    if (strcmp(code, "03") == 0) return "Inverter low voltage";
+                    if (strcmp(code, "04") == 0) return "BUS failure";
+                    if (strcmp(code, "05") == 0) return "Overload fault";
+                    if (strcmp(code, "06") == 0) return "Output short circuit";
+                    if (strcmp(code, "07") == 0) return "Low battery voltage failure";
+                    if (strcmp(code, "08") == 0) return "Inverter failed";
+                    if (strcmp(code, "09") == 0) return "BUS low voltage";
+                    if (strcmp(code, "10") == 0) return "Parallel failure";
+                    if (strcmp(code, "11") == 0) return "Over temperature fault";
+                    if (strcmp(code, "12") == 0) return "Battery over-voltage fault";
+                    return nullptr;
+                };
+
+                const char *warningCode = fieldsQALL[16];
+                const char *faultCode = fieldsQALL[17];
+                const char *warningText = decodeQallWarningCode(warningCode);
+                const char *faultText = decodeQallFaultCode(faultCode);
+
+                if (warningText != nullptr)
+                {
+                    liveData[DESCR_Warning_Code] = warningText;
+                }
+                else if (warningCode != nullptr && warningCode[0] != '\0' && strcmp(warningCode, "00") != 0)
+                {
+                    liveData[DESCR_Warning_Code] = warningCode;
+                }
+
+                if (faultText != nullptr)
+                {
+                    liveData[DESCR_Fault_Code] = faultText;
+                }
+                else if (faultCode != nullptr && faultCode[0] != '\0' && strcmp(faultCode, "00") != 0)
+                {
+                    liveData[DESCR_Fault_Code] = faultCode;
+                }
+                else
+                {
+                    liveData[DESCR_Fault_Code] = "Ok";
+                }
+                return true;
+            }
+        }
+
         const size_t length = commandAnswer.length();
         refineProtocol();
         if (length >= 32)

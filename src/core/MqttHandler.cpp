@@ -57,9 +57,21 @@ String buildDiscoveryTopic(const String &baseTopic, const char *component, const
     return String("homeassistant/") + component + "/" + baseTopic + "/" + key + "/config";
 }
 
-String buildUniqueId(const char *baseTopic, const char *sectionName, const char *key)
+String getHaDeviceId()
 {
-    return String(baseTopic) + "." + sectionName + "." + key;
+    const uint64_t mac = ESP.getEfuseMac();
+    char id[32];
+    snprintf(id,
+             sizeof(id),
+             "solar2mqtt_%04X%08X",
+             static_cast<uint16_t>(mac >> 32),
+             static_cast<uint32_t>(mac));
+    return String(id);
+}
+
+String buildUniqueId(const String &deviceId, const char *sectionName, const char *key)
+{
+    return deviceId + "." + sectionName + "." + key;
 }
 
 String getDiscoveryModel(JsonDocument &snapshot)
@@ -91,7 +103,7 @@ String getDiscoveryModel(JsonDocument &snapshot)
 void populateDeviceInfo(JsonDocument &doc, JsonDocument &snapshot)
 {
     JsonObject device = doc["dev"].to<JsonObject>();
-    device["ids"][0] = _settings.get.deviceName();
+    device["ids"][0] = getHaDeviceId();
     device["name"] = _settings.get.deviceName();
     device["mf"] = "SoftWareCrash";
     device["mdl"] = getDiscoveryModel(snapshot);
@@ -461,6 +473,7 @@ void MqttHandler::publishHaSection(JsonDocument &snapshot,
                                    bool force)
 {
     const String topicBase = baseTopic();
+    const String deviceId = getHaDeviceId();
     const String availabilityTopic = topicBase + "/Alive";
 
     for (JsonPairConst entry : object)
@@ -475,7 +488,7 @@ void MqttHandler::publishHaSection(JsonDocument &snapshot,
         const HaEntityDescriptor *descriptor = findDescriptor(key, descriptors, descriptorCount);
         const bool binarySensor = value.is<bool>();
         const char *component = binarySensor ? "binary_sensor" : "sensor";
-        const String topic = buildDiscoveryTopic(topicBase, component, key);
+        const String topic = buildDiscoveryTopic(deviceId, component, key);
 
         appendTopicIfMissing(currentTopics, topic);
         if (!force && hasHaDiscoveryTopic(topic))
@@ -489,7 +502,7 @@ void MqttHandler::publishHaSection(JsonDocument &snapshot,
         doc["avty_t"] = availabilityTopic;
         doc["pl_avail"] = "true";
         doc["pl_not_avail"] = "false";
-        doc["uniq_id"] = buildUniqueId(_settings.get.mqttTopic(), stateSection, key);
+        doc["uniq_id"] = buildUniqueId(deviceId, stateSection, key);
         if (binarySensor)
         {
             doc["pl_on"] = "true";
@@ -521,6 +534,7 @@ void MqttHandler::publishHaSection(JsonDocument &snapshot,
 void MqttHandler::publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst espData, std::vector<String> &currentTopics, bool force)
 {
     const String topicBase = baseTopic();
+    const String deviceId = getHaDeviceId();
     const String availabilityTopic = topicBase + "/Alive";
 
     for (JsonPairConst entry : espData)
@@ -531,7 +545,7 @@ void MqttHandler::publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst espDa
             continue;
         }
 
-        const String topic = buildDiscoveryTopic(topicBase, "sensor", key);
+        const String topic = buildDiscoveryTopic(deviceId, "sensor", key);
         appendTopicIfMissing(currentTopics, topic);
         if (!force && hasHaDiscoveryTopic(topic))
         {
@@ -544,7 +558,7 @@ void MqttHandler::publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst espDa
         doc["avty_t"] = availabilityTopic;
         doc["pl_avail"] = "true";
         doc["pl_not_avail"] = "false";
-        doc["uniq_id"] = buildUniqueId(_settings.get.mqttTopic(), "EspData", key);
+        doc["uniq_id"] = buildUniqueId(deviceId, "EspData", key);
         doc["ic"] = "mdi:thermometer-lines";
         doc["unit_of_meas"] = HA_UNIT_CELSIUS;
         doc["dev_cla"] = "temperature";
