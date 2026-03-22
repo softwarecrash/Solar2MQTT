@@ -103,7 +103,8 @@ Modbus:
 These signatures are evaluated after basic detection:
 
 - `QALL` with at least 18 fields plus matching PI30 REVO layouts -> `PI30_REVO`
-- `QPIGS2` with at least 11 fields -> `PI41`
+- `QPI = 41` -> `PI41`
+- `QPIGS2` is only interpreted as PI41 L2 layout when it has exactly 11 fields and the device is already identified as `PI41`
 - `QPIRI` with at least 28 fields -> `PI30_MAX`
 - `QFLAG` contains `d` or `D` -> `PI30_MAX`
 - `QMOD = E` -> `PI30_PIP_GK`
@@ -493,7 +494,7 @@ A new dump should be checked in this order:
 1. Is there a numeric `QPI`?
 2. Is it `15`, `16`, `18`, `30`, or `41`?
 3. Is there `QALL >= 18` together with REVO-like PI layouts -> REVO?
-4. Is there `QPIGS2 >= 11` -> PI41?
+4. Does `QPI = 41` and does `QPIGS2` match the 11-field L2 layout -> PI41?
 5. Is there `QPIRI >= 28` or `QFLAG` with `d` -> MAX?
 6. Is there `QMOD = E` or extended `QPIWS` -> PIP-GK/MK?
 7. Does only the PI30 core set reply, but without a clean variant match -> `PI30` or `PI30_UNKNOWN`?

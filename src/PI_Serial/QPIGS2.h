@@ -43,7 +43,10 @@ bool PI_Serial::PIXX_QPIGS2()
     char *fieldsQPIGS2[30];
     int StringCount = pi_split_fields(bufQPIGS2, delimiter[0], fieldsQPIGS2, 30);
 
-    if (StringCount >= (int)(sizeof qpigs2ListL2 / sizeof qpigs2ListL2[0]))
+    const int pi41FieldCount = static_cast<int>(sizeof qpigs2ListL2 / sizeof qpigs2ListL2[0]);
+    const int pv2FieldCount = static_cast<int>(sizeof qpigs2List / sizeof qpigs2List[0]);
+
+    if (protocol == PI41 && StringCount == pi41FieldCount)
     {
       for (unsigned int i = 0; i < sizeof qpigs2ListL2 / sizeof qpigs2ListL2[0]; i++)
       {
@@ -57,7 +60,7 @@ bool PI_Serial::PIXX_QPIGS2()
         liveData[DESCR_PV2_Input_Current].as<double>());
       refineProtocol();
     }
-    else if (StringCount >= (int)(sizeof qpigs2List / sizeof qpigs2List[0]))
+    else if (StringCount == pv2FieldCount)
     {
       for (unsigned int i = 0; i < sizeof qpigs2List / sizeof qpigs2List[0]; i++)
       {

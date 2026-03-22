@@ -278,7 +278,7 @@ bool PI_Serial::PIXX_QPIGS()
     }
 
 
-    if (get.raw.qall.length() > 0 && hasQallResponse)
+    if (useRevoQpigsLayout && get.raw.qall.length() > 0 && hasQallResponse)
     {
       char bufQALL[256];
       commandAnswerQALL.toCharArray(bufQALL, sizeof(bufQALL));

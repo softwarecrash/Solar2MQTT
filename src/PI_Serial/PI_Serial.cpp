@@ -921,12 +921,6 @@ void PI_Serial::refineProtocol()
         return;
     }
 
-    if (qpigs2Fields >= 11)
-    {
-        protocol = PI41;
-        return;
-    }
-
     if (qpiriFields >= 28 || hasFlagD)
     {
         protocol = PI30_MAX;
