@@ -19,6 +19,8 @@ extern void writeLog(const char *format, ...);
 
 namespace
 {
+constexpr unsigned long kPiConnectionHoldMs = 5000UL;
+
 String sanitizeLogText(const String &value, size_t maxLen = 64)
 {
     String sanitized;
@@ -400,6 +402,7 @@ bool PI_Serial::loop()
                             requestCounter = 0;
                             refineProtocol();
                             logDynamicSummary();
+                            markSuccessfulDynamicCycle();
                             if (requestCallback)
                             {
                                 requestCallback();
@@ -562,7 +565,11 @@ bool PI_Serial::loop()
                     case 7:
                         refineProtocol();
                         logDynamicSummary();
-                        requestCallback();
+                        markSuccessfulDynamicCycle();
+                        if (requestCallback)
+                        {
+                            requestCallback();
+                        }
                         clearCycleBackup();
                         requestCounter = 0;
                         break;
@@ -576,7 +583,8 @@ bool PI_Serial::loop()
             }
             else
             {
-                connection = (connectionCounter < 10) ? true : false;
+                connection = (lastSuccessfulDynamicCycleAt != 0) &&
+                             ((millis() - lastSuccessfulDynamicCycleAt) <= kPiConnectionHoldMs);
             }
             previousTime = millis();
         }
@@ -610,6 +618,13 @@ void PI_Serial::clearCycleBackup()
     cycleBackupActive = false;
     cycleLiveBackup.clear();
     cycleStaticBackup.clear();
+}
+
+void PI_Serial::markSuccessfulDynamicCycle()
+{
+    lastSuccessfulDynamicCycleAt = millis();
+    connection = true;
+    connectionCounter = 0;
 }
 
 void PI_Serial::logStaticSummary() const

@@ -244,6 +244,17 @@
       return;
     }
 
+    const mqttConnected =
+      message.mqtt === true ||
+      message.mqttConnected === true ||
+      message.Status?.mqttConnected === true ||
+      message.EspData?.MQTTStatus === true;
+    const inverterConnected =
+      message.inverter === true ||
+      message.inverterConnected === true ||
+      message.Status?.inverterConnected === true ||
+      message.EspData?.Inverter_Connected === true;
+
     const wifiData = message.wifi && typeof message.wifi === "object" ? message.wifi : {};
     const ethActive =
       typeof wifiData.ethActive === "boolean"
@@ -256,8 +267,8 @@
     const apMode = typeof wifiData.apMode === "boolean" ? wifiData.apMode : message.apMode === true;
 
     setWiFi(rssi, apMode, ethActive);
-    setMqtt(message.mqtt === true || message.mqttConnected === true);
-    setInverter(message.inverter === true || message.inverterConnected === true);
+    setMqtt(mqttConnected);
+    setInverter(inverterConnected);
     setService(apMode);
     setVersion(message.fw || (message.EspData && message.EspData.sw_version) || "", message.buildVariant || message.build || "");
   }

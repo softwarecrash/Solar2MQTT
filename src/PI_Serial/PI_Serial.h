@@ -216,6 +216,7 @@ private:
     unsigned long previousTime = 0;
     unsigned long delayTime = 100;
     unsigned long nextDetectAt = 0;
+    unsigned long lastSuccessfulDynamicCycleAt = 0;
     byte requestCounter = 0;
 
     long long int connectionCounter = 0;
@@ -249,6 +250,7 @@ private:
     void beginCycleBackup();
     void restoreCycleBackup();
     void clearCycleBackup();
+    void markSuccessfulDynamicCycle();
     void refineProtocol();
     bool requestUnsupportedPiStatic();
     bool requestUnsupportedPiDynamic();

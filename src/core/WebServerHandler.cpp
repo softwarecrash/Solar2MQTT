@@ -825,6 +825,13 @@ void WebServerHandler::buildStatusJson(JsonDocument &doc)
     JsonDocument snapshot;
     _state.snapshotTo(snapshot);
 
+    const bool snapshotMqttConnected =
+        snapshot["Status"]["mqttConnected"].is<bool>() ? snapshot["Status"]["mqttConnected"].as<bool>() :
+        (snapshot["EspData"]["MQTTStatus"].is<bool>() ? snapshot["EspData"]["MQTTStatus"].as<bool>() : _mqttConnected);
+    const bool snapshotInverterConnected =
+        snapshot["Status"]["inverterConnected"].is<bool>() ? snapshot["Status"]["inverterConnected"].as<bool>() :
+        (snapshot["EspData"]["Inverter_Connected"].is<bool>() ? snapshot["EspData"]["Inverter_Connected"].as<bool>() : _inverterConnected);
+
     const bool wifiConnected = _wifiManager.getConnectionState();
     const bool ethActive = _wifiManager.isEthActive();
     const bool apMode = _wifiManager.isInApMode();
@@ -832,8 +839,8 @@ void WebServerHandler::buildStatusJson(JsonDocument &doc)
     const String ip = _wifiManager.ipAddress();
     const char *networkType = ethActive ? "ethernet" : (apMode ? "ap" : (wifiConnected ? "wifi" : "offline"));
 
-    doc["mqttConnected"] = _mqttConnected;
-    doc["inverterConnected"] = _inverterConnected;
+    doc["mqttConnected"] = snapshotMqttConnected;
+    doc["inverterConnected"] = snapshotInverterConnected;
     doc["wifiConnected"] = wifiConnected;
     doc["ethActive"] = ethActive;
     doc["apMode"] = apMode;
@@ -851,8 +858,8 @@ void WebServerHandler::buildStatusJson(JsonDocument &doc)
     doc["wifi"]["rssi"] = wifiRssi;
     doc["wifi"]["ethActive"] = ethActive;
     doc["wifi"]["type"] = networkType;
-    doc["mqtt"] = _mqttConnected;
-    doc["inverter"] = _inverterConnected;
+    doc["mqtt"] = snapshotMqttConnected;
+    doc["inverter"] = snapshotInverterConnected;
     doc["service"]["apMode"] = apMode;
     doc["service"]["loopbackRunning"] = _inverterService.loopbackRunning();
     doc["service"]["loopbackOk"] = _inverterService.loopbackOk();

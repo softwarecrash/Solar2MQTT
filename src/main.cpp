@@ -102,6 +102,8 @@ void setup()
     inverterService.setCallback([]()
                                 {
         updateRuntimeState();
+        webServerHandler.setMqttConnected(mqttHandler.isConnected());
+        webServerHandler.setInverterConnected(inverterService.isConnected());
         mqttHandler.triggerFullStatePublish();
         webServerHandler.notifyStatusBar(); });
     inverterService.begin();
