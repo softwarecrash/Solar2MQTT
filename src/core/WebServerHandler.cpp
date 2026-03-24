@@ -157,11 +157,6 @@ void WebServerHandler::loop()
         return;
     }
 
-    if (_inverterService.isBusy())
-    {
-        return;
-    }
-
     refreshStatusPayload();
     _lastStatusRefreshMs = now;
     _statusDirty.store(false, std::memory_order_relaxed);
@@ -319,6 +314,7 @@ void WebServerHandler::registerRoutes()
         device["uartRx"] = _settings.get.inverterRxPin();
         device["uartTx"] = _settings.get.inverterTxPin();
         device["uartDir"] = _settings.get.inverterDirPin();
+        device["ds18b20Pin"] = _settings.get.ds18b20Pin();
         device["statusLedPin"] = _settings.get.statusLedPin();
         device["statusLedBrightness"] = _settings.get.statusLedBrightness();
         device["pollIntervalMs"] = _settings.get.pollIntervalMs();
@@ -506,6 +502,7 @@ void WebServerHandler::registerRoutes()
             if (name == "uartRx") _settings.set.inverterRxPin(value.toInt());
             else if (name == "uartTx") _settings.set.inverterTxPin(value.toInt());
             else if (name == "uartDir") _settings.set.inverterDirPin(value.toInt());
+            else if (name == "ds18b20Pin") _settings.set.ds18b20Pin(value.toInt());
             else if (name == "statusLedPin") _settings.set.statusLedPin(value.toInt());
             else if (name == "statusLedBrightness") _settings.set.statusLedBrightness(static_cast<uint16_t>(value.toInt()));
             else if (name == "pollIntervalMs") _settings.set.pollIntervalMs(value.toInt());

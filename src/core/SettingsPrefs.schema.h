@@ -31,6 +31,7 @@
   X(INT32,  "device", "uartRx", inverterRxPin, PIN_INVERTER_RX_DEFAULT, -1, 48) \
   X(INT32,  "device", "uartTx", inverterTxPin, PIN_INVERTER_TX_DEFAULT, -1, 48) \
   X(INT32,  "device", "uartDir", inverterDirPin, PIN_INVERTER_DE_DEFAULT, -1, 48) \
+  X(INT32,  "device", "ds18b20Pin", ds18b20Pin, PIN_DS18B20, -1, 48) \
   X(INT32,  "device", "statusLedPin", statusLedPin, PIN_LED_STATUS, -1, 48) \
   X(UINT16, "device", "statusLedBrightness", statusLedBrightness, 128, 0, 255) \
   X(UINT32, "device", "pollIntervalMs", pollIntervalMs, 100, 25, 5000)

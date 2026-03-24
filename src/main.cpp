@@ -56,6 +56,12 @@ void printBootBanner()
     LogSerial.printf("[Boot] Heap free: %u bytes\n", static_cast<unsigned>(ESP.getFreeHeap()));
 }
 
+void configureDs18b20()
+{
+    ds18b20Service.begin(static_cast<uint8_t>(_settings.get.ds18b20Pin()), deviceJson);
+    solarState.refreshBindings();
+}
+
 void updateRuntimeState()
 {
     solarState.updateRuntime(_settings.get.deviceName(),
@@ -111,8 +117,9 @@ void setup()
     ds18b20Service.setCallback([](uint8_t index, float temperature)
                                {
         mqttHandler.publishSensorImmediate(index, temperature);
-        mqttHandler.triggerFullStatePublish(); });
-    ds18b20Service.begin(PIN_DS18B20, deviceJson);
+        mqttHandler.triggerFullStatePublish();
+        webServerHandler.notifyStatusBar(); });
+    configureDs18b20();
 
     mqttHandler.begin();
     webServerHandler.begin();
@@ -142,9 +149,11 @@ void loop()
     {
         g_pendingInverterReconfigure = false;
         inverterService.reconfigure();
+        configureDs18b20();
         statusLedService.configure(_settings.get.statusLedPin(),
                                    static_cast<uint8_t>(_settings.get.statusLedBrightness()));
         mqttHandler.triggerFullStatePublish();
+        webServerHandler.notifyStatusBar();
     }
 
     if (g_pendingFactoryReset && static_cast<int32_t>(millis() - g_factoryResetAt) >= 0)

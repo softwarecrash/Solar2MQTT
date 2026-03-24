@@ -536,6 +536,35 @@ function createOverviewRow(title, entries) {
   return row;
 }
 
+function collectDs18Entries(data) {
+  const espData = data?.EspData;
+  if (!espData || typeof espData !== "object") {
+    return [];
+  }
+
+  return Object.entries(espData)
+    .map(([key, value]) => {
+      const match = /^DS18B20_(\d+)$/.exec(key);
+      if (!match || !isDataValuePresent(value)) {
+        return null;
+      }
+
+      const display = formatReading(value, "C", 1);
+      if (!display) {
+        return null;
+      }
+
+      return {
+        index: Number(match[1]),
+        label: `S${match[1]}`,
+        value: display,
+      };
+    })
+    .filter(Boolean)
+    .sort((left, right) => left.index - right.index)
+    .map(({ label, value }) => ({ label, value }));
+}
+
 function renderOverview(data) {
   renderMeters(data);
 
@@ -576,6 +605,12 @@ function renderOverview(data) {
     fragment.appendChild(createOverviewRow(group.title, entries));
     visibleGroups += 1;
   });
+
+  const ds18Entries = collectDs18Entries(data);
+  if (ds18Entries.length) {
+    fragment.appendChild(createOverviewRow("DS18B20", ds18Entries));
+    visibleGroups += 1;
+  }
 
   if (!visibleGroups) {
     const empty = document.createElement("div");

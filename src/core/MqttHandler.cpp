@@ -181,7 +181,6 @@ void MqttHandler::loop()
     {
         _mqtt.loop();
     }
-    const bool inverterBusy = _inverterService.isBusy();
 
     const unsigned long now = millis();
     if (connected && (now - _lastAlivePublish) >= 30000UL)
@@ -197,7 +196,7 @@ void MqttHandler::loop()
         _pendingFullPublish = true;
     }
 
-    if (connected && _pendingFullPublish && !inverterBusy)
+    if (connected && _pendingFullPublish)
     {
         _pendingFullPublish = false;
         publishState();
@@ -208,7 +207,7 @@ void MqttHandler::loop()
         }
     }
 
-    if (connected && _pendingHaDiscovery && !inverterBusy)
+    if (connected && _pendingHaDiscovery)
     {
         const bool force = _forceHaDiscovery;
         _pendingHaDiscovery = false;
