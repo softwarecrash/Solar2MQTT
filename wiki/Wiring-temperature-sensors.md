@@ -7,7 +7,6 @@ Solar2MQTT supports DS18B20 temperature sensors.
 | Build target | DS18B20 data | Note |
 |--------------|--------------|------|
 | `wemos_d1_mini32` | `GPIO21` | `D2` on the D1 Mini style layout |
-| `wemos_d1_mini32_dbg` | `GPIO21` | `D2` on the D1 Mini style layout |
 | `esp32c3_supermini` | `GPIO3` | |
 | `esp32s3_supermini` | `GPIO6` | |
 | `waveshare_esp32_s3_eth` | `GPIO21` | |

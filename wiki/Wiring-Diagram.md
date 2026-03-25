@@ -4,7 +4,7 @@ This page shows the default wiring for the available board targets.
 
 The inverter UART pins, RS485 direction pin, DS18B20 pin and status LED pin can all be changed later in the Web UI under `Device Settings` if you want to use a different layout.
 
-## Default build: `wemos_d1_mini32`
+## wemos_d1_mini32:
 
 This layout is meant as a drop-in replacement for the old D1 Mini style wiring.
 
@@ -16,7 +16,7 @@ This layout is meant as a drop-in replacement for the old D1 Mini style wiring.
 | DS18B20 data | `GPIO21` | `D2` |
 | Status LED | `GPIO2` | `D4` |
 
-## ESP32-C3 SuperMini: `esp32c3_supermini`
+## ESP32-C3 SuperMini:
 
 This target keeps the default wiring away from the USB pins.
 
@@ -28,7 +28,7 @@ This target keeps the default wiring away from the USB pins.
 | DS18B20 data | `GPIO3` |
 | Status LED | not used by default |
 
-## ESP32-S3 SuperMini: `esp32s3_supermini`
+## ESP32-S3 SuperMini:
 
 This target keeps the default wiring within the normal solder-pad pins and leaves the native USB pins free.
 
@@ -40,7 +40,7 @@ This target keeps the default wiring within the normal solder-pad pins and leave
 | DS18B20 data | `GPIO6` |
 | Status LED | not used by default |
 
-## Waveshare ESP32-S3 ETH: `waveshare_esp32_s3_eth`
+## Waveshare ESP32-S3 ETH:
 
 This target includes both inverter wiring and the default Ethernet module wiring.
 
