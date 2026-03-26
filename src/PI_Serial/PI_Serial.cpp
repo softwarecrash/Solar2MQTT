@@ -306,6 +306,12 @@ bool PI_Serial::Init()
         writeLog("No serial specificed!");
         return false;
     }
+    if (suspendSerial.load(std::memory_order_relaxed))
+    {
+        this->my_serialIntf->setTimeout(500);
+        this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+        return true;
+    }
     autoDetect();
     if (isModbus())
     {

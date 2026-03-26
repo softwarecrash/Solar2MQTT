@@ -33,6 +33,8 @@ bool g_pendingRestart = false;
 uint32_t g_restartAt = 0;
 bool g_pendingFactoryReset = false;
 uint32_t g_factoryResetAt = 0;
+bool g_pendingNetworkReconfigure = false;
+uint32_t g_networkReconfigureAt = 0;
 bool g_pendingInverterReconfigure = false;
 uint32_t g_inverterReconfigureAt = 0;
 uint8_t g_bootBannerRepeats = 0;
@@ -112,6 +114,7 @@ void setup()
         webServerHandler.setInverterConnected(inverterService.isConnected());
         mqttHandler.triggerFullStatePublish();
         webServerHandler.notifyStatusBar(); });
+    inverterService.setTransportPaused(wifiManager.isInApMode());
     inverterService.begin();
 
     ds18b20Service.setCallback([](uint8_t index, float temperature)
@@ -141,6 +144,18 @@ void loop()
 
     FactoryResetManager::loop();
     wifiManager.loop();
+    if (g_pendingNetworkReconfigure && static_cast<int32_t>(millis() - g_networkReconfigureAt) >= 0)
+    {
+        g_pendingNetworkReconfigure = false;
+        wifiManager.reconfigure();
+        mqttHandler.triggerFullStatePublish();
+        if (_settings.get.mqttHAEnabled())
+        {
+            mqttHandler.triggerHaDiscovery();
+        }
+        webServerHandler.notifyStatusBar();
+    }
+    inverterService.setTransportPaused(wifiManager.isInApMode());
     inverterService.loop();
     ds18b20Service.loop();
     mqttHandler.loop();

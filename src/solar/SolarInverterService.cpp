@@ -118,6 +118,7 @@ SolarInverterService::SolarInverterService(SolarState &state)
       _serial(g_inverterSerial),
       _client(nullptr),
       _simulationEnabled(false),
+      _transportPaused(false),
       _simulationLastUpdateMs(0),
       _loopbackRequested(false),
       _loopbackInProgress(false),
@@ -163,6 +164,45 @@ void SolarInverterService::reconfigure()
     createClient();
 }
 
+void SolarInverterService::setTransportPaused(bool paused)
+{
+    if (_transportPaused == paused)
+    {
+        return;
+    }
+
+    _transportPaused = paused;
+
+    if (!_simulationEnabled)
+    {
+        _loopbackRequested = false;
+        if (_loopbackInProgress && paused)
+        {
+            _loopbackInProgress = false;
+            _loopbackDone = true;
+            _loopbackOk = false;
+            _loopbackMessage = "Loopback canceled while AP mode is active";
+        }
+    }
+
+    if (_client != nullptr && !_simulationEnabled)
+    {
+        _client->setSuspend(paused);
+        if (paused)
+        {
+            _client->connection = false;
+        }
+    }
+
+    writeLog(paused ? "Inverter transport paused in AP mode"
+                    : "Inverter transport resumed after AP mode");
+
+    if (_callback)
+    {
+        _callback();
+    }
+}
+
 void SolarInverterService::queueCommand(const String &command)
 {
     String normalizedCommand = command;
@@ -181,6 +221,20 @@ void SolarInverterService::queueCommand(const String &command)
 
     if (handleSimulationCommand(normalizedCommand))
     {
+        return;
+    }
+
+    if (_transportPaused && !_simulationEnabled)
+    {
+        if (_client == nullptr)
+        {
+            createClient();
+        }
+        setCommandAnswer("Inverter communication is paused while AP mode is active.");
+        if (_callback)
+        {
+            _callback();
+        }
         return;
     }
 
@@ -327,6 +381,11 @@ bool SolarInverterService::isConnected() const
         return true;
     }
 
+    if (_transportPaused)
+    {
+        return false;
+    }
+
     return _client != nullptr && _client->connection;
 }
 
@@ -357,6 +416,14 @@ bool SolarInverterService::requestLoopback()
         _loopbackDone = true;
         _loopbackOk = false;
         _loopbackMessage = "Loopback unavailable in simulation";
+        return false;
+    }
+
+    if (_transportPaused)
+    {
+        _loopbackDone = true;
+        _loopbackOk = false;
+        _loopbackMessage = "Loopback unavailable while AP mode is active";
         return false;
     }
 
@@ -418,10 +485,13 @@ void SolarInverterService::createClient()
         {
             _callback();
         } });
+    if (_simulationEnabled || _transportPaused)
+    {
+        _client->setSuspend(true);
+    }
     _client->Init();
     if (_simulationEnabled)
     {
-        _client->setSuspend(true);
         updateSimulationState(false);
     }
     else

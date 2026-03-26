@@ -578,15 +578,26 @@
           body
         });
 
+        let payload = {};
+        try {
+          payload = await res.json();
+        } catch {}
+
         if (res.ok) {
-          alertToast("success", mode === "connect" ? "Connecting... Device is restarting." : "Settings saved. Restarting...");
-          const form = document.getElementById("wifiForm");
-          Array.from(form.elements).forEach((el) => { el.disabled = true; });
+          const message = payload.message || (mode === "connect"
+            ? "Connecting... Network is being reconfigured."
+            : "Settings saved.");
+          alertToast("success", message);
+
+          if (payload.connectionMayChange === true) {
+            const form = document.getElementById("wifiForm");
+            Array.from(form.elements).forEach((el) => { el.disabled = true; });
+          }
         } else {
           alertToast("error", "Save failed: " + res.status);
         }
       } catch {
-        alertToast("info", "Device is likely restarting.");
+        alertToast("info", "Connection changed or device is reconnecting.");
       } finally {
         wifiSubmitInFlight = false;
       }

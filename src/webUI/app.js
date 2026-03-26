@@ -852,18 +852,18 @@ window.addEventListener("DOMContentLoaded", async () => {
   await Promise.allSettled([loadStatus(), loadSettings()]);
 
   bindSubmit("networkForm", async (form) => {
-    await postForm("/api/settings/network", form);
-    showNotice("Network settings saved. Restart is being prepared.");
+    const result = await postForm("/api/settings/network", form);
+    showNotice(result?.message || "Network settings saved.");
   });
 
   bindSubmit("mqttForm", async (form) => {
-    await postForm("/api/settings/mqtt", form);
-    showNotice("MQTT settings saved. Restart is being prepared.");
+    const result = await postForm("/api/settings/mqtt", form);
+    showNotice(result?.message || "MQTT settings applied.");
   });
 
   bindSubmit("deviceForm", async (form) => {
-    await postForm("/api/settings/device", form);
-    showNotice("Device settings applied.");
+    const result = await postForm("/api/settings/device", form);
+    showNotice(result?.message || "Device settings applied.");
   });
 
   bindSubmit("commandForm", async (form) => {

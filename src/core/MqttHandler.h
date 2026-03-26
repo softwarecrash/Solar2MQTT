@@ -20,6 +20,7 @@ public:
 
     void begin();
     void loop();
+    void reconfigure();
 
     bool isConnected();
     void triggerFullStatePublish() { _pendingFullPublish = true; }

@@ -10,6 +10,8 @@ public:
 
     void begin();
     void loop();
+    void reconfigure();
+    void refreshMdns();
 
     bool getConnectionState() const;
     bool isInApMode() const;
@@ -27,5 +29,6 @@ private:
     bool connectToWifi();
     void startApMode();
     bool initEthernet();
+    bool applySavedNetworkConfig();
     const char *networkHostName() const;
 };

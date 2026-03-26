@@ -393,6 +393,20 @@ void WebServerHandler::registerRoutes()
             return request->requestAuthentication();
         }
 
+        const String oldDeviceName = _settings.get.deviceName();
+        const String oldWifiSsid0 = _settings.get.wifiSsid0();
+        const String oldWifiPassword0 = _settings.get.wifiPassword0();
+        const String oldWifiBssid0 = _settings.get.wifiBssid0();
+        const String oldWifiSsid1 = _settings.get.wifiSsid1();
+        const String oldWifiPassword1 = _settings.get.wifiPassword1();
+        const String oldWifiBssid1 = _settings.get.wifiBssid1();
+        const String oldStaticIp = _settings.get.staticIP();
+        const String oldStaticGw = _settings.get.staticGW();
+        const String oldStaticSn = _settings.get.staticSN();
+        const String oldStaticDns = _settings.get.staticDNS();
+        const bool oldBssidLock = _settings.get.wifiBssidLock();
+        const bool oldEthEnabled = _settings.get.ethEnabled();
+
         for (int i = 0; i < request->params(); ++i)
         {
             const AsyncWebParameter *param = request->getParam(i);
@@ -417,9 +431,50 @@ void WebServerHandler::registerRoutes()
         }
 
         _settings.save();
-        g_pendingRestart = true;
-        g_restartAt = millis() + 1000;
-        request->send(200, "application/json", "{\"success\":true}"); });
+
+        const bool networkTransportChanged =
+            oldWifiSsid0 != String(_settings.get.wifiSsid0()) ||
+            oldWifiPassword0 != String(_settings.get.wifiPassword0()) ||
+            oldWifiBssid0 != String(_settings.get.wifiBssid0()) ||
+            oldWifiSsid1 != String(_settings.get.wifiSsid1()) ||
+            oldWifiPassword1 != String(_settings.get.wifiPassword1()) ||
+            oldWifiBssid1 != String(_settings.get.wifiBssid1()) ||
+            oldStaticIp != String(_settings.get.staticIP()) ||
+            oldStaticGw != String(_settings.get.staticGW()) ||
+            oldStaticSn != String(_settings.get.staticSN()) ||
+            oldStaticDns != String(_settings.get.staticDNS()) ||
+            oldBssidLock != _settings.get.wifiBssidLock() ||
+            oldEthEnabled != _settings.get.ethEnabled();
+        const bool deviceNameChanged = oldDeviceName != String(_settings.get.deviceName());
+
+        if (deviceNameChanged && !networkTransportChanged)
+        {
+            _wifiManager.refreshMdns();
+        }
+
+        if (networkTransportChanged)
+        {
+            g_pendingNetworkReconfigure = true;
+            g_networkReconfigureAt = millis() + 50;
+        }
+
+        _mqttHandler.triggerFullStatePublish();
+        if (_settings.get.mqttHAEnabled())
+        {
+            _mqttHandler.triggerHaDiscovery();
+        }
+        notifyStatusBar();
+
+        JsonDocument response;
+        response["success"] = true;
+        response["restartRequired"] = false;
+        response["connectionMayChange"] = networkTransportChanged;
+        response["message"] = networkTransportChanged
+                                  ? "Network settings saved. Connection is being reconfigured."
+                                  : "Settings saved.";
+        String json;
+        serializeJson(response, json);
+        request->send(200, "application/json", json); });
 
     _server.on("/submitConfig", HTTP_POST, [this](AsyncWebServerRequest *request)
                {
@@ -427,6 +482,21 @@ void WebServerHandler::registerRoutes()
         {
             return request->requestAuthentication();
         }
+
+        const bool wasApMode = _wifiManager.isInApMode();
+        const String oldDeviceName = _settings.get.deviceName();
+        const String oldWifiSsid0 = _settings.get.wifiSsid0();
+        const String oldWifiPassword0 = _settings.get.wifiPassword0();
+        const String oldWifiBssid0 = _settings.get.wifiBssid0();
+        const String oldWifiSsid1 = _settings.get.wifiSsid1();
+        const String oldWifiPassword1 = _settings.get.wifiPassword1();
+        const String oldWifiBssid1 = _settings.get.wifiBssid1();
+        const String oldStaticIp = _settings.get.staticIP();
+        const String oldStaticGw = _settings.get.staticGW();
+        const String oldStaticSn = _settings.get.staticSN();
+        const String oldStaticDns = _settings.get.staticDNS();
+        const bool oldBssidLock = _settings.get.wifiBssidLock();
+        const bool oldEthEnabled = _settings.get.ethEnabled();
 
         for (int i = 0; i < request->params(); ++i)
         {
@@ -452,9 +522,51 @@ void WebServerHandler::registerRoutes()
         }
 
         _settings.save();
-        g_pendingRestart = true;
-        g_restartAt = millis() + 1000;
-        request->send(200, "application/json", "{\"success\":true}"); });
+
+        const bool networkTransportChanged =
+            oldWifiSsid0 != String(_settings.get.wifiSsid0()) ||
+            oldWifiPassword0 != String(_settings.get.wifiPassword0()) ||
+            oldWifiBssid0 != String(_settings.get.wifiBssid0()) ||
+            oldWifiSsid1 != String(_settings.get.wifiSsid1()) ||
+            oldWifiPassword1 != String(_settings.get.wifiPassword1()) ||
+            oldWifiBssid1 != String(_settings.get.wifiBssid1()) ||
+            oldStaticIp != String(_settings.get.staticIP()) ||
+            oldStaticGw != String(_settings.get.staticGW()) ||
+            oldStaticSn != String(_settings.get.staticSN()) ||
+            oldStaticDns != String(_settings.get.staticDNS()) ||
+            oldBssidLock != _settings.get.wifiBssidLock() ||
+            oldEthEnabled != _settings.get.ethEnabled();
+        const bool deviceNameChanged = oldDeviceName != String(_settings.get.deviceName());
+        const bool shouldReconfigureNetwork = wasApMode || networkTransportChanged;
+
+        if (deviceNameChanged && !shouldReconfigureNetwork)
+        {
+            _wifiManager.refreshMdns();
+        }
+
+        if (shouldReconfigureNetwork)
+        {
+            g_pendingNetworkReconfigure = true;
+            g_networkReconfigureAt = millis() + 50;
+        }
+
+        _mqttHandler.triggerFullStatePublish();
+        if (_settings.get.mqttHAEnabled())
+        {
+            _mqttHandler.triggerHaDiscovery();
+        }
+        notifyStatusBar();
+
+        JsonDocument response;
+        response["success"] = true;
+        response["restartRequired"] = false;
+        response["connectionMayChange"] = shouldReconfigureNetwork;
+        response["message"] = shouldReconfigureNetwork
+                                  ? "Network settings saved. Connection is being reconfigured."
+                                  : "Settings saved.";
+        String json;
+        serializeJson(response, json);
+        request->send(200, "application/json", json); });
 
     _server.on("/api/settings/mqtt", HTTP_POST, [this](AsyncWebServerRequest *request)
                {
@@ -482,9 +594,19 @@ void WebServerHandler::registerRoutes()
         }
 
         _settings.save();
-        g_pendingRestart = true;
-        g_restartAt = millis() + 1000;
-        request->send(200, "application/json", "{\"success\":true}"); });
+        _mqttHandler.reconfigure();
+        setMqttConnected(_mqttHandler.isConnected());
+        notifyStatusBar();
+
+        JsonDocument response;
+        response["success"] = true;
+        response["restartRequired"] = false;
+        response["message"] = strlen(_settings.get.mqttHost()) > 0
+                                  ? "MQTT settings applied. Broker reconnecting."
+                                  : "MQTT disabled.";
+        String json;
+        serializeJson(response, json);
+        request->send(200, "application/json", json); });
 
     _server.on("/api/settings/device", HTTP_POST, [this](AsyncWebServerRequest *request)
                {
@@ -511,7 +633,14 @@ void WebServerHandler::registerRoutes()
         _settings.save();
         g_pendingInverterReconfigure = true;
         g_inverterReconfigureAt = millis() + 50;
-        request->send(200, "application/json", "{\"success\":true}"); });
+
+        JsonDocument response;
+        response["success"] = true;
+        response["restartRequired"] = false;
+        response["message"] = "Device settings applied. Inverter transport is being reconfigured.";
+        String json;
+        serializeJson(response, json);
+        request->send(200, "application/json", json); });
 
     _server.on("/api/command", HTTP_POST, [this](AsyncWebServerRequest *request)
                {

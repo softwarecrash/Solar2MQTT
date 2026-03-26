@@ -169,6 +169,24 @@ void MqttHandler::begin()
     _haDiscoveryTopics.clear();
 }
 
+void MqttHandler::reconfigure()
+{
+    _mqtt.disconnect();
+    _plainClient.stop();
+    _secureClient.stop();
+
+    configureClient();
+    _configured = strlen(_settings.get.mqttHost()) > 0;
+    _pendingFullPublish = _configured;
+    _pendingHaDiscovery = _configured && _settings.get.mqttHAEnabled();
+    _forceHaDiscovery = _pendingHaDiscovery;
+    _lastConnected = false;
+    _lastReconnectAttempt = 0;
+    _lastAlivePublish = millis();
+    _lastStatePublish = millis();
+    _haDiscoveryTopics.clear();
+}
+
 void MqttHandler::loop()
 {
     if (!_configured || !_wifiManager.getConnectionState())

@@ -15,6 +15,7 @@ public:
     void begin();
     void loop();
     void reconfigure();
+    void setTransportPaused(bool paused);
 
     void setCallback(std::function<void()> callback) { _callback = callback; }
     void queueCommand(const String &command);
@@ -24,6 +25,7 @@ public:
     protocol_type_t protocol() const;
     const char *protocolName() const;
     bool simulationEnabled() const { return _simulationEnabled; }
+    bool transportPaused() const { return _transportPaused; }
 
     bool requestLoopback();
     bool loopbackRunning() const { return _loopbackInProgress; }
@@ -53,6 +55,7 @@ private:
     std::function<void()> _callback;
 
     bool _simulationEnabled;
+    bool _transportPaused;
     uint32_t _simulationLastUpdateMs;
 
     bool _loopbackRequested;
