@@ -257,7 +257,7 @@ String Settings::backup(bool pretty)
     return json;
 }
 
-bool Settings::restore(const String &json, bool merge, bool saveAfter)
+bool Settings::restore(const String &json, bool saveAfter)
 {
     ensureInit();
 
@@ -267,10 +267,7 @@ bool Settings::restore(const String &json, bool merge, bool saveAfter)
         return false;
     }
 
-    if (!merge)
-    {
-        _doc.clear();
-    }
+    _doc.clear();
 
 #define RESTORE_BOOL(group, name, api, def, minv, maxv) \
     { \

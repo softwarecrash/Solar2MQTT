@@ -164,6 +164,41 @@ void SolarInverterService::reconfigure()
     createClient();
 }
 
+void SolarInverterService::shutdown()
+{
+    _loopbackRequested = false;
+    _loopbackInProgress = false;
+    _loopbackDone = false;
+    _loopbackOk = false;
+    _loopbackMessage = "";
+
+    if (_client != nullptr)
+    {
+        _client->setSuspend(true);
+        delete _client;
+        _client = nullptr;
+    }
+
+    _serial.flush();
+    _serial.end();
+
+    if (g_inverterHardwareConfig.dirPin >= 0)
+    {
+        pinMode(g_inverterHardwareConfig.dirPin, OUTPUT);
+        digitalWrite(g_inverterHardwareConfig.dirPin, LOW);
+    }
+
+    if (g_inverterHardwareConfig.txPin >= 0)
+    {
+        pinMode(g_inverterHardwareConfig.txPin, INPUT_PULLUP);
+    }
+
+    if (g_inverterHardwareConfig.rxPin >= 0)
+    {
+        pinMode(g_inverterHardwareConfig.rxPin, INPUT_PULLUP);
+    }
+}
+
 void SolarInverterService::setTransportPaused(bool paused)
 {
     if (_transportPaused == paused)
@@ -185,17 +220,26 @@ void SolarInverterService::setTransportPaused(bool paused)
         }
     }
 
-    if (_client != nullptr && !_simulationEnabled)
+    if (_simulationEnabled)
     {
-        _client->setSuspend(paused);
-        if (paused)
-        {
-            _client->connection = false;
-        }
+        return;
     }
 
-    writeLog(paused ? "Inverter transport paused in AP mode"
-                    : "Inverter transport resumed after AP mode");
+    if (paused)
+    {
+        if (_client != nullptr)
+        {
+            _client->setSuspend(true);
+            _client->connection = false;
+        }
+        writeLog("Inverter transport paused in AP mode");
+    }
+    else
+    {
+        // Recreate the serial client after AP mode to clear any stale UART/transceiver state.
+        createClient();
+        writeLog("Inverter transport resumed after AP mode");
+    }
 
     if (_callback)
     {
@@ -469,7 +513,7 @@ void SolarInverterService::createClient()
 
     _serial.end();
     _state.doc()["DeviceData"].to<JsonObject>().clear();
-    _state.doc()["LiveData"].to<JsonObject>().clear();
+    clearLiveDataPreservingDs18b20();
     _state.refreshBindings();
 
     g_inverterHardwareConfig.rxPin = _settings.get.inverterRxPin();
@@ -692,7 +736,7 @@ void SolarInverterService::enableSimulation()
 
     _state.raw().clear();
     _state.doc()["DeviceData"].to<JsonObject>().clear();
-    _state.doc()["LiveData"].to<JsonObject>().clear();
+    clearLiveDataPreservingDs18b20();
     _state.refreshBindings();
     updateSimulationState(false);
     setCommandAnswer("Simulation PI30 enabled.");
@@ -736,7 +780,7 @@ void SolarInverterService::updateSimulationState(bool forceNotify)
     _state.refreshBindings();
     JsonDocument &doc = _state.doc();
     doc["DeviceData"].to<JsonObject>().clear();
-    doc["LiveData"].to<JsonObject>().clear();
+    clearLiveDataPreservingDs18b20();
 
     auto setDevice = [&doc](const char *key, const auto &value)
     {
@@ -986,5 +1030,29 @@ void SolarInverterService::updateSimulationState(bool forceNotify)
     if (forceNotify && _callback)
     {
         _callback();
+    }
+}
+
+void SolarInverterService::clearLiveDataPreservingDs18b20()
+{
+    _state.refreshBindings();
+
+    JsonObject live = _state.doc()["LiveData"].to<JsonObject>();
+    JsonDocument preserved;
+    JsonObject preservedLive = preserved.to<JsonObject>();
+
+    for (JsonPair entry : live)
+    {
+        if (strncmp(entry.key().c_str(), "DS18B20_", 8) == 0)
+        {
+            preservedLive[entry.key()] = entry.value();
+        }
+    }
+
+    live.clear();
+
+    for (JsonPair entry : preservedLive)
+    {
+        live[entry.key()] = entry.value();
     }
 }

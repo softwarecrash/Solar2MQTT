@@ -7,9 +7,9 @@ Available datapoints depend on the inverter type and on which values the inverte
 In MQTT and in the JSON output you will mainly see these groups:
 
 - `RawData`: original inverter replies and command answers
-- `EspData`: device information, Wi-Fi, MQTT and temperature sensors
+- `EspData`: device information, Wi-Fi and MQTT status
 - `DeviceData`: mostly fixed inverter information
-- `LiveData`: current live inverter values
+- `LiveData`: current live inverter values and DS18B20 temperature sensors
 - `Status`: connection and status information
 
 ## MQTT layout
@@ -20,7 +20,6 @@ With the normal MQTT topic layout:
 - `<MQTT topic>/DeviceData/<name>`
 - `<MQTT topic>/LiveData/<name>`
 - `<MQTT topic>/RAW/<command>`
-- `<MQTT topic>/DS18B20_<n>`
 - `<MQTT topic>/Alive`
 - `<MQTT topic>/DeviceControl/Set_Command_answer`
 
@@ -57,6 +56,7 @@ If Home Assistant discovery is enabled together with JSON mode, the normal MQTT 
 | `Device_Status` | text | Device status text |
 | `Fault_Code` | text | Fault summary |
 | `Warning_Code` | text | Warning summary |
+| `DS18B20_<n>` | °C | External 1-Wire temperature sensors |
 
 ## Common `DeviceData` points
 

@@ -20,6 +20,7 @@ public:
     bool ethernetEnabled() const;
     int rssi() const;
     String ipAddress() const;
+    const char *hostName() const { return networkHostName(); }
 
 private:
     AsyncWebServer &_server;

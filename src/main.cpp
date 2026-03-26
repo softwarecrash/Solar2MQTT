@@ -60,7 +60,7 @@ void printBootBanner()
 
 void configureDs18b20()
 {
-    ds18b20Service.begin(static_cast<uint8_t>(_settings.get.ds18b20Pin()), deviceJson);
+    ds18b20Service.begin(static_cast<uint8_t>(_settings.get.ds18b20Pin()), liveData);
     solarState.refreshBindings();
 }
 
@@ -174,12 +174,16 @@ void loop()
     if (g_pendingFactoryReset && static_cast<int32_t>(millis() - g_factoryResetAt) >= 0)
     {
         g_pendingFactoryReset = false;
+        inverterService.shutdown();
+        delay(25);
         FactoryResetManager::requestFactoryReset();
     }
 
     if (g_pendingRestart && static_cast<int32_t>(millis() - g_restartAt) >= 0)
     {
         g_pendingRestart = false;
+        inverterService.shutdown();
+        delay(25);
         ESP.restart();
     }
 

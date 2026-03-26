@@ -537,12 +537,14 @@ function createOverviewRow(title, entries) {
 }
 
 function collectDs18Entries(data) {
-  const espData = data?.EspData;
-  if (!espData || typeof espData !== "object") {
+  const sensorData = data?.LiveData && typeof data.LiveData === "object"
+    ? data.LiveData
+    : data?.EspData;
+  if (!sensorData || typeof sensorData !== "object") {
     return [];
   }
 
-  return Object.entries(espData)
+  return Object.entries(sensorData)
     .map(([key, value]) => {
       const match = /^DS18B20_(\d+)$/.exec(key);
       if (!match || !isDataValuePresent(value)) {

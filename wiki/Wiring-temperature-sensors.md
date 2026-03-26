@@ -43,8 +43,7 @@ The numbering is usually stable as long as the same sensors stay connected.
 
 ## Where the values appear
 
-- MQTT topic `<baseTopic>/DS18B20_<n>`
-- MQTT topic `<baseTopic>/EspData/DS18B20_<n>`
+- MQTT topic `<baseTopic>/LiveData/DS18B20_<n>`
 - Home Assistant discovery if enabled
 
 ## Notes

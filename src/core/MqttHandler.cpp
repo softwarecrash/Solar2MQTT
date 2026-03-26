@@ -148,6 +148,7 @@ MqttHandler::MqttHandler(SolarState &state, WiFiManager &wifiManager, SolarInver
       _pendingFullPublish(false),
       _pendingHaDiscovery(false),
       _forceHaDiscovery(false),
+      _pendingLegacyDs18Cleanup(true),
       _configured(false),
       _lastConnected(false),
       _lastReconnectAttempt(0),
@@ -166,6 +167,7 @@ void MqttHandler::begin()
     _lastStatePublish = millis();
     _lastConnected = false;
     _forceHaDiscovery = false;
+    _pendingLegacyDs18Cleanup = true;
     _haDiscoveryTopics.clear();
 }
 
@@ -180,6 +182,7 @@ void MqttHandler::reconfigure()
     _pendingFullPublish = _configured;
     _pendingHaDiscovery = _configured && _settings.get.mqttHAEnabled();
     _forceHaDiscovery = _pendingHaDiscovery;
+    _pendingLegacyDs18Cleanup = true;
     _lastConnected = false;
     _lastReconnectAttempt = 0;
     _lastAlivePublish = millis();
@@ -254,11 +257,10 @@ void MqttHandler::publishSensorImmediate(uint8_t index, float temperature)
         return;
     }
 
-    char topic[64];
-    snprintf(topic, sizeof(topic), "%s/DS18B20_%u", _settings.get.mqttTopic(), static_cast<unsigned>(index));
+    const String topic = baseTopic() + "/LiveData/DS18B20_" + String(static_cast<unsigned>(index));
     char payload[16];
     snprintf(payload, sizeof(payload), "%.2f", static_cast<double>(temperature));
-    _mqtt.publish(topic, payload, true);
+    _mqtt.publish(topic.c_str(), payload, true);
 }
 
 void MqttHandler::globalCallback(char *topic, uint8_t *payload, unsigned int length)
@@ -356,6 +358,26 @@ bool MqttHandler::ensureConnected()
 
     setupSubscriptions();
     publishAlive();
+
+    if (_pendingLegacyDs18Cleanup)
+    {
+        JsonDocument snapshot;
+        _state.snapshotTo(snapshot);
+        for (JsonPairConst entry : snapshot["LiveData"].as<JsonObjectConst>())
+        {
+            const char *key = entry.key().c_str();
+            if (strncmp(key, "DS18B20_", 8) != 0)
+            {
+                continue;
+            }
+
+            const String legacyRootTopic = baseTopic() + "/" + key;
+            const String legacyEspDataTopic = baseTopic() + "/EspData/" + key;
+            _mqtt.publish(legacyRootTopic.c_str(), "", true);
+            _mqtt.publish(legacyEspDataTopic.c_str(), "", true);
+        }
+        _pendingLegacyDs18Cleanup = false;
+    }
     _pendingFullPublish = true;
     if (_settings.get.mqttHAEnabled())
     {
@@ -423,12 +445,6 @@ void MqttHandler::publishObjectSection(const char *sectionName, JsonObjectConst 
     {
         const String topic = baseTopic() + "/" + sectionName + "/" + entry.key().c_str();
         publishJsonValue(_mqtt, topic, entry.value(), true);
-
-        if (strcmp(sectionName, "EspData") == 0 && strncmp(entry.key().c_str(), "DS18B20_", 8) == 0)
-        {
-            const String directTopic = baseTopic() + "/" + entry.key().c_str();
-            publishJsonValue(_mqtt, directTopic, entry.value(), true);
-        }
     }
 }
 
@@ -463,7 +479,7 @@ void MqttHandler::publishHaDiscovery(bool force)
                      sizeof(HA_LIVE_DESCRIPTORS) / sizeof(HaEntityDescriptor),
                      currentTopics,
                      force);
-    publishHaDs18b20(snapshot, snapshot["EspData"].as<JsonObjectConst>(), currentTopics, force);
+    publishHaDs18b20(snapshot, snapshot["LiveData"].as<JsonObjectConst>(), currentTopics, force);
 
     if (!force)
     {
@@ -548,13 +564,13 @@ void MqttHandler::publishHaSection(JsonDocument &snapshot,
     }
 }
 
-void MqttHandler::publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst espData, std::vector<String> &currentTopics, bool force)
+void MqttHandler::publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst liveValues, std::vector<String> &currentTopics, bool force)
 {
     const String topicBase = baseTopic();
     const String deviceId = getHaDeviceId();
     const String availabilityTopic = topicBase + "/Alive";
 
-    for (JsonPairConst entry : espData)
+    for (JsonPairConst entry : liveValues)
     {
         const char *key = entry.key().c_str();
         if (strncmp(key, "DS18B20_", 8) != 0 || !isDiscoverableValue(entry.value()))
@@ -571,7 +587,7 @@ void MqttHandler::publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst espDa
 
         JsonDocument doc;
         doc["name"] = key;
-        doc["stat_t"] = topicBase + "/" + key;
+        doc["stat_t"] = topicBase + "/LiveData/" + key;
         doc["avty_t"] = availabilityTopic;
         doc["pl_avail"] = "true";
         doc["pl_not_avail"] = "false";

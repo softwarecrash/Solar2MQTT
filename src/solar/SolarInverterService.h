@@ -15,6 +15,7 @@ public:
     void begin();
     void loop();
     void reconfigure();
+    void shutdown();
     void setTransportPaused(bool paused);
 
     void setCallback(std::function<void()> callback) { _callback = callback; }
@@ -48,6 +49,7 @@ private:
     void enableSimulation();
     void disableSimulation();
     void updateSimulationState(bool forceNotify);
+    void clearLiveDataPreservingDs18b20();
 
     SolarState &_state;
     HardwareSerial &_serial;

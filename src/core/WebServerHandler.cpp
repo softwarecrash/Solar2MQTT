@@ -232,6 +232,45 @@ void WebServerHandler::registerRoutes()
     serveAsset("/logo.svg", logo_svg_gz_mime, logo_svg_gz, logo_svg_gz_len);
     serveAsset("/solar2mqtt.png", solar2mqtt_png_gz_mime, solar2mqtt_png_gz, solar2mqtt_png_gz_len);
 
+    auto captivePortalRedirect = [this](AsyncWebServerRequest *request)
+    {
+        if (!_wifiManager.isInApMode())
+        {
+            request->send(404, "text/plain", "Not found");
+            return;
+        }
+
+        const String redirectUrl = String("http://") + _wifiManager.ipAddress() + "/";
+        request->redirect(redirectUrl);
+    };
+
+    const char *const captiveProbePaths[] = {
+        "/generate_204",
+        "/gen_204",
+        "/connecttest.txt",
+        "/ncsi.txt",
+        "/hotspot-detect.html",
+        "/library/test/success.html",
+        "/canonical.html",
+        "/success.txt",
+    };
+
+    for (const char *path : captiveProbePaths)
+    {
+        _server.on(path, HTTP_GET, captivePortalRedirect);
+        _server.on(path, HTTP_HEAD, captivePortalRedirect);
+    }
+
+    _server.onNotFound([this, captivePortalRedirect](AsyncWebServerRequest *request)
+                       {
+        if (_wifiManager.isInApMode())
+        {
+            captivePortalRedirect(request);
+            return;
+        }
+
+        request->send(404, "text/plain", "Not found"); });
+
     _server.on("/api/status", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
         if (!isAuthorized(request))
@@ -253,6 +292,7 @@ void WebServerHandler::registerRoutes()
         doc["ethActive"] = _wifiManager.isEthActive();
         doc["apMode"] = _wifiManager.isInApMode();
         doc["ip"] = _wifiManager.ipAddress();
+        doc["hostName"] = _wifiManager.hostName();
         doc["protocol"] = _inverterService.protocolName();
         doc["deviceName"] = _settings.get.deviceName();
         String json;
@@ -469,6 +509,14 @@ void WebServerHandler::registerRoutes()
         response["success"] = true;
         response["restartRequired"] = false;
         response["connectionMayChange"] = networkTransportChanged;
+        response["hostName"] = _wifiManager.hostName();
+        response["statusPath"] = "/status";
+        response["statusUrlHint"] = String("http://") + _wifiManager.hostName() + ".local/status";
+        response["statusUrlIpHint"] = "";
+        if (*_settings.get.staticIP())
+        {
+            response["statusUrlIpHint"] = String("http://") + _settings.get.staticIP() + "/status";
+        }
         response["message"] = networkTransportChanged
                                   ? "Network settings saved. Connection is being reconfigured."
                                   : "Settings saved.";
@@ -561,6 +609,14 @@ void WebServerHandler::registerRoutes()
         response["success"] = true;
         response["restartRequired"] = false;
         response["connectionMayChange"] = shouldReconfigureNetwork;
+        response["hostName"] = _wifiManager.hostName();
+        response["statusPath"] = "/status";
+        response["statusUrlHint"] = String("http://") + _wifiManager.hostName() + ".local/status";
+        response["statusUrlIpHint"] = "";
+        if (*_settings.get.staticIP())
+        {
+            response["statusUrlIpHint"] = String("http://") + _settings.get.staticIP() + "/status";
+        }
         response["message"] = shouldReconfigureNetwork
                                   ? "Network settings saved. Connection is being reconfigured."
                                   : "Settings saved.";
@@ -764,20 +820,14 @@ void WebServerHandler::registerRoutes()
                 return;
             }
 
-            static bool merge = true;
             static bool saveAfter = true;
 
             if (index == 0)
             {
                 s_restoreBody = "";
                 s_restoreBody.reserve(total);
-                merge = true;
                 saveAfter = true;
 
-                if (request->hasParam("merge"))
-                {
-                    merge = request->getParam("merge")->value().toInt() != 0;
-                }
                 if (request->hasParam("save"))
                 {
                     saveAfter = request->getParam("save")->value().toInt() != 0;
@@ -796,7 +846,7 @@ void WebServerHandler::registerRoutes()
                 return;
             }
 
-            const bool ok = _settings.restore(s_restoreBody, merge, saveAfter);
+            const bool ok = _settings.restore(s_restoreBody, saveAfter);
             if (!ok)
             {
                 request->send(400, "application/json", "{\"success\":false,\"message\":\"Failed to parse or restore settings\"}");
@@ -971,6 +1021,7 @@ void WebServerHandler::buildStatusJson(JsonDocument &doc)
     doc["ethActive"] = ethActive;
     doc["apMode"] = apMode;
     doc["ip"] = ip;
+    doc["hostName"] = _wifiManager.hostName();
     doc["networkType"] = networkType;
     doc["protocol"] = _inverterService.protocolName();
     doc["simulation"] = _inverterService.simulationEnabled();

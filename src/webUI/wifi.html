@@ -223,6 +223,7 @@
     let lastNetworkSignature = "";
     let expandedNetworkKey = "";
     let wifiSubmitInFlight = false;
+    let setupRedirectActive = false;
     const passwordDraftByKey = {};
 
     function getSignalSVG(rssi) {
@@ -421,6 +422,93 @@
       setTimeout(() => toast.classList.remove("show"), 3000);
     }
 
+    function setSetupProgress(message, linkUrl = "") {
+      const hint = document.getElementById("selectedNetworkHint");
+      if (!hint) return;
+
+      if (linkUrl) {
+        hint.innerHTML = `${message} <a href="${linkUrl}">${linkUrl}</a>`;
+        return;
+      }
+
+      hint.textContent = message;
+    }
+
+    function buildStatusCandidates(payload) {
+      const candidates = [];
+      const add = (url) => {
+        if (!url || candidates.includes(url)) return;
+        candidates.push(url);
+      };
+
+      add(payload.statusUrlIpHint || "");
+      add(payload.statusUrlHint || "");
+      if (payload.hostName) {
+        add(`http://${payload.hostName}.local/status`);
+      }
+      return candidates;
+    }
+
+    function probeStatusUrl(url) {
+      return new Promise((resolve) => {
+        let finished = false;
+        const finish = (value) => {
+          if (finished) return;
+          finished = true;
+          clearTimeout(timer);
+          resolve(value);
+        };
+
+        let probeUrl = "";
+        try {
+          probeUrl = new URL(`/favicon.svg?ts=${Date.now()}`, url).toString();
+        } catch {
+          resolve(false);
+          return;
+        }
+
+        const img = new Image();
+        const timer = setTimeout(() => finish(false), 1800);
+        img.onload = () => finish(true);
+        img.onerror = () => finish(false);
+        img.src = probeUrl;
+      });
+    }
+
+    async function watchForStatusPage(payload) {
+      if (setupRedirectActive) return;
+      setupRedirectActive = true;
+
+      const candidates = buildStatusCandidates(payload);
+      setSetupProgress("Connecting to Wi-Fi. Redirecting to the status page when it becomes reachable...");
+
+      const startedAt = Date.now();
+      while ((Date.now() - startedAt) < 90000) {
+        try {
+          const res = await fetch(`/api/status?ts=${Date.now()}`, { cache: "no-store" });
+          if (res.ok) {
+            const status = await res.json();
+            if (status.apMode === false && status.ip) {
+              window.location.replace(`http://${status.ip}/status`);
+              return;
+            }
+          }
+        } catch {}
+
+        for (const candidate of candidates) {
+          if (await probeStatusUrl(candidate)) {
+            window.location.replace(candidate);
+            return;
+          }
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+
+      setSetupProgress("Wi-Fi connected. If the automatic redirect did not work, open:", candidates[0] || "");
+      setupRedirectActive = false;
+    }
+
     async function loadNetworks(background = false, force = false) {
       const container = document.getElementById("networks");
       if (networkLoadInFlight) return;
@@ -592,6 +680,7 @@
           if (payload.connectionMayChange === true) {
             const form = document.getElementById("wifiForm");
             Array.from(form.elements).forEach((el) => { el.disabled = true; });
+            watchForStatusPage(payload);
           }
         } else {
           alertToast("error", "Save failed: " + res.status);
