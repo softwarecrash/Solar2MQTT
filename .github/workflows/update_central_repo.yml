@@ -99,7 +99,7 @@ jobs:
             if [[ "$file" == *"_${version}.bin" ]]; then
               variant_part=$(echo "$file" | sed -E 's/^'"$FIRMWARE_NAME"'_//; s/_'"${version}"'\.bin$//')
               variant_name="${variant_part}"
-              if [[ "$variant_name" == "d1_mini" || "$variant_name" == "esp01_1m" ]]; then
+              if [[ "$variant_name" == "esp32c3_supermini" || "$variant_name" == "esp32s3_supermini" || "$variant_name" == "waveshare_esp32_s3_eth" || "$variant_name" == "wemos_d1_mini32" ]]; then
                 total=$((total + 1))
               fi
             fi
@@ -111,8 +111,10 @@ jobs:
               variant_part=$(echo "$file" | sed -E 's/^'"$FIRMWARE_NAME"'_//; s/_'"${version}"'\.bin$//')
               variant_name="${variant_part}"
               case "$variant_name" in
-                "d1_mini") display_name="D1 Mini" ;;
-                "esp01_1m") display_name="ESP-01" ;;
+                "esp32c3_supermini") display_name="ESP32-C3 Super Mini" ;;
+                "esp32s3_supermini") display_name="ESP32-S3 Super Mini" ;;
+                "waveshare_esp32_s3_eth") display_name="Waveshare ESP32-S3 ETH" ;;
+                "wemos_d1_mini32") display_name="Wemos D1 Mini32" ;;
                 *) continue ;;
               esac
               count=$((count + 1))
