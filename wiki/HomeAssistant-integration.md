@@ -36,7 +36,7 @@ State topics:
 
 - `<MQTT topic>/DeviceData/<name>`
 - `<MQTT topic>/LiveData/<name>`
-- `<MQTT topic>/DS18B20_<n>`
+- `<MQTT topic>/LiveData/DS18B20_<n>`
 
 ## JSON mode
 

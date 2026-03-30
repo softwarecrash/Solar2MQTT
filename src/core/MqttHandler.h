@@ -20,6 +20,7 @@ public:
 
     void begin();
     void loop();
+    void reconfigure();
 
     bool isConnected();
     void triggerFullStatePublish() { _pendingFullPublish = true; }
@@ -41,6 +42,7 @@ private:
     bool _pendingFullPublish;
     bool _pendingHaDiscovery;
     bool _forceHaDiscovery;
+    bool _pendingLegacyDs18Cleanup;
     bool _configured;
     bool _lastConnected;
     unsigned long _lastReconnectAttempt;
@@ -67,7 +69,7 @@ private:
                           size_t descriptorCount,
                           std::vector<String> &currentTopics,
                           bool force);
-    void publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst espData, std::vector<String> &currentTopics, bool force);
+    void publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst liveValues, std::vector<String> &currentTopics, bool force);
     bool hasHaDiscoveryTopic(const String &topic) const;
     void setupSubscriptions();
     String baseTopic() const;

@@ -71,7 +71,7 @@
 
 Most of the parts can be bought as modules, it's usually cheaper that way.
 
-- ESP8266 - Wemos D1 Mini or ESP8266-01
+- ESP32
 - MAX3232 module Like this https://amzn.eu/d/8t3gk5t or https://bit.ly/3BFPqrw or with orginal cable https://www.amazon.de/dp/B09XWPTDYP
 - DC-DC buck module - 12-80v down to 5v
 

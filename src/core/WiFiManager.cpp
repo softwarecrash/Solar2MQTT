@@ -159,26 +159,12 @@ WiFiManager::WiFiManager(AsyncWebServer &server)
 
 void WiFiManager::begin()
 {
-    bool haveEthernet = false;
-
 #if HAS_LAN
     WiFi.onEvent(onNetworkEvent);
-    haveEthernet = initEthernet();
 #endif
 
-    if (!haveEthernet && !connectToWifi())
-    {
-        startApMode();
-        _isApMode = true;
-    }
-
-    if (MDNS.begin(networkHostName()))
-    {
-        MDNS.addService("http", "tcp", 80);
-        LogSerial.printf("[Network] mDNS started: http://%s.local (IP: %s)\n",
-                         networkHostName(),
-                         ipAddress().c_str());
-    }
+    applySavedNetworkConfig();
+    refreshMdns();
 }
 
 void WiFiManager::loop()
@@ -239,6 +225,42 @@ void WiFiManager::loop()
 bool WiFiManager::getConnectionState() const
 {
     return isEthActive() || WiFi.status() == WL_CONNECTED;
+}
+
+void WiFiManager::reconfigure()
+{
+    LogSerial.println(F("[Network] Reconfiguring network"));
+    dnsServer.stop();
+    WiFi.scanDelete();
+
+#if HAS_LAN
+    if (_ethActive)
+    {
+        ETH.end();
+        s_ethConnected = false;
+        _ethActive = false;
+    }
+#endif
+
+    WiFi.softAPdisconnect(true);
+    WiFi.disconnect(true, true);
+    _isApMode = false;
+    delay(50);
+
+    applySavedNetworkConfig();
+    refreshMdns();
+}
+
+void WiFiManager::refreshMdns()
+{
+    MDNS.end();
+    if (MDNS.begin(networkHostName()))
+    {
+        MDNS.addService("http", "tcp", 80);
+        LogSerial.printf("[Network] mDNS started: http://%s.local (IP: %s)\n",
+                         networkHostName(),
+                         ipAddress().c_str());
+    }
 }
 
 bool WiFiManager::isInApMode() const
@@ -456,6 +478,25 @@ bool WiFiManager::connectToWifi()
     }
 
     return false;
+}
+
+bool WiFiManager::applySavedNetworkConfig()
+{
+    bool haveEthernet = false;
+
+#if HAS_LAN
+    haveEthernet = initEthernet();
+#endif
+
+    if (!haveEthernet && !connectToWifi())
+    {
+        startApMode();
+        _isApMode = true;
+        return false;
+    }
+
+    _isApMode = false;
+    return true;
 }
 
 void WiFiManager::startApMode()

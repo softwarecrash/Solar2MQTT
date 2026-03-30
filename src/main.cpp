@@ -33,6 +33,8 @@ bool g_pendingRestart = false;
 uint32_t g_restartAt = 0;
 bool g_pendingFactoryReset = false;
 uint32_t g_factoryResetAt = 0;
+bool g_pendingNetworkReconfigure = false;
+uint32_t g_networkReconfigureAt = 0;
 bool g_pendingInverterReconfigure = false;
 uint32_t g_inverterReconfigureAt = 0;
 uint8_t g_bootBannerRepeats = 0;
@@ -54,6 +56,12 @@ void printBootBanner()
 {
     LogSerial.printf("[Boot] %s %s (%s) t=%lu ms\n", SOURCE_NAME, STRVERSION, BUILD_VARIANT, static_cast<unsigned long>(millis()));
     LogSerial.printf("[Boot] Heap free: %u bytes\n", static_cast<unsigned>(ESP.getFreeHeap()));
+}
+
+void configureDs18b20()
+{
+    ds18b20Service.begin(static_cast<uint8_t>(_settings.get.ds18b20Pin()), liveData);
+    solarState.refreshBindings();
 }
 
 void updateRuntimeState()
@@ -106,13 +114,15 @@ void setup()
         webServerHandler.setInverterConnected(inverterService.isConnected());
         mqttHandler.triggerFullStatePublish();
         webServerHandler.notifyStatusBar(); });
+    inverterService.setTransportPaused(wifiManager.isInApMode());
     inverterService.begin();
 
     ds18b20Service.setCallback([](uint8_t index, float temperature)
                                {
         mqttHandler.publishSensorImmediate(index, temperature);
-        mqttHandler.triggerFullStatePublish(); });
-    ds18b20Service.begin(PIN_DS18B20, deviceJson);
+        mqttHandler.triggerFullStatePublish();
+        webServerHandler.notifyStatusBar(); });
+    configureDs18b20();
 
     mqttHandler.begin();
     webServerHandler.begin();
@@ -134,6 +144,18 @@ void loop()
 
     FactoryResetManager::loop();
     wifiManager.loop();
+    if (g_pendingNetworkReconfigure && static_cast<int32_t>(millis() - g_networkReconfigureAt) >= 0)
+    {
+        g_pendingNetworkReconfigure = false;
+        wifiManager.reconfigure();
+        mqttHandler.triggerFullStatePublish();
+        if (_settings.get.mqttHAEnabled())
+        {
+            mqttHandler.triggerHaDiscovery();
+        }
+        webServerHandler.notifyStatusBar();
+    }
+    inverterService.setTransportPaused(wifiManager.isInApMode());
     inverterService.loop();
     ds18b20Service.loop();
     mqttHandler.loop();
@@ -142,20 +164,26 @@ void loop()
     {
         g_pendingInverterReconfigure = false;
         inverterService.reconfigure();
+        configureDs18b20();
         statusLedService.configure(_settings.get.statusLedPin(),
                                    static_cast<uint8_t>(_settings.get.statusLedBrightness()));
         mqttHandler.triggerFullStatePublish();
+        webServerHandler.notifyStatusBar();
     }
 
     if (g_pendingFactoryReset && static_cast<int32_t>(millis() - g_factoryResetAt) >= 0)
     {
         g_pendingFactoryReset = false;
+        inverterService.shutdown();
+        delay(25);
         FactoryResetManager::requestFactoryReset();
     }
 
     if (g_pendingRestart && static_cast<int32_t>(millis() - g_restartAt) >= 0)
     {
         g_pendingRestart = false;
+        inverterService.shutdown();
+        delay(25);
         ESP.restart();
     }
 

@@ -105,7 +105,7 @@
       <h2>Backup &amp; Restore</h2>
       <p class="hint">
         Download all settings as JSON or restore from a previously saved file.
-        On restore the device will save settings and may reboot if required.
+        On restore the current settings are overwritten and the device may reboot if required.
       </p>
 
       <div class="field-group">
@@ -115,13 +115,6 @@
       <div class="field-group">
         <label for="settingsFile">Restore configuration</label>
         <input type="file" id="settingsFile" accept=".json" onchange="onSettingsFileSelected()" />
-      </div>
-
-      <div style="display:flex; gap:0.5rem; margin-top:0.25rem;">
-        <label>
-          <input type="checkbox" id="mergeSettings" checked />
-          Merge with existing settings
-        </label>
       </div>
 
       <div id="settingsStatus" class="hint" style="margin-top:0.5rem;"></div>
@@ -452,12 +445,11 @@
           const jsonText = event.target.result;
           JSON.parse(jsonText);
 
-          const merge = document.getElementById('mergeSettings').checked ? 1 : 0;
           const save = 1;
 
           setSettingsStatus('Uploading configuration...', false);
 
-          fetch('/api/settings/restore?merge=' + merge + '&save=' + save, {
+          fetch('/api/settings/restore?save=' + save, {
             method: 'POST',
             headers: {
               'Content-Type': 'text/plain;charset=utf-8'

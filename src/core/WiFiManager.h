@@ -10,6 +10,8 @@ public:
 
     void begin();
     void loop();
+    void reconfigure();
+    void refreshMdns();
 
     bool getConnectionState() const;
     bool isInApMode() const;
@@ -18,6 +20,7 @@ public:
     bool ethernetEnabled() const;
     int rssi() const;
     String ipAddress() const;
+    const char *hostName() const { return networkHostName(); }
 
 private:
     AsyncWebServer &_server;
@@ -27,5 +30,6 @@ private:
     bool connectToWifi();
     void startApMode();
     bool initEthernet();
+    bool applySavedNetworkConfig();
     const char *networkHostName() const;
 };

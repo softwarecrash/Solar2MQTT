@@ -66,7 +66,7 @@ public:
     void begin();
     bool save();
     String backup(bool pretty = false);
-    bool restore(const String &json, bool merge = true, bool saveAfter = true);
+    bool restore(const String &json, bool saveAfter = true);
 
     SettingsGetter get;
     SettingsSetter set;
