@@ -141,10 +141,35 @@ bool PI_Serial::PIXX_Q1()
             return true;
         if (commandAnswer == DESCR_req_ERCRC)
             return false;
-        char bufQ1[256];
-        commandAnswer.toCharArray(bufQ1, sizeof(bufQ1));
         char *fieldsQ1[30];
-        int StringCount = pi_split_fields(bufQ1, delimiter[0], fieldsQ1, 30);
+        char bufQ1Primary[256];
+        char bufQ1Fallback[256];
+        commandAnswer.toCharArray(bufQ1Primary, sizeof(bufQ1Primary));
+        commandAnswer.toCharArray(bufQ1Fallback, sizeof(bufQ1Fallback));
+
+        // Q1 is inconsistent across vendors. Most devices use spaces here, but some
+        // protocol families use commas elsewhere. Try the configured delimiter first
+        // and fall back to the alternative when it yields more fields.
+        const char primaryDelimiter = delimiter[0];
+        const char fallbackDelimiter = (primaryDelimiter == ' ') ? ',' : ' ';
+
+        char *fieldsQ1Primary[30];
+        char *fieldsQ1Fallback[30];
+        int primaryCount = pi_split_fields(bufQ1Primary, primaryDelimiter, fieldsQ1Primary, 30);
+        int fallbackCount = pi_split_fields(bufQ1Fallback, fallbackDelimiter, fieldsQ1Fallback, 30);
+
+        int StringCount = primaryCount;
+        if (fallbackCount > primaryCount)
+        {
+            for (int i = 0; i < 30; ++i)
+                fieldsQ1[i] = fieldsQ1Fallback[i];
+            StringCount = fallbackCount;
+        }
+        else
+        {
+            for (int i = 0; i < 30; ++i)
+                fieldsQ1[i] = fieldsQ1Primary[i];
+        }
         if (StringCount >= (int)Q1_108_length)
         {
             q1List = Q1_108;

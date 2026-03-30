@@ -130,6 +130,23 @@ bool hasExpectedResponsePrefix(const String &response, const char *startChar)
     return response.startsWith(startChar);
 }
 
+size_t matchedResponsePrefixLength(const String &response, const char *startChar, protocol_type_t protocol, const String &command)
+{
+    if (hasExpectedResponsePrefix(response, startChar))
+    {
+        return (startChar == nullptr) ? 0U : strlen(startChar);
+    }
+
+    // Some PI18 devices answer Q1 in the classic PI30-style frame although the
+    // rest of the protocol uses ^Dxxx replies.
+    if (protocol == PI18 && command == "Q1" && response.length() > 0 && response.charAt(0) == '(')
+    {
+        return 1U;
+    }
+
+    return 0U;
+}
+
 bool isEchoedCommand(const String &response, const String &command, const char *startChar)
 {
     if (response.isEmpty() || command.isEmpty())
@@ -1113,21 +1130,23 @@ String PI_Serial::requestData(String command)
 
     const size_t cbLen = commandBuffer.length();
     const char *cbBuf = commandBuffer.c_str();
+    const size_t prefixLen = matchedResponsePrefixLength(commandBuffer, startChar, protocol, command);
+
     if (cbLen >= 3 &&
-        hasExpectedResponsePrefix(commandBuffer, startChar) &&
+        prefixLen > 0 &&
         getCRC(cbBuf, cbLen - 2) == 256U * (uint8_t)commandBuffer[cbLen - 2] + (uint8_t)commandBuffer[cbLen - 1] &&
         getCRC(cbBuf, cbLen - 2) != 0 && 256U * (uint8_t)commandBuffer[cbLen - 2] + (uint8_t)commandBuffer[cbLen - 1] != 0)
     {
         crcCalc = 256U * (uint8_t)commandBuffer[cbLen - 2] + (uint8_t)commandBuffer[cbLen - 1];
         crcRecive = getCRC(cbBuf, cbLen - 2);
         commandBuffer.remove(cbLen - 2); // remove the crc
-        commandBuffer.remove(0, strlen(startChar));       // remove the start char ( for Pi30 and ^Dxxx for Pi18
+        commandBuffer.remove(0, prefixLen);       // remove the matched start frame
 
         // requestOK++;
         connectionCounter = 0;
     }
     else if (cbLen >= 2 &&
-             hasExpectedResponsePrefix(commandBuffer, startChar) &&
+             prefixLen > 0 &&
              getCHK(cbBuf, cbLen - 1) + 1 == commandBuffer[cbLen - 1] &&
              getCHK(cbBuf, cbLen - 1) + 1 != 0 && commandBuffer[cbLen - 1] != 0 &&
              command == "QALL" // crude fix for the qall chk thing
@@ -1136,7 +1155,7 @@ String PI_Serial::requestData(String command)
         crcCalc = getCHK(cbBuf, cbLen - 1) + 1;
         crcRecive = commandBuffer[cbLen - 1];
         commandBuffer.remove(cbLen - 1); // remove the crc
-        commandBuffer.remove(0, strlen(startChar));       // remove the start char ( for Pi30 and ^Dxxx for Pi18
+        commandBuffer.remove(0, prefixLen);       // remove the matched start frame
 
         // requestOK++;
         connectionCounter = 0;
