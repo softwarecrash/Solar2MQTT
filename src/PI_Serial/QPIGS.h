@@ -157,6 +157,15 @@ bool PI_Serial::PIXX_QPIGS()
 {
   const char *const *qpigsList = nullptr;
   unsigned int qpigsList_length = 0;
+  String previousOperationMode;
+  if (liveData[DESCR_Inverter_Operation_Mode].is<JsonVariantConst>())
+  {
+    const char *modeText = liveData[DESCR_Inverter_Operation_Mode].as<const char *>();
+    if (modeText != nullptr && modeText[0] != '\0')
+    {
+      previousOperationMode = modeText;
+    }
+  }
   if (isPi30LikeProtocol(protocol))
   {
     // byte protocolNum = 0; // for future use
@@ -213,6 +222,10 @@ bool PI_Serial::PIXX_QPIGS()
     liveData.remove(DESCR_PV_Input_Voltage);
     liveData.remove(DESCR_PV_Input_Current);
     liveData.remove(DESCR_PV_Charging_Power);
+    if (!previousOperationMode.isEmpty())
+    {
+      liveData[DESCR_Inverter_Operation_Mode] = previousOperationMode;
+    }
 
     if (StringCount >= (int)qpigs_106_length)
     {
@@ -318,6 +331,10 @@ bool PI_Serial::PIXX_QPIGS()
     liveData.remove(DESCR_PV_Input_Voltage);
     liveData.remove(DESCR_PV_Input_Current);
     liveData.remove(DESCR_PV_Charging_Power);
+    if (!previousOperationMode.isEmpty())
+    {
+      liveData[DESCR_Inverter_Operation_Mode] = previousOperationMode;
+    }
 
     String commandAnswer = this->requestData("^P005GS");
     get.raw.qpigs = commandAnswer;
