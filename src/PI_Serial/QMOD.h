@@ -2,8 +2,6 @@ bool PI_Serial::PIXX_QMOD()
 {
   if (isPi30LikeProtocol(protocol))
   {
-    liveData.remove(DESCR_Inverter_Operation_Mode);
-
     String commandAnswer = this->requestData("QMOD");
     get.raw.qmod = commandAnswer;
     if (commandAnswer == DESCR_req_NAK || commandAnswer == DESCR_req_NOA)
@@ -23,8 +21,6 @@ bool PI_Serial::PIXX_QMOD()
   }
   else if (protocol == PI18)
   {
-    liveData.remove(DESCR_Inverter_Operation_Mode);
-
     String commandAnswer = this->requestData("^P006MOD");
     get.raw.qmod = commandAnswer;
     if (commandAnswer == DESCR_req_NAK || commandAnswer == DESCR_req_NOA)
