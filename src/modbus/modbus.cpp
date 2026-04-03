@@ -100,11 +100,11 @@ String MODBUS::requestData(String command)
 protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter type
 {
     protocol_type_t protocol = NoD;
-    char modelName[20];
+    char modelName[48];
 
     writeLog("Try Autodetect Modbus device");
 
-    ModbusDevice *devices[] = { new Deye(), new Anenji(), new MustPV_PH18()};
+    ModbusDevice *devices[] = { new Deye(), new SMG(), new Anenji(), new MustPV_PH18()};
     const size_t deviceCount = sizeof(devices) / sizeof(devices[0]);
     
     for (size_t i = 0; i < deviceCount; ++i)
@@ -120,6 +120,7 @@ protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter typ
             device = devices[i];
             prepareRegisters();
             protocol = device->getProtocol();
+            staticData[DESCR_Protocol_ID] = protocolToString(protocol);
 
             // Clean up other devices not selected
             for (size_t j = 0; j < deviceCount; ++j)

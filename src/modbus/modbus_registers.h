@@ -21,6 +21,7 @@ typedef enum
     REGISTER_TYPE_U16,             /*!< Unsigned 16 */
     REGISTER_TYPE_INT16,           /*!< Signed 16 */
     REGISTER_TYPE_U32,             /*!< Unsigned 32 */
+    REGISTER_TYPE_U32_HIGH_FIRST,  /*!< Unsigned 32, high word first */
     REGISTER_TYPE_U32_ONE_DECIMAL, /*!< Unsigned 32 multiply 0.1*/ 
     REGISTER_TYPE_ASCII,           /*!< ASCII type */
     REGISTER_TYPE_DIEMATIC_ONE_DECIMAL,
@@ -51,7 +52,9 @@ typedef struct modbus_register_t
     const char *name;
     int16_t offset = 0;
     optional_param_t optional_param;
-    modbus_callback_t callback; 
+    modbus_callback_t callback = nullptr;
+    uint16_t read_block_start = 0;
+    uint16_t read_block_count = 0;
 } modbus_register_t;
 
 

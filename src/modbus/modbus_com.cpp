@@ -88,8 +88,92 @@ bool MODBUS_COM::getModbusResultMsg(uint8_t result)
     return false;
 }
 
-bool MODBUS_COM::getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity, uint16_t *value_ptr, uint16_t readBytes)
+bool MODBUS_COM::readHoldingBlock(uint16_t startRegister, uint16_t registerCount, uint16_t *buffer, size_t bufferLen)
 {
+    if (buffer == nullptr || registerCount == 0 || registerCount > MAX_HOLDING_BLOCK_WORDS || bufferLen < registerCount)
+    {
+        return false;
+    }
+
+    if (!loadHoldingBlock(startRegister, registerCount))
+    {
+        return false;
+    }
+
+    memcpy(buffer, _cacheValues, registerCount * sizeof(uint16_t));
+    return true;
+}
+
+void MODBUS_COM::clearReadCache()
+{
+    _cacheValid = false;
+    _cacheStartRegister = 0;
+    _cacheRegisterCount = 0;
+    memset(_cacheValues, 0, sizeof(_cacheValues));
+}
+
+bool MODBUS_COM::loadHoldingBlock(uint16_t startRegister, uint16_t registerCount)
+{
+    if (_cacheValid &&
+        _cacheStartRegister == startRegister &&
+        _cacheRegisterCount == registerCount)
+    {
+        return true;
+    }
+
+    for (uint8_t i = 0; i < MODBUS_RETRIES; i++)
+    {
+        uint8_t result = _mb.readHoldingRegisters(startRegister, registerCount);
+        bool is_received = getModbusResultMsg(result);
+        if (is_received)
+        {
+            storeReadCache(startRegister, registerCount);
+            return true;
+        }
+    }
+
+    writeLog("Time-out");
+    clearReadCache();
+    return false;
+}
+
+void MODBUS_COM::storeReadCache(uint16_t startRegister, uint16_t registerCount)
+{
+    _cacheValid = true;
+    _cacheStartRegister = startRegister;
+    _cacheRegisterCount = registerCount;
+    for (uint16_t i = 0; i < registerCount; ++i)
+    {
+        _cacheValues[i] = _mb.getResponseBuffer(i);
+    }
+}
+
+bool MODBUS_COM::getCachedHoldingValue(uint16_t registerId, uint16_t *value_ptr) const
+{
+    if (!_cacheValid ||
+        value_ptr == nullptr ||
+        registerId < _cacheStartRegister ||
+        registerId >= static_cast<uint32_t>(_cacheStartRegister) + _cacheRegisterCount)
+    {
+        return false;
+    }
+
+    *value_ptr = _cacheValues[registerId - _cacheStartRegister];
+    return true;
+}
+
+bool MODBUS_COM::getModbusValue(uint16_t register_id,
+                                modbus_entity_t modbus_entity,
+                                uint16_t *value_ptr,
+                                uint16_t readBytes,
+                                uint16_t blockStart,
+                                uint16_t blockCount)
+{
+    if (value_ptr == nullptr)
+    {
+        return false;
+    }
+
     for (uint8_t i = 0; i < MODBUS_RETRIES; i++)
     {
         if (MODBUS_RETRIES > 1)
@@ -97,24 +181,41 @@ bool MODBUS_COM::getModbusValue(uint16_t register_id, modbus_entity_t modbus_ent
         }
         if (modbus_entity == MODBUS_TYPE_HOLDING)
         {
-            uint8_t result = _mb.readHoldingRegisters(register_id, readBytes);
-            bool is_received = getModbusResultMsg(result);
-            if (is_received)
+            if (blockCount > 0)
             {
-                *value_ptr = _mb.getResponseBuffer(0);
-                return true;
+                if (register_id < blockStart ||
+                    static_cast<uint32_t>(register_id) + readBytes > static_cast<uint32_t>(blockStart) + blockCount)
+                {
+                    writeLog("Invalid Modbus block read definition");
+                    return false;
+                }
+
+                if (loadHoldingBlock(blockStart, blockCount) && getCachedHoldingValue(register_id, value_ptr))
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                uint8_t result = _mb.readHoldingRegisters(register_id, readBytes);
+                bool is_received = getModbusResultMsg(result);
+                if (is_received)
+                {
+                    storeReadCache(register_id, readBytes);
+                    *value_ptr = _mb.getResponseBuffer(0);
+                    return true;
+                }
             }
         }
         else
         {
             writeLog("Unsupported Modbus entity type");
-            value_ptr = nullptr;
             return false;
         }
     }
     // Time-out
     writeLog("Time-out");
-    value_ptr = nullptr;
+    clearReadCache();
     return false;
 }
 
@@ -180,7 +281,12 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
         readBytes = 2;
     }
 
-    if (getModbusValue(reg->id, reg->modbus_entity, &raw_value, readBytes))
+    if (getModbusValue(reg->id,
+                       reg->modbus_entity,
+                       &raw_value,
+                       readBytes,
+                       reg->read_block_start,
+                       reg->read_block_count))
     {
         switch (reg->type)
         {
@@ -191,11 +297,38 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
             (*variant)[reg->name] = static_cast<int16_t>(raw_value) + reg->offset;
             break;
         case REGISTER_TYPE_U32:
-            (*variant)[reg->name] = (raw_value + (_mb.getResponseBuffer(1) << 16)) + reg->offset;
+        {
+            uint16_t secondWord = 0;
+            if (!getCachedHoldingValue(reg->id + 1, &secondWord))
+            {
+                writeLog("Missing second word for %s", reg->name);
+                return false;
+            }
+            (*variant)[reg->name] = (raw_value + (secondWord << 16)) + reg->offset;
             break;
+        }
+        case REGISTER_TYPE_U32_HIGH_FIRST:
+        {
+            uint16_t secondWord = 0;
+            if (!getCachedHoldingValue(reg->id + 1, &secondWord))
+            {
+                writeLog("Missing second word for %s", reg->name);
+                return false;
+            }
+            (*variant)[reg->name] = ((static_cast<uint32_t>(raw_value) << 16) | secondWord) + reg->offset;
+            break;
+        }
         case REGISTER_TYPE_U32_ONE_DECIMAL:
-            (*variant)[reg->name] = (raw_value + (_mb.getResponseBuffer(1) << 16)) * 0.1 + reg->offset;
+        {
+            uint16_t secondWord = 0;
+            if (!getCachedHoldingValue(reg->id + 1, &secondWord))
+            {
+                writeLog("Missing second word for %s", reg->name);
+                return false;
+            }
+            (*variant)[reg->name] = (raw_value + (secondWord << 16)) * 0.1 + reg->offset;
             break;
+        }
         case REGISTER_TYPE_DIEMATIC_ONE_DECIMAL:
             if (decodeDiematicDecimal(raw_value, 1, &final_value))
             {

@@ -18,6 +18,7 @@ The supported device list is not complete yet. Some inverter families already wo
 - `MODBUS_MUST`
 - `MODBUS_DEYE`
 - `MODBUS_ANENJI`
+- `MODBUS_SMG`
 
 ## What helps when reporting a working device
 

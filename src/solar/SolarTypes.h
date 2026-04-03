@@ -17,6 +17,7 @@ enum protocol_type_t
     PI30_PIP_GK,
     PI41,
     PI30_UNKNOWN,
+    MODBUS_SMG,
     PROTOCOL_TYPE_MAX
 };
 
@@ -34,6 +35,7 @@ inline const char *const protocolStrings[] = {
     "PI30_PIP_GK",
     "PI41",
     "PI30_UNKNOWN",
+    "MODBUS_SMG",
 };
 
 inline const char *protocolToString(protocol_type_t protocol)
@@ -48,7 +50,7 @@ inline const char *protocolToString(protocol_type_t protocol)
 
 inline bool isModbusProtocol(protocol_type_t protocol)
 {
-    return protocol == MODBUS_MUST || protocol == MODBUS_DEYE || protocol == MODBUS_ANENJI;
+    return protocol == MODBUS_MUST || protocol == MODBUS_DEYE || protocol == MODBUS_ANENJI || protocol == MODBUS_SMG;
 }
 
 inline bool isPi30LikeProtocol(protocol_type_t protocol)

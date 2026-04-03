@@ -25,23 +25,39 @@ typedef enum
 class MODBUS_COM
 {
 public:
+    static constexpr uint16_t MAX_HOLDING_BLOCK_WORDS = 125;
+
     MODBUS_COM();
 
     bool readModbusRegisterToJson(const modbus_register_t *reg, JsonObject *variant);
     response_type_t parseModbusToJson(modbus_register_info_t &register_info, bool skip_reg_on_error = true);
     bool isAllRegistersRead(modbus_register_info_t &register_info);
     ModbusMaster *getModbusMaster();
+    bool readHoldingBlock(uint16_t startRegister, uint16_t registerCount, uint16_t *buffer, size_t bufferLen);
+    void clearReadCache();
     
 private:
     String toBinary(uint16_t input);
     bool decodeDiematicDecimal(uint16_t int_input, int8_t decimals, float *value_ptr);
     bool getModbusResultMsg(uint8_t result);
-    bool getModbusValue(uint16_t register_id, modbus_entity_t modbus_entity, uint16_t *value_ptr, uint16_t readBytes = 1);
+    bool getModbusValue(uint16_t register_id,
+                        modbus_entity_t modbus_entity,
+                        uint16_t *value_ptr,
+                        uint16_t readBytes = 1,
+                        uint16_t blockStart = 0,
+                        uint16_t blockCount = 0);
+    bool loadHoldingBlock(uint16_t startRegister, uint16_t registerCount);
+    bool getCachedHoldingValue(uint16_t registerId, uint16_t *value_ptr) const;
+    void storeReadCache(uint16_t startRegister, uint16_t registerCount);
 
     static void preTransmission();
     static void postTransmission();
 
     ModbusMaster _mb;
+    bool _cacheValid = false;
+    uint16_t _cacheStartRegister = 0;
+    uint16_t _cacheRegisterCount = 0;
+    uint16_t _cacheValues[MAX_HOLDING_BLOCK_WORDS] = {};
 };
 
 #endif
