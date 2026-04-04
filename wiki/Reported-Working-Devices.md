@@ -3,7 +3,9 @@ This page is generated automatically from public device reports submitted throug
 ## Reported Working Devices
 
 <!-- REPORTDEVICE:START -->
-_No reported devices yet._
+| Manufacturer | Model | Transport | Protocol | Protocol ID | Detected Model | Firmware | Build Variant | Reports |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| WERTCHTAY | GD3024EMH | RS232 | PI30 | PI30 | VMII-3000 | - | wemos_d1_mini32 | 1 |
 <!-- REPORTDEVICE:END -->
 
 ## Notes
