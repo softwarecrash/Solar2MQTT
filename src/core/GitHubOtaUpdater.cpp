@@ -178,11 +178,15 @@ void GitHubOtaUpdater::doCheck()
 
     WiFiClientSecure client;
     client.setInsecure();
+    client.setTimeout(kHttpTimeoutMs);
 
     HTTPClient http;
+    http.useHTTP10(true);
     http.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
     http.setTimeout(kHttpTimeoutMs);
     http.setUserAgent(kUserAgent);
+    http.addHeader("Accept", "application/vnd.github+json");
+    http.addHeader("X-GitHub-Api-Version", "2022-11-28");
 
     if (!http.begin(client, url))
     {
@@ -198,12 +202,34 @@ void GitHubOtaUpdater::doCheck()
         return;
     }
 
-    JsonDocument doc;
-    const DeserializationError error = deserializeJson(doc, http.getStream());
+    const String payload = http.getString();
     http.end();
+
+    if (payload.length() == 0)
+    {
+        setState(State::Error, "Release response empty");
+        return;
+    }
+
+    JsonDocument filter;
+    filter["tag_name"] = true;
+    filter["name"] = true;
+    JsonObject assetFilter = filter["assets"].to<JsonArray>().add<JsonObject>();
+    assetFilter["name"] = true;
+    assetFilter["browser_download_url"] = true;
+
+    JsonDocument doc;
+    const DeserializationError error = deserializeJson(doc, payload, DeserializationOption::Filter(filter));
     if (error)
     {
-        setState(State::Error, "Release JSON parse error");
+        String details = "Release JSON parse error: ";
+        details += error.c_str();
+        if (!payload.startsWith("{"))
+        {
+            details += " / starts with: ";
+            details += payload.substring(0, 48);
+        }
+        setState(State::Error, details);
         return;
     }
 

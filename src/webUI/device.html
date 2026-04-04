@@ -19,26 +19,27 @@
     <div id="statusbar"></div>
 
     <form id="deviceForm" class="panel">
-      <div class="panel-title">Hardware Serial</div>
-      <p class="hint">ESP32 HardwareSerial with pin mapping instead of SoftwareSerial.</p>
 
-      <div class="detailSplitter">UART / RS485</div>
-      <label>UART RX Pin</label>
+      <div class="detailSplitter">UART / RS232/ RS485</div>
+      <label>UART RX GPIO</label>
       <input name="uartRx" type="number">
 
-      <label>UART TX Pin</label>
+      <label>UART TX GPIO</label>
       <input name="uartTx" type="number">
 
-      <label>RS485 DIR Pin</label>
+      <label>RS485 DIR GPIO</label>
       <input name="uartDir" type="number">
 
+      <label>Poll Interval [ms]</label>
+      <input name="pollIntervalMs" type="number">
+
       <div class="detailSplitter">Temperature Sensors</div>
-      <label>DS18B20 Data Pin</label>
+      <label>DS18B20 GPIO</label>
       <input name="ds18b20Pin" type="number">
-      <p class="field-note">Use <code>-1</code> to disable the 1-Wire bus. Multiple DS18B20 sensors can share the same pin.</p>
+      <p class="field-note">Use <code>-1</code> to disable. Multiple DS18B20 sensors can share the same pin.</p>
 
       <div class="detailSplitter">Status LED</div>
-      <label>Status LED Pin</label>
+      <label>Status LED GPIO</label>
       <input name="statusLedPin" type="number">
 
       <label for="statusLedBrightness">Status LED Brightness</label>
@@ -47,15 +48,6 @@
         <span id="statusLedBrightnessValue" class="range-value">128</span>
       </div>
 
-      <label>Poll Interval [ms]</label>
-      <input name="pollIntervalMs" type="number">
-
-      <div class="detailSplitter">Default D1 Mini Layout</div>
-      <div class="kv"><span class="k">D6 / RX</span><span class="v">GPIO19</span></div>
-      <div class="kv"><span class="k">D7 / TX</span><span class="v">GPIO23</span></div>
-      <div class="kv"><span class="k">D5 / DIR</span><span class="v">GPIO18</span></div>
-      <div class="kv"><span class="k">D4 / LED</span><span class="v">GPIO2</span></div>
-
       <div class="button-stack" style="margin-top: 14px;">
         <button type="submit" class="btn">Apply</button>
         <a class="btn btn-outline" href="/menu">Back</a>
@@ -63,16 +55,15 @@
     </form>
 
     <div class="panel">
-      <div class="panel-title">Live Link</div>
+      <div class="detailSplitter">Live Link</div>
       <div class="kv"><span class="k">Protocol</span><span class="v" id="deviceProtocol">-</span></div>
       <div class="kv"><span class="k">Detected Model</span><span class="v" id="deviceDetectedModel">-</span></div>
       <div class="kv"><span class="k">Firmware</span><span class="v" id="deviceFirmwareVersion">-</span></div>
       <div class="kv"><span class="k">Build</span><span class="v" id="deviceBuildVariant">-</span></div>
       <div class="kv"><span class="k">PV Power</span><span class="v" id="metricPvPower">-</span></div>
       <div class="kv"><span class="k">Battery Voltage</span><span class="v" id="metricBatteryVoltage">-</span></div>
-      <p class="field-note">Open the external report form to add this device to the public compatibility wiki.</p>
       <div class="button-stack" style="margin-top: 14px;">
-        <button id="reportDeviceBtn" type="button" class="btn">Report Device</button>
+        <button id="reportDeviceBtn" type="button" class="btn">Report Working Device</button>
       </div>
     </div>
   </div>
