@@ -498,12 +498,27 @@ function renderMeters(data) {
   const solarMeta = solarMetaText(data);
   const chargePower = pickDataValue(data, ["SCC_Charge_Power", "PV_Charging_Power"], ["LiveData"]);
   const maxChargeCurrent = pickDataNumber(data, ["Current_Max_Charging_Current"], ["DeviceData"]);
+  const maxAcChargeCurrent = pickDataNumber(data, ["Current_Max_AC_Charging_Current"], ["DeviceData"]);
+  const chargeLimitCurrent =
+    maxChargeCurrent !== null || maxAcChargeCurrent !== null
+      ? Math.max(maxChargeCurrent ?? 0, maxAcChargeCurrent ?? 0)
+      : null;
+  const dischargeLimitCurrent =
+    (() => {
+      const ratedPower = pickDataNumber(data, ["AC_Out_Rating_Active_Power"], ["DeviceData"]);
+      const currentBatteryVoltage = pickDataNumber(data, ["Battery_Voltage", "Positive_Battery_Voltage"], ["LiveData"]);
+      if (ratedPower === null || currentBatteryVoltage === null || currentBatteryVoltage <= 0) {
+        return null;
+      }
+      return ratedPower / (currentBatteryVoltage * 0.9);
+    })();
   const effectiveChargeCurrent = batteryLoad ?? chargeCurrent;
   const isDischarging = effectiveChargeCurrent !== null && effectiveChargeCurrent < 0;
+  const activeCurrentLimit = isDischarging ? dischargeLimitCurrent : chargeLimitCurrent;
   const chargePercent =
-    effectiveChargeCurrent !== null && maxChargeCurrent !== null && maxChargeCurrent > 0
-      ? clampPercent((Math.abs(effectiveChargeCurrent) / maxChargeCurrent) * 100)
-      : ratioToPercent(chargeCurrent, maxChargeCurrent);
+    effectiveChargeCurrent !== null && activeCurrentLimit !== null && activeCurrentLimit > 0
+      ? clampPercent((Math.abs(effectiveChargeCurrent) / activeCurrentLimit) * 100)
+      : ratioToPercent(chargeCurrent, activeCurrentLimit);
 
   setMeter(
     "Battery",
@@ -541,7 +556,7 @@ function renderMeters(data) {
       : formatReading(chargePower, "W", 0),
     chargePercent,
     joinMeta([
-      !isDischarging && maxChargeCurrent !== null ? `Max ${formatCompactReading(maxChargeCurrent, "A", 0)}` : null,
+      activeCurrentLimit !== null ? `Max ${formatCompactReading(activeCurrentLimit, "A", 0)}` : null,
       effectiveChargeCurrent !== null ? `Now ${formatSignedReading(effectiveChargeCurrent, "A", 1, true)}` : null,
     ]) || "Charge data unavailable"
   );
