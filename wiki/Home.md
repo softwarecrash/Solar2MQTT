@@ -25,7 +25,9 @@ This wiki keeps the familiar page layout from the older project, but the content
 - [WebUI authentication](WebUI-authentication)
 - [Reset](Reset)
 - [Blink Codes](Blink-Codes)
-- [Confirmed Working Device List](Confirmed-Working-Device-List)
+- [Supported Devices](Supported-Devices)
+- [Reported Working Devices](Reported-Working-Devices)
+- [Report a Working Device](Report-a-Working-Device)
 - [Get Debug Log from WatchPower](get-Debug-Log-from-watchpower)
 
 ## Notes

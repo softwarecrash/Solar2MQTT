@@ -1,0 +1,111 @@
+name: Sync Reported Devices
+
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: reported-device-sync
+  cancel-in-progress: false
+
+jobs:
+  sync-reported-devices:
+    runs-on: ubuntu-latest
+    env:
+      REPORTDEVICE_EXPORT_URL: https://solar2mqtt-reportdevice.softwarecrash.de/export.php?format=md
+      TARGET_FILE: wiki/Reported-Working-Devices.md
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download exported report list
+        id: fetch
+        run: |
+          set -euo pipefail
+
+          temp_file="$(mktemp)"
+          curl -fsSL "$REPORTDEVICE_EXPORT_URL" -o "$temp_file"
+
+          if ! grep -q "## Reported Working Devices" "$temp_file"; then
+            echo "::error::Downloaded export does not look like the expected markdown page."
+            exit 1
+          fi
+
+          if cmp -s "$temp_file" "$TARGET_FILE"; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            rm -f "$temp_file"
+            exit 0
+          fi
+
+          mv "$temp_file" "$TARGET_FILE"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Configure git
+        if: steps.fetch.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit and push imported report list
+        if: steps.fetch.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+
+          git add -- "$TARGET_FILE"
+
+          if git diff --cached --quiet --exit-code; then
+            echo "No repository changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Sync reported working devices"
+          git pull --rebase origin "${{ github.event.repository.default_branch }}"
+          git push origin "HEAD:${{ github.event.repository.default_branch }}"
+
+      - name: Sync wiki folder to GitHub Wiki
+        env:
+          WIKI_URL: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git
+        run: |
+          set -euo pipefail
+
+          if [ ! -d "wiki" ]; then
+            echo "wiki/ folder not found, nothing to sync."
+            exit 0
+          fi
+
+          temp_dir="$(mktemp -d)"
+          trap 'rm -rf "$temp_dir"' EXIT
+
+          if ! git clone "$WIKI_URL" "$temp_dir"; then
+            echo "::error::GitHub Wiki could not be cloned. Enable the repository wiki and create the first wiki page manually once so the .wiki.git backend exists."
+            exit 1
+          fi
+
+          rsync -a --delete --exclude '.git/' wiki/ "$temp_dir/"
+
+          cd "$temp_dir"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet --exit-code && git diff --cached --quiet --exit-code; then
+            echo "Wiki already up to date."
+            exit 0
+          fi
+
+          git add --all
+
+          if git diff --cached --quiet --exit-code; then
+            echo "No wiki changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Sync wiki from reported device export"
+          git push origin HEAD

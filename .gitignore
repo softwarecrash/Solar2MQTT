@@ -9,3 +9,5 @@ examples/
 .examples
 src/www.h
 build.log
+webserver/
+webserver/reportdevice/private/lib/config.local.php

@@ -2,7 +2,10 @@ const state = {
   statusSocket: null,
   toastTimer: null,
   previewFocusTimers: {},
+  reportContext: null,
 };
+
+const REPORT_DEVICE_FORM_URL = "https://solar2mqtt-reportdevice.softwarecrash.de/";
 
 function byId(id) {
   return document.getElementById(id);
@@ -28,6 +31,48 @@ function formatValue(value, suffix = "") {
     return "-";
   }
   return `${value}${suffix}`;
+}
+
+function firstPresentValue(values) {
+  for (const value of values) {
+    if (isDataValuePresent(value)) {
+      return value;
+    }
+  }
+  return "";
+}
+
+function appendQueryValue(params, key, value) {
+  if (!isDataValuePresent(value)) {
+    return;
+  }
+
+  const text = String(value).trim();
+  if (!text) {
+    return;
+  }
+
+  params.set(key, text);
+}
+
+function getDeviceDetectedModel(data = {}) {
+  return firstPresentValue([
+    pickDataValue(data, ["Device_Model"], ["DeviceData"]),
+    pickDataValue(state.reportContext, ["Device_Model"], ["DeviceData"]),
+  ]);
+}
+
+function getDeviceFirmwareVersion(data = {}) {
+  return firstPresentValue([
+    pickDataValue(data, ["Device_Firmware_Version", "Firmware_Version"], ["DeviceData"]),
+    data?.RawData?.QSVFW2,
+    data?.RawData?.QVFW,
+    data?.RawData?.QVFW2,
+    pickDataValue(state.reportContext, ["Device_Firmware_Version", "Firmware_Version"], ["DeviceData"]),
+    state.reportContext?.RawData?.QSVFW2,
+    state.reportContext?.RawData?.QVFW,
+    state.reportContext?.RawData?.QVFW2,
+  ]);
 }
 
 function showNotice(message, isError = false) {
@@ -633,6 +678,9 @@ function renderStatus(data) {
   }
 
   setText("deviceProtocol", data.protocol || "-");
+  setText("deviceDetectedModel", getDeviceDetectedModel(data) || "-");
+  setText("deviceFirmwareVersion", getDeviceFirmwareVersion(data) || "-");
+  setText("deviceBuildVariant", data.buildVariant || data.build || "-");
   setText("devicename", data.deviceName || data.EspData?.Device_name || "Solar2MQTT");
   setText("pageTitleDevice", data.EspData?.Device_name || "Solar2MQTT");
   setText("loopbackInfo", data.loopback?.message || "-");
@@ -729,7 +777,83 @@ async function loadSettings() {
 }
 
 async function loadStatus() {
-  renderStatus(await fetchJson("/api/status"));
+  const statusData = await fetchJson("/api/status");
+  renderStatus(statusData);
+
+  if (!hasAny(["deviceDetectedModel", "deviceFirmwareVersion", "reportDeviceBtn"])) {
+    return;
+  }
+
+  try {
+    state.reportContext = await fetchJson("/api/data");
+    renderStatus(statusData);
+  } catch (error) {
+  }
+}
+
+async function openReportDeviceForm() {
+  const popup = window.open("", "_blank");
+  if (popup) {
+    popup.opener = null;
+    try {
+      popup.document.title = "Opening report form";
+      popup.document.body.textContent = "Opening report form...";
+    } catch (error) {
+      // Ignore interim document access issues and continue with navigation.
+    }
+  }
+
+  const [statusData, fullData] = await Promise.all([
+    fetchJson("/api/status"),
+    fetchJson("/api/data"),
+  ]);
+  state.reportContext = fullData;
+
+  const params = new URLSearchParams();
+  appendQueryValue(
+    params,
+    "protocol_detected",
+    firstPresentValue([
+      statusData?.protocol,
+      fullData?.Status?.protocol,
+      fullData?.EspData?.detect_protocol_name,
+    ])
+  );
+  appendQueryValue(
+    params,
+    "protocol_id",
+    firstPresentValue([
+      fullData?.DeviceData?.Protocol_ID,
+      statusData?.protocol,
+    ])
+  );
+  appendQueryValue(
+    params,
+    "device_model_detected",
+    getDeviceDetectedModel(fullData)
+  );
+  appendQueryValue(
+    params,
+    "firmware_version",
+    getDeviceFirmwareVersion(fullData)
+  );
+  appendQueryValue(
+    params,
+    "build_variant",
+    firstPresentValue([
+      statusData?.buildVariant,
+      statusData?.build,
+    ])
+  );
+
+  const reportUrl = params.toString()
+    ? `${REPORT_DEVICE_FORM_URL}?${params.toString()}`
+    : REPORT_DEVICE_FORM_URL;
+  if (popup) {
+    popup.location.replace(reportUrl);
+  } else {
+    window.location.href = reportUrl;
+  }
 }
 
 async function loadDataPreview() {
@@ -934,6 +1058,11 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   bindClick("reportBtn", async () => {
     await download("/api/debug/report", "solar2mqtt-debug.txt", "text/plain");
+  });
+
+  bindClick("reportDeviceBtn", async () => {
+    await openReportDeviceForm();
+    showNotice("Report form opened.");
   });
 
   bindClick("previewDataBtn", async () => {
