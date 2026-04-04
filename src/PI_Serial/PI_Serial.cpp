@@ -80,79 +80,6 @@ String sanitizePiReplyText(const String &value)
     return sanitized;
 }
 
-String bytesToHexPreview(const String &value, size_t maxBytes = 64)
-{
-    static const char hexDigits[] = "0123456789ABCDEF";
-
-    const size_t bytesToShow = (value.length() < maxBytes) ? value.length() : maxBytes;
-    String hex;
-    hex.reserve(bytesToShow * 3 + 4);
-
-    for (size_t i = 0; i < bytesToShow; ++i)
-    {
-        const uint8_t byteValue = static_cast<uint8_t>(value.charAt(i));
-        if (!hex.isEmpty())
-        {
-            hex += ' ';
-        }
-        hex += hexDigits[(byteValue >> 4) & 0x0F];
-        hex += hexDigits[byteValue & 0x0F];
-    }
-
-    if (value.length() > maxBytes)
-    {
-        hex += " ...";
-    }
-
-    return hex;
-}
-
-bool shouldDumpPi18Command(const String &command)
-{
-    return command == "^P005GS" ||
-           command == "^P007PIRI" ||
-           command == "Q1" ||
-           command == "^P005FWS" ||
-           command == "^P004T" ||
-           command == "^P005ET" ||
-           command.startsWith("^P013ED") ||
-           command.startsWith("^P011EM") ||
-           command.startsWith("^P009EY");
-}
-
-void logPi18Dump(const char *phase,
-                 const String &command,
-                 const String &rawFrame,
-                 size_t prefixLen = 0,
-                 const String *payload = nullptr)
-{
-    if (phase == nullptr)
-    {
-        phase = "dump";
-    }
-
-    if (payload != nullptr)
-    {
-        writeLog("[PI][DUMP] phase=%s cmd=%s raw_len=%u raw_hex=%s payload_len=%u payload_hex=%s payload_txt=\"%s\"",
-                 phase,
-                 command.c_str(),
-                 static_cast<unsigned>(rawFrame.length()),
-                 bytesToHexPreview(rawFrame, 96).c_str(),
-                 static_cast<unsigned>(payload->length()),
-                 bytesToHexPreview(*payload, 96).c_str(),
-                 sanitizeLogText(*payload, 96).c_str());
-        return;
-    }
-
-    writeLog("[PI][DUMP] phase=%s cmd=%s raw_len=%u prefix=%u raw_hex=%s raw_txt=\"%s\"",
-             phase,
-             command.c_str(),
-             static_cast<unsigned>(rawFrame.length()),
-             static_cast<unsigned>(prefixLen),
-             bytesToHexPreview(rawFrame, 96).c_str(),
-             sanitizeLogText(rawFrame, 96).c_str());
-}
-
 bool hasOnlyPrintablePiReplyChars(const String &value)
 {
     for (size_t i = 0; i < value.length(); ++i)
@@ -1256,13 +1183,6 @@ String PI_Serial::requestData(String command)
     const size_t cbLen = commandBuffer.length();
     const char *cbBuf = commandBuffer.c_str();
     const size_t prefixLen = matchedResponsePrefixLength(commandBuffer, startChar, protocol, command);
-    const bool dumpPi18 = (protocol == PI18 && shouldDumpPi18Command(command));
-    const String rawFrame = commandBuffer;
-
-    if (dumpPi18)
-    {
-        logPi18Dump("rx", command, rawFrame, prefixLen, nullptr);
-    }
 
     if (cbLen >= 3 &&
         prefixLen > 0 &&
@@ -1273,11 +1193,6 @@ String PI_Serial::requestData(String command)
         crcRecive = getCRC(cbBuf, cbLen - 2);
         commandBuffer.remove(cbLen - 2); // remove the crc
         commandBuffer.remove(0, prefixLen); // remove the matched start frame
-
-        if (dumpPi18)
-        {
-            logPi18Dump("ok", command, rawFrame, prefixLen, &commandBuffer);
-        }
 
         if (!hasOnlyPrintablePiReplyChars(commandBuffer))
         {
@@ -1307,11 +1222,6 @@ String PI_Serial::requestData(String command)
         commandBuffer.remove(cbLen - 1); // remove the crc
         commandBuffer.remove(0, prefixLen); // remove the matched start frame
 
-        if (dumpPi18)
-        {
-            logPi18Dump("chk", command, rawFrame, prefixLen, &commandBuffer);
-        }
-
         // requestOK++;
         connectionCounter = 0;
     }
@@ -1339,10 +1249,6 @@ String PI_Serial::requestData(String command)
                  crcCalc,
                  static_cast<unsigned>(cbLen),
                  sanitizedReply.c_str());
-        if (dumpPi18)
-        {
-            logPi18Dump("err", command, rawFrame, prefixLen, nullptr);
-        }
         connectionCounter++;
         commandBuffer = "ERCRC";
     }

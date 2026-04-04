@@ -91,84 +91,6 @@ String sanitizeRawMqttText(const char *value)
     return sanitized;
 }
 
-bool isNumericCsvPayload(const String &value)
-{
-    bool hasComma = false;
-    bool hasDigit = false;
-
-    for (size_t i = 0; i < value.length(); ++i)
-    {
-        const char c = value.charAt(i);
-        if (c >= '0' && c <= '9')
-        {
-            hasDigit = true;
-            continue;
-        }
-
-        if (c == ',')
-        {
-            hasComma = true;
-            continue;
-        }
-
-        if (c == '.' || c == '-' || c == '+' || c == ' ')
-        {
-            continue;
-        }
-
-        return false;
-    }
-
-    return hasComma && hasDigit;
-}
-
-String normalizeRawPayloadForBroker(const String &value)
-{
-    if (!isNumericCsvPayload(value))
-    {
-        return value;
-    }
-
-    // Some MQTT server adapters reinterpret pure numeric CSV payloads as character codes.
-    // Prefix them so the payload survives the broker unchanged while staying readable.
-    return String("raw:") + value;
-}
-
-String mqttBytesToHexPreview(const String &value, size_t maxBytes = 64)
-{
-    static const char hexDigits[] = "0123456789ABCDEF";
-
-    const size_t bytesToShow = (value.length() < maxBytes) ? value.length() : maxBytes;
-    String hex;
-    hex.reserve(bytesToShow * 3 + 4);
-
-    for (size_t i = 0; i < bytesToShow; ++i)
-    {
-        const uint8_t byteValue = static_cast<uint8_t>(value.charAt(i));
-        if (!hex.isEmpty())
-        {
-            hex += ' ';
-        }
-        hex += hexDigits[(byteValue >> 4) & 0x0F];
-        hex += hexDigits[byteValue & 0x0F];
-    }
-
-    if (value.length() > maxBytes)
-    {
-        hex += " ...";
-    }
-
-    return hex;
-}
-
-bool shouldDumpRawMqttKey(const char *key)
-{
-    return strcmp(key, "QPIGS") == 0 ||
-           strcmp(key, "QPIRI") == 0 ||
-           strcmp(key, "Q1") == 0 ||
-           strcmp(key, "QPIWS") == 0;
-}
-
 String getHaDeviceId()
 {
     const uint64_t mac = ESP.getEfuseMac();
@@ -581,15 +503,6 @@ void MqttHandler::publishRawState(JsonObjectConst rawObject)
         }
 
         payload = sanitizeRawMqttText(payload.c_str());
-        payload = normalizeRawPayloadForBroker(payload);
-        if (shouldDumpRawMqttKey(key))
-        {
-            writeLog("[MQTT][RAW] key=%s len=%u hex=%s txt=\"%s\"",
-                     key,
-                     static_cast<unsigned>(payload.length()),
-                     mqttBytesToHexPreview(payload, 96).c_str(),
-                     payload.c_str());
-        }
         _mqtt.publish(topic.c_str(), payload.c_str(), false);
     }
 }
