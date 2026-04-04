@@ -1,0 +1,99 @@
+name: Bug Report
+description: Report a reproducible problem or regression.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for firmware, UI, MQTT, Home Assistant, protocol, or stability problems.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and did not find the same bug report.
+          required: true
+        - label: I can reproduce the problem with a current release or current development build.
+          required: true
+  - type: input
+    id: firmware_version
+    attributes:
+      label: Firmware Version
+      description: Example `2.0.1` or `0.0.0-dev-11.14`
+      placeholder: Enter the firmware version shown by the ESP.
+    validations:
+      required: true
+  - type: input
+    id: build_variant
+    attributes:
+      label: Build Variant
+      description: Example `wemos_d1_mini32`, `esp32c3_supermini`, `waveshare_esp32_s3_eth`
+      placeholder: Enter the build variant if known.
+    validations:
+      required: false
+  - type: input
+    id: device_model
+    attributes:
+      label: Device Model
+      description: Inverter or charger model if known.
+      placeholder: Example `EASUN SMG II 5.6KW`
+    validations:
+      required: false
+  - type: input
+    id: protocol
+    attributes:
+      label: Detected Protocol
+      description: Enter the detected protocol if known.
+      placeholder: Example `PI30`, `MODBUS_SMG`
+    validations:
+      required: false
+  - type: textarea
+    id: summary
+    attributes:
+      label: Problem Summary
+      description: What is broken?
+      placeholder: Describe the problem clearly.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Provide a simple reproduction sequence.
+      placeholder: |
+        1. Open ...
+        2. Change ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      placeholder: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      placeholder: What happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: debug_report
+    attributes:
+      label: Relevant Logs or Debug Report
+      description: Paste the relevant parts of the debug report or serial log.
+      render: shell
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Home Assistant details, MQTT topic setup, screenshots, or anything else useful.
+    validations:
+      required: false

@@ -1,0 +1,50 @@
+name: Feature Request
+description: Propose an enhancement or new capability.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for feature ideas, UI improvements, protocol support ideas, or other enhancements.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and did not find the same request.
+          required: true
+        - label: I am describing one request, not multiple unrelated ideas.
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem or limitation should be solved?
+      placeholder: Describe the current pain point.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: What should happen instead?
+      placeholder: Describe the behavior, workflow, or UI you want.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What workarounds or other approaches did you consider?
+      placeholder: Optional but useful.
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Screenshots, links, affected devices, protocols, or other details.
+    validations:
+      required: false

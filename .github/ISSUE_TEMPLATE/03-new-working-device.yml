@@ -1,0 +1,95 @@
+name: New Working Device
+description: Report a device that works with the ESP32 project.
+title: "[Working Device]: "
+labels:
+  - device-report
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Preferred path:
+
+        1. Open the ESP Web UI.
+        2. Go to `Device Settings`.
+        3. Click `Report Device`.
+
+        If that is not possible, use the manual web form:
+        https://solar2mqtt-reportdevice.softwarecrash.de/?manual=1
+
+        Use this GitHub form only if you cannot use the web form.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I could not use the preferred web form and therefore report this device manually here.
+          required: true
+        - label: I verified that the device is actually working with the ESP32 project.
+          required: true
+  - type: input
+    id: manufacturer
+    attributes:
+      label: Manufacturer
+      placeholder: Example `EASUN`
+    validations:
+      required: true
+  - type: input
+    id: model_user
+    attributes:
+      label: Model
+      placeholder: Example `SMG II 5.6KW`
+    validations:
+      required: true
+  - type: dropdown
+    id: transport
+    attributes:
+      label: Transport
+      options:
+        - RS232
+        - TTL
+        - RS485
+    validations:
+      required: true
+  - type: input
+    id: protocol_detected
+    attributes:
+      label: Protocol Detected
+      placeholder: Example `MODBUS_SMG`
+    validations:
+      required: true
+  - type: input
+    id: protocol_id
+    attributes:
+      label: Protocol ID
+      placeholder: Example `MODBUS_SMG`
+    validations:
+      required: true
+  - type: input
+    id: device_model_detected
+    attributes:
+      label: Detected Model
+      placeholder: Example `SMG 5K`
+    validations:
+      required: true
+  - type: input
+    id: firmware_version
+    attributes:
+      label: Firmware Version
+      placeholder: Example `VERFW2:00018.07`
+    validations:
+      required: true
+  - type: input
+    id: build_variant
+    attributes:
+      label: Build Variant
+      placeholder: Example `wemos_d1_mini32`
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Describe what was tested and what worked.
+      placeholder: Example `MQTT, Home Assistant discovery and live data work.`
+    validations:
+      required: true

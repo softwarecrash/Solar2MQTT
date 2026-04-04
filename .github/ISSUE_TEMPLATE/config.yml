@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report Working Device via Web Form
+    url: https://solar2mqtt-reportdevice.softwarecrash.de/?manual=1
+    about: Preferred for manual working-device reports if you cannot use the ESP "Report Device" button.

@@ -8,6 +8,12 @@ If your inverter works with the ESP32 version, please report it so it can appear
 4. Fill in the missing manufacturer, model and transport fields.
 5. Submit the form.
 
+If you cannot use the ESP Web UI, you can use the manual web form:
+
+- https://solar2mqtt-reportdevice.softwarecrash.de/?manual=1
+
+If neither option works, there is also a GitHub issue form for manual working-device reports.
+
 ## What is sent
 
 - manufacturer
