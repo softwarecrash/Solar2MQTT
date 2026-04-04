@@ -59,7 +59,7 @@
         <span>Enable JSON mode</span>
         <input type="checkbox" id="mqttJsonMode" name="jsonMode" value="1" class="ea-switch">
       </label>
-      <p class="field-note">Publishes grouped JSON payloads instead of only single values.</p>
+      <p class="field-note">Publishes grouped JSON payloads instead of only single values. This cannot be enabled together with Home Assistant discovery.</p>
 
       <div class="detailSplitter">Integrations</div>
 
@@ -67,7 +67,7 @@
         <span>Enable Home Assistant discovery</span>
         <input type="checkbox" id="mqttHA" name="ha" value="1" class="ea-switch">
       </label>
-      <p class="field-note">Discovery topics are only published when this switch is enabled.</p>
+      <p class="field-note">Discovery topics are only published when this switch is enabled. Enabling this will switch JSON mode off.</p>
 
       <div class="button-stack actions">
         <button type="submit" class="btn">Save</button>

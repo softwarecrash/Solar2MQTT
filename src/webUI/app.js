@@ -581,6 +581,28 @@ function createOverviewRow(title, entries) {
   return row;
 }
 
+function syncMqttModeSelection(changedId = "") {
+  const jsonMode = byId("mqttJsonMode");
+  const homeAssistant = byId("mqttHA");
+  if (!jsonMode || !homeAssistant) {
+    return;
+  }
+
+  if (changedId === "mqttJsonMode" && jsonMode.checked) {
+    homeAssistant.checked = false;
+    return;
+  }
+
+  if (changedId === "mqttHA" && homeAssistant.checked) {
+    jsonMode.checked = false;
+    return;
+  }
+
+  if (jsonMode.checked && homeAssistant.checked) {
+    jsonMode.checked = false;
+  }
+}
+
 function collectDs18Entries(data) {
   const sensorData = data?.LiveData && typeof data.LiveData === "object"
     ? data.LiveData
@@ -773,6 +795,7 @@ async function loadSettings() {
   fillForm("networkForm", data.network);
   fillForm("mqttForm", data.mqtt);
   fillForm("deviceForm", data.device);
+  syncMqttModeSelection();
   syncRangeValue("statusLedBrightness", "statusLedBrightnessValue");
 }
 
@@ -1095,6 +1118,18 @@ window.addEventListener("DOMContentLoaded", async () => {
     await fetchJson("/api/factory-reset", { method: "POST" });
     showNotice("Factory reset triggered.");
   });
+
+  const mqttJsonMode = byId("mqttJsonMode");
+  const mqttHA = byId("mqttHA");
+  if (mqttJsonMode && mqttHA) {
+    mqttJsonMode.addEventListener("change", () => {
+      syncMqttModeSelection("mqttJsonMode");
+    });
+    mqttHA.addEventListener("change", () => {
+      syncMqttModeSelection("mqttHA");
+    });
+    syncMqttModeSelection();
+  }
 
   const ledBrightness = byId("statusLedBrightness");
   if (ledBrightness) {

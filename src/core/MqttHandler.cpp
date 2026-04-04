@@ -9,6 +9,7 @@
 #include "solar/HaDiscoveryCatalog.h"
 #include "solar/SolarInverterService.h"
 
+extern void writeLog(const char *format, ...);
 extern Settings _settings;
 
 namespace
@@ -57,6 +58,117 @@ String buildDiscoveryTopic(const String &baseTopic, const char *component, const
     return String("homeassistant/") + component + "/" + baseTopic + "/" + key + "/config";
 }
 
+String sanitizeRawMqttText(const char *value)
+{
+    if (value == nullptr || value[0] == '\0')
+    {
+        return String();
+    }
+
+    String sanitized;
+    sanitized.reserve(strlen(value));
+
+    bool lastWasSpace = true;
+    for (const char *cursor = value; *cursor != '\0'; ++cursor)
+    {
+        const unsigned char c = static_cast<unsigned char>(*cursor);
+        if (c >= 33 && c <= 126)
+        {
+            sanitized += static_cast<char>(c);
+            lastWasSpace = false;
+        }
+        else if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
+        {
+            if (!lastWasSpace && !sanitized.isEmpty())
+            {
+                sanitized += ' ';
+                lastWasSpace = true;
+            }
+        }
+    }
+
+    sanitized.trim();
+    return sanitized;
+}
+
+bool isNumericCsvPayload(const String &value)
+{
+    bool hasComma = false;
+    bool hasDigit = false;
+
+    for (size_t i = 0; i < value.length(); ++i)
+    {
+        const char c = value.charAt(i);
+        if (c >= '0' && c <= '9')
+        {
+            hasDigit = true;
+            continue;
+        }
+
+        if (c == ',')
+        {
+            hasComma = true;
+            continue;
+        }
+
+        if (c == '.' || c == '-' || c == '+' || c == ' ')
+        {
+            continue;
+        }
+
+        return false;
+    }
+
+    return hasComma && hasDigit;
+}
+
+String normalizeRawPayloadForBroker(const String &value)
+{
+    if (!isNumericCsvPayload(value))
+    {
+        return value;
+    }
+
+    // Some MQTT server adapters reinterpret pure numeric CSV payloads as character codes.
+    // Prefix them so the payload survives the broker unchanged while staying readable.
+    return String("raw:") + value;
+}
+
+String mqttBytesToHexPreview(const String &value, size_t maxBytes = 64)
+{
+    static const char hexDigits[] = "0123456789ABCDEF";
+
+    const size_t bytesToShow = (value.length() < maxBytes) ? value.length() : maxBytes;
+    String hex;
+    hex.reserve(bytesToShow * 3 + 4);
+
+    for (size_t i = 0; i < bytesToShow; ++i)
+    {
+        const uint8_t byteValue = static_cast<uint8_t>(value.charAt(i));
+        if (!hex.isEmpty())
+        {
+            hex += ' ';
+        }
+        hex += hexDigits[(byteValue >> 4) & 0x0F];
+        hex += hexDigits[byteValue & 0x0F];
+    }
+
+    if (value.length() > maxBytes)
+    {
+        hex += " ...";
+    }
+
+    return hex;
+}
+
+bool shouldDumpRawMqttKey(const char *key)
+{
+    return strcmp(key, "QPIGS") == 0 ||
+           strcmp(key, "QPIRI") == 0 ||
+           strcmp(key, "Q1") == 0 ||
+           strcmp(key, "QPIWS") == 0;
+}
+
 String getHaDeviceId()
 {
     const uint64_t mac = ESP.getEfuseMac();
@@ -102,12 +214,12 @@ String getDiscoveryModel(JsonDocument &snapshot)
 
 void populateDeviceInfo(JsonDocument &doc, JsonDocument &snapshot)
 {
-    JsonObject device = doc["dev"].to<JsonObject>();
-    device["ids"][0] = getHaDeviceId();
+    JsonObject device = doc["device"].to<JsonObject>();
+    device["identifiers"][0] = getHaDeviceId();
     device["name"] = _settings.get.deviceName();
-    device["mf"] = "SoftWareCrash";
-    device["mdl"] = getDiscoveryModel(snapshot);
-    device["sw"] = STRVERSION;
+    device["manufacturer"] = "SoftWareCrash";
+    device["model"] = getDiscoveryModel(snapshot);
+    device["sw_version"] = STRVERSION;
 }
 
 void publishJsonValue(PubSubClient &client, const String &topic, JsonVariantConst value, bool retained = true)
@@ -452,8 +564,33 @@ void MqttHandler::publishRawState(JsonObjectConst rawObject)
 {
     for (JsonPairConst entry : rawObject)
     {
-        const String topic = baseTopic() + "/RAW/" + entry.key().c_str();
-        publishJsonValue(_mqtt, topic, entry.value(), false);
+        const char *key = entry.key().c_str();
+        const String topic = baseTopic() + "/RAW/" + key;
+        JsonVariantConst value = entry.value();
+        if (value.isNull())
+        {
+            _mqtt.publish(topic.c_str(), "", false);
+            continue;
+        }
+
+        String payload = value.as<String>();
+        if (payload.isEmpty())
+        {
+            publishJsonValue(_mqtt, topic, value, false);
+            continue;
+        }
+
+        payload = sanitizeRawMqttText(payload.c_str());
+        payload = normalizeRawPayloadForBroker(payload);
+        if (shouldDumpRawMqttKey(key))
+        {
+            writeLog("[MQTT][RAW] key=%s len=%u hex=%s txt=\"%s\"",
+                     key,
+                     static_cast<unsigned>(payload.length()),
+                     mqttBytesToHexPreview(payload, 96).c_str(),
+                     payload.c_str());
+        }
+        _mqtt.publish(topic.c_str(), payload.c_str(), false);
     }
 }
 
@@ -531,27 +668,29 @@ void MqttHandler::publishHaSection(JsonDocument &snapshot,
 
         JsonDocument doc;
         doc["name"] = key;
-        doc["stat_t"] = topicBase + "/" + stateSection + "/" + key;
-        doc["avty_t"] = availabilityTopic;
-        doc["pl_avail"] = "true";
-        doc["pl_not_avail"] = "false";
-        doc["uniq_id"] = buildUniqueId(deviceId, stateSection, key);
+        doc["state_topic"] = topicBase + "/" + stateSection + "/" + key;
+        doc["availability_topic"] = availabilityTopic;
+        doc["payload_available"] = "true";
+        doc["payload_not_available"] = "false";
+        doc["unique_id"] = buildUniqueId(deviceId, stateSection, key);
+        doc["force_update"] = true;
+        doc["qos"] = 1;
         if (binarySensor)
         {
-            doc["pl_on"] = "true";
-            doc["pl_off"] = "false";
+            doc["payload_on"] = "true";
+            doc["payload_off"] = "false";
         }
         if (descriptor != nullptr && descriptor->icon != nullptr && descriptor->icon[0] != '\0')
         {
-            doc["ic"] = String("mdi:") + descriptor->icon;
+            doc["icon"] = String("mdi:") + descriptor->icon;
         }
         if (descriptor != nullptr && descriptor->unit != nullptr && descriptor->unit[0] != '\0')
         {
-            doc["unit_of_meas"] = descriptor->unit;
+            doc["unit_of_measurement"] = descriptor->unit;
         }
         if (descriptor != nullptr && descriptor->deviceClass != nullptr && descriptor->deviceClass[0] != '\0')
         {
-            doc["dev_cla"] = descriptor->deviceClass;
+            doc["device_class"] = descriptor->deviceClass;
         }
 
         populateDeviceInfo(doc, snapshot);
@@ -587,14 +726,16 @@ void MqttHandler::publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst liveV
 
         JsonDocument doc;
         doc["name"] = key;
-        doc["stat_t"] = topicBase + "/LiveData/" + key;
-        doc["avty_t"] = availabilityTopic;
-        doc["pl_avail"] = "true";
-        doc["pl_not_avail"] = "false";
-        doc["uniq_id"] = buildUniqueId(deviceId, "EspData", key);
-        doc["ic"] = "mdi:thermometer-lines";
-        doc["unit_of_meas"] = HA_UNIT_CELSIUS;
-        doc["dev_cla"] = "temperature";
+        doc["state_topic"] = topicBase + "/LiveData/" + key;
+        doc["availability_topic"] = availabilityTopic;
+        doc["payload_available"] = "true";
+        doc["payload_not_available"] = "false";
+        doc["unique_id"] = buildUniqueId(deviceId, "EspData", key);
+        doc["icon"] = "mdi:thermometer-lines";
+        doc["unit_of_measurement"] = HA_UNIT_CELSIUS;
+        doc["device_class"] = "temperature";
+        doc["force_update"] = true;
+        doc["qos"] = 1;
 
         populateDeviceInfo(doc, snapshot);
 

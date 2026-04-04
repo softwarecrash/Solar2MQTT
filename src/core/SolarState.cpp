@@ -60,6 +60,7 @@ void appendSection(Print &out, const char *name, JsonObjectConst object)
     }
     out.print("\n");
 }
+
 } // namespace
 
 void SolarState::begin()

@@ -649,6 +649,11 @@ void WebServerHandler::registerRoutes()
             else if (name == "ha") _settings.set.mqttHAEnabled(value.toInt() != 0);
         }
 
+        if (_settings.get.mqttJson() && _settings.get.mqttHAEnabled())
+        {
+            _settings.set.mqttJson(false);
+        }
+
         _settings.save();
         _mqttHandler.reconfigure();
         setMqttConnected(_mqttHandler.isConnected());

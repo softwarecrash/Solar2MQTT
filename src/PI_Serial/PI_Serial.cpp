@@ -47,6 +47,125 @@ String sanitizeLogText(const String &value, size_t maxLen = 64)
     return sanitized;
 }
 
+String sanitizePiReplyText(const String &value)
+{
+    if (value.isEmpty())
+    {
+        return value;
+    }
+
+    String sanitized;
+    sanitized.reserve(value.length());
+
+    bool lastWasSpace = true;
+    for (size_t i = 0; i < value.length(); ++i)
+    {
+        const unsigned char c = static_cast<unsigned char>(value.charAt(i));
+        if (c >= 33 && c <= 126)
+        {
+            sanitized += static_cast<char>(c);
+            lastWasSpace = false;
+        }
+        else if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
+        {
+            if (!lastWasSpace && !sanitized.isEmpty())
+            {
+                sanitized += ' ';
+                lastWasSpace = true;
+            }
+        }
+    }
+
+    sanitized.trim();
+    return sanitized;
+}
+
+String bytesToHexPreview(const String &value, size_t maxBytes = 64)
+{
+    static const char hexDigits[] = "0123456789ABCDEF";
+
+    const size_t bytesToShow = (value.length() < maxBytes) ? value.length() : maxBytes;
+    String hex;
+    hex.reserve(bytesToShow * 3 + 4);
+
+    for (size_t i = 0; i < bytesToShow; ++i)
+    {
+        const uint8_t byteValue = static_cast<uint8_t>(value.charAt(i));
+        if (!hex.isEmpty())
+        {
+            hex += ' ';
+        }
+        hex += hexDigits[(byteValue >> 4) & 0x0F];
+        hex += hexDigits[byteValue & 0x0F];
+    }
+
+    if (value.length() > maxBytes)
+    {
+        hex += " ...";
+    }
+
+    return hex;
+}
+
+bool shouldDumpPi18Command(const String &command)
+{
+    return command == "^P005GS" ||
+           command == "^P007PIRI" ||
+           command == "Q1" ||
+           command == "^P005FWS" ||
+           command == "^P004T" ||
+           command == "^P005ET" ||
+           command.startsWith("^P013ED") ||
+           command.startsWith("^P011EM") ||
+           command.startsWith("^P009EY");
+}
+
+void logPi18Dump(const char *phase,
+                 const String &command,
+                 const String &rawFrame,
+                 size_t prefixLen = 0,
+                 const String *payload = nullptr)
+{
+    if (phase == nullptr)
+    {
+        phase = "dump";
+    }
+
+    if (payload != nullptr)
+    {
+        writeLog("[PI][DUMP] phase=%s cmd=%s raw_len=%u raw_hex=%s payload_len=%u payload_hex=%s payload_txt=\"%s\"",
+                 phase,
+                 command.c_str(),
+                 static_cast<unsigned>(rawFrame.length()),
+                 bytesToHexPreview(rawFrame, 96).c_str(),
+                 static_cast<unsigned>(payload->length()),
+                 bytesToHexPreview(*payload, 96).c_str(),
+                 sanitizeLogText(*payload, 96).c_str());
+        return;
+    }
+
+    writeLog("[PI][DUMP] phase=%s cmd=%s raw_len=%u prefix=%u raw_hex=%s raw_txt=\"%s\"",
+             phase,
+             command.c_str(),
+             static_cast<unsigned>(rawFrame.length()),
+             static_cast<unsigned>(prefixLen),
+             bytesToHexPreview(rawFrame, 96).c_str(),
+             sanitizeLogText(rawFrame, 96).c_str());
+}
+
+bool hasOnlyPrintablePiReplyChars(const String &value)
+{
+    for (size_t i = 0; i < value.length(); ++i)
+    {
+        const unsigned char c = static_cast<unsigned char>(value.charAt(i));
+        if (c < 32 || c > 126)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 int countDelimitedFields(const String &payload, char delimiter)
 {
     if (payload.isEmpty() || payload == DESCR_req_NAK || payload == DESCR_req_NOA || payload == DESCR_req_ERCRC)
@@ -1137,6 +1256,13 @@ String PI_Serial::requestData(String command)
     const size_t cbLen = commandBuffer.length();
     const char *cbBuf = commandBuffer.c_str();
     const size_t prefixLen = matchedResponsePrefixLength(commandBuffer, startChar, protocol, command);
+    const bool dumpPi18 = (protocol == PI18 && shouldDumpPi18Command(command));
+    const String rawFrame = commandBuffer;
+
+    if (dumpPi18)
+    {
+        logPi18Dump("rx", command, rawFrame, prefixLen, nullptr);
+    }
 
     if (cbLen >= 3 &&
         prefixLen > 0 &&
@@ -1146,10 +1272,28 @@ String PI_Serial::requestData(String command)
         crcCalc = 256U * (uint8_t)commandBuffer[cbLen - 2] + (uint8_t)commandBuffer[cbLen - 1];
         crcRecive = getCRC(cbBuf, cbLen - 2);
         commandBuffer.remove(cbLen - 2); // remove the crc
-        commandBuffer.remove(0, prefixLen);       // remove the matched start frame
+        commandBuffer.remove(0, prefixLen); // remove the matched start frame
 
-        // requestOK++;
-        connectionCounter = 0;
+        if (dumpPi18)
+        {
+            logPi18Dump("ok", command, rawFrame, prefixLen, &commandBuffer);
+        }
+
+        if (!hasOnlyPrintablePiReplyChars(commandBuffer))
+        {
+            const String sanitizedReply = sanitizeLogText(commandBuffer, 72);
+            writeLog("[PI][ERR] cmd=%s non-printable payload len=%u recv=\"%s\"",
+                     command.c_str(),
+                     static_cast<unsigned>(commandBuffer.length()),
+                     sanitizedReply.c_str());
+            connectionCounter++;
+            commandBuffer = "ERCRC";
+        }
+        else
+        {
+            // requestOK++;
+            connectionCounter = 0;
+        }
     }
     else if (cbLen >= 2 &&
              prefixLen > 0 &&
@@ -1161,7 +1305,12 @@ String PI_Serial::requestData(String command)
         crcCalc = getCHK(cbBuf, cbLen - 1) + 1;
         crcRecive = commandBuffer[cbLen - 1];
         commandBuffer.remove(cbLen - 1); // remove the crc
-        commandBuffer.remove(0, prefixLen);       // remove the matched start frame
+        commandBuffer.remove(0, prefixLen); // remove the matched start frame
+
+        if (dumpPi18)
+        {
+            logPi18Dump("chk", command, rawFrame, prefixLen, &commandBuffer);
+        }
 
         // requestOK++;
         connectionCounter = 0;
@@ -1190,6 +1339,10 @@ String PI_Serial::requestData(String command)
                  crcCalc,
                  static_cast<unsigned>(cbLen),
                  sanitizedReply.c_str());
+        if (dumpPi18)
+        {
+            logPi18Dump("err", command, rawFrame, prefixLen, nullptr);
+        }
         connectionCounter++;
         commandBuffer = "ERCRC";
     }
@@ -1197,6 +1350,15 @@ String PI_Serial::requestData(String command)
     {
         busyCount.fetch_sub(1, std::memory_order_relaxed);
     }
+
+    if (!commandBuffer.isEmpty() &&
+        commandBuffer != DESCR_req_NAK &&
+        commandBuffer != DESCR_req_NOA &&
+        commandBuffer != DESCR_req_ERCRC)
+    {
+        commandBuffer = sanitizePiReplyText(commandBuffer);
+    }
+
     return commandBuffer;
 }
 
