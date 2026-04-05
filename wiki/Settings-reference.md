@@ -38,8 +38,8 @@ This page explains the settings available in the Web UI.
 | User | MQTT username. | Default: empty | Optional. |
 | Password | MQTT password. | Default: empty | Optional. |
 | Base topic | Root topic used for all publishes and subscriptions. | Default: `Solar` | Example: `Solar/LiveData/...` |
-| Trigger topic | Topic that triggers an immediate full MQTT publish when a message arrives. | Default: empty | Payload content is ignored. Useful for external polling or automations. |
-| Send interval [s] | Periodic MQTT publish interval. | Default: `30`, range `0..86400` | `0` disables the periodic timer. Reconnects, commands, DS18B20 updates and trigger-topic messages can still publish data immediately. |
+| Trigger topic | Topic that requests a full MQTT state publish when a message arrives. | Default: empty | Payload content is ignored. With `Send interval > 0`, the next publish still follows the configured interval. With `Send interval = 0`, the publish happens immediately. |
+| Send interval [s] | MQTT state publish interval. | Default: `30`, range `0..86400` | Values greater than `0` rate-limit state publishes to this interval. `0` enables immediate mode and publishes new state as soon as it becomes available. |
 | Use SSL/TLS | Uses TLS for the MQTT connection. | Default: `off` | Current firmware encrypts the connection but does not validate the broker certificate. |
 | Enable JSON mode | Publishes grouped JSON data under `<base topic>/Data`. | Default: `off` | Intended as an alternative to only using many single-value topics. JSON mode cannot be enabled together with Home Assistant discovery. |
 | Enable Home Assistant discovery | Publishes Home Assistant discovery topics. | Default: `off` | Enabling this switches JSON mode off automatically. See [Home Assistant integration](HomeAssistant-integration). |
@@ -61,7 +61,6 @@ This page explains the settings available in the Web UI.
 | Build target | Status LED | UART RX | UART TX | RS485 DIR | DS18B20 | Ethernet |
 | --- | --- | --- | --- | --- | --- | --- |
 | `wemos_d1_mini32` | `2` | `19` | `23` | `18` | `21` | no |
-| `wemos_d1_mini32_dbg` | `2` | `19` | `23` | `18` | `21` | no |
 | `esp32c3_supermini` | `-1` | `20` | `21` | `10` | `3` | no |
 | `esp32s3_supermini` | `-1` | `16` | `15` | `7` | `6` | no |
 | `waveshare_esp32_s3_eth` | `-1` | `17` | `18` | `15` | `21` | yes |

@@ -23,7 +23,7 @@ public:
     void reconfigure();
 
     bool isConnected();
-    void triggerFullStatePublish() { _pendingFullPublish = true; }
+    void triggerFullStatePublish();
     void triggerHaDiscovery();
     void publishSensorImmediate(uint8_t index, float temperature);
 
@@ -55,6 +55,8 @@ private:
 
     void configureClient();
     bool ensureConnected();
+    uint32_t statePublishIntervalMs() const;
+    bool usesImmediateStatePublishing() const;
     void publishAlive();
     void publishState();
     void publishFlatState(JsonDocument &snapshot);

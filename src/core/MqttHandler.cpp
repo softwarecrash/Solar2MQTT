@@ -196,6 +196,7 @@ void MqttHandler::begin()
 {
     configureClient();
     _configured = strlen(_settings.get.mqttHost()) > 0;
+    _pendingFullPublish = false;
     _lastReconnectAttempt = 0;
     _lastAlivePublish = millis();
     _lastStatePublish = millis();
@@ -213,7 +214,7 @@ void MqttHandler::reconfigure()
 
     configureClient();
     _configured = strlen(_settings.get.mqttHost()) > 0;
-    _pendingFullPublish = _configured;
+    _pendingFullPublish = _configured && usesImmediateStatePublishing();
     _pendingHaDiscovery = _configured && _settings.get.mqttHAEnabled();
     _forceHaDiscovery = _pendingHaDiscovery;
     _pendingLegacyDs18Cleanup = true;
@@ -244,10 +245,9 @@ void MqttHandler::loop()
         publishAlive();
     }
 
-    const uint32_t intervalMs = _settings.get.mqttRefresh() * 1000UL;
+    const uint32_t intervalMs = statePublishIntervalMs();
     if (connected && intervalMs > 0 && (now - _lastStatePublish) >= intervalMs)
     {
-        _lastStatePublish = now;
         _pendingFullPublish = true;
     }
 
@@ -255,6 +255,7 @@ void MqttHandler::loop()
     {
         _pendingFullPublish = false;
         publishState();
+        _lastStatePublish = now;
 
         if (_settings.get.mqttHAEnabled() && !_pendingHaDiscovery)
         {
@@ -278,6 +279,14 @@ bool MqttHandler::isConnected()
     return _mqtt.connected();
 }
 
+void MqttHandler::triggerFullStatePublish()
+{
+    if (usesImmediateStatePublishing())
+    {
+        _pendingFullPublish = true;
+    }
+}
+
 void MqttHandler::triggerHaDiscovery()
 {
     _pendingHaDiscovery = true;
@@ -286,7 +295,7 @@ void MqttHandler::triggerHaDiscovery()
 
 void MqttHandler::publishSensorImmediate(uint8_t index, float temperature)
 {
-    if (!_mqtt.connected())
+    if (!_mqtt.connected() || !usesImmediateStatePublishing())
     {
         return;
     }
@@ -317,7 +326,7 @@ void MqttHandler::handleMessage(char *topic, uint8_t *payload, unsigned int leng
     const String topicString(topic);
     if (strlen(_settings.get.mqttTriggerPath()) > 0 && topicString == _settings.get.mqttTriggerPath())
     {
-        _pendingFullPublish = true;
+        triggerFullStatePublish();
         return;
     }
 
@@ -325,8 +334,18 @@ void MqttHandler::handleMessage(char *topic, uint8_t *payload, unsigned int leng
     if (topicString == commandTopic)
     {
         _inverterService.queueCommand(message);
-        _pendingFullPublish = true;
+        triggerFullStatePublish();
     }
+}
+
+uint32_t MqttHandler::statePublishIntervalMs() const
+{
+    return static_cast<uint32_t>(_settings.get.mqttRefresh()) * 1000UL;
+}
+
+bool MqttHandler::usesImmediateStatePublishing() const
+{
+    return statePublishIntervalMs() == 0;
 }
 
 void MqttHandler::configureClient()
@@ -412,7 +431,11 @@ bool MqttHandler::ensureConnected()
         }
         _pendingLegacyDs18Cleanup = false;
     }
-    _pendingFullPublish = true;
+    _pendingFullPublish = usesImmediateStatePublishing();
+    if (!usesImmediateStatePublishing())
+    {
+        _lastStatePublish = millis();
+    }
     if (_settings.get.mqttHAEnabled())
     {
         _pendingHaDiscovery = true;

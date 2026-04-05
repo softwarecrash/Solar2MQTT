@@ -43,6 +43,7 @@
 
       <label for="mqttRefresh">Send interval [s]</label>
       <input type="number" id="mqttRefresh" name="refresh" inputmode="numeric" placeholder="0">
+      <p class="field-note"><code>0</code> means immediate publish mode. Values greater than <code>0</code> limit state publishes to the configured interval.</p>
 
       <p class="field-note">MQTT is active when a broker host is configured.</p>
 
