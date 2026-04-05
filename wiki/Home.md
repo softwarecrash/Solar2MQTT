@@ -1,19 +1,5 @@
 Welcome to the Solar2MQTT wiki.
 
-This wiki keeps the familiar page layout from the older project, but the content is updated for the current version.
-
-## Current scope
-
-- Build targets: `wemos_d1_mini32`, `wemos_d1_mini32_dbg`
-- Default pin layout matches the familiar Wemos D1 Mini labeling
-- Supports many common PI and Modbus inverter families
-- Web UI with status page, Wi-Fi setup, MQTT settings, device settings, firmware update, debug tools and Web Serial
-- MQTT flat topics or JSON mode
-- Home Assistant discovery
-- DS18B20 temperature sensor support
-- GitHub OTA update, local OTA upload, settings backup and restore
-- Optional simulator mode for testing without a real inverter
-
 ## Quick links
 
 - [Wiring Diagram](Wiring-Diagram)
