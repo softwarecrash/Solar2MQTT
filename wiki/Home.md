@@ -19,6 +19,7 @@ This wiki keeps the familiar page layout from the older project, but the content
 - [Wiring Diagram](Wiring-Diagram)
 - [Wiring temperature sensors](Wiring-temperature-sensors)
 - [Datapoints and units](Datapoints-and-units)
+- [Settings reference](Settings-reference)
 - [Set parameters](Set-parameters)
 - [WebSerial](WebSerial)
 - [Home Assistant integration](HomeAssistant-integration)
