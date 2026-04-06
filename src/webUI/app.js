@@ -910,16 +910,6 @@ async function loadDataPreview() {
   setText("dataPreviewMeta", `Last updated: ${new Date().toLocaleTimeString("en-GB")}`);
 }
 
-async function loadReportPreview() {
-  const preview = byId("reportPreview");
-  if (!preview) {
-    return;
-  }
-
-  preview.textContent = await fetchText("/api/debug/report");
-  setText("reportPreviewMeta", `Last updated: ${new Date().toLocaleTimeString("en-GB")}`);
-}
-
 function getCommandAnswerValue(data) {
   const answer = data?.RawData?.CommandAnswer;
   return typeof answer === "string" ? answer.trim() : "";
@@ -1109,12 +1099,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     showNotice("JSON data loaded.");
   });
 
-  bindClick("previewReportBtn", async () => {
-    await loadReportPreview();
-    focusPreview("reportPreview");
-    showNotice("Debug report loaded.");
-  });
-
   bindClick("rebootBtn", async () => {
     await fetchJson("/api/reboot", { method: "POST" });
     showNotice("Reboot triggered.");
@@ -1154,5 +1138,5 @@ window.addEventListener("DOMContentLoaded", async () => {
     syncRangeValue("statusLedBrightness", "statusLedBrightnessValue");
   }
 
-  await Promise.allSettled([loadDataPreview(), loadReportPreview()]);
+  await loadDataPreview();
 });

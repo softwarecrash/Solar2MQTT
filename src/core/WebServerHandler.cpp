@@ -763,6 +763,7 @@ void WebServerHandler::registerRoutes()
                       "application/json",
                       started ? "{\"success\":true}" : "{\"success\":false}"); });
 
+    /*
     _server.on("/api/loopback/status", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
         if (!isAuthorized(request))
@@ -778,6 +779,7 @@ void WebServerHandler::registerRoutes()
         String json;
         serializeJson(doc, json);
         request->send(200, "application/json", json); });
+    */
 
     _server.on("/api/debug/report", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
