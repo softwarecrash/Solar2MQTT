@@ -5,6 +5,7 @@ This page is generated automatically from public device reports submitted throug
 <!-- REPORTDEVICE:START -->
 | Manufacturer | Model | Transport | Protocol | Protocol ID | Detected Model | Firmware | Build Variant | Notes | Reports |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ANERN | AN-SCI-ECO-3200 | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Actually it is ESP32 30 pin CH340 | 1 |
 | WERCHTAY | GD3024EMH | RS232 | PI30 | PI30 | VMII-3000 | - | wemos_d1_mini32 | PIN-Layout RJ45 am Inverter: Pin 2: 12V VCC Pin 3: Inverter TX Pin 5: GND Pin 6: Inverter RX | 1 |
 <!-- REPORTDEVICE:END -->
 
