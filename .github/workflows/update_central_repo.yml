@@ -80,6 +80,7 @@ jobs:
         run: |
           version="${RELEASE_VERSION#v}"
           version="${version#V}"
+          version_pattern="V?${version}"
           echo "Firmware Name: $FIRMWARE_NAME"
           echo "Release Version: $version"
 
@@ -99,8 +100,8 @@ jobs:
             count=0
 
             while read file; do
-              if [[ "$file" == *"_${version}.bin" ]]; then
-                variant_part=$(echo "$file" | sed -E 's/^'"$FIRMWARE_NAME"'_//; s/_'"${version}"'\.bin$//')
+              if [[ "$file" =~ _${version_pattern}\.bin$ ]]; then
+                variant_part=$(echo "$file" | sed -E 's/^'"$FIRMWARE_NAME"'_//; s/_V?'"${version}"'\.bin$//')
                 variant_name="${variant_part}"
                 if [[ "$variant_name" == "esp32c3_supermini" || "$variant_name" == "esp32s3_supermini" || "$variant_name" == "waveshare_esp32_s3_eth" || "$variant_name" == "wemos_d1_mini32" ]]; then
                   total=$((total + 1))
@@ -110,8 +111,8 @@ jobs:
 
             echo '[' > variants.json
             while read file; do
-              if [[ "$file" == *"_${version}.bin" ]]; then
-                variant_part=$(echo "$file" | sed -E 's/^'"$FIRMWARE_NAME"'_//; s/_'"${version}"'\.bin$//')
+              if [[ "$file" =~ _${version_pattern}\.bin$ ]]; then
+                variant_part=$(echo "$file" | sed -E 's/^'"$FIRMWARE_NAME"'_//; s/_V?'"${version}"'\.bin$//')
                 variant_name="${variant_part}"
                 case "$variant_name" in
                   "esp32c3_supermini") display_name="ESP32-C3 Super Mini" ;;
