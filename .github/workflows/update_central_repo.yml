@@ -70,84 +70,98 @@ jobs:
       - name: List Downloaded Files
         run: ls -la
 
-      - name: Copy Firmware Files
-        run: |
-          mkdir -p Flash2MQTT/firmware/${{ github.event.repository.name }}
-          rm -f Flash2MQTT/firmware/${{ github.event.repository.name }}/*.bin
-          cp *.bin Flash2MQTT/firmware/${{ github.event.repository.name }}/
-          echo "Updated at $(date -u)" > Flash2MQTT/firmware/${{ github.event.repository.name }}/last_update.txt
-
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Update variants.json and firmware_list.json
+      - name: Sync, Update and Push Central Repository
         env:
           FIRMWARE_NAME: ${{ github.event.repository.name }}
           RELEASE_VERSION: ${{ steps.fetch-release.outputs.tag }}
         run: |
-          cd Flash2MQTT/firmware/${FIRMWARE_NAME}
-          ls *.bin > bin_files.txt
-          total=0
-          count=0
           version="${RELEASE_VERSION#v}"
           version="${version#V}"
           echo "Firmware Name: $FIRMWARE_NAME"
           echo "Release Version: $version"
 
-          echo "Determining total number of desired variants..."
-          while read file; do
-            if [[ "$file" == *"_${version}.bin" ]]; then
-              variant_part=$(echo "$file" | sed -E 's/^'"$FIRMWARE_NAME"'_//; s/_'"${version}"'\.bin$//')
-              variant_name="${variant_part}"
-              if [[ "$variant_name" == "esp32c3_supermini" || "$variant_name" == "esp32s3_supermini" || "$variant_name" == "waveshare_esp32_s3_eth" || "$variant_name" == "wemos_d1_mini32" ]]; then
-                total=$((total + 1))
+          update_repo_contents() {
+            cd Flash2MQTT
+            git fetch origin main
+            git checkout -B main origin/main
+
+            mkdir -p "firmware/${FIRMWARE_NAME}"
+            rm -f "firmware/${FIRMWARE_NAME}"/*.bin
+            cp ../*.bin "firmware/${FIRMWARE_NAME}/"
+            printf 'Updated at %s\n' "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > "firmware/${FIRMWARE_NAME}/last_update.txt"
+
+            cd "firmware/${FIRMWARE_NAME}"
+            ls *.bin > bin_files.txt
+            total=0
+            count=0
+
+            while read file; do
+              if [[ "$file" == *"_${version}.bin" ]]; then
+                variant_part=$(echo "$file" | sed -E 's/^'"$FIRMWARE_NAME"'_//; s/_'"${version}"'\.bin$//')
+                variant_name="${variant_part}"
+                if [[ "$variant_name" == "esp32c3_supermini" || "$variant_name" == "esp32s3_supermini" || "$variant_name" == "waveshare_esp32_s3_eth" || "$variant_name" == "wemos_d1_mini32" ]]; then
+                  total=$((total + 1))
+                fi
               fi
-            fi
-          done < bin_files.txt
+            done < bin_files.txt
 
-          echo '[' > variants.json
-          while read file; do
-            if [[ "$file" == *"_${version}.bin" ]]; then
-              variant_part=$(echo "$file" | sed -E 's/^'"$FIRMWARE_NAME"'_//; s/_'"${version}"'\.bin$//')
-              variant_name="${variant_part}"
-              case "$variant_name" in
-                "esp32c3_supermini") display_name="ESP32-C3 Super Mini" ;;
-                "esp32s3_supermini") display_name="ESP32-S3 Super Mini" ;;
-                "waveshare_esp32_s3_eth") display_name="Waveshare ESP32-S3 ETH" ;;
-                "wemos_d1_mini32") display_name="Wemos D1 Mini32" ;;
-                *) continue ;;
-              esac
-              count=$((count + 1))
-              echo '  {' >> variants.json
-              echo '    "displayName": "'"$display_name"'",' >> variants.json
-              echo '    "file": "https://all-solutions.github.io/Flash2MQTT/firmware/'"$FIRMWARE_NAME"'/'"$file"'"' >> variants.json
-              if [ $count -lt $total ]; then
-                echo '  },' >> variants.json
-              else
-                echo '  }' >> variants.json
+            echo '[' > variants.json
+            while read file; do
+              if [[ "$file" == *"_${version}.bin" ]]; then
+                variant_part=$(echo "$file" | sed -E 's/^'"$FIRMWARE_NAME"'_//; s/_'"${version}"'\.bin$//')
+                variant_name="${variant_part}"
+                case "$variant_name" in
+                  "esp32c3_supermini") display_name="ESP32-C3 Super Mini" ;;
+                  "esp32s3_supermini") display_name="ESP32-S3 Super Mini" ;;
+                  "waveshare_esp32_s3_eth") display_name="Waveshare ESP32-S3 ETH" ;;
+                  "wemos_d1_mini32") display_name="Wemos D1 Mini32" ;;
+                  *) continue ;;
+                esac
+                count=$((count + 1))
+                echo '  {' >> variants.json
+                echo '    "displayName": "'"$display_name"'",' >> variants.json
+                echo '    "file": "https://all-solutions.github.io/Flash2MQTT/firmware/'"$FIRMWARE_NAME"'/'"$file"'"' >> variants.json
+                if [ $count -lt $total ]; then
+                  echo '  },' >> variants.json
+                else
+                  echo '  }' >> variants.json
+                fi
               fi
+            done < bin_files.txt
+            echo ']' >> variants.json
+            rm bin_files.txt
+
+            cd ..
+            if [ ! -f firmware_list.json ]; then
+              echo '[]' > firmware_list.json
             fi
-          done < bin_files.txt
-          echo ']' >> variants.json
-          rm bin_files.txt
+            tmpfile=$(mktemp)
+            jq --arg name "$FIRMWARE_NAME" --arg version "$version" \
+              'if any(.[]; .name == $name) then map(if .name == $name then .version = $version else . end) else . + [{"name": $name, "version": $version}] end' \
+              firmware_list.json > "$tmpfile" && mv "$tmpfile" firmware_list.json
 
-          cd ..
-          if [ ! -f firmware_list.json ]; then
-            echo '[]' > firmware_list.json
-          fi
-          tmpfile=$(mktemp)
-          jq --arg name "$FIRMWARE_NAME" --arg version "$version" \
-            'if any(.[]; .name == $name) then map(if .name == $name then .version = $version else . end) else . + [{"name": $name, "version": $version}] end' \
-            firmware_list.json > "$tmpfile" && mv "$tmpfile" firmware_list.json
+            cd ../..
+          }
 
-      - name: Commit and Push Changes
-        env:
-          RELEASE_VERSION: ${{ steps.fetch-release.outputs.tag }}
-        run: |
-          cd Flash2MQTT
-          git add firmware/${{ github.event.repository.name }}
-          git add firmware/firmware_list.json
-          git commit -m "Update firmware for ${{ github.event.repository.name }} to version $RELEASE_VERSION" || \
-            git commit --allow-empty -m "Force update for ${{ github.event.repository.name }} to version $RELEASE_VERSION (no file changes)"
-          git pull --rebase origin main
-          git push https://all-solutions:${{ secrets.CENTRAL_REPO_TOKEN }}@github.com/all-solutions/Flash2MQTT.git HEAD:main
+          for attempt in 1 2 3; do
+            echo "Push attempt ${attempt}/3"
+            update_repo_contents
+
+            cd Flash2MQTT
+            git add "firmware/${FIRMWARE_NAME}" "firmware/firmware_list.json"
+            git commit -m "Update firmware for ${FIRMWARE_NAME} to version ${RELEASE_VERSION}" || true
+
+            if git push https://all-solutions:${{ secrets.CENTRAL_REPO_TOKEN }}@github.com/all-solutions/Flash2MQTT.git HEAD:main; then
+              exit 0
+            fi
+
+            cd ..
+            echo "Push failed because the remote changed. Retrying with a fresh sync..."
+            sleep 2
+          done
+
+          echo "Failed to push firmware update after 3 attempts."
+          exit 1
