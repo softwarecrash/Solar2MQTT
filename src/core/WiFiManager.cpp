@@ -454,15 +454,24 @@ bool WiFiManager::connectToWifi()
         }
 
         uint8_t bssid[6] = {};
-        const bool lockBssid = _settings.get.wifiBssidLock() && parseBssid(candidate.bssid, bssid);
+        const bool bssidLockRequested = _settings.get.wifiBssidLock();
+        const bool lockBssid = bssidLockRequested && parseBssid(candidate.bssid, bssid);
 
         LogSerial.printf("[Network] Trying SSID: %s\n", candidate.ssid);
+        if (bssidLockRequested && !lockBssid)
+        {
+            LogSerial.println(F("[Network] BSSID lock requested, but stored BSSID is missing/invalid. Falling back to strongest AP for the SSID."));
+        }
+
         if (lockBssid)
         {
+            WiFi.setScanMethod(WIFI_FAST_SCAN);
             WiFi.begin(candidate.ssid, candidate.password, 0, bssid, true);
         }
         else
         {
+            WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);
+            WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL);
             WiFi.begin(candidate.ssid, candidate.password);
         }
 
