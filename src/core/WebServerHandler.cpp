@@ -222,7 +222,6 @@ void WebServerHandler::registerRoutes()
     serveAsset("/firmware", firmware_html_gz_mime, firmware_html_gz, firmware_html_gz_len);
     serveAsset("/firmwareupdate", firmware_html_gz_mime, firmware_html_gz, firmware_html_gz_len);
     serveAsset("/debug", debug_html_gz_mime, debug_html_gz, debug_html_gz_len);
-    serveAsset("/confirmreset", confirmreset_html_gz_mime, confirmreset_html_gz, confirmreset_html_gz_len);
     serveAsset("/webserial", webserial_html_gz_mime, webserial_html_gz, webserial_html_gz_len);
     serveAsset("/app.js", app_js_gz_mime, app_js_gz, app_js_gz_len);
     serveAsset("/style.css", style_css_gz_mime, style_css_gz, style_css_gz_len);
@@ -740,16 +739,6 @@ void WebServerHandler::registerRoutes()
         }
         g_pendingRestart = true;
         g_restartAt = millis() + 500;
-        request->send(200, "application/json", "{\"success\":true}"); });
-
-    _server.on("/api/factory-reset", HTTP_POST, [this](AsyncWebServerRequest *request)
-               {
-        if (!isAuthorized(request))
-        {
-            return request->requestAuthentication();
-        }
-        g_pendingFactoryReset = true;
-        g_factoryResetAt = millis() + 500;
         request->send(200, "application/json", "{\"success\":true}"); });
 
     _server.on("/api/loopback/start", HTTP_POST, [this](AsyncWebServerRequest *request)

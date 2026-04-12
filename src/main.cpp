@@ -31,8 +31,6 @@ Settings _settings;
 
 bool g_pendingRestart = false;
 uint32_t g_restartAt = 0;
-bool g_pendingFactoryReset = false;
-uint32_t g_factoryResetAt = 0;
 bool g_pendingNetworkReconfigure = false;
 uint32_t g_networkReconfigureAt = 0;
 bool g_pendingInverterReconfigure = false;
@@ -169,14 +167,6 @@ void loop()
                                    static_cast<uint8_t>(_settings.get.statusLedBrightness()));
         mqttHandler.triggerFullStatePublish();
         webServerHandler.notifyStatusBar();
-    }
-
-    if (g_pendingFactoryReset && static_cast<int32_t>(millis() - g_factoryResetAt) >= 0)
-    {
-        g_pendingFactoryReset = false;
-        inverterService.shutdown();
-        delay(25);
-        FactoryResetManager::requestFactoryReset();
     }
 
     if (g_pendingRestart && static_cast<int32_t>(millis() - g_restartAt) >= 0)

@@ -62,12 +62,6 @@ void FactoryResetManager::loop()
     }
 }
 
-void FactoryResetManager::requestFactoryReset()
-{
-    Serial.println(F("[FactoryReset] Factory reset requested"));
-    performFactoryReset();
-}
-
 void FactoryResetManager::handleBootResetCount()
 {
     const esp_reset_reason_t reason = esp_reset_reason();

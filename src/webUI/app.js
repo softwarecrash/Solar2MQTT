@@ -1104,20 +1104,6 @@ window.addEventListener("DOMContentLoaded", async () => {
     showNotice("Reboot triggered.");
   });
 
-  bindClick("resetBtn", async () => {
-    if (!window.confirm("Trigger factory reset now?")) {
-      return;
-    }
-
-    await fetchJson("/api/factory-reset", { method: "POST" });
-    showNotice("Factory reset triggered.");
-  });
-
-  bindClick("factoryResetNowBtn", async () => {
-    await fetchJson("/api/factory-reset", { method: "POST" });
-    showNotice("Factory reset triggered.");
-  });
-
   const mqttJsonMode = byId("mqttJsonMode");
   const mqttHA = byId("mqttHA");
   if (mqttJsonMode && mqttHA) {
