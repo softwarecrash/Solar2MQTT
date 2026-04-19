@@ -298,26 +298,24 @@ bool PI_Serial::PIXX_QPIGS()
         }
       }
       liveData[DESCR_Battery_Load] = (liveData[DESCR_Battery_Charge_Current].as<unsigned short>() - liveData[DESCR_Battery_Discharge_Current].as<unsigned short>());
-      if (useRevoQpigsLayout)
+      if (liveData[DESCR_PV_Input_Power].isNull() && !liveData[DESCR_PV_Charging_Power].isNull())
       {
-        if (liveData[DESCR_PV_Input_Power].isNull() && !liveData[DESCR_PV_Charging_Power].isNull())
+        liveData[DESCR_PV_Input_Power] = liveData[DESCR_PV_Charging_Power];
+      }
+      if (!liveData[DESCR_PV_Input_Power].isNull() &&
+          !liveData[DESCR_PV_Input_Voltage].isNull() &&
+          fieldsQPIGS[12][0] != '\0' &&
+          !hasDecimalPoint(fieldsQPIGS[12]))
+      {
+        const double pvVoltage = liveData[DESCR_PV_Input_Voltage].as<double>();
+        if (pvVoltage > 0.0)
         {
-          liveData[DESCR_PV_Input_Power] = liveData[DESCR_PV_Charging_Power];
-        }
-        if (liveData[DESCR_PV_Input_Current].isNull() &&
-            !liveData[DESCR_PV_Input_Power].isNull() &&
-            !liveData[DESCR_PV_Input_Voltage].isNull())
-        {
-          const double pvVoltage = liveData[DESCR_PV_Input_Voltage].as<double>();
-          if (pvVoltage > 0.0)
-          {
-            liveData[DESCR_PV_Input_Current] = pi_compute_current(
-              liveData[DESCR_PV_Input_Power].as<double>(),
-              pvVoltage);
-          }
+          liveData[DESCR_PV_Input_Current] = pi_compute_current(
+            liveData[DESCR_PV_Input_Power].as<double>(),
+            pvVoltage);
         }
       }
-      else
+      else if (liveData[DESCR_PV_Input_Power].isNull())
       {
         liveData[DESCR_PV_Input_Power] = pi_compute_power(
           liveData[DESCR_PV_Input_Voltage].as<double>(),
