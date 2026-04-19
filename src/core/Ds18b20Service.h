@@ -25,8 +25,10 @@ private:
         std::unique_ptr<Mycila::DS18> sensor;
         bool hasValue = false;
         float lastTemperature = 0.0f;
+        uint8_t missedPolls = 0;
     };
 
+    bool discoverSensors();
     void clearTargetRange(size_t fromIndex);
     void publishValue(size_t index, float temperature);
     void clearValue(size_t index);
@@ -35,6 +37,11 @@ private:
     std::vector<SensorSlot> _sensors;
     JsonObject _target;
     std::function<void(uint8_t, float)> _callback;
+    int8_t _pin;
+    uint32_t _nextPollAt;
+    uint32_t _nextDiscoveryAt;
+    uint8_t _consecutiveFailedPolls;
+    bool _enabled;
     bool _active;
     size_t _sensorCount;
 };
