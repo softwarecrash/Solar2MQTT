@@ -203,9 +203,33 @@ bool PI_Serial::PIXX_QPIGS()
       char *countFieldList[30];
       return pi_split_fields(countBuffer, delimiter[0], countFieldList, 30);
     };
+    auto hasDecimalPoint = [](const char *value) {
+      return value != nullptr && strchr(value, '.') != nullptr;
+    };
+    auto isBinaryField = [](const char *value) {
+      if (value == nullptr || value[0] == '\0')
+      {
+        return false;
+      }
+      for (const char *cursor = value; *cursor != '\0'; ++cursor)
+      {
+        if (*cursor != '0' && *cursor != '1')
+        {
+          return false;
+        }
+      }
+      return true;
+    };
     const int qpiriFields = countFields(get.raw.qpiri);
     const int qallFields = hasQallResponse ? countFields(commandAnswerQALL) : 0;
+    const bool hasRevoLikeQpigsTail = protocol != PI41 &&
+                                      !hasQallResponse &&
+                                      StringCount >= (int)qpigs_21_length &&
+                                      !hasDecimalPoint(fieldsQPIGS[12]) &&
+                                      hasDecimalPoint(fieldsQPIGS[13]) &&
+                                      isBinaryField(fieldsQPIGS[16]);
     const bool useRevoQpigsLayout = (protocol == PI30_REVO) ||
+                                    hasRevoLikeQpigsTail ||
                                     (qallFields >= (int)qallList_length &&
                                      StringCount >= (int)qpigs_21_length &&
                                      qpiriFields > 0 &&
@@ -279,6 +303,18 @@ bool PI_Serial::PIXX_QPIGS()
         if (liveData[DESCR_PV_Input_Power].isNull() && !liveData[DESCR_PV_Charging_Power].isNull())
         {
           liveData[DESCR_PV_Input_Power] = liveData[DESCR_PV_Charging_Power];
+        }
+        if (liveData[DESCR_PV_Input_Current].isNull() &&
+            !liveData[DESCR_PV_Input_Power].isNull() &&
+            !liveData[DESCR_PV_Input_Voltage].isNull())
+        {
+          const double pvVoltage = liveData[DESCR_PV_Input_Voltage].as<double>();
+          if (pvVoltage > 0.0)
+          {
+            liveData[DESCR_PV_Input_Current] = pi_compute_current(
+              liveData[DESCR_PV_Input_Power].as<double>(),
+              pvVoltage);
+          }
         }
       }
       else
@@ -371,9 +407,11 @@ bool PI_Serial::PIXX_QPIGS()
 
        liveData[DESCR_PV_Input_Voltage] = (liveData[DESCR_PV1_Input_Voltage].as<unsigned short>() + liveData[DESCR_PV2_Input_Voltage].as<unsigned short>());
        liveData[DESCR_PV_Charging_Power] = (liveData[DESCR_PV1_Input_Power].as<unsigned short>() + liveData[DESCR_PV2_Input_Power].as<unsigned short>());
-       liveData[DESCR_PV_Input_Current] = (int)((liveData[DESCR_PV_Charging_Power].as<unsigned short>() / (liveData[DESCR_PV_Input_Voltage].as<unsigned short>() + 0.5)) * 100) / 100.0;
+       liveData[DESCR_PV_Input_Current] = pi_compute_current(
+         liveData[DESCR_PV_Charging_Power].as<double>(),
+         liveData[DESCR_PV_Input_Voltage].as<double>());
        liveData[DESCR_Battery_Load] = (liveData[DESCR_Battery_Charge_Current].as<unsigned short>() - liveData[DESCR_Battery_Discharge_Current].as<unsigned short>());
-    }
+      }
     return true;
   }
   else if (protocol == NoD)

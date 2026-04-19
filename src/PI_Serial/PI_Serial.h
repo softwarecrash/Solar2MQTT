@@ -86,6 +86,15 @@ static inline int pi_compute_power(double voltage, double current)
     return pi_round_to_int(voltage * current);
 }
 
+static inline double pi_compute_current(double power, double voltage)
+{
+    if (voltage <= 0.0)
+    {
+        return 0.0;
+    }
+    return pi_round_to_int((power / voltage) * 100.0) / 100.0;
+}
+
 template <size_t N>
 static inline void pi_clear_json_fields(JsonObject object, const char *const (&fields)[N])
 {
