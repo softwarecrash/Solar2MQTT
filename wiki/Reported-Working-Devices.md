@@ -5,6 +5,7 @@ This page is generated automatically from public device reports submitted throug
 <!-- REPORTDEVICE:START -->
 | Manufacturer | Model | Transport | Protocol | Protocol ID | Detected Model | Firmware | Build Variant | Notes | Reports |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ANERN | AN-EX-PRO10200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | The Solar wattage is detected a 0200 instead of 10200, Need to spoof data to set to 10200 to display correct solar percentage. | 1 |
 | ANERN | AN-SCI-ECO-3200 | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | esp32c3_supermini<br>wemos_d1_mini32 | Actually it is ESP32 30 pin CH340 | 2 |
 | ANERN | AN-SCI-EVO-4200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | - | 1 |
 | EASUN | SMH-II-2.2 | RS232 | PI30 | PI30 | - | - | esp32s3_supermini | - | 1 |
