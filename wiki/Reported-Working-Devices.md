@@ -8,6 +8,7 @@ This page is generated automatically from public device reports submitted throug
 | ANERN | AN-EX-PRO10200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | The Solar wattage is detected a 0200 instead of 10200, Need to spoof data to set to 10200 to display correct solar percentage. | 1 |
 | ANERN | AN-SCI-ECO-3200 | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | esp32c3_supermini<br>wemos_d1_mini32 | Actually it is ESP32 30 pin CH340 | 2 |
 | ANERN | AN-SCI-EVO-4200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | - | 1 |
+| EASUN | EASUN SMS-6.5KP | RS232 | MODBUS_DEYE | MODBUS_DEYE | 02020475 | - | esp32c3_supermini | Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working?<br>Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working? email tomfli@wp.pl | 2 |
 | EASUN | SMH-II-2.2 | RS232 | PI30 | PI30 | - | - | esp32s3_supermini | - | 1 |
 | ECGSOLAX | VICTOR MAX-10.2 KW-M | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Using ESP32. Pin assignment: UART Rx: GPIO19 UART Tx: GPIO23 You can get power from the RS232/Wifi port (RJ45) using a 5V stepdown: RJ45 Pin 8: Ground RJ45 Pin 4: VCC (Check voltage first before connecting.) | 1 |
 | EDECOA | EM-402A | RS232 | PI30 | PI30 | - | - | esp32c3_supermini | Hello from Odessa, Ukraine | 1 |
