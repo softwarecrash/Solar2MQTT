@@ -9,6 +9,7 @@
 #include "device/deye/deye.h"
 #include "device/anenji/anenji.h"
 #include "device/smg/smg.h"
+#include "device/smg_ii_11kw/smg_ii_11kw.h"
 
 extern JsonObject deviceJson;
 extern JsonObject staticData;

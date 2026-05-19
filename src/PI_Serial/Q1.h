@@ -41,7 +41,7 @@ const char *const Q1_70[] = {
     DESCR_Fan_Lock_Status,
     nullptr,
     DESCR_Fan_Speed, // Fan PWM speed
-    nullptr,   // SCC charge power
+    DESCR_SCC_Charge_Power,   // SCC charge power
     nullptr,   // Parallel Warning
     nullptr,   // Sync frequency
     DESCR_Inverter_Charge_State,
@@ -61,7 +61,7 @@ const char *const Q1_87[] = {
     DESCR_Fan_Lock_Status,
     nullptr,
     DESCR_Fan_Speed, // Fan PWM speed
-    nullptr,   // SCC charge power
+    DESCR_SCC_Charge_Power,   // SCC charge power
     nullptr,   // Parallel Warning
     nullptr,   // Sync frequency
     DESCR_Inverter_Charge_State,

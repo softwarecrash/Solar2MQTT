@@ -220,6 +220,17 @@ bool PI_Serial::PIXX_QPIGS()
       }
       return true;
     };
+    auto normalizeBusTemperature = [&]() {
+      if (liveData[DESCR_Inverter_Bus_Temperature].isNull())
+      {
+        return;
+      }
+      const double busTemperature = liveData[DESCR_Inverter_Bus_Temperature].as<double>();
+      if (busTemperature > 150.0 && busTemperature < 1000.0)
+      {
+        liveData[DESCR_Inverter_Bus_Temperature] = pi_round_to_int(busTemperature) / 10.0;
+      }
+    };
     const int qpiriFields = countFields(get.raw.qpiri);
     const int qallFields = hasQallResponse ? countFields(commandAnswerQALL) : 0;
     const bool hasRevoLikeQpigsTail = protocol != PI41 &&
@@ -350,6 +361,8 @@ bool PI_Serial::PIXX_QPIGS()
         refineProtocol();
       }
     }
+
+    normalizeBusTemperature();
 
     return true;
   }
