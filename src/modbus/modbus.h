@@ -50,8 +50,8 @@ public:
     String requestData(String command);
 
 private:
+    static constexpr unsigned long kCommandDelayMs = 200;
     unsigned long previousTime = 0;
-    unsigned long cmdDelayTime = 100;
 
     byte requestCounter = 0;
 

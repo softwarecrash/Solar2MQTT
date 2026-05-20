@@ -20,6 +20,8 @@ typedef enum
     //    REGISTER_TYPE_U8 = 0x00,                   /*!< Unsigned 8 */
     REGISTER_TYPE_U16,             /*!< Unsigned 16 */
     REGISTER_TYPE_INT16,           /*!< Signed 16 */
+    REGISTER_TYPE_INT16_ONE_DECIMAL,
+    REGISTER_TYPE_INT16_TWO_DECIMAL,
     REGISTER_TYPE_U32,             /*!< Unsigned 32 */
     REGISTER_TYPE_U32_HIGH_FIRST,  /*!< Unsigned 32, high word first */
     REGISTER_TYPE_U32_ONE_DECIMAL, /*!< Unsigned 32 multiply 0.1*/ 

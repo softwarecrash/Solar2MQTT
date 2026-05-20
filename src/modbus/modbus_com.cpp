@@ -296,6 +296,12 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
         case REGISTER_TYPE_INT16:
             (*variant)[reg->name] = static_cast<int16_t>(raw_value) + reg->offset;
             break;
+        case REGISTER_TYPE_INT16_ONE_DECIMAL:
+            (*variant)[reg->name] = (static_cast<int16_t>(raw_value) / 10.0f) + reg->offset;
+            break;
+        case REGISTER_TYPE_INT16_TWO_DECIMAL:
+            (*variant)[reg->name] = (static_cast<int16_t>(raw_value) / 100.0f) + reg->offset;
+            break;
         case REGISTER_TYPE_U32:
         {
             uint16_t secondWord = 0;

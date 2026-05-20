@@ -50,7 +50,7 @@ void MODBUS::loop()
         return;
     }
 
-    if (millis() - previousTime < cmdDelayTime)
+    if (millis() - previousTime < kCommandDelayMs)
     {
         return;
     }
