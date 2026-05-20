@@ -39,7 +39,8 @@ public:
 private:
     String toBinary(uint16_t input);
     bool decodeDiematicDecimal(uint16_t int_input, int8_t decimals, float *value_ptr);
-    bool getModbusResultMsg(uint8_t result);
+    const char *getModbusResultText(uint8_t result);
+    bool logModbusResult(uint8_t result, uint16_t startRegister, uint16_t registerCount);
     bool getModbusValue(uint16_t register_id,
                         modbus_entity_t modbus_entity,
                         uint16_t *value_ptr,

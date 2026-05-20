@@ -48,43 +48,45 @@ ModbusMaster *MODBUS_COM::getModbusMaster()
     return &_mb;
 }
 
-bool MODBUS_COM::getModbusResultMsg(uint8_t result)
+const char *MODBUS_COM::getModbusResultText(uint8_t result)
 {
-    String tmpstr2 = "";
     switch (result)
     {
     case _mb.ku8MBSuccess:
-        return true;
-        break;
+        return "OK";
     case _mb.ku8MBIllegalFunction:
-        tmpstr2 = "Illegal Function";
-        break;
+        return "Illegal Function";
     case _mb.ku8MBIllegalDataAddress:
-        tmpstr2 = "Illegal Data Address";
-        break;
+        return "Illegal Data Address";
     case _mb.ku8MBIllegalDataValue:
-        tmpstr2 = "Illegal Data Value";
-        break;
+        return "Illegal Data Value";
     case _mb.ku8MBSlaveDeviceFailure:
-        tmpstr2 = "Slave Device Failure";
-        break;
+        return "Slave Device Failure";
     case _mb.ku8MBInvalidSlaveID:
-        tmpstr2 = "Invalid Slave ID";
-        break;
+        return "Invalid Slave ID";
     case _mb.ku8MBInvalidFunction:
-        tmpstr2 = "Invalid Function";
-        break;
+        return "Invalid Function";
     case _mb.ku8MBResponseTimedOut:
-        tmpstr2 = "Response Timed Out";
-        break;
+        return "Response Timed Out";
     case _mb.ku8MBInvalidCRC:
-        tmpstr2 = "Invalid CRC";
-        break;
+        return "Invalid CRC";
     default:
-        tmpstr2 = "Unknown error: " + String(result);
-        break;
+        return "Unknown error";
     }
-    writeLog("%s", tmpstr2.c_str());
+}
+
+bool MODBUS_COM::logModbusResult(uint8_t result, uint16_t startRegister, uint16_t registerCount)
+{
+    if (result == _mb.ku8MBSuccess)
+    {
+        return true;
+    }
+
+    writeLog("Modbus holding read failed start=%u count=%u result=%u (%s)",
+             static_cast<unsigned int>(startRegister),
+             static_cast<unsigned int>(registerCount),
+             static_cast<unsigned int>(result),
+             getModbusResultText(result));
     return false;
 }
 
@@ -124,7 +126,7 @@ bool MODBUS_COM::loadHoldingBlock(uint16_t startRegister, uint16_t registerCount
     for (uint8_t i = 0; i < MODBUS_RETRIES; i++)
     {
         uint8_t result = _mb.readHoldingRegisters(startRegister, registerCount);
-        bool is_received = getModbusResultMsg(result);
+        bool is_received = logModbusResult(result, startRegister, registerCount);
         if (is_received)
         {
             storeReadCache(startRegister, registerCount);
@@ -132,7 +134,9 @@ bool MODBUS_COM::loadHoldingBlock(uint16_t startRegister, uint16_t registerCount
         }
     }
 
-    writeLog("Time-out");
+    writeLog("Modbus holding read failed final start=%u count=%u",
+             static_cast<unsigned int>(startRegister),
+             static_cast<unsigned int>(registerCount));
     clearReadCache();
     return false;
 }
@@ -198,7 +202,7 @@ bool MODBUS_COM::getModbusValue(uint16_t register_id,
             else
             {
                 uint8_t result = _mb.readHoldingRegisters(register_id, readBytes);
-                bool is_received = getModbusResultMsg(result);
+                bool is_received = logModbusResult(result, register_id, readBytes);
                 if (is_received)
                 {
                     storeReadCache(register_id, readBytes);
@@ -213,8 +217,9 @@ bool MODBUS_COM::getModbusValue(uint16_t register_id,
             return false;
         }
     }
-    // Time-out
-    writeLog("Time-out");
+    writeLog("Modbus holding read failed final start=%u count=%u",
+             static_cast<unsigned int>(register_id),
+             static_cast<unsigned int>(readBytes));
     clearReadCache();
     return false;
 }
@@ -430,7 +435,13 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
     }
     else
     {
-        writeLog("Request failed!");
+        const uint16_t requestStart = reg->read_block_count > 0 ? reg->read_block_start : reg->id;
+        const uint16_t requestCount = reg->read_block_count > 0 ? reg->read_block_count : readBytes;
+        writeLog("Request failed: reg=%u name=%s holding start=%u count=%u",
+                 static_cast<unsigned int>(reg->id),
+                 reg->name != nullptr ? reg->name : "",
+                 static_cast<unsigned int>(requestStart),
+                 static_cast<unsigned int>(requestCount));
         return false;
     }
     return true;
