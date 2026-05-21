@@ -16,10 +16,12 @@ public:
     size_t getStaticRegistersCount() const override;
 
 private:
-     static const long _baudRate = 9600;
-     static const uint32_t _modbusAddr = 1;
-     static const protocol_type_t _protocol = MODBUS_ANENJI;
+    static const long _baudRate = 9600;
+    static const uint32_t _modbusAddr = 1;
+    static const protocol_type_t _protocol = MODBUS_ANENJI;
     inline static const char *const _name = "Anenji";
+    static constexpr uint16_t kSerialBlockStart = 186;
+    static constexpr uint16_t kSerialBlockCount = 12;
 
     inline static const modbus_register_t registers_live[] = {
         {201, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, DESCR_Inverter_Operation_Mode, 0, {.bitfield = {
@@ -56,13 +58,6 @@ private:
                                                                                         }}},
     };
 
-    inline static const modbus_register_t registers_device_serial[] = {
-        {186, MODBUS_TYPE_HOLDING, REGISTER_TYPE_ASCII, "SN1"},
-        {188, MODBUS_TYPE_HOLDING, REGISTER_TYPE_ASCII, "SN2"},
-        {190, MODBUS_TYPE_HOLDING, REGISTER_TYPE_ASCII, "SN3"},
-        {192, MODBUS_TYPE_HOLDING, REGISTER_TYPE_ASCII, "SN4"},
-        {194, MODBUS_TYPE_HOLDING, REGISTER_TYPE_ASCII, "SN5"},
-        {196, MODBUS_TYPE_HOLDING, REGISTER_TYPE_ASCII, "SN6"}};
 };
 
 #endif
