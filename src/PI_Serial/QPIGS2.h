@@ -46,6 +46,8 @@ bool PI_Serial::PIXX_QPIGS2()
     const int pi41FieldCount = static_cast<int>(sizeof qpigs2ListL2 / sizeof qpigs2ListL2[0]);
     const int pv2FieldCount = static_cast<int>(sizeof qpigs2List / sizeof qpigs2List[0]);
 
+    // QPIGS2 is only a documented data source for the short PV2 frame or PI41 L2.
+    // Full QPIGS-style replies from single-tracker devices must not affect LiveData.
     if (protocol == PI41 && StringCount == pi41FieldCount)
     {
       for (unsigned int i = 0; i < sizeof qpigs2ListL2 / sizeof qpigs2ListL2[0]; i++)
