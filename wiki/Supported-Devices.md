@@ -18,6 +18,7 @@ Support here means that the code contains a dedicated implementation or a mainta
 - `MODBUS_ANENJI`
 - `MODBUS_SMG`
 - `MODBUS_SMG_II_11KW`
+- `MODBUS_ANENJI_SRNE`
 
 ## Notes
 

@@ -25,30 +25,32 @@ bool Anenji::retrieveModel(MODBUS_COM &mCom, char *modelBuffer, size_t bufferSiz
 
     modelBuffer[0] = '\0';
 
-    uint16_t serialBlock[kSerialBlockCount] = {};
-    if (!mCom.readHoldingBlock(kSerialBlockStart, kSerialBlockCount, serialBlock, kSerialBlockCount))
+    JsonDocument doc;
+    JsonObject jsonObj = doc.to<JsonObject>();
+    modbus_register_info_t model_info = {
+        .variant = &jsonObj,
+        .registers = registers_device_serial,
+        .array_size = sizeof(registers_device_serial) / sizeof(modbus_register_t),
+        .curr_register = 0};
+
+    for (size_t i = 0; i < model_info.array_size; i++)
     {
-        return false;
+        mCom.parseModbusToJson(model_info, false);
+        if (mCom.isAllRegistersRead(model_info))
+        {
+            const char *sn1 = doc["SN1"];
+            const char *sn2 = doc["SN2"];
+            const char *sn3 = doc["SN3"];
+            const char *sn4 = doc["SN4"];
+            const char *sn5 = doc["SN5"];
+            const char *sn6 = doc["SN6"];
+            snprintf(modelBuffer, bufferSize, "%s%s%s%s%s%s", sn1, sn2, sn3, sn4, sn5, sn6);
+            return true;
+        }
+        delay(50);
     }
 
-    size_t position = 0;
-    for (size_t i = 0; i < kSerialBlockCount && position + 1 < bufferSize; ++i)
-    {
-        char highByte = static_cast<char>((serialBlock[i] >> 8) & 0xFF);
-        char lowByte = static_cast<char>(serialBlock[i] & 0xFF);
-
-        if (highByte != '\0' && highByte != static_cast<char>(0xFF) && position + 1 < bufferSize)
-        {
-            modelBuffer[position++] = highByte;
-        }
-        if (lowByte != '\0' && lowByte != static_cast<char>(0xFF) && position + 1 < bufferSize)
-        {
-            modelBuffer[position++] = lowByte;
-        }
-    }
-    modelBuffer[position] = '\0';
-
-    return position > 0;
+    return false;
 }
 
 // Define the size calculation after the arrays are defined

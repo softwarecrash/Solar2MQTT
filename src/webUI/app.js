@@ -419,7 +419,12 @@ function normalizeOverviewLabel(field) {
 }
 
 function totalSolarPower(data) {
-  const pv1Power = getSolarChannelInfo(data, 1).power;
+  const totalPower = pickDataNumber(data, ["PV_Input_Power", "PV_Charging_Power", "SCC_Charge_Power"], ["LiveData"]);
+  if (totalPower !== null) {
+    return totalPower;
+  }
+
+  const pv1Power = pickDataNumber(data, ["PV1_Input_Power"], ["LiveData"]);
   const pv2Power = getSolarChannelInfo(data, 2).power;
 
   if (pv1Power !== null && pv2Power !== null) {
@@ -434,12 +439,7 @@ function totalSolarPower(data) {
     return pv2Power;
   }
 
-  const chargingPower = pickDataNumber(data, ["PV_Charging_Power", "SCC_Charge_Power"], ["LiveData"]);
-  if (chargingPower !== null) {
-    return chargingPower;
-  }
-
-  return null;
+  return getSolarChannelInfo(data, 1).power;
 }
 
 function setMeter(name, valueText, percent, metaText) {
