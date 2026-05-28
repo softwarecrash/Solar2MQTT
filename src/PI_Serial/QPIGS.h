@@ -302,7 +302,7 @@ bool PI_Serial::PIXX_QPIGS()
       }
       refineProtocol();
     }
-    else if (StringCount >= (int)qpigs_90_length)
+    else if (StringCount >= (int)qpigs_90_length && StringCount < (int)qpigs_21_length)
     {
       qpigsList = qpigs_90;
       qpigsList_length = qpigs_90_length;

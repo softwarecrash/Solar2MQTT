@@ -45,7 +45,8 @@ inline const char *const protocolStrings[] = {
 inline const char *protocolToString(protocol_type_t protocol)
 {
     const size_t index = static_cast<size_t>(protocol);
-    if (index >= static_cast<size_t>(PROTOCOL_TYPE_MAX))
+    const size_t stringCount = sizeof(protocolStrings) / sizeof(protocolStrings[0]);
+    if (index >= stringCount || protocolStrings[index] == nullptr)
     {
         return protocolStrings[0];
     }
