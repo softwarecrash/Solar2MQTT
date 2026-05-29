@@ -25,6 +25,7 @@ public:
     modbus_register_info_t live_info;
     modbus_register_info_t static_info;
     MODBUS(HardwareSerial *port, int rxPin, int txPin);
+    ~MODBUS();
 
     /**
      * @brief Initializes this driver

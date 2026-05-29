@@ -11,6 +11,12 @@ MODBUS::MODBUS(HardwareSerial *port, int rxPin, int txPin)
     _rxPin = rxPin;
     _txPin = txPin;
 }
+
+MODBUS::~MODBUS()
+{
+    delete device;
+    device = nullptr;
+}
  
 bool MODBUS::Init()
 {
@@ -122,14 +128,20 @@ protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter typ
             protocol = device->getProtocol();
             staticData[DESCR_Protocol_ID] = protocolToString(protocol);
 
-            // Clean up other devices not selected
+            // Clean up candidates that were not selected. Earlier failures are
+            // already deleted and nulled below, so guard against double-free.
             for (size_t j = 0; j < deviceCount; ++j)
             {
-                if (j != i) delete devices[j];
+                if (j != i && devices[j] != nullptr)
+                {
+                    delete devices[j];
+                    devices[j] = nullptr;
+                }
             }
             return protocol;
         }
         delete devices[i];
+        devices[i] = nullptr;
     }
 
     return protocol;
