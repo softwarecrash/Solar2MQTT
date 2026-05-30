@@ -884,7 +884,7 @@ void SolarInverterService::updateSimulationState(bool forceNotify)
     setLive(DESCR_Battery_Charge_Current, chargeCurrent);
     setLive(DESCR_Battery_Percent, batteryPercent);
     setLive(DESCR_Inverter_Bus_Temperature, busTemperature);
-    setLive(DESCR_PV_Input_Current, pvCurrent10 / 10.0);
+    setLive(DESCR_PV1_Input_Current, pvCurrent10 / 10.0);
     setLive(DESCR_PV_Input_Voltage, pvVoltage10 / 10.0);
     setLive(DESCR_Battery_SCC_Volt, batterySccVolt100 / 100.0);
     setLive(DESCR_Battery_Discharge_Current, dischargeCurrent);

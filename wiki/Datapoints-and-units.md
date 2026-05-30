@@ -45,9 +45,11 @@ If Home Assistant discovery is enabled together with JSON mode, the normal MQTT 
 | `Battery_Discharge_Current` | A | Discharge current |
 | `Battery_Percent` | % | Battery state of charge if available |
 | `PV_Input_Voltage` | V | PV voltage |
-| `PV_Input_Current` | A | PV current |
 | `PV_Input_Power` | W | PV power |
 | `PV_Charging_Power` | W | Solar charging power |
+| `PV1_Input_Voltage` | V | First PV tracker voltage |
+| `PV1_Input_Current` | A | First PV tracker current |
+| `PV1_Input_Power` | W | First PV tracker power |
 | `PV2_Input_Voltage` | V | Second PV tracker voltage |
 | `PV2_Input_Current` | A | Second PV tracker current |
 | `PV2_Input_Power` | W | Second PV tracker power |

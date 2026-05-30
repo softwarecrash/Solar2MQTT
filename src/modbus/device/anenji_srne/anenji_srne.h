@@ -40,7 +40,7 @@ private:
         {0x0101, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_Battery_Voltage, 0, {}, nullptr, kControllerBlockStart, kControllerBlockCount},
         {0x0102, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, "Battery_Current", 0, {}, nullptr, kControllerBlockStart, kControllerBlockCount},
         {0x0107, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_PV1_Input_Voltage, 0, {}, nullptr, kControllerBlockStart, kControllerBlockCount},
-        {0x0108, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_PV_Input_Current, 0, {}, nullptr, kControllerBlockStart, kControllerBlockCount},
+        {0x0108, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_PV1_Input_Current, 0, {}, nullptr, kControllerBlockStart, kControllerBlockCount},
         {0x0109, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_PV1_Input_Power, 0, {}, nullptr, kControllerBlockStart, kControllerBlockCount},
         {0x010B, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_Inverter_Charge_State, 0, {}, nullptr, kControllerBlockStart, kControllerBlockCount},
         {0x010E, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, "Charge_Power", 0, {}, nullptr, kControllerBlockStart, kControllerBlockCount},

@@ -31,7 +31,7 @@ inline static const modbus_register_t registers_live[] = {
                                                                                                     }}},
 
     {109, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_PV_Input_Voltage},
-    {110, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_PV_Input_Current},
+    {110, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_PV1_Input_Current},
     {186, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_PV_Input_Power},
 
     {175, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_Output_Power},

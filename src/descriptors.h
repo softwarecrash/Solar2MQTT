@@ -26,7 +26,7 @@
 #define DESCR_Battery_Charge_Current "Battery_Charge_Current"                 // KKK
 #define DESCR_Battery_Percent "Battery_Percent"                               // OOO
 #define DESCR_Inverter_Bus_Temperature "Inverter_Bus_Temperature"             // TTTT
-#define DESCR_PV_Input_Current "PV_Input_Current"                             // EE.E
+#define DESCR_PV1_Input_Current "PV1_Input_Current"                           // EE.E
 #define DESCR_PV_Input_Voltage "PV_Input_Voltage"                             // UUU.U
 #define DESCR_Battery_SCC_Volt "Battery_SCC_Volt"                             // WW.WW
 #define DESCR_Battery_Discharge_Current "Battery_Discharge_Current"           // PPPP

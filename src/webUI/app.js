@@ -158,7 +158,7 @@ const OVERVIEW_GROUPS = [
     title: "Solar",
     fields: [
       { label: "V", keys: ["PV_Input_Voltage", "PV1_Input_Voltage"], unit: "V", decimals: 1 },
-      { label: "A", keys: ["PV_Input_Current"], unit: "A", decimals: 1 },
+      { label: "A", keys: ["PV1_Input_Current"], unit: "A", decimals: 1 },
       { label: "W", solarChannel: 1, unit: "W", decimals: 0 },
     ],
   },
@@ -357,7 +357,7 @@ function joinMeta(parts) {
 function getSolarChannelInfo(data, channel = 1) {
   const isSecond = channel === 2;
   const voltage = pickDataNumber(data, isSecond ? ["PV2_Input_Voltage"] : ["PV_Input_Voltage", "PV1_Input_Voltage"], ["LiveData"]);
-  const current = pickDataNumber(data, isSecond ? ["PV2_Input_Current"] : ["PV_Input_Current"], ["LiveData"]);
+  const current = pickDataNumber(data, isSecond ? ["PV2_Input_Current"] : ["PV1_Input_Current"], ["LiveData"]);
   const measuredPower = pickDataNumber(
     data,
     isSecond ? ["PV2_Input_Power", "PV2_Charging_Power"] : ["PV_Input_Power", "PV1_Input_Power", "PV_Charging_Power"],

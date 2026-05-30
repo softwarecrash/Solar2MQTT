@@ -38,7 +38,7 @@ inline static const modbus_register_t registers_live[] = {
                                                                                                         "Stop",
                                                                                                     }}},
     {15205, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_PV_Input_Voltage},
-    {15207, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_PV_Input_Current},
+    {15207, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_PV1_Input_Current},
     {15208, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_PV_Charging_Power},
     {15209, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_MPPT1_Charger_Temperature},
     {15212, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, "PV_Relay"},

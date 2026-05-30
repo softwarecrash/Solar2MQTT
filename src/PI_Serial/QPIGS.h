@@ -14,7 +14,7 @@ const char *const qpigs_106[] = {
     DESCR_Battery_Charge_Current,         // KKK
     DESCR_Battery_Percent,                // OOO
     DESCR_Inverter_Bus_Temperature,       // TTTT
-    DESCR_PV_Input_Current,               // EE.E
+    DESCR_PV1_Input_Current,              // EE.E
     DESCR_PV_Input_Voltage,               // UUU.U
     DESCR_Battery_SCC_Volt,               // WW.WW
     DESCR_Battery_Discharge_Current,      // PPPP
@@ -43,7 +43,7 @@ const char *const qpigs_90[] = {
     DESCR_Battery_Charge_Current,    // KKK
     DESCR_Battery_Percent,           // OOO
     DESCR_Inverter_Bus_Temperature,  // TTTT
-    DESCR_PV_Input_Current,          // EE.E
+    DESCR_PV1_Input_Current,         // EE.E
     DESCR_PV_Input_Voltage,          // UUU.U
     DESCR_Battery_SCC_Volt,          // WW.WW
     DESCR_Battery_Discharge_Current, // PPPP
@@ -65,7 +65,7 @@ const char *const qpigs_21[] = {
     DESCR_Battery_Charge_Current,         // KKK
     DESCR_Battery_Percent,                // OOO
     DESCR_Inverter_Bus_Temperature,       // TTTT
-    DESCR_PV_Input_Current,               // EE.E
+    DESCR_PV1_Input_Current,              // EE.E
     DESCR_PV_Input_Voltage,               // UUU.U
     DESCR_Battery_SCC_Volt,               // WW.WW
     DESCR_Battery_Discharge_Current,      // PPPP
@@ -113,7 +113,7 @@ const char *const qallList[] = {
     DESCR_Battery_Charge_Current,    // JJJ
     DESCR_Battery_Discharge_Current, // KKK
     DESCR_PV_Input_Voltage,          // LLL
-    DESCR_PV_Input_Current,          // MM.M
+    DESCR_PV1_Input_Current,         // MM.M
     DESCR_PV_Charging_Power,         // NNNN
     DESCR_PV_Generation_Day,         // OOOOOO
     DESCR_PV_Generation_Sum,         // PPPPPP
@@ -245,7 +245,7 @@ bool PI_Serial::PIXX_QPIGS()
       const double pvVoltage = liveData[DESCR_PV_Input_Voltage].as<double>();
       if (updateCurrent && pvVoltage > 0.0)
       {
-        liveData[DESCR_PV_Input_Current] = pi_compute_current(pvPower, pvVoltage);
+        liveData[DESCR_PV1_Input_Current] = pi_compute_current(pvPower, pvVoltage);
       }
       return true;
     };
@@ -273,7 +273,7 @@ bool PI_Serial::PIXX_QPIGS()
     liveData.remove(DESCR_Battery_Load);
     liveData.remove(DESCR_PV_Input_Power);
     liveData.remove(DESCR_PV_Input_Voltage);
-    liveData.remove(DESCR_PV_Input_Current);
+    liveData.remove(DESCR_PV1_Input_Current);
     liveData.remove(DESCR_PV_Charging_Power);
     if (!previousOperationMode.isEmpty())
     {
@@ -298,7 +298,7 @@ bool PI_Serial::PIXX_QPIGS()
       {
         liveData[DESCR_PV_Input_Power] = pi_compute_power(
           liveData[DESCR_PV_Input_Voltage].as<double>(),
-          liveData[DESCR_PV_Input_Current].as<double>());
+          liveData[DESCR_PV1_Input_Current].as<double>());
       }
       refineProtocol();
     }
@@ -316,7 +316,7 @@ bool PI_Serial::PIXX_QPIGS()
       liveData[DESCR_Battery_Load] = (liveData[DESCR_Battery_Charge_Current].as<unsigned short>() - liveData[DESCR_Battery_Discharge_Current].as<unsigned short>());
       liveData[DESCR_PV_Input_Power] = pi_compute_power(
         liveData[DESCR_PV_Input_Voltage].as<double>(),
-        liveData[DESCR_PV_Input_Current].as<double>());
+        liveData[DESCR_PV1_Input_Current].as<double>());
       refineProtocol();
     }
     else if (StringCount >= (int)qpigs_21_length)
@@ -336,7 +336,7 @@ bool PI_Serial::PIXX_QPIGS()
       {
         liveData[DESCR_PV_Input_Power] = pi_compute_power(
           liveData[DESCR_PV_Input_Voltage].as<double>(),
-          liveData[DESCR_PV_Input_Current].as<double>());
+          liveData[DESCR_PV1_Input_Current].as<double>());
       }
       refineProtocol();
     }
@@ -382,7 +382,7 @@ bool PI_Serial::PIXX_QPIGS()
     liveData.remove(DESCR_Battery_Load);
     liveData.remove(DESCR_PV_Input_Power);
     liveData.remove(DESCR_PV_Input_Voltage);
-    liveData.remove(DESCR_PV_Input_Current);
+    liveData.remove(DESCR_PV1_Input_Current);
     liveData.remove(DESCR_PV_Charging_Power);
     if (!previousOperationMode.isEmpty())
     {
@@ -424,7 +424,7 @@ bool PI_Serial::PIXX_QPIGS()
 
        liveData[DESCR_PV_Input_Voltage] = (liveData[DESCR_PV1_Input_Voltage].as<unsigned short>() + liveData[DESCR_PV2_Input_Voltage].as<unsigned short>());
        liveData[DESCR_PV_Charging_Power] = (liveData[DESCR_PV1_Input_Power].as<unsigned short>() + liveData[DESCR_PV2_Input_Power].as<unsigned short>());
-       liveData[DESCR_PV_Input_Current] = pi_compute_current(
+       liveData[DESCR_PV1_Input_Current] = pi_compute_current(
          liveData[DESCR_PV_Charging_Power].as<double>(),
          liveData[DESCR_PV_Input_Voltage].as<double>());
        liveData[DESCR_Battery_Load] = (liveData[DESCR_Battery_Charge_Current].as<unsigned short>() - liveData[DESCR_Battery_Discharge_Current].as<unsigned short>());

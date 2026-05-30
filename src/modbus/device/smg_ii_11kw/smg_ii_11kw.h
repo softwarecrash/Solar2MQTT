@@ -71,7 +71,7 @@ private:
         {303, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_PV_Charging_Power, 0, {}, nullptr, kPvBlockStart, kPvBlockCount},
         {338, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_AC_In_Voltage},
         {351, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_PV_Input_Voltage, 0, {}, nullptr, kPv1BlockStart, kPv1BlockCount},
-        {352, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_PV_Input_Current, 0, {}, nullptr, kPv1BlockStart, kPv1BlockCount},
+        {352, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_PV1_Input_Current, 0, {}, nullptr, kPv1BlockStart, kPv1BlockCount},
         {353, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_PV1_Input_Power, 0, {}, nullptr, kPv1BlockStart, kPv1BlockCount},
         {389, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_PV2_Input_Voltage, 0, {}, nullptr, kPv2BlockStart, kPv2BlockCount},
         {390, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_PV2_Input_Current, 0, {}, nullptr, kPv2BlockStart, kPv2BlockCount},
