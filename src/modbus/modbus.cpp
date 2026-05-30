@@ -82,7 +82,10 @@ void MODBUS::loop()
     if (_mCom.isAllRegistersRead(*cur_info_registers))
     {
         requestStaticData = false;
-        requestCallback();
+        if (requestCallback)
+        {
+            requestCallback();
+        }
     }
 
     previousTime = millis();
