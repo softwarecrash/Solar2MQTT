@@ -171,27 +171,40 @@ const OVERVIEW_GROUPS = [
     ],
   },
   {
-    title: "Grid",
+    title: "Grid L1",
     fields: [
-      { label: "V", keys: ["AC_In_Voltage"], unit: "V", decimals: 1 },
-      { label: "Hz", keys: ["AC_In_Frequency"], unit: "Hz", decimals: 1 },
+      { label: "V", keys: ["AC_In_Voltage_L1", "AC_In_Voltage"], unit: "V", decimals: 1 },
+      { label: "A", keys: ["AC_In_Current_L1"], unit: "A", decimals: 1 },
+      { label: "W", keys: ["AC_In_Watt_L1"], unit: "W", decimals: 0 },
+      { label: "Hz", keys: ["AC_In_Frequency_L1", "AC_In_Frequency"], unit: "Hz", decimals: 1 },
     ],
   },
   {
     title: "Grid L2",
     fields: [
       { label: "V", keys: ["AC_In_Voltage_L2"], unit: "V", decimals: 1 },
+      { label: "A", keys: ["AC_In_Current_L2"], unit: "A", decimals: 1 },
+      { label: "W", keys: ["AC_In_Watt_L2"], unit: "W", decimals: 0 },
       { label: "Hz", keys: ["AC_In_Frequency_L2"], unit: "Hz", decimals: 1 },
     ],
   },
   {
-    title: "AC Out",
+    title: "Grid L3",
     fields: [
-      { label: "V", keys: ["AC_Out_Voltage", "AC_Output_Voltage"], unit: "V", decimals: 1 },
-      { label: "Hz", keys: ["AC_Out_Frequency", "AC_Output_Frequency"], unit: "Hz", decimals: 1 },
-      { label: "W", keys: ["AC_Out_Watt", "AC_Output_Power", "Output_Power"], unit: "W", decimals: 0 },
-      { label: "%", keys: ["AC_Out_Percent", "Output_Load_Percent"], unit: "%", decimals: 0 },
-      { label: "A", keys: ["AC_Output_Current", "Output_Current"], unit: "A", decimals: 1 },
+      { label: "V", keys: ["AC_In_Voltage_L3"], unit: "V", decimals: 1 },
+      { label: "A", keys: ["AC_In_Current_L3"], unit: "A", decimals: 1 },
+      { label: "W", keys: ["AC_In_Watt_L3"], unit: "W", decimals: 0 },
+    ],
+  },
+  {
+    title: "AC Out L1",
+    fields: [
+      { label: "V", keys: ["AC_Out_Voltage_L1", "AC_Out_Voltage", "AC_Output_Voltage"], unit: "V", decimals: 1 },
+      { label: "Hz", keys: ["AC_Out_Frequency_L1", "AC_Out_Frequency", "AC_Output_Frequency"], unit: "Hz", decimals: 1 },
+      { label: "W", keys: ["AC_Out_Watt_L1", "AC_Out_Watt", "AC_Output_Power", "Output_Power"], unit: "W", decimals: 0 },
+      { label: "VA", keys: ["AC_Out_VA_L1", "AC_Out_VA"], unit: "VA", decimals: 0 },
+      { label: "%", keys: ["AC_Out_Percent_L1", "AC_Out_Percent", "Output_Load_Percent"], unit: "%", decimals: 0 },
+      { label: "A", keys: ["AC_Out_Current_L1", "AC_Output_Current", "Output_Current"], unit: "A", decimals: 1 },
     ],
   },
   {
@@ -200,7 +213,19 @@ const OVERVIEW_GROUPS = [
       { label: "V", keys: ["AC_Out_Voltage_L2"], unit: "V", decimals: 1 },
       { label: "Hz", keys: ["AC_Out_Frequency_L2"], unit: "Hz", decimals: 1 },
       { label: "W", keys: ["AC_Out_Watt_L2"], unit: "W", decimals: 0 },
+      { label: "VA", keys: ["AC_Out_VA_L2"], unit: "VA", decimals: 0 },
       { label: "%", keys: ["AC_Out_Percent_L2"], unit: "%", decimals: 0 },
+      { label: "A", keys: ["AC_Out_Current_L2"], unit: "A", decimals: 1 },
+    ],
+  },
+  {
+    title: "AC Out L3",
+    fields: [
+      { label: "V", keys: ["AC_Out_Voltage_L3"], unit: "V", decimals: 1 },
+      { label: "W", keys: ["AC_Out_Watt_L3"], unit: "W", decimals: 0 },
+      { label: "VA", keys: ["AC_Out_VA_L3"], unit: "VA", decimals: 0 },
+      { label: "%", keys: ["AC_Out_Percent_L3"], unit: "%", decimals: 0 },
+      { label: "A", keys: ["AC_Out_Current_L3"], unit: "A", decimals: 1 },
     ],
   },
   {

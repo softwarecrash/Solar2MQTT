@@ -60,6 +60,22 @@ If Home Assistant discovery is enabled together with JSON mode, the normal MQTT 
 | `Warning_Code` | text | Warning summary |
 | `DS18B20_<n>` | °C | External 1-Wire temperature sensors |
 
+## SRNE phase `LiveData` points
+
+These points are currently used by the Anenji/SRNE Modbus implementation when the inverter exposes the extended P02 inverter data block.
+
+| Datapoint | Unit | Notes |
+|-----------|------|-------|
+| `AC_In_Voltage_L1` / `AC_In_Voltage_L2` / `AC_In_Voltage_L3` | V | Grid voltage per phase |
+| `AC_In_Frequency_L1` / `AC_In_Frequency_L2` | Hz | Grid frequency where a protocol exposes per-phase frequency aliases |
+| `AC_In_Current_L1` | A | Grid current for phase A where exposed by the base inverter block |
+| `AC_Out_Voltage_L1` / `AC_Out_Voltage_L2` / `AC_Out_Voltage_L3` | V | Output voltage per phase |
+| `AC_Out_Frequency_L1` / `AC_Out_Frequency_L2` | Hz | Output frequency where a protocol exposes per-phase frequency aliases |
+| `AC_Out_Current_L1` / `AC_Out_Current_L2` / `AC_Out_Current_L3` | A | Load-side output current per phase |
+| `AC_Out_Watt_L1` / `AC_Out_Watt_L2` / `AC_Out_Watt_L3` | W | Load active power per phase |
+| `AC_Out_VA_L1` / `AC_Out_VA_L2` / `AC_Out_VA_L3` | VA | Load apparent power per phase |
+| `AC_Out_Percent_L1` / `AC_Out_Percent_L2` / `AC_Out_Percent_L3` | % | Load ratio per phase |
+
 ## Common `DeviceData` points
 
 | Datapoint | Unit | Notes |

@@ -1,0 +1,118 @@
+P02 Inverter Data Area
+#    0200     4  CurrErrReg                R   1          -       %x           Unsigned                             Each fault bit represents a fault, with a total of 64 bits. This register is used by the internal debugging.             
+#    0204     4  CurrFcode                 R   1          -       %d           Unsigned                             There are four addresses. Each address stores a fault code corresponding to the current fault.                           
+#                                                                                                                   Four fault codes can be displayed at the same time.
+#                                                                                                                   0 indicates no fault. 
+#                                                                                                                   If there are two faults, battery under-voltage and inverter overload, the following information is displayed:
+#                                                                                                                   0×204: 01
+#                                                                                                                   0×205: 14
+#                                                                                                                   0×206: 00
+#                                                                                                                   0×207: 00 
+# #  0208     4  ReservedInvData0          R   2          -       %x           Unsigned                             Reserved                                                                                                                 
+#    020C     3  SysDateTime               RW  1          -       %zdt         Unsigned                             0×020C: high byte: year, low byte: month
+#                                                                                                                   0×020D: high byte: day, low byte: hour
+#                                                                                                                   0×020E: high byte: minute, low byte: second                                                                              
+#                                                                                                                   The register can be set to adjust the RTC clock. 
+#    020F     1  GridOnRemainTime          R   1          s       %d           Unsigned                                                                                                                                                      
+#    0210     1  MachineState              R   1          -       %d           Unsigned                             0: Power-on delay
+#                                                                                                                   1: Standby state
+#                                                                                                                   2: Initialization
+#                                                                                                                   3: Soft start
+#                                                                                                                   4: AC power operation
+#                                                                                                                   5: Inverter operation
+#                                                                                                                   6: Inverter to AC power
+#                                                                                                                   7: AC power to inverter
+#                                                                                                                   8: Battery activation
+#                                                                                                                   9: Manual shutdown
+#                                                                                                                   10: Fault
+#                                                                                                                   Split-phase all-in-one machines and European standard single-phase 8−12K machines are as follows:
+#                                                                                                                   0: Initialization
+#                                                                                                                   1: Standby state
+#                                                                                                                   2: AC power operation
+#                                                                                                                   3: Inverter operation
+#    0211     1  PriorityFlag              R   1          -       %d           Unsigned                             0: Users have not entered password 1: The password of users is entered 4: The password of the manufacturer is entered
+#    0212     1  BusVoltSum                R   0.1        V       %.1fV        Unsigned                                                                                                                                                      
+#    0213     1  GridVoltA                 R   0.1        V       %.1fV        Unsigned                             AC power phase-A voltage                                                                                                 
+#    0214     1  GridCurrA                 R   0.1        A       %.1fA        Unsigned                             AC power phase-A current                                                                                                 
+#    0215     1  GridFreq                  R   0.01       Hz      %.2fHz       Unsigned                             AC power frequency                                                                                                       
+#    0216     1  InvVoltA                  R   0.1        V       %.1fV        Unsigned                             Inverter phase-A output voltage                                                                                          
+#    0217     1  InvCurrA                  R   0.1        A       %.1fA        Unsigned                             Inverter phase-A inductive current                                                                                       
+#    0218     1  InvFreq                   R   0.01       Hz      %.2fHz       Unsigned                                                                                                                                                      
+#    0219     1  LoadCurrA                 R   0.1        A       %.1fA        Unsigned                             Load side phase-A current                                                                                                
+# #  021A     1  LoadPF                    R   0.01       -       %.2f         Signed                               Unused                                                                                                                   
+#    021B     1  LoadActivePowerA          R   1          W       %dW          Unsigned                             Phase-A load active power                                                                                                
+#    021C     1  LoadApparentPowerA        R   1          VA      %dVA         Unsigned                             Phase-A load apparent power                                                                                              
+# #  021D     1  InvDcVolt                 R   1          mV      %dmV         Signed                               Unused                                                                                                                   
+#    021E     1  LineChgCurr               R   0.1        A       %.1fA        Unsigned                             Charging current from the AC power on the battery side                                                                   
+#    021F     1  LoadRatioA                R   1          %       %d%          Unsigned                             Phase-A load ratio                                                                                                       
+#    0220     1  Tempera                   R   0.1        °C      %.1f°C       Signed                               Cooling-fin DC-DC temperature                                                                                            
+#    0221     1  Temperb                   R   0.1        °C      %.1f°C       Signed                               Cooling-fin DC-AC temperature                                                                                            
+#    0222     1  Temperc                   R   0.1        °C      %.1f°C       Signed                               Transformer temperature                                                                                                  
+#    0223     1  Temperd                   R   0.1        °C      %.1f°C       Signed                               Ambient temperature                                                                                                      
+#    0224     1  Ibuck1                    R   0.1        A       %.1fA        Unsigned                             Charging current from the PV power on the battery side                                                                   
+#    0225     1  ParallCurrRms             R   0.1        A       %.1fA        Unsigned                             High-pressure parallel use                                                                                               
+# #  0226     1  Invfaultstate             R   1          -       %d           Unsigned                             Available for customized models only                                                                                     
+# #  0227     1  ChargeStatus              R   1          -       %d           Unsigned                             Available for customized models only                                                                                     
+#    0228     1  PBusVolt                  R   0.1        V       %.1fV        Unsigned                             Suitable for the split-phase all-in-one machine and European standard machine of 10 kW                                   
+#    0229     1  NBusVolt                  R   0.1        V       %.1fV        Unsigned                             Suitable for the split-phase all-in-one machine and European standard machine of 10 kW                                   
+#    022A     1  GridVoltB                 R   0.1        V       %.1fV        Unsigned                             AC power phase-B voltage                                                                                                 
+#    022B     1  GridVoltC                 R   0.1        V       %.1fV        Unsigned                             AC power phase-C voltage                                                                                                 
+#    022C     1  InvVoltB                  R   0.1        V       %.1fV        Unsigned                             Inverter phase-B output voltage                                                                                          
+#    022D     1  InvVoltC                  R   0.1        V       %.1fV        Unsigned                             Inverter phase-C output voltage                                                                                          
+#    022E     1  InvCurrB                  R   0.1        A       %.1fA        Unsigned                             Inverter phase-B inductive current                                                                                       
+#    022F     1  InvCurrC                  R   0.1        A       %.1fA        Unsigned                             Inverter phase-C inductive current                                                                                       
+#    0230     1  LoadCurrB                 R   0.1        A       %.1fA        Unsigned                             Load side phase-B current                                                                                                
+#    0231     1  LoadCurrC                 R   0.1        A       %.1fA        Unsigned                             Load side phase-C current                                                                                                
+#    0232     1  LoadActivePowerB          R   1          W       %dW          Unsigned                                                                                                                                                      
+#    0233     1  LoadActivePowerC          R   1          W       %dW          Unsigned                                                                                                                                                      
+#    0234     1  LoadReactivePowerB        R   1          VA      %dVA         Unsigned                                                                                                                                                      
+#    0235     1  LoadReactivePowerC        R   1          VA      %dVA         Unsigned                                                                                                                                                      
+#    0236     1  LoadRatioB                R   1          %       %d%          Unsigned                             Phase-B load ratio                                                                                                       
+#    0237     1  LoadRatioC                R   1          %       %d%          Unsigned                             Phase-C load ratio                                                                                                       
+#    0238     1  GridCurrB                 R   0.1        A       %.1fA        Unsigned                             AC power phase-B current                                                                                                 
+#    0239     1  GridCurrC                 R   0.1        A       %.1fA        Unsigned                             AC power phase-C current                                                                                                 
+#    023A     1  GridActivePowerA          R   1          A       %dW          Signed                               Greater than 0 for power of grid connection; Less than 0 for power of grid consumption                                   
+#    023B     1  GridActivePowerB          R   1          A       %dW          Signed                               Greater than 0 for power of grid connection; Less than 0 for power of grid consumption                                   
+#    023C     1  GridActivePowerC          R   1          A       %dW          Signed                               Greater than 0 for power of grid connection; Less than 0 for power of grid consumption                                   
+#    023D     1  GridApparentPowerA        R   1          VA      %dVA         Unsigned                                                                                                                                                      
+#    023E     1  GridApparentPowerB        R   1          VA      %dVA         Unsigned                                                                                                                                                      
+#    023F     1  GridApparentPowerC        R   1          VA      %dVA         Unsigned                                                                                                                                                      
+#    0240     1  HomeLoadActivePowerA      R   1          W       %dW          Unsigned                                                                                                                                                      
+#    0241     1  HomeLoadActivePowerB      R   1          W       %dW          Unsigned                                                                                                                                                      
+#    0242     1  HomeLoadActivePowerC      R   1          W       %dW          Unsigned                                                                                                                                                      
+#    0243     1  ReservedInvData2          R   1          W       %dW          Unsigned                                                                                                                                                      
+#    0243     1   GenPortActivePowerA      R   1          W       %dW          Unsigned                             Active power of A/L1 phase second load (for HESP120SH3/HESP48120SH3) 
+#    0244     1   GenPortActivePowerB      R   1          W       %dW          Unsigned                             Active power of B/L2 phase second load (for HESP120SH3/HESP48120SH3) 
+#    0245     1   GenPortActivePowerC      R   1          W       %dW          Unsigned                             Active power of C/L3 phase second load (for HESP120SH3/HESP48120SH3) 
+#    0246     1   GenPortAppPowerA         R   1          VA      %dVA         Unsigned                             Apparent power of A/L1 phase second load (for HESP120SH3/HESP48120SH3) 
+#    0247     1   GenPortAppPowerB         R   1          VA      %dVA         Unsigned                             Apparent power of B/L2 phase second load (for HESP120SH3/HESP48120SH3) 
+#    0248     1   GenPortAppPowerC         R   1          VA      %dVA         Unsigned                             Apparent power of C/L3 phase second load (for HESP120SH3/HESP48120SH3) 
+#    0249     1   GenPortCurrA             R   0.1        A       %.1fA        Unsigned                             Current RMS of A/L1 phase second load (for HESP120SH3/HESP48120SH3) 
+#    024A     1   GenPortCurrB             R   0.1        A       %.1fA        Unsigned                             Current RMS of B/L2 phase second load (for HESP120SH3/HESP48120SH3) 
+#    024B     1   GenPortCurrC             R   0.1        A       %.1fA        Unsigned                             Current RMS of C/L3 phase second load (for HESP120SH3/HESP48120SH3) 
+#    024C     1   LoadRatioSum             R   1          W       %d           Unsigned                             Load rate of the total load (for HESP120SH3/HESP48120SH3) 
+#    024D     1   ParallelNum              R   1          W       %d           Unsigned                             Number of parallel device 
+#    024E     2   ParaUpsLoadPowersum      R   1          W       %d           Signed                               Sum of active power of three-phase UPS load 
+#    0250     2   ParaHomeLoadPowerSum     R   1          W       %d           Signed                               Sum of active power of three-phase home load 
+#    0252     2   ParaGridPowerSum         R   1          W       %d           Signed                               Sum of active power of three-phase grid 
+#    0254     2   ParaGenPortPowerSum      R   1          W       %d           Signed                               Sum of active power of three-phase generator 
+#    0256     1   GenPortVoltA             R   0.1        V       %.1f         Unsigned
+#    0257     1   GenPortVoltB             R   0.1        V       %.1f         Unsigned
+#    0258     1   GenPortVoltC             R   0.1        V       %.1f         Unsigned
+#    0259     1   GenPortFreq              R   0.01       Hz      %.1f         Unsigned
+#    025A     1   MicroInvPowerA           R   1          W       %d           Unsigned
+#    025B     1   MicroInvPowerB           R   1          W       %d           Unsigned
+#    025C     1   MicroInvPowerC           R   1          W       %d           Unsigned
+#    025D     1   CtActivePowerA           R   1          W       %d           Unsigned
+#    025E     1   CtActivePowerB           R   1          W       %d           Unsigned
+#    025F     1   CtActivePowerC           R   1          W       %d           Unsigned
+#    0260     1   CtApparentPowerA         R   1          VA      %d           Unsigned
+#    0261     1   CtApparentPowerB         R   1          VA      %d           Unsigned
+#    0262     1   CtApparentPowerC         R   1          VA      %d           Unsigned
+#    0263     1   invdataresered           R   1          W       %d           Unsigned
+
+sensor:
+#    020C     3  SysDateTime               RW  1          -       %zdt         Unsigned                             0×020C: high byte: year, low byte: month
+#                                                                                                                   0×020D: high byte: day, low byte: hour
+#                                                                                                                   0×020E: high byte: minute, low byte: second                                                                              
+#                                                                                                                   The register can be set to adjust the RTC clock. 

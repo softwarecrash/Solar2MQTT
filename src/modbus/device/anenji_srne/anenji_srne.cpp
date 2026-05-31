@@ -49,6 +49,26 @@ bool looksLikeSrneProductInfo(const char *productInfo)
 {
     return productInfo != nullptr && strstr(productInfo, "SR") != nullptr;
 }
+
+uint16_t blockValue(const uint16_t *registers, uint16_t blockStart, uint16_t registerId)
+{
+    return registers[registerId - blockStart];
+}
+
+void setU16(JsonObject *variant, const char *name, uint16_t raw)
+{
+    (*variant)[name] = raw;
+}
+
+void setI16OneDecimal(JsonObject *variant, const char *name, uint16_t raw)
+{
+    (*variant)[name] = static_cast<int16_t>(raw) / 10.0f;
+}
+
+void setI16TwoDecimals(JsonObject *variant, const char *name, uint16_t raw)
+{
+    (*variant)[name] = static_cast<int16_t>(raw) / 100.0f;
+}
 } // namespace
 
 const modbus_register_t *AnenjiSrne::getLiveRegisters() const
@@ -81,6 +101,7 @@ bool AnenjiSrne::retrieveModel(MODBUS_COM &mCom, char *modelBuffer, size_t buffe
         return false;
     }
 
+    _phaseBlockAvailable = true;
     snprintf(modelBuffer, bufferSize, "Anenji SRNE %s", productInfo);
     return true;
 }
@@ -108,6 +129,56 @@ void AnenjiSrne::productInfo(JsonObject *variant, uint16_t *registerValue, const
     if (readProductInfo(mCom, productInfo, sizeof(productInfo)))
     {
         (*variant)[reg->name] = productInfo;
+    }
+}
+
+void AnenjiSrne::extendedInverterData(JsonObject *variant, uint16_t *registerValue, const modbus_register_t *reg, MODBUS_COM &mCom)
+{
+    (void)registerValue;
+    (void)reg;
+
+    if (variant == nullptr)
+    {
+        return;
+    }
+
+    uint16_t inverterBlock[kInverterBlockCount] = {};
+    if (mCom.readHoldingBlock(kInverterBlockStart, kInverterBlockCount, inverterBlock, kInverterBlockCount))
+    {
+        setI16OneDecimal(variant, DESCR_AC_In_Voltage_L1, blockValue(inverterBlock, kInverterBlockStart, 0x0213));
+        setI16OneDecimal(variant, DESCR_AC_In_Current_L1, blockValue(inverterBlock, kInverterBlockStart, 0x0214));
+        setI16TwoDecimals(variant, DESCR_AC_In_Frequency_L1, blockValue(inverterBlock, kInverterBlockStart, 0x0215));
+        setI16OneDecimal(variant, DESCR_AC_Out_Voltage_L1, blockValue(inverterBlock, kInverterBlockStart, 0x0216));
+        setI16TwoDecimals(variant, DESCR_AC_Out_Frequency_L1, blockValue(inverterBlock, kInverterBlockStart, 0x0218));
+        setI16OneDecimal(variant, DESCR_AC_Out_Current_L1, blockValue(inverterBlock, kInverterBlockStart, 0x0219));
+        setI16OneDecimal(variant, DESCR_AC_Output_Current, blockValue(inverterBlock, kInverterBlockStart, 0x0219));
+        setU16(variant, DESCR_AC_Out_Watt_L1, blockValue(inverterBlock, kInverterBlockStart, 0x021B));
+        setU16(variant, DESCR_AC_Out_VA_L1, blockValue(inverterBlock, kInverterBlockStart, 0x021C));
+        setU16(variant, DESCR_AC_Out_Percent_L1, blockValue(inverterBlock, kInverterBlockStart, 0x021F));
+    }
+
+    if (_phaseBlockAvailable)
+    {
+        uint16_t phaseBlock[kPhaseBlockCount] = {};
+        if (mCom.readHoldingBlock(kPhaseBlockStart, kPhaseBlockCount, phaseBlock, kPhaseBlockCount))
+        {
+            setI16OneDecimal(variant, DESCR_AC_In_Voltage_L2, blockValue(phaseBlock, kPhaseBlockStart, 0x022A));
+            setI16OneDecimal(variant, DESCR_AC_In_Voltage_L3, blockValue(phaseBlock, kPhaseBlockStart, 0x022B));
+            setI16OneDecimal(variant, DESCR_AC_Out_Voltage_L2, blockValue(phaseBlock, kPhaseBlockStart, 0x022C));
+            setI16OneDecimal(variant, DESCR_AC_Out_Voltage_L3, blockValue(phaseBlock, kPhaseBlockStart, 0x022D));
+            setI16OneDecimal(variant, DESCR_AC_Out_Current_L2, blockValue(phaseBlock, kPhaseBlockStart, 0x0230));
+            setI16OneDecimal(variant, DESCR_AC_Out_Current_L3, blockValue(phaseBlock, kPhaseBlockStart, 0x0231));
+            setU16(variant, DESCR_AC_Out_Watt_L2, blockValue(phaseBlock, kPhaseBlockStart, 0x0232));
+            setU16(variant, DESCR_AC_Out_Watt_L3, blockValue(phaseBlock, kPhaseBlockStart, 0x0233));
+            setU16(variant, DESCR_AC_Out_VA_L2, blockValue(phaseBlock, kPhaseBlockStart, 0x0234));
+            setU16(variant, DESCR_AC_Out_VA_L3, blockValue(phaseBlock, kPhaseBlockStart, 0x0235));
+            setU16(variant, DESCR_AC_Out_Percent_L2, blockValue(phaseBlock, kPhaseBlockStart, 0x0236));
+            setU16(variant, DESCR_AC_Out_Percent_L3, blockValue(phaseBlock, kPhaseBlockStart, 0x0237));
+        }
+        else
+        {
+            _phaseBlockAvailable = false;
+        }
     }
 }
 

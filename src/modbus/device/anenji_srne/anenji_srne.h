@@ -4,6 +4,7 @@
 #include <modbus/device/modbus_device.h>
 
 #define DESCR_SRNE_PRODUCT_INFO "SRNE_Product_Info"
+#define DESCR_SRNE_EXTENDED_INVERTER_DATA "SRNE_Extended_Inverter_Data"
 
 class AnenjiSrne : public ModbusDevice
 {
@@ -17,6 +18,7 @@ public:
     size_t getLiveRegistersCount() const override;
     size_t getStaticRegistersCount() const override;
     static void productInfo(JsonObject *variant, uint16_t *registerValue, const modbus_register_t *reg, MODBUS_COM &mCom);
+    static void extendedInverterData(JsonObject *variant, uint16_t *registerValue, const modbus_register_t *reg, MODBUS_COM &mCom);
 
 private:
     static constexpr long _baudRate = 9600;
@@ -32,6 +34,9 @@ private:
     static constexpr uint16_t kFaultBlockCount = 4;
     static constexpr uint16_t kInverterBlockStart = 0x0210;
     static constexpr uint16_t kInverterBlockCount = 0x12;
+    static constexpr uint16_t kPhaseBlockStart = 0x022A;
+    static constexpr uint16_t kPhaseBlockCount = 0x0E;
+    inline static bool _phaseBlockAvailable = true;
 
     static bool readProductInfo(MODBUS_COM &mCom, char *buffer, size_t bufferSize);
 
@@ -72,6 +77,7 @@ private:
         {0x021F, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_Output_Load_Percent, 0, {}, nullptr, kInverterBlockStart, kInverterBlockCount},
         {0x0220, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_DCDC_Temperature, 0, {}, nullptr, kInverterBlockStart, kInverterBlockCount},
         {0x0221, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_Inverter_Temperature, 0, {}, nullptr, kInverterBlockStart, kInverterBlockCount},
+        {0, MODBUS_TYPE_HOLDING, REGISTER_TYPE_VIRTUAL_CALLBACK, DESCR_SRNE_EXTENDED_INVERTER_DATA, 0, {}, AnenjiSrne::extendedInverterData},
     };
 
     inline static const modbus_register_t registers_static[] = {

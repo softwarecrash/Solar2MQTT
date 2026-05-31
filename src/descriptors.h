@@ -8,18 +8,42 @@
 #define DESCR_AC_In_Voltage "AC_In_Voltage"                                   // BBB.B
 
 #define DESCR_AC_In_Frequency "AC_In_Frequency"                               // CC.C
+#define DESCR_AC_In_Voltage_L1 "AC_In_Voltage_L1"
+#define DESCR_AC_In_Frequency_L1 "AC_In_Frequency_L1"
 #define DESCR_AC_Out_Voltage "AC_Out_Voltage"                                 // DDD.D
 #define DESCR_AC_Out_Frequency "AC_Out_Frequency"                             // EE.E
 #define DESCR_AC_Out_VA "AC_Out_VA"                                           // FFFF
 #define DESCR_AC_Out_Watt "AC_Out_Watt"                                       // GGGG
 #define DESCR_AC_Out_Percent "AC_Out_Percent"                                 // HHH
 #define DESCR_AC_In_Voltage_L2 "AC_In_Voltage_L2"
+#define DESCR_AC_In_Voltage_L3 "AC_In_Voltage_L3"
+#define DESCR_AC_In_Current_L1 "AC_In_Current_L1"
+#define DESCR_AC_In_Current_L2 "AC_In_Current_L2"
+#define DESCR_AC_In_Current_L3 "AC_In_Current_L3"
+#define DESCR_AC_In_Watt_L1 "AC_In_Watt_L1"
+#define DESCR_AC_In_Watt_L2 "AC_In_Watt_L2"
+#define DESCR_AC_In_Watt_L3 "AC_In_Watt_L3"
+#define DESCR_AC_In_VA_L1 "AC_In_VA_L1"
+#define DESCR_AC_In_VA_L2 "AC_In_VA_L2"
+#define DESCR_AC_In_VA_L3 "AC_In_VA_L3"
 #define DESCR_AC_In_Frequency_L2 "AC_In_Frequency_L2"
+#define DESCR_AC_Out_Voltage_L1 "AC_Out_Voltage_L1"
 #define DESCR_AC_Out_Voltage_L2 "AC_Out_Voltage_L2"
+#define DESCR_AC_Out_Voltage_L3 "AC_Out_Voltage_L3"
+#define DESCR_AC_Out_Frequency_L1 "AC_Out_Frequency_L1"
 #define DESCR_AC_Out_Frequency_L2 "AC_Out_Frequency_L2"
+#define DESCR_AC_Out_Current_L1 "AC_Out_Current_L1"
+#define DESCR_AC_Out_Current_L2 "AC_Out_Current_L2"
+#define DESCR_AC_Out_Current_L3 "AC_Out_Current_L3"
+#define DESCR_AC_Out_VA_L1 "AC_Out_VA_L1"
 #define DESCR_AC_Out_VA_L2 "AC_Out_VA_L2"
+#define DESCR_AC_Out_VA_L3 "AC_Out_VA_L3"
+#define DESCR_AC_Out_Watt_L1 "AC_Out_Watt_L1"
 #define DESCR_AC_Out_Watt_L2 "AC_Out_Watt_L2"
+#define DESCR_AC_Out_Watt_L3 "AC_Out_Watt_L3"
+#define DESCR_AC_Out_Percent_L1 "AC_Out_Percent_L1"
 #define DESCR_AC_Out_Percent_L2 "AC_Out_Percent_L2"
+#define DESCR_AC_Out_Percent_L3 "AC_Out_Percent_L3"
 #define DESCR_Inverter_Bus_Voltage "Inverter_Bus_Voltage"                     // III
 #define DESCR_Battery_Voltage "Battery_Voltage"                               // JJ.JJ
 #define DESCR_Battery_Voltage_L2 "Battery_Voltage_L2"
@@ -55,6 +79,10 @@
 #define DESCR_AC_Output_Frequency "AC_Output_Frequency"
 #define DESCR_AC_Output_Power "AC_Output_Power"
 #define DESCR_AC_Output_Voltage "AC_Output_Voltage"
+
+#define DESCR_Home_Load_Active_Power_L1 "Home_Load_Active_Power_L1"
+#define DESCR_Home_Load_Active_Power_L2 "Home_Load_Active_Power_L2"
+#define DESCR_Home_Load_Active_Power_L3 "Home_Load_Active_Power_L3"
 
 #define DESCR_Positive_Battery_Voltage "Positive_Battery_Voltage"
 
