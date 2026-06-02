@@ -23,6 +23,7 @@ This page is generated automatically from public device reports submitted throug
 | SUMRY | SP7000 | RS232 | PI30 | PI30 | - | - | esp32c3_supermini | - | 1 |
 | TAFFWARE | VICTOR NM-ECO-6,2KW PLUS | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | YUSUF from Indonesia | 1 |
 | WERCHTAY | GD3024EMH | RS232 | PI30 | PI30 | VMII-3000 | - | wemos_d1_mini32 | PIN-Layout RJ45 am Inverter: Pin 2: 12V VCC Pin 3: Inverter TX Pin 5: GND Pin 6: Inverter RX | 1 |
+| YINGFA | YF6,2K | RS232 | NOD | NOD | - | - | wemos_d1_mini32 | - | 1 |
 | YINGFA | YF6.2K | RS232 | PI30_MAX | PI30 | - | - | wemos_d1_mini32 | Device Model: VMII-NXPW5KW | 1 |
 <!-- REPORTDEVICE:END -->
 
