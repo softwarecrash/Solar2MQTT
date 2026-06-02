@@ -14,6 +14,7 @@ This page is generated automatically from public device reports submitted throug
 | ECGSOLAX | VICTOR MAX-10.2 KW-M | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Using ESP32. Pin assignment: UART Rx: GPIO19 UART Tx: GPIO23 You can get power from the RS232/Wifi port (RJ45) using a 5V stepdown: RJ45 Pin 8: Ground RJ45 Pin 4: VCC (Check voltage first before connecting.) | 1 |
 | EDECOA | EM-402A | RS232 | PI30 | PI30 | - | - | esp32c3_supermini | Hello from Odessa, Ukraine | 1 |
 | GOOTU | 8.2KW HYBRID INVERTER DUAL MPPT/DUAL OUTPUT AC | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32s3_supermini | - | 1 |
+| POWMR | 6.2 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | - | 1 |
 | POWMR | POW-HVM10.2M | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Keeps on disconnecting from WIFI. Only recognizes 1 string of PV. | 1 |
 | POWMR | POW-HVM4.2K-24V-D | TTL | NOD | NOD | - | - | wemos_d1_mini32 | - | 1 |
 | POWMR | POW-HVM6.2M-48V-N | RS232 | NOD | NOD | - | - | wemos_d1_mini32 | Working with MAX3232 and ESP32 Wemos D1 Mini32 | 1 |
