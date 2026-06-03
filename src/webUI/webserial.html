@@ -19,7 +19,10 @@
     <div id="statusbar"></div>
 
     <div class="panel">
-      <div class="panel-title">Browser Console</div>
+      <div class="panel-heading">
+        <div class="panel-title">Browser Console</div>
+        <button id="copyLogBtn" type="button" class="btn btn-outline btn-compact">Copy Log</button>
+      </div>
       <p class="hint">Live log output via the `/webserialws` WebSocket endpoint.</p>
 
       <textarea id="log" rows="26" class="mono" readonly></textarea>
@@ -47,6 +50,43 @@
       log.scrollTop = log.scrollHeight;
     }
 
+    function fallbackCopyText(text) {
+      const copyTarget = document.createElement("textarea");
+      copyTarget.value = text;
+      copyTarget.setAttribute("readonly", "");
+      copyTarget.style.position = "fixed";
+      copyTarget.style.left = "-9999px";
+      copyTarget.style.top = "0";
+      document.body.appendChild(copyTarget);
+      copyTarget.select();
+      copyTarget.setSelectionRange(0, copyTarget.value.length);
+      const copied = document.execCommand("copy");
+      document.body.removeChild(copyTarget);
+      if (!copied) {
+        throw new Error("Copy failed");
+      }
+    }
+
+    async function copyLogText() {
+      const log = document.getElementById("log");
+      const text = log.value;
+      if (!text.trim()) {
+        showNotice("Log is empty.", true);
+        return;
+      }
+
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          fallbackCopyText(text);
+        }
+        showNotice("Log copied.");
+      } catch (error) {
+        showNotice("Copy failed.", true);
+      }
+    }
+
     const wsProtocol = location.protocol === "https:" ? "wss" : "ws";
     const ws = new WebSocket(`${wsProtocol}://${location.host}/webserialws`);
 
@@ -60,6 +100,8 @@
       ws.send(input.value);
       input.value = "";
     });
+
+    document.getElementById("copyLogBtn").addEventListener("click", copyLogText);
   </script>
 </body>
 </html>

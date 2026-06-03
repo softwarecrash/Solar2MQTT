@@ -113,6 +113,18 @@ p {
   margin-bottom: 10px;
 }
 
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.panel-heading .panel-title {
+  margin-bottom: 0;
+}
+
 .summary,
 .hint {
   color: var(--ea-text-2);
@@ -328,6 +340,14 @@ button:disabled,
 
 .btn-outline:hover {
   background: rgba(88, 184, 255, 0.12);
+}
+
+.btn-compact {
+  width: auto;
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  font-size: 13px;
+  line-height: 1.2;
 }
 
 .btn-danger {

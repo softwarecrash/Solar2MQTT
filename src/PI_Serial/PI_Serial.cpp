@@ -385,7 +385,10 @@ bool PI_Serial::Init()
         return true;
     }
     this->my_serialIntf->setTimeout(500);
-    this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+    if (protocol == NoD)
+    {
+        this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+    }
     return true;
 }
 
@@ -533,8 +536,20 @@ bool PI_Serial::loop()
                         if (PIXX_QFLAG())
                         {
                             requestCounter++;
-                            clearCycleBackup();
-                            logStaticSummary();
+                            if (cycleHadSuccessfulReply)
+                            {
+                                clearCycleBackup();
+                                logStaticSummary();
+                            }
+                            else
+                            {
+                                writeLog("[PI][WARN] proto=%s no valid static data", protocolToString(protocol));
+                                restoreCycleBackup();
+                                if (requestCallback)
+                                {
+                                    requestCallback();
+                                }
+                            }
                         }
                         else
                         {
@@ -633,13 +648,25 @@ bool PI_Serial::loop()
                         break;
                     case 7:
                         refineProtocol();
-                        logDynamicSummary();
-                        markSuccessfulDynamicCycle();
-                        if (requestCallback)
+                        if (cycleHadSuccessfulReply)
                         {
-                            requestCallback();
+                            logDynamicSummary();
+                            markSuccessfulDynamicCycle();
+                            if (requestCallback)
+                            {
+                                requestCallback();
+                            }
+                            clearCycleBackup();
                         }
-                        clearCycleBackup();
+                        else
+                        {
+                            writeLog("[PI][WARN] proto=%s no valid dynamic data", protocolToString(protocol));
+                            restoreCycleBackup();
+                            if (requestCallback)
+                            {
+                                requestCallback();
+                            }
+                        }
                         requestCounter = 0;
                         break;
                     }
@@ -668,6 +695,7 @@ void PI_Serial::beginCycleBackup()
     copyJsonObject(cycleLiveBackup.to<JsonObject>(), JsonObjectConst(liveData));
     copyJsonObject(cycleStaticBackup.to<JsonObject>(), JsonObjectConst(staticData));
     cycleBackupActive = true;
+    cycleHadSuccessfulReply = false;
 }
 
 void PI_Serial::restoreCycleBackup()
@@ -685,6 +713,7 @@ void PI_Serial::restoreCycleBackup()
 void PI_Serial::clearCycleBackup()
 {
     cycleBackupActive = false;
+    cycleHadSuccessfulReply = false;
     cycleLiveBackup.clear();
     cycleStaticBackup.clear();
 }
@@ -947,7 +976,10 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         }
         this->my_serialIntf->end();
     }
-    this->my_serialIntf->end();
+    if (protocol == NoD)
+    {
+        this->my_serialIntf->end();
+    }
     if (protocol == NoD &&
         !abortAutoDetect.load(std::memory_order_relaxed) &&
         !suspendSerial.load(std::memory_order_relaxed))
@@ -1233,6 +1265,7 @@ String PI_Serial::requestData(String command)
     }
     else if (commandBuffer == "") // catch empty answer, its similar to NAK
     {
+        writeLog("[PI][WARN] cmd=%s no answer", command.c_str());
         commandBuffer = "NOA";
     }
     else if (isEchoedCommand(commandBuffer, command, startChar))
@@ -1262,6 +1295,7 @@ String PI_Serial::requestData(String command)
         commandBuffer != DESCR_req_NOA &&
         commandBuffer != DESCR_req_ERCRC)
     {
+        cycleHadSuccessfulReply = true;
         commandBuffer = sanitizePiReplyText(commandBuffer);
     }
 

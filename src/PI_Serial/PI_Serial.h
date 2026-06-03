@@ -221,6 +221,7 @@ private:
     std::atomic_bool suspendSerial{false};
     std::atomic_bool abortAutoDetect{false};
     bool cycleBackupActive = false;
+    bool cycleHadSuccessfulReply = false;
 
     unsigned long previousTime = 0;
     unsigned long delayTime = 100;
