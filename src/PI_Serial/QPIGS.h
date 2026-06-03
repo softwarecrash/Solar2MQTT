@@ -166,11 +166,11 @@ bool PI_Serial::PIXX_QPIGS()
       previousOperationMode = modeText;
     }
   }
-  if (isPi30LikeProtocol(protocol))
+  if (isClassicPiStatusProtocol(protocol))
   {
     // byte protocolNum = 0; // for future use
     get.raw.qall = "";
-    String commandAnswerQALL = this->requestData("QALL");
+    String commandAnswerQALL = protocol == PI16 ? DESCR_req_NOA : this->requestData("QALL");
     get.raw.qall = commandAnswerQALL;
     if (commandAnswerQALL == DESCR_req_ERCRC)
     {
@@ -251,18 +251,20 @@ bool PI_Serial::PIXX_QPIGS()
     };
     const int qpiriFields = countFields(get.raw.qpiri);
     const int qallFields = hasQallResponse ? countFields(commandAnswerQALL) : 0;
-    const bool hasRevoLikeQpigsTail = protocol != PI41 &&
+    const bool hasRevoLikeQpigsTail = protocol != PI16 &&
+                                      protocol != PI41 &&
                                       !hasQallResponse &&
                                       StringCount >= (int)qpigs_21_length &&
                                       !hasDecimalPoint(fieldsQPIGS[12]) &&
                                       hasDecimalPoint(fieldsQPIGS[13]) &&
                                       isBinaryField(fieldsQPIGS[16]);
-    const bool useRevoQpigsLayout = (protocol == PI30_REVO) ||
+    const bool useRevoQpigsLayout = protocol != PI16 &&
+                                    ((protocol == PI30_REVO) ||
                                     hasRevoLikeQpigsTail ||
                                     (qallFields >= (int)qallList_length &&
                                      StringCount >= (int)qpigs_21_length &&
                                      qpiriFields > 0 &&
-                                     qpiriFields <= 21);
+                                     qpiriFields <= 21));
 
     pi_clear_json_fields(liveData, qpigs_106);
     pi_clear_json_fields(liveData, qpigs_90);

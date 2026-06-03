@@ -141,7 +141,7 @@ static const char *const P007PIRI[][25] = {
 };
 bool PI_Serial::PIXX_QPIRI()
 {
-  if (isPi30LikeProtocol(protocol))
+  if (isClassicPiStatusProtocol(protocol))
   {
     pi_clear_json_fields(staticData, qpiri_28);
     pi_clear_json_fields(staticData, qpiri_26);

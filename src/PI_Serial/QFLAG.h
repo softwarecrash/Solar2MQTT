@@ -1,6 +1,6 @@
 bool PI_Serial::PIXX_QFLAG()
 {
-    if (isPi30LikeProtocol(protocol))
+    if (isClassicPiStatusProtocol(protocol))
     {
         staticData.remove(DESCR_Buzzer_Enabled);
         staticData.remove(DESCR_Overload_Bypass_Enabled);
