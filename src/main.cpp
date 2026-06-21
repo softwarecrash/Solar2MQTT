@@ -4,6 +4,7 @@
 #include "core/Ds18b20Service.h"
 #include "core/FactoryResetManager.h"
 #include "core/GitHubOtaUpdater.h"
+#include "core/InternalTemperatureService.h"
 #include "core/LogSerial.h"
 #include "core/MqttHandler.h"
 #include "core/SettingsPrefs.h"
@@ -43,6 +44,7 @@ AsyncWebServer server(80);
 WiFiManager wifiManager(server);
 SolarInverterService inverterService(solarState);
 Ds18b20Service ds18b20Service;
+InternalTemperatureService internalTemperatureService;
 MqttHandler mqttHandler(solarState, wifiManager, inverterService);
 StatusLedService statusLedService;
 GitHubOtaUpdater otaUpdater(OTA_GITHUB_OWNER, OTA_GITHUB_REPO, STRVERSION, BUILD_VARIANT);
@@ -122,6 +124,12 @@ void setup()
         webServerHandler.notifyStatusBar(); });
     configureDs18b20();
 
+    internalTemperatureService.setCallback([]()
+                                           {
+        mqttHandler.triggerFullStatePublish();
+        webServerHandler.notifyStatusBar(); });
+    internalTemperatureService.begin(solarState.doc()["EspData"].as<JsonObject>());
+
     mqttHandler.begin();
     webServerHandler.begin();
 
@@ -156,6 +164,7 @@ void loop()
     inverterService.setTransportPaused(wifiManager.isInApMode());
     inverterService.loop();
     ds18b20Service.loop();
+    internalTemperatureService.loop();
     mqttHandler.loop();
 
     if (g_pendingInverterReconfigure && static_cast<int32_t>(millis() - g_inverterReconfigureAt) >= 0)
