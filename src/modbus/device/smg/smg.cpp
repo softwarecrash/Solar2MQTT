@@ -139,9 +139,11 @@ bool SMG::retrieveModel(MODBUS_COM &mCom, char *modelBuffer, size_t bufferSize)
     const uint16_t maxChargeCurrent = configBlock[332 - kConfigBlockStart];
     const uint16_t maxAcChargeCurrent = configBlock[333 - kConfigBlockStart];
 
+    // Some SMG-compatible inverters expose undocumented enum values here.
+    // The serial, live and rating blocks are stronger protocol signals.
     if (!valueInRange(outputMode, 0, 4) ||
-        !valueInRange(outputPriority, 0, 2) ||
-        !valueInRange(inputRange, 0, 1) ||
+        !valueInRange(outputPriority, 0, 3) ||
+        !valueInRange(inputRange, 0, 2) ||
         !valueInRange(buzzerMode, 0, 3) ||
         !valueInRange(lcdBacklight, 0, 1) ||
         !valueInRange(powerSaving, 0, 1) ||

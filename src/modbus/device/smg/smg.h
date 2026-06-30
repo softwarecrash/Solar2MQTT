@@ -76,11 +76,13 @@ private:
                                                                                                               "Utility-PV-Battery",
                                                                                                               "PV-Utility-Battery",
                                                                                                               "PV-Battery-Utility",
+                                                                                                              "Reserved",
                                                                                                           }},
          nullptr, kConfigBlockStart, kConfigBlockCount},
         {302, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, DESCR_Input_Voltage_Range, 0, {.bitfield = {
                                                                                                            "Wide range",
                                                                                                            "Narrow range",
+                                                                                                           "Reserved",
                                                                                                        }},
          nullptr, kConfigBlockStart, kConfigBlockCount},
         {305, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME, DESCR_LCD_Backlight_Enabled, 0, {.bitfield = {
