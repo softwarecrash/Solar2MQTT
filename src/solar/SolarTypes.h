@@ -68,14 +68,19 @@ inline bool isPi30LikeProtocol(protocol_type_t protocol)
            protocol == PI30_UNKNOWN;
 }
 
+inline bool isClassicPiStatusProtocol(protocol_type_t protocol)
+{
+    return protocol == PI16 || isPi30LikeProtocol(protocol);
+}
+
 inline bool isRawOnlyPiProtocol(protocol_type_t protocol)
 {
-    return protocol == PI15 || protocol == PI16;
+    return protocol == PI15;
 }
 
 inline bool isStructuredPiProtocol(protocol_type_t protocol)
 {
-    return protocol == PI18 || isPi30LikeProtocol(protocol);
+    return protocol == PI18 || isClassicPiStatusProtocol(protocol);
 }
 
 inline bool isAnyPiProtocol(protocol_type_t protocol)

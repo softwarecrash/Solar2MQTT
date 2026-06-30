@@ -1,6 +1,6 @@
 bool PI_Serial::PIXX_QPI()
 {
-  if (isPi30LikeProtocol(protocol) || isRawOnlyPiProtocol(protocol))
+  if (isClassicPiStatusProtocol(protocol) || isRawOnlyPiProtocol(protocol))
   {
     staticData.remove(DESCR_Protocol_ID);
 

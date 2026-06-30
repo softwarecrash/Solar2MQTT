@@ -1,6 +1,10 @@
 bool PI_Serial::PIXX_QEX()
 {
-  if (isPi30LikeProtocol(protocol))
+  if (protocol == PI16)
+  {
+    return true;
+  }
+  else if (isPi30LikeProtocol(protocol))
   {
     liveData.remove(DESCR_PV_Generation_Sum);
     liveData.remove(DESCR_PV_Generation_Year);

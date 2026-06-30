@@ -4,6 +4,8 @@
 #define DESCR_req_NAK "NAK"
 #define DESCR_req_NOA "NOA"
 #define DESCR_req_ERCRC "ERCRC"
+// ESP runtime data
+#define DESCR_ESP_Internal_Temperature "ESP_Internal_Temperature"
 // QPIGS
 #define DESCR_AC_In_Voltage "AC_In_Voltage"                                   // BBB.B
 

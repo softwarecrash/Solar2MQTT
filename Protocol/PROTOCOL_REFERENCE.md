@@ -62,7 +62,7 @@ Additional references / candidates:
 | Code Type | Transport | Status | Parser Status | Notes |
 | --- | --- | --- | --- | --- |
 | `PI15` | UART ASCII | detected | raw-only | replies end up in `RawData`, no fixed field mapping |
-| `PI16` | UART ASCII | detected | raw-only | replies end up in `RawData`, including `QPIBI` |
+| `PI16` | UART ASCII | detected | structured classic status | classic `QPIRI` / `QPIGS` / `QMOD` / `QPIWS` replies populate `DeviceData` and `LiveData`; `QPIBI` remains raw |
 | `PI18` | UART `^P...` | detected | structured | dedicated `^P005PI`, `^P007PIRI`, `^P005GS`, `^P006MOD`, `^P007FLAG`, `^P005FWS`, energy commands |
 | `PI30` | UART ASCII | detected | structured | generic PI30 base path |
 | `PI30_MAX` | UART ASCII | detected | structured | MAX variant, extended `QFLAG` / `QPIWS` / `QPIRI` |
@@ -115,7 +115,7 @@ These signatures are evaluated after basic detection:
 
 If a device replies but cannot be classified cleanly:
 
-- the type remains `PI30_UNKNOWN` or `PI15` / `PI16`
+- the type remains `PI30_UNKNOWN` or `PI15`
 - replies are still collected as raw data
 - `RawData` and the debug report remain usable
 - the goal is that users can send dumps even if no final parser exists yet
@@ -178,7 +178,7 @@ Minimum dump set for new unknown serial devices:
 | Family | Core Commands | Extra Detection / Variants |
 | --- | --- | --- |
 | `PI15` | `QPI`, `QSVFW2`, `QMD`, `QFLAG`, `QPIRI`, `QPIGS`, `QMOD`, `QPIWS` | raw-only |
-| `PI16` | `QPI`, `QSVFW2`, `QMD`, `QFLAG`, `QPIRI`, `QPIGS`, `QMOD`, `QPIWS`, `QPIBI` | raw-only |
+| `PI16` | `QPI`, `QFLAG`, `QPIRI`, `QPIGS`, `QMOD`, `QPIWS`, `QPIBI` | structured classic status, `QPIBI` raw |
 | `PI18` | `^P005PI`, `^P007PIRI`, `^P005GS`, `Q1`, `^P006MOD`, `^P007FLAG`, `^P005FWS` | `^P004T`, `^P013ED`, `^P011EM`, `^P009EY`, `^P005ET` |
 | `PI30` | `QPI`, `QMN`, `QPIRI`, `QPIGS`, `QMOD`, `QFLAG`, `QPIWS`, `Q1` | `QET`, `QT`, `QEY`, `QEM`, `QED`, `QLT`, `QLY`, `QLM`, `QLD` |
 | `PI30_MAX` | PI30 base | `QFLAG d`, `QPIRI >= 28`, extended `QPIWS` |

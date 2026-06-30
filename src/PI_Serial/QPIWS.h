@@ -1,6 +1,6 @@
 bool PI_Serial::PIXX_QPIWS()
 {
-    if (isPi30LikeProtocol(protocol))
+    if (isClassicPiStatusProtocol(protocol))
     {
         liveData.remove(DESCR_Fault_Code);
         liveData.remove(DESCR_Warning_Code);

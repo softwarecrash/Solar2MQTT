@@ -10,17 +10,20 @@ This page is generated automatically from public device reports submitted throug
 | ANERN | AN-SCI-EVO-4200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | - | 1 |
 | EASUN | EASUN SMS-6.5KP | RS232 | MODBUS_DEYE | MODBUS_DEYE | 02020475 | - | esp32c3_supermini | Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working?<br>Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working? email tomfli@wp.pl | 2 |
 | EASUN | SMH-II-2.2 | RS232 | PI30 | PI30 | - | - | esp32s3_supermini | - | 1 |
-| EASUN | SMW8000 | RS232 | PI30_MAX | PI30 | MKS2-8000 | - | esp32c3_supermini | Pv2-input Power nieje vždy aktuálny ,zamrza | 1 |
+| EASUN | SMW8000 | RS232 | PI30_MAX | PI30 | MKS2-8000 | - | esp32c3_supermini | Pv2-input Power nieje vždy aktuálny ,zamrza | 2 |
 | ECGSOLAX | VICTOR MAX-10.2 KW-M | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Using ESP32. Pin assignment: UART Rx: GPIO19 UART Tx: GPIO23 You can get power from the RS232/Wifi port (RJ45) using a 5V stepdown: RJ45 Pin 8: Ground RJ45 Pin 4: VCC (Check voltage first before connecting.) | 1 |
 | EDECOA | EM-402A | RS232 | PI30 | PI30 | - | - | esp32c3_supermini | Hello from Odessa, Ukraine | 1 |
 | GOOTU | 8.2KW HYBRID INVERTER DUAL MPPT/DUAL OUTPUT AC | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32s3_supermini | - | 1 |
 | POWMR | 6.2 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | - | 1 |
+| POWMR | MPS-V PLUS 3.5KW | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | sp32_s3_wroom_cam | Using an ESP32-S3-N16R8 WROOM CAM with an RS232-to-TTL module. I selected this module because it has an integrated microSD card slot, which I will use for data logging purposes. | 1 |
 | POWMR | POW-HVM10.2M | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Keeps on disconnecting from WIFI. Only recognizes 1 string of PV. | 1 |
 | POWMR | POW-HVM4.2K-24V-D | TTL | NOD | NOD | - | - | wemos_d1_mini32 | - | 1 |
 | POWMR | POW-HVM6.2M-48V-N | RS232 | NOD | NOD | - | - | wemos_d1_mini32 | Working with MAX3232 and ESP32 Wemos D1 Mini32 | 1 |
+| POWMR | POWMR HVM-6.2M-48V-N | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Build variant is wenmo d1 but tge actual module is esp32 devkit V1 | 1 |
 | SILA | SILA PRO 5600MH | RS232 | PI18 | PI18 | - | - | waveshare_esp32_s3_eth | - | 1 |
 | SUMRY | SP 7000 | RS232 | PI30 | PI30 | - | - | wemos_d1_mini32 | Battery mode must be not lib | 1 |
 | SUMRY | SP7000 | RS232 | PI30 | PI30 | - | - | esp32c3_supermini | - | 1 |
+| SUOER | VMS-V-12K-48-HG | RS485 | PI30_MAX | PI30 | - | - | sp32_s3_wroom_cam | Using an ESP32-S3-N16R8 WROOM CAM with an RS485-to-TTL module. I selected this module because it has an integrated microSD card slot, which I will use for local data logging purposes. | 1 |
 | TAFFWARE | VICTOR NM-ECO-6,2KW PLUS | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | YUSUF from Indonesia | 1 |
 | WERCHTAY | GD3024EMH | RS232 | PI30 | PI30 | VMII-3000 | - | wemos_d1_mini32 | PIN-Layout RJ45 am Inverter: Pin 2: 12V VCC Pin 3: Inverter TX Pin 5: GND Pin 6: Inverter RX | 1 |
 | YINGFA | YF6,2K | RS232 | NOD | NOD | - | - | wemos_d1_mini32 | - | 1 |

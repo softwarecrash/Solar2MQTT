@@ -21,7 +21,12 @@ static const char *const qpigs2ListL2[] = {
 
 bool PI_Serial::PIXX_QPIGS2()
 {
-  if (isPi30LikeProtocol(protocol))
+  if (protocol == PI16)
+  {
+    get.raw.qpigs2 = DESCR_req_NOA;
+    return true;
+  }
+  else if (isPi30LikeProtocol(protocol))
   {
     pi_clear_json_fields(liveData, qpigs2List);
     pi_clear_json_fields(liveData, qpigs2ListL2);

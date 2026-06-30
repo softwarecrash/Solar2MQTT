@@ -71,6 +71,7 @@ private:
                           size_t descriptorCount,
                           std::vector<String> &currentTopics,
                           bool force);
+    void publishHaEspInternalTemperature(JsonDocument &snapshot, JsonObjectConst espValues, std::vector<String> &currentTopics, bool force);
     void publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst liveValues, std::vector<String> &currentTopics, bool force);
     bool hasHaDiscoveryTopic(const String &topic) const;
     void setupSubscriptions();

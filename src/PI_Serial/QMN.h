@@ -1,6 +1,10 @@
 bool PI_Serial::PIXX_QMN()
 {
-  if (isPi30LikeProtocol(protocol))
+  if (protocol == PI16)
+  {
+    return true;
+  }
+  else if (isPi30LikeProtocol(protocol))
   {
     staticData.remove(DESCR_Device_Model);
 

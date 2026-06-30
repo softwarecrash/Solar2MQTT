@@ -22,6 +22,7 @@ You can also trigger a rediscovery later from the `Debug` page with the `HA Disc
 
 - Solar inverter values
 - Device information values
+- ESP internal temperature sensor if supported by the chip
 - DS18B20 temperature sensors
 
 Only values that actually exist on your device are added.
@@ -34,6 +35,7 @@ Availability:
 
 State topics:
 
+- `<MQTT topic>/EspData/ESP_Internal_Temperature`
 - `<MQTT topic>/DeviceData/<name>`
 - `<MQTT topic>/LiveData/<name>`
 - `<MQTT topic>/LiveData/DS18B20_<n>`

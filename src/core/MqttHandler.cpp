@@ -552,6 +552,7 @@ void MqttHandler::publishHaDiscovery(bool force)
                      sizeof(HA_LIVE_DESCRIPTORS) / sizeof(HaEntityDescriptor),
                      currentTopics,
                      force);
+    publishHaEspInternalTemperature(snapshot, snapshot["EspData"].as<JsonObjectConst>(), currentTopics, force);
     publishHaDs18b20(snapshot, snapshot["LiveData"].as<JsonObjectConst>(), currentTopics, force);
 
     if (!force)
@@ -637,6 +638,50 @@ void MqttHandler::publishHaSection(JsonDocument &snapshot,
         _mqtt.publish(topic.c_str(), payload.c_str(), true);
         appendTopicIfMissing(_haDiscoveryTopics, topic);
     }
+}
+
+void MqttHandler::publishHaEspInternalTemperature(JsonDocument &snapshot,
+                                                  JsonObjectConst espValues,
+                                                  std::vector<String> &currentTopics,
+                                                  bool force)
+{
+    JsonVariantConst value = espValues[DESCR_ESP_Internal_Temperature];
+    if (!isDiscoverableValue(value))
+    {
+        return;
+    }
+
+    const String topicBase = baseTopic();
+    const String deviceId = getHaDeviceId();
+    const String availabilityTopic = topicBase + "/Alive";
+    const String topic = buildDiscoveryTopic(deviceId, "sensor", DESCR_ESP_Internal_Temperature);
+
+    appendTopicIfMissing(currentTopics, topic);
+    if (!force && hasHaDiscoveryTopic(topic))
+    {
+        return;
+    }
+
+    JsonDocument doc;
+    doc["name"] = DESCR_ESP_Internal_Temperature;
+    doc["state_topic"] = topicBase + "/EspData/" + DESCR_ESP_Internal_Temperature;
+    doc["availability_topic"] = availabilityTopic;
+    doc["payload_available"] = "true";
+    doc["payload_not_available"] = "false";
+    doc["unique_id"] = buildUniqueId(deviceId, "EspData", DESCR_ESP_Internal_Temperature);
+    doc["icon"] = "mdi:thermometer-lines";
+    doc["unit_of_measurement"] = HA_UNIT_CELSIUS;
+    doc["device_class"] = "temperature";
+    doc["force_update"] = true;
+    doc["qos"] = 1;
+
+    populateDeviceInfo(doc, snapshot);
+
+    String payload;
+    serializeJson(doc, payload);
+
+    _mqtt.publish(topic.c_str(), payload.c_str(), true);
+    appendTopicIfMissing(_haDiscoveryTopics, topic);
 }
 
 void MqttHandler::publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst liveValues, std::vector<String> &currentTopics, bool force)

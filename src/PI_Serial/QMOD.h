@@ -1,6 +1,6 @@
 bool PI_Serial::PIXX_QMOD()
 {
-  if (isPi30LikeProtocol(protocol))
+  if (isClassicPiStatusProtocol(protocol))
   {
     String commandAnswer = this->requestData("QMOD");
     get.raw.qmod = commandAnswer;

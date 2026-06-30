@@ -124,7 +124,12 @@ const char *const Q1_108[] = {
 
 bool PI_Serial::PIXX_Q1()
 {
-    if (isPi30LikeProtocol(protocol) || protocol == PI18) // pi30 and pi18 devices react both on Q1
+    if (protocol == PI16)
+    {
+        get.raw.q1 = DESCR_req_NOA;
+        return true;
+    }
+    else if (isPi30LikeProtocol(protocol) || protocol == PI18) // pi30 and pi18 devices react both on Q1
     {
         pi_clear_json_fields(liveData, Q1_47);
         pi_clear_json_fields(liveData, Q1_70);
