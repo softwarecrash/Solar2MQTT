@@ -113,63 +113,6 @@ bool SMG::retrieveModel(MODBUS_COM &mCom, char *modelBuffer, size_t bufferSize)
         return false;
     }
 
-    uint16_t configBlock[kConfigBlockCount] = {};
-    if (!mCom.readHoldingBlock(kConfigBlockStart, kConfigBlockCount, configBlock, kConfigBlockCount))
-    {
-        return false;
-    }
-
-    const uint16_t outputMode = configBlock[300 - kConfigBlockStart];
-    const uint16_t outputPriority = configBlock[301 - kConfigBlockStart];
-    const uint16_t inputRange = configBlock[302 - kConfigBlockStart];
-    const uint16_t buzzerMode = configBlock[303 - kConfigBlockStart];
-    const uint16_t lcdBacklight = configBlock[305 - kConfigBlockStart];
-    const uint16_t powerSaving = configBlock[307 - kConfigBlockStart];
-    const uint16_t overloadRestart = configBlock[308 - kConfigBlockStart];
-    const uint16_t overTempRestart = configBlock[309 - kConfigBlockStart];
-    const uint16_t bypass = configBlock[310 - kConfigBlockStart];
-    const uint16_t eqMode = configBlock[313 - kConfigBlockStart];
-    const uint16_t outputVoltage = configBlock[320 - kConfigBlockStart];
-    const uint16_t outputFrequency = configBlock[321 - kConfigBlockStart];
-    const uint16_t batteryBulk = configBlock[324 - kConfigBlockStart];
-    const uint16_t batteryFloat = configBlock[325 - kConfigBlockStart];
-    const uint16_t batteryRedischarge = configBlock[326 - kConfigBlockStart];
-    const uint16_t batteryUnder = configBlock[327 - kConfigBlockStart];
-    const uint16_t chargePriority = configBlock[331 - kConfigBlockStart];
-    const uint16_t maxChargeCurrent = configBlock[332 - kConfigBlockStart];
-    const uint16_t maxAcChargeCurrent = configBlock[333 - kConfigBlockStart];
-
-    // Some SMG-compatible inverters expose undocumented enum values here.
-    // The serial, live and rating blocks are stronger protocol signals.
-    if (!valueInRange(outputMode, 0, 4) ||
-        !valueInRange(outputPriority, 0, 3) ||
-        !valueInRange(inputRange, 0, 2) ||
-        !valueInRange(buzzerMode, 0, 3) ||
-        !valueInRange(lcdBacklight, 0, 1) ||
-        !valueInRange(powerSaving, 0, 1) ||
-        !valueInRange(overloadRestart, 0, 1) ||
-        !valueInRange(overTempRestart, 0, 1) ||
-        !valueInRange(bypass, 0, 1) ||
-        !valueInRange(eqMode, 0, 1) ||
-        !valueInRange(chargePriority, 0, 3))
-    {
-        return false;
-    }
-
-    const bool hasMeaningfulConfig =
-        outputVoltage > 0 &&
-        outputFrequency > 0 &&
-        batteryBulk > 0 &&
-        batteryFloat > 0 &&
-        batteryRedischarge > 0 &&
-        batteryUnder > 0 &&
-        (maxChargeCurrent > 0 || maxAcChargeCurrent > 0);
-
-    if (!hasMeaningfulConfig)
-    {
-        return false;
-    }
-
     snprintf(modelBuffer, bufferSize, "SMG %s", serial);
     return true;
 }
