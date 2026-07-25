@@ -23,6 +23,7 @@ This page is generated automatically from public device reports submitted throug
 | POWMR | POW-HVM10.2M | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Keeps on disconnecting from WIFI. Only recognizes 1 string of PV. | 1 |
 | POWMR | POW-HVM4.2K-24V-D | TTL | NOD | NOD | - | - | wemos_d1_mini32 | - | 1 |
 | POWMR | POW-HVM4.2K-24V-N | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Working with MAX3232 | 1 |
+| POWMR | POW-HVM6.2K-PRO | RS232 | PI30_PIP_GK | PI30 | - | - | wemos_d1_mini32 | ESP8266 and ESP32 works out of the box | 1 |
 | POWMR | POW-HVM6.2M-48V-N | RS232 | NOD | NOD | - | - | wemos_d1_mini32 | Working with MAX3232 and ESP32 Wemos D1 Mini32 | 1 |
 | POWMR | POW-HVM6.2M-48V-N | RS232 | PI30 | PI30 | VMII-NXPW5KW | 1.2.0 | ESP8266_d1_mini | Worked out of the box. Controller was ESP8266 Wemos D1 Mini -- the one recommended on the wiki. I've used standard esptool (installed via brew on macos) | 1 |
 | POWMR | POWMR HVM-6.2M-48V-N | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Build variant is wenmo d1 but tge actual module is esp32 devkit V1 | 1 |
