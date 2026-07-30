@@ -5,20 +5,30 @@ This page is generated automatically from public device reports submitted throug
 <!-- REPORTDEVICE:START -->
 | Manufacturer | Model | Transport | Protocol | Protocol ID | Detected Model | Firmware | Build Variant | Notes | Reports |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ANENJI | ANJ-HHS-11000W-48V-WIFI | RS485 | MODBUS_SMG_II_11KW | MODBUS_SMG_II_11KW | SMG-II 11KW 92B32601101629 | - | esp32c3_supermini | But Grid Power (kw/h) not included. | 1 |
 | ANERN | AN-EX-PRO10200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | The Solar wattage is detected a 0200 instead of 10200, Need to spoof data to set to 10200 to display correct solar percentage. | 1 |
 | ANERN | AN-SCI-ECO-3200 | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | esp32c3_supermini<br>wemos_d1_mini32 | Actually it is ESP32 30 pin CH340 | 2 |
 | ANERN | AN-SCI-EVO-4200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | - | 1 |
+| ANERN | SCI-EVO-6200 | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 1 |
+| ANERN | SCI-EVO-6200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 2 |
 | EASUN | EASUN SMS-6.5KP | RS232 | MODBUS_DEYE | MODBUS_DEYE | 02020475 | - | esp32c3_supermini | Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working?<br>Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working? email tomfli@wp.pl | 2 |
 | EASUN | SMH-II-2.2 | RS232 | PI30 | PI30 | - | - | esp32s3_supermini | - | 1 |
 | EASUN | SMW8000 | RS232 | PI30_MAX | PI30 | MKS2-8000 | - | esp32c3_supermini | Pv2-input Power nieje vždy aktuálny ,zamrza | 2 |
 | ECGSOLAX | VICTOR MAX-10.2 KW-M | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Using ESP32. Pin assignment: UART Rx: GPIO19 UART Tx: GPIO23 You can get power from the RS232/Wifi port (RJ45) using a 5V stepdown: RJ45 Pin 8: Ground RJ45 Pin 4: VCC (Check voltage first before connecting.) | 1 |
+| ECOWORTHY | ECO5000W(SR) | RS485 | MODBUS_ANENJI_SRNE | MODBUS_ANENJI_SRNE | Anenji SRNE SR-2602280561-100180 | - | esp32_wroom_32 | I don't see any configuration parameters on you app for ESP32 | 1 |
 | EDECOA | EM-402A | RS232 | PI30 | PI30 | - | - | esp32c3_supermini | Hello from Odessa, Ukraine | 1 |
 | GOOTU | 8.2KW HYBRID INVERTER DUAL MPPT/DUAL OUTPUT AC | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32s3_supermini | - | 1 |
+| INVERTOR | INFINISOLAR V 4 TWIN 6KW HYBRID | RS232 | PI18 | PI18 | - | - | wemos_d1_mini32 | Super work ok | 1 |
+| POWERMR | POW-HVM3.2H-24V-N | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | In general, everything works. | 1 |
 | POWMR | 6.2 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | - | 1 |
 | POWMR | MPS-V PLUS 3.5KW | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | sp32_s3_wroom_cam | Using an ESP32-S3-N16R8 WROOM CAM with an RS232-to-TTL module. I selected this module because it has an integrated microSD card slot, which I will use for data logging purposes. | 1 |
 | POWMR | POW-HVM10.2M | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Keeps on disconnecting from WIFI. Only recognizes 1 string of PV. | 1 |
 | POWMR | POW-HVM4.2K-24V-D | TTL | NOD | NOD | - | - | wemos_d1_mini32 | - | 1 |
+| POWMR | POW-HVM4.2K-24V-N | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Working with MAX3232 | 1 |
+| POWMR | POW-HVM6.2K-PRO | RS232 | PI30_PIP_GK | PI30 | - | - | wemos_d1_mini32 | ESP8266 and ESP32 works out of the box | 1 |
 | POWMR | POW-HVM6.2M-48V-N | RS232 | NOD | NOD | - | - | wemos_d1_mini32 | Working with MAX3232 and ESP32 Wemos D1 Mini32 | 1 |
+| POWMR | POW-HVM6.2M-48V-N | RS232 | PI30 | PI30 | VMII-NXPW5KW | 1.2.0 | ESP8266_d1_mini | Worked out of the box. Controller was ESP8266 Wemos D1 Mini -- the one recommended on the wiki. I've used standard esptool (installed via brew on macos) | 1 |
+| POWMR | POWMR HVM-6.2M-48V-N | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Build variant is wenmo d1 but tge actual module is esp32 devkit V1 | 1 |
 | SILA | SILA PRO 5600MH | RS232 | PI18 | PI18 | - | - | waveshare_esp32_s3_eth | - | 1 |
 | SUMRY | SP 7000 | RS232 | PI30 | PI30 | - | - | wemos_d1_mini32 | Battery mode must be not lib | 1 |
 | SUMRY | SP7000 | RS232 | PI30 | PI30 | - | - | esp32c3_supermini | - | 1 |
