@@ -23,7 +23,7 @@ public:
     // Pure virtual function for getting the name
     virtual const char *getName() const = 0;
 
-    virtual void init(HardwareSerial &serial, int rxPin, int txPin, MODBUS_COM &mCom);
+    virtual void init(HardwareSerial &serial, int rxPin, int txPin, MODBUS_COM &mCom, bool configureSerial = true);
 
     virtual bool retrieveModel(MODBUS_COM &mCom, char *modelBuffer, size_t bufferSize);
 

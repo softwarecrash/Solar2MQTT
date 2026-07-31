@@ -23,10 +23,13 @@ protocol_type_t ModbusDevice::getProtocol() const
     return _protocol;
 }
 
-void ModbusDevice::init(HardwareSerial &serial, int rxPin, int txPin, MODBUS_COM &mCom)
+void ModbusDevice::init(HardwareSerial &serial, int rxPin, int txPin, MODBUS_COM &mCom, bool configureSerial)
 {
     writeLog("Init %s protocol, baud %d, modbusAddr %d", getName(), getBaudRate(), getModbusAddr());
-    serial.begin(getBaudRate(), SERIAL_8N1, rxPin, txPin);
+    if (configureSerial)
+    {
+        serial.begin(getBaudRate(), SERIAL_8N1, rxPin, txPin);
+    }
     mCom.getModbusMaster()->begin(getModbusAddr(), serial);
     mCom.clearReadCache();
 }

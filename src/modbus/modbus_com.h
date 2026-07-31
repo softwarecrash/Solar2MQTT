@@ -5,8 +5,10 @@
 #include <ModbusMaster.h>
 #include "modbus_registers.h"
 
-#define MODBUS_RETRIES 2
-#define MODBUS_TIMEOUT 150
+static constexpr uint8_t MODBUS_RETRIES = 2;
+static constexpr uint16_t MODBUS_TIMEOUT_MS = 150;
+static constexpr uint16_t MODBUS_DETECTION_TIMEOUT_MS = 400;
+static constexpr uint16_t MODBUS_RETRY_DELAY_MS = 100;
 
 typedef enum
 {
@@ -33,6 +35,8 @@ public:
     response_type_t parseModbusToJson(modbus_register_info_t &register_info, bool skip_reg_on_error = true);
     bool isAllRegistersRead(modbus_register_info_t &register_info);
     ModbusMaster *getModbusMaster();
+    uint16_t getResponseTimeout();
+    void setResponseTimeout(uint16_t timeoutMs);
     bool readHoldingBlock(uint16_t startRegister, uint16_t registerCount, uint16_t *buffer, size_t bufferLen);
     void clearReadCache();
     

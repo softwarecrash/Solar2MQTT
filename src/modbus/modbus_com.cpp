@@ -11,6 +11,17 @@ extern void writeLog(const char *format, ...);
 
 int _dir_pin;
 
+namespace
+{
+void waitBeforeRetry(uint8_t attempt)
+{
+    if (attempt + 1 < MODBUS_RETRIES)
+    {
+        delay(MODBUS_RETRY_DELAY_MS);
+    }
+}
+} // namespace
+
 MODBUS_COM::MODBUS_COM()
 {
     _dir_pin = g_inverterHardwareConfig.dirPin;
@@ -21,7 +32,7 @@ MODBUS_COM::MODBUS_COM()
     }
     this->postTransmission();
     //set the default timeout
-    _mb.setResponseTimeout(MODBUS_TIMEOUT);
+    _mb.setResponseTimeout(MODBUS_TIMEOUT_MS);
     // Callbacks allow us to configure the RS485 transceiver correctly
     _mb.preTransmission(preTransmission);
     _mb.postTransmission(postTransmission);
@@ -46,6 +57,16 @@ void MODBUS_COM::postTransmission()
 ModbusMaster *MODBUS_COM::getModbusMaster()
 {
     return &_mb;
+}
+
+uint16_t MODBUS_COM::getResponseTimeout()
+{
+    return _mb.getResponseTimeout();
+}
+
+void MODBUS_COM::setResponseTimeout(uint16_t timeoutMs)
+{
+    _mb.setResponseTimeout(timeoutMs);
 }
 
 const char *MODBUS_COM::getModbusResultText(uint8_t result)
@@ -132,6 +153,8 @@ bool MODBUS_COM::loadHoldingBlock(uint16_t startRegister, uint16_t registerCount
             storeReadCache(startRegister, registerCount);
             return true;
         }
+
+        waitBeforeRetry(i);
     }
 
     writeLog("Modbus holding read failed final start=%u count=%u",
@@ -178,44 +201,36 @@ bool MODBUS_COM::getModbusValue(uint16_t register_id,
         return false;
     }
 
-    for (uint8_t i = 0; i < MODBUS_RETRIES; i++)
+    if (modbus_entity != MODBUS_TYPE_HOLDING)
     {
-        if (MODBUS_RETRIES > 1)
-        {
-        }
-        if (modbus_entity == MODBUS_TYPE_HOLDING)
-        {
-            if (blockCount > 0)
-            {
-                if (register_id < blockStart ||
-                    static_cast<uint32_t>(register_id) + readBytes > static_cast<uint32_t>(blockStart) + blockCount)
-                {
-                    writeLog("Invalid Modbus block read definition");
-                    return false;
-                }
+        writeLog("Unsupported Modbus entity type");
+        return false;
+    }
 
-                if (loadHoldingBlock(blockStart, blockCount) && getCachedHoldingValue(register_id, value_ptr))
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                uint8_t result = _mb.readHoldingRegisters(register_id, readBytes);
-                bool is_received = logModbusResult(result, register_id, readBytes);
-                if (is_received)
-                {
-                    storeReadCache(register_id, readBytes);
-                    *value_ptr = _mb.getResponseBuffer(0);
-                    return true;
-                }
-            }
-        }
-        else
+    if (blockCount > 0)
+    {
+        if (register_id < blockStart ||
+            static_cast<uint32_t>(register_id) + readBytes > static_cast<uint32_t>(blockStart) + blockCount)
         {
-            writeLog("Unsupported Modbus entity type");
+            writeLog("Invalid Modbus block read definition");
             return false;
         }
+
+        return loadHoldingBlock(blockStart, blockCount) && getCachedHoldingValue(register_id, value_ptr);
+    }
+
+    for (uint8_t i = 0; i < MODBUS_RETRIES; i++)
+    {
+        uint8_t result = _mb.readHoldingRegisters(register_id, readBytes);
+        bool is_received = logModbusResult(result, register_id, readBytes);
+        if (is_received)
+        {
+            storeReadCache(register_id, readBytes);
+            *value_ptr = _mb.getResponseBuffer(0);
+            return true;
+        }
+
+        waitBeforeRetry(i);
     }
     writeLog("Modbus holding read failed final start=%u count=%u",
              static_cast<unsigned int>(register_id),

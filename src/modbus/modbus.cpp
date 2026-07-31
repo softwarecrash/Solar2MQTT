@@ -109,19 +109,30 @@ String MODBUS::requestData(String command)
 protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter type
 {
     protocol_type_t protocol = NoD;
-    char modelName[48];
+    char modelName[48] = {};
+    long activeBaudRate = 0;
+    const uint16_t normalResponseTimeout = _mCom.getResponseTimeout();
 
     writeLog("Try Autodetect Modbus device");
+    _mCom.setResponseTimeout(MODBUS_DETECTION_TIMEOUT_MS);
 
     ModbusDevice *devices[] = { new Deye(), new SMGII11KW(), new SMG(), new AnenjiSrne(), new Anenji(), new MustPV_PH18()};
     const size_t deviceCount = sizeof(devices) / sizeof(devices[0]);
-    
+
     for (size_t i = 0; i < deviceCount; ++i)
     {
-        devices[i]->init(*my_serialIntf, _rxPin, _txPin, _mCom);
-        devices[i]->retrieveModel(_mCom, modelName, sizeof(modelName));
-        
-        if (strlen(modelName) != 0)
+        modelName[0] = '\0';
+        const bool configureSerial = activeBaudRate != devices[i]->getBaudRate();
+        devices[i]->init(*my_serialIntf, _rxPin, _txPin, _mCom, configureSerial);
+        if (configureSerial)
+        {
+            activeBaudRate = devices[i]->getBaudRate();
+            stabilizeSerial();
+        }
+
+        const bool detected = devices[i]->retrieveModel(_mCom, modelName, sizeof(modelName));
+
+        if (detected && modelName[0] != '\0')
         {
             writeLog("<Autodetect> Found Modbus device: %s", modelName);
             staticData["Device_Model"] = modelName;
@@ -141,11 +152,28 @@ protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter typ
                     devices[j] = nullptr;
                 }
             }
+            _mCom.setResponseTimeout(normalResponseTimeout);
             return protocol;
         }
         delete devices[i];
         devices[i] = nullptr;
     }
 
+    _mCom.setResponseTimeout(normalResponseTimeout);
     return protocol;
+}
+
+void MODBUS::stabilizeSerial()
+{
+    while (my_serialIntf->available() > 0)
+    {
+        my_serialIntf->read();
+    }
+
+    delay(kSerialStabilizationDelayMs);
+
+    while (my_serialIntf->available() > 0)
+    {
+        my_serialIntf->read();
+    }
 }

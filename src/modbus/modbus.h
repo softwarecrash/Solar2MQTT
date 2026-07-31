@@ -53,6 +53,7 @@ public:
 
 private:
     static constexpr unsigned long kCommandDelayMs = 200;
+    static constexpr unsigned long kSerialStabilizationDelayMs = 250;
     unsigned long previousTime = 0;
 
     byte requestCounter = 0;
@@ -61,7 +62,8 @@ private:
 
     byte qexCounter = 0;
 
-    void prepareRegisters(); 
+    void prepareRegisters();
+    void stabilizeSerial();
 
     /**
      * @brief Serial interface used for communication
