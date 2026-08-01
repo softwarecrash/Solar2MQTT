@@ -629,6 +629,10 @@ void MqttHandler::publishHaSection(JsonDocument &snapshot,
         {
             doc["device_class"] = descriptor->deviceClass;
         }
+        if (descriptor != nullptr && descriptor->stateClass != nullptr && descriptor->stateClass[0] != '\0')
+        {
+            doc["state_class"] = descriptor->stateClass;
+        }
 
         populateDeviceInfo(doc, snapshot);
 

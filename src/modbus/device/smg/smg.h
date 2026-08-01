@@ -45,12 +45,16 @@ private:
          nullptr, kLiveBlockStart, kLiveBlockCount},
         {202, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_AC_In_Voltage, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
         {203, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_TWO_DECIMAL, DESCR_AC_In_Frequency, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
+        {204, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_AC_In_Watt, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
+        {209, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_Battery_Charging_Power, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
         {210, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_AC_Out_Voltage, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
         {211, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_Output_Current, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
         {212, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_TWO_DECIMAL, DESCR_AC_Out_Frequency, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
         {213, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_AC_Out_Watt, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
         {214, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_AC_Out_VA, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
         {215, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_Battery_Voltage, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
+        {216, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_Battery_Average_Current, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
+        {217, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_Battery_Average_Power, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
         {219, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_PV_Input_Voltage, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
         {220, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_PV1_Input_Current, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
         {223, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16, DESCR_PV_Input_Power, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
@@ -61,6 +65,7 @@ private:
         {229, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16, DESCR_Battery_Percent, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
         {232, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_Battery_Load, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
         {233, MODBUS_TYPE_HOLDING, REGISTER_TYPE_DIEMATIC_ONE_DECIMAL, DESCR_Charge_Average_Current, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
+        {234, MODBUS_TYPE_HOLDING, REGISTER_TYPE_INT16_ONE_DECIMAL, DESCR_PV_Charge_Current, 0, {}, nullptr, kLiveBlockStart, kLiveBlockCount},
     };
 
     inline static const modbus_register_t registers_static[] = {

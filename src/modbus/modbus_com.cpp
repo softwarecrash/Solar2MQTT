@@ -467,6 +467,7 @@ response_type_t MODBUS_COM::parseModbusToJson(modbus_register_info_t &register_i
     if (register_info.curr_register >= register_info.array_size)
     {
         register_info.curr_register = 0;
+        clearReadCache();
     }
     while (register_info.curr_register < register_info.array_size)
     {

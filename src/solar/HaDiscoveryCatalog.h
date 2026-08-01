@@ -8,6 +8,7 @@ struct HaEntityDescriptor
     const char *icon;
     const char *unit;
     const char *deviceClass;
+    const char *stateClass = nullptr;
 };
 
 static constexpr const char *HA_UNIT_CELSIUS = "\xC2\xB0"
@@ -62,6 +63,7 @@ static const HaEntityDescriptor HA_LIVE_DESCRIPTORS[] = {
     {DESCR_AC_In_Frequency, "import", "Hz", "frequency"},
     {DESCR_AC_In_Frequency_L1, "import", "Hz", "frequency"},
     {DESCR_AC_In_Frequency_L2, "import", "Hz", "frequency"},
+    {DESCR_AC_In_Watt, "transmission-tower-import", "W", "power", "measurement"},
     {DESCR_AC_In_Generation_Day, "import", "Wh", "energy"},
     {DESCR_AC_In_Generation_Month, "import", "Wh", "energy"},
     {DESCR_AC_In_Generation_Sum, "import", "Wh", "energy"},
@@ -108,6 +110,9 @@ static const HaEntityDescriptor HA_LIVE_DESCRIPTORS[] = {
     {DESCR_ACDC_Power_Direction, "swap-horizontal", "", ""},
     {DESCR_Allow_SCC_On_Flag, "solar-power", "", ""},
     {DESCR_Battery_Charge_Current, "battery-charging-high", "A", "current"},
+    {DESCR_Battery_Average_Current, "battery-outline", "A", "current", "measurement"},
+    {DESCR_Battery_Average_Power, "battery-outline", "W", "power", "measurement"},
+    {DESCR_Battery_Charging_Power, "battery-charging-high", "W", "power", "measurement"},
     {DESCR_Battery_Discharge_Current, "battery-minus-outline", "A", "current"},
     {DESCR_Battery_Load, "battery-outline", "A", "current"},
     {DESCR_Battery_Percent, "battery-high", "%", "battery"},
@@ -149,6 +154,7 @@ static const HaEntityDescriptor HA_LIVE_DESCRIPTORS[] = {
     {DESCR_Parallel_Warning, "alert-outline", "", ""},
     {DESCR_Positive_Battery_Voltage, "battery-plus-outline", "V", "voltage"},
     {DESCR_PV_Charging_Power, "solar-power-variant", "W", "power"},
+    {DESCR_PV_Charge_Current, "solar-power-variant", "A", "current", "measurement"},
     {DESCR_PV_Generation_Day, "solar-power-variant", "Wh", "energy"},
     {DESCR_PV_Generation_Month, "solar-power-variant", "Wh", "energy"},
     {DESCR_PV_Generation_Sum, "solar-power-variant", "Wh", "energy"},

@@ -10,6 +10,7 @@
 #define DESCR_AC_In_Voltage "AC_In_Voltage"                                   // BBB.B
 
 #define DESCR_AC_In_Frequency "AC_In_Frequency"                               // CC.C
+#define DESCR_AC_In_Watt "AC_In_Watt"
 #define DESCR_AC_In_Voltage_L1 "AC_In_Voltage_L1"
 #define DESCR_AC_In_Frequency_L1 "AC_In_Frequency_L1"
 #define DESCR_AC_Out_Voltage "AC_Out_Voltage"                                 // DDD.D
@@ -101,7 +102,11 @@
 #define DESCR_Line_Power_Direction "Line_Power_Direction"
 #define DESCR_Local_Parallel_ID "Local_Parallel_ID"
 #define DESCR_Battery_Load "Battery_Load"
+#define DESCR_Battery_Average_Current "Battery_Average_Current"
+#define DESCR_Battery_Average_Power "Battery_Average_Power"
+#define DESCR_Battery_Charging_Power "Battery_Charging_Power"
 #define DESCR_PV_Input_Power "PV_Input_Power"
+#define DESCR_PV_Charge_Current "PV_Charge_Current"
 // QPIGS2
 #define DESCR_PV2_Input_Current "PV2_Input_Current"
 #define DESCR_PV2_Charging_Power "PV2_Charging_Power"
