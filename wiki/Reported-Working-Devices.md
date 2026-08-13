@@ -13,6 +13,7 @@ This page is generated automatically from public device reports submitted throug
 | ANERN | AN-SCI-EVO-4200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | - | 1 |
 | ANERN | SCI-EVO-6200 | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 1 |
 | ANERN | SCI-EVO-6200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 2 |
+| ANERN | SCI-EVO4200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 1 |
 | EASUN | EASUN SMS-6.5KP | RS232 | MODBUS_DEYE | MODBUS_DEYE | 02020475 | - | esp32c3_supermini | Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working?<br>Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working? email tomfli@wp.pl | 2 |
 | EASUN | SMH-II-2.2 | RS232 | PI30 | PI30 | - | - | esp32s3_supermini | - | 1 |
 | EASUN | SMW8000 | RS232 | PI30_MAX | PI30 | MKS2-8000 | - | esp32c3_supermini | Pv2-input Power nieje vždy aktuálny ,zamrza | 2 |
