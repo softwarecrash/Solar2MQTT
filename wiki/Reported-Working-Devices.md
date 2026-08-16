@@ -5,12 +5,15 @@ This page is generated automatically from public device reports submitted throug
 <!-- REPORTDEVICE:START -->
 | Manufacturer | Model | Transport | Protocol | Protocol ID | Detected Model | Firmware | Build Variant | Notes | Reports |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | ECO | RS232 | NOD | NOD | - | - | wemos_d1_mini32 | - | 1 |
+| ANENJI | ANJ-4200W-24V-W-AE | RS232 | MODBUS_SMG | MODBUS_SMG | SMG 99432512106945 | - | esp32s3_supermini | This is an intermediate version of the inverter with the full model number on the box: ps399-anj-4200w-24v-w-ae. Its key feature is upgraded solar panel array specifications: PV Array Power: 6200W, PV Voltage: 500V, PV Current: 27A, Max Charge Current: 120A. | 1 |
 | ANENJI | ANJ-HHS-11000W-48V-WIFI | RS485 | MODBUS_SMG_II_11KW | MODBUS_SMG_II_11KW | SMG-II 11KW 92B32601101629 | - | esp32c3_supermini | But Grid Power (kw/h) not included. | 1 |
 | ANERN | AN-EX-PRO10200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | The Solar wattage is detected a 0200 instead of 10200, Need to spoof data to set to 10200 to display correct solar percentage. | 1 |
 | ANERN | AN-SCI-ECO-3200 | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | esp32c3_supermini<br>wemos_d1_mini32 | Actually it is ESP32 30 pin CH340 | 2 |
 | ANERN | AN-SCI-EVO-4200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | - | 1 |
 | ANERN | SCI-EVO-6200 | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 1 |
 | ANERN | SCI-EVO-6200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 2 |
+| ANERN | SCI-EVO4200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 1 |
 | EASUN | EASUN SMS-6.5KP | RS232 | MODBUS_DEYE | MODBUS_DEYE | 02020475 | - | esp32c3_supermini | Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working?<br>Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working? email tomfli@wp.pl | 2 |
 | EASUN | SMH-II-2.2 | RS232 | PI30 | PI30 | - | - | esp32s3_supermini | - | 1 |
 | EASUN | SMW8000 | RS232 | PI30_MAX | PI30 | MKS2-8000 | - | esp32c3_supermini | Pv2-input Power nieje vždy aktuálny ,zamrza | 2 |
@@ -22,7 +25,7 @@ This page is generated automatically from public device reports submitted throug
 | POWERMR | POW-HVM3.2H-24V-N | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | In general, everything works. | 1 |
 | POWMR | 6.2 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | - | 1 |
 | POWMR | MPS-V PLUS 3.5KW | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | sp32_s3_wroom_cam | Using an ESP32-S3-N16R8 WROOM CAM with an RS232-to-TTL module. I selected this module because it has an integrated microSD card slot, which I will use for data logging purposes. | 1 |
-| POWMR | POW-HVM10.2M | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Keeps on disconnecting from WIFI. Only recognizes 1 string of PV. | 1 |
+| POWMR | POW-HVM10.2M | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Keeps on disconnecting from WIFI. Only recognizes 1 string of PV.<br>Гібридний інвертор PowMr 10.2 кВт (POW-HVM10.2M), підключення через MAX3232 (RS232), стабільна робота підтверджена. PowMr POW-HVM10.2M 10.2kW hybrid inverter, connected via MAX3232 (RS232), confirmed stable operation. | 2 |
 | POWMR | POW-HVM4.2K-24V-D | TTL | NOD | NOD | - | - | wemos_d1_mini32 | - | 1 |
 | POWMR | POW-HVM4.2K-24V-N | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Working with MAX3232 | 1 |
 | POWMR | POW-HVM6.2K-PRO | RS232 | PI30_PIP_GK | PI30 | - | - | wemos_d1_mini32 | ESP8266 and ESP32 works out of the box | 1 |
