@@ -11,6 +11,7 @@
 #include "device/anenji_srne/anenji_srne.h"
 #include "device/smg/smg.h"
 #include "device/smg_ii_11kw/smg_ii_11kw.h"
+#include "device/powmr/powmr.h"
 
 extern JsonObject deviceJson;
 extern JsonObject staticData;

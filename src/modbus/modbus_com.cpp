@@ -13,6 +13,11 @@ int _dir_pin;
 
 namespace
 {
+uint16_t swapRegisterBytes(uint16_t value)
+{
+    return static_cast<uint16_t>((value >> 8) | (value << 8));
+}
+
 void waitBeforeRetry(uint8_t attempt)
 {
     if (attempt + 1 < MODBUS_RETRIES)
@@ -313,6 +318,12 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
         case REGISTER_TYPE_U16:
             (*variant)[reg->name] = raw_value + reg->offset;
             break;
+        case REGISTER_TYPE_U16_SWAP:
+            (*variant)[reg->name] = swapRegisterBytes(raw_value) + reg->offset;
+            break;
+        case REGISTER_TYPE_U16_SWAP_ONE_DECIMAL:
+            (*variant)[reg->name] = (swapRegisterBytes(raw_value) / 10.0f) + reg->offset;
+            break;
         case REGISTER_TYPE_INT16:
             (*variant)[reg->name] = static_cast<int16_t>(raw_value) + reg->offset;
             break;
@@ -392,7 +403,11 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
             break;
 
         case REGISTER_TYPE_CUSTOM_VAL_NAME:
+        case REGISTER_TYPE_CUSTOM_VAL_NAME_SWAP:
         {
+            const uint16_t enumValue = reg->type == REGISTER_TYPE_CUSTOM_VAL_NAME_SWAP
+                                           ? swapRegisterBytes(raw_value)
+                                           : raw_value;
             bool isfound = false;
             for (uint8_t j = 0; j < 16; ++j)
             {
@@ -402,7 +417,7 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
                     writeLog("bitfield[%d] is null", j);
                     break;
                 }
-                if (j == raw_value)
+                if (j == enumValue)
                 {
                     (*variant)[reg->name] = bit_varname;
                     isfound = true;
@@ -411,7 +426,7 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
             }
             if (!isfound)
             {
-                writeLog("CUSTOM_VAL_NAME not found for raw_value=%d register id=%d type=0x%x name=%s",raw_value, reg->id, reg->type, reg->name);
+                writeLog("CUSTOM_VAL_NAME not found for raw_value=%d register id=%d type=0x%x name=%s", enumValue, reg->id, reg->type, reg->name);
             }
             break;
         }

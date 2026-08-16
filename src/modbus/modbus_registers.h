@@ -33,6 +33,9 @@ typedef enum
     REGISTER_TYPE_CUSTOM_VAL_NAME,
     REGISTER_TYPE_CALLBACK,         /*call custom callback after register read*/
     REGISTER_TYPE_VIRTUAL_CALLBACK, /*allows to call callback without register read*/
+    REGISTER_TYPE_U16_SWAP,
+    REGISTER_TYPE_U16_SWAP_ONE_DECIMAL,
+    REGISTER_TYPE_CUSTOM_VAL_NAME_SWAP,
 } register_type_t;
 
 

@@ -116,7 +116,7 @@ protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter typ
     writeLog("Try Autodetect Modbus device");
     _mCom.setResponseTimeout(MODBUS_DETECTION_TIMEOUT_MS);
 
-    ModbusDevice *devices[] = { new Deye(), new SMGII11KW(), new SMG(), new AnenjiSrne(), new Anenji(), new MustPV_PH18()};
+    ModbusDevice *devices[] = { new PowMr(), new Deye(), new SMGII11KW(), new SMG(), new AnenjiSrne(), new Anenji(), new MustPV_PH18()};
     const size_t deviceCount = sizeof(devices) / sizeof(devices[0]);
 
     for (size_t i = 0; i < deviceCount; ++i)

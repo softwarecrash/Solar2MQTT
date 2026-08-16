@@ -868,6 +868,8 @@ bool PI_Serial::isBusy() const
 void PI_Serial::autoDetect() // function for autodetect the inverter type
 {
     busyCount.fetch_add(1, std::memory_order_relaxed);
+    protocol_type_t piFallbackProtocol = NoD;
+    bool tryModbus = false;
     if (abortAutoDetect.load(std::memory_order_relaxed) || suspendSerial.load(std::memory_order_relaxed))
     {
         writeLog("[PI][DETECT] aborted");
@@ -976,11 +978,13 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         }
         this->my_serialIntf->end();
     }
-    if (protocol == NoD)
+    piFallbackProtocol = protocol;
+    tryModbus = protocol == NoD || protocol == PI30_UNKNOWN;
+    if (tryModbus)
     {
         this->my_serialIntf->end();
     }
-    if (protocol == NoD &&
+    if (tryModbus &&
         !abortAutoDetect.load(std::memory_order_relaxed) &&
         !suspendSerial.load(std::memory_order_relaxed))
     {
@@ -988,11 +992,20 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         if (modbus != nullptr)
         {
             modbus->Init();
-            protocol = modbus->autoDetect();
-            if (protocol == NoD)
+            const protocol_type_t modbusProtocol = modbus->autoDetect();
+            if (modbusProtocol != NoD)
+            {
+                protocol = modbusProtocol;
+            }
+            else
             {
                 delete modbus;
                 modbus = nullptr;
+                protocol = piFallbackProtocol;
+                if (protocol == PI30_UNKNOWN)
+                {
+                    this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+                }
             }
         }
     } 
