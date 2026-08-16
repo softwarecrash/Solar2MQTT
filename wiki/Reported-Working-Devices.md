@@ -15,6 +15,7 @@ This page is generated automatically from public device reports submitted throug
 | ANERN | SCI-EVO-6200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 2 |
 | ANERN | SCI-EVO4200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 1 |
 | EASUN | EASUN SMS-6.5KP | RS232 | MODBUS_DEYE | MODBUS_DEYE | 02020475 | - | esp32c3_supermini | Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working?<br>Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working? email tomfli@wp.pl | 2 |
+| EASUN | IGRID SV IV 5.6 KW | RS232 | PI18 | 18 | - | - | wemos_d1_mini32 | Works fantastic, 88 entities, perfect real time data, flowless integration in HA through mttq. Huge thanks! | 1 |
 | EASUN | SMH-II-2.2 | RS232 | PI30 | PI30 | - | - | esp32s3_supermini | - | 1 |
 | EASUN | SMW8000 | RS232 | PI30_MAX | PI30 | MKS2-8000 | - | esp32c3_supermini | Pv2-input Power nieje vždy aktuálny ,zamrza | 2 |
 | ECGSOLAX | VICTOR MAX-10.2 KW-M | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Using ESP32. Pin assignment: UART Rx: GPIO19 UART Tx: GPIO23 You can get power from the RS232/Wifi port (RJ45) using a 5V stepdown: RJ45 Pin 8: Ground RJ45 Pin 4: VCC (Check voltage first before connecting.) | 1 |
@@ -31,6 +32,7 @@ This page is generated automatically from public device reports submitted throug
 | POWMR | POW-HVM6.2K-PRO | RS232 | PI30_PIP_GK | PI30 | - | - | wemos_d1_mini32 | ESP8266 and ESP32 works out of the box | 1 |
 | POWMR | POW-HVM6.2M-48V-N | RS232 | NOD | NOD | - | - | wemos_d1_mini32 | Working with MAX3232 and ESP32 Wemos D1 Mini32 | 1 |
 | POWMR | POW-HVM6.2M-48V-N | RS232 | PI30 | PI30 | VMII-NXPW5KW | 1.2.0 | ESP8266_d1_mini | Worked out of the box. Controller was ESP8266 Wemos D1 Mini -- the one recommended on the wiki. I've used standard esptool (installed via brew on macos) | 1 |
+| POWMR | POW-HVM6.5K-E | RS232 | MODBUS_POWMR | MODBUS_POWMR | PowMr HVM Modbus 4501 | - | esp32s3_supermini | - | 1 |
 | POWMR | POWMR HVM-6.2M-48V-N | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Build variant is wenmo d1 but tge actual module is esp32 devkit V1 | 1 |
 | SILA | SILA PRO 5600MH | RS232 | PI18 | PI18 | - | - | waveshare_esp32_s3_eth | - | 1 |
 | SUMRY | SP 7000 | RS232 | PI30 | PI30 | - | - | wemos_d1_mini32 | Battery mode must be not lib | 1 |
