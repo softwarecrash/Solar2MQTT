@@ -521,6 +521,13 @@ void SolarInverterService::createClient()
     g_inverterHardwareConfig.dirPin = _settings.get.inverterDirPin();
 
     _client = new PI_Serial(_serial, g_inverterHardwareConfig.rxPin, g_inverterHardwareConfig.txPin);
+    protocol_type_t forcedProtocol = NoD;
+    const char *configuredProtocol = _settings.get.inverterProtocol();
+    if (configuredProtocol != nullptr && strcmp(configuredProtocol, "AUTO") != 0 &&
+        protocolFromString(configuredProtocol, forcedProtocol) && forcedProtocol != PI30_UNKNOWN)
+    {
+        _client->setForcedProtocol(forcedProtocol);
+    }
     _client->setDelayTime(_settings.get.pollIntervalMs());
     _client->callback([this]()
                       {

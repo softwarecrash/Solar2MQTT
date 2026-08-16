@@ -19,6 +19,7 @@ public:
     virtual long getBaudRate() const;
     virtual long getModbusAddr() const;
     virtual protocol_type_t getProtocol() const;
+    virtual uint16_t getResponseTimeout() const;
 
     // Pure virtual function for getting the name
     virtual const char *getName() const = 0;

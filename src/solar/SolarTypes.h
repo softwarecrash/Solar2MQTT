@@ -55,6 +55,25 @@ inline const char *protocolToString(protocol_type_t protocol)
     return protocolStrings[index];
 }
 
+inline bool protocolFromString(const char *value, protocol_type_t &protocol)
+{
+    if (value == nullptr)
+    {
+        return false;
+    }
+
+    const size_t stringCount = sizeof(protocolStrings) / sizeof(protocolStrings[0]);
+    for (size_t i = 1; i < stringCount; ++i)
+    {
+        if (strcmp(value, protocolStrings[i]) == 0)
+        {
+            protocol = static_cast<protocol_type_t>(i);
+            return true;
+        }
+    }
+    return false;
+}
+
 inline bool isModbusProtocol(protocol_type_t protocol)
 {
     return protocol == MODBUS_MUST || protocol == MODBUS_DEYE || protocol == MODBUS_ANENJI || protocol == MODBUS_SMG || protocol == MODBUS_SMG_II_11KW || protocol == MODBUS_ANENJI_SRNE || protocol == MODBUS_POWMR;

@@ -101,12 +101,54 @@ String MODBUS::requestData(String command)
     requestStaticData = true;
     writeLog("Custom Modbus command unsupported: %s", command.c_str());
     return "UNSUPPORTED";
-} 
+}
+
+bool MODBUS::forceProtocol(protocol_type_t protocol)
+{
+    delete device;
+    device = nullptr;
+
+    switch (protocol)
+    {
+    case MODBUS_POWMR:
+        device = new PowMr();
+        break;
+    case MODBUS_DEYE:
+        device = new Deye();
+        break;
+    case MODBUS_SMG_II_11KW:
+        device = new SMGII11KW();
+        break;
+    case MODBUS_SMG:
+        device = new SMG();
+        break;
+    case MODBUS_ANENJI_SRNE:
+        device = new AnenjiSrne();
+        break;
+    case MODBUS_ANENJI:
+        device = new Anenji();
+        break;
+    case MODBUS_MUST:
+        device = new MustPV_PH18();
+        break;
+    default:
+        return false;
+    }
+
+    device->init(*my_serialIntf, _rxPin, _txPin, _mCom, true);
+    stabilizeSerial();
+    _mCom.setResponseTimeout(device->getResponseTimeout());
+    staticData[DESCR_Device_Model] = device->getName();
+    staticData[DESCR_Protocol_ID] = protocolToString(protocol);
+    prepareRegisters();
+    writeLog("Modbus protocol forced to %s", protocolToString(protocol));
+    return true;
+}
 
 //----------------------------------------------------------------------
 // Private Functions
 //----------------------------------------------------------------------
-protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter type
+protocol_type_t MODBUS::autoDetect(bool powMrOnly) // function for autodetect the inverter type
 {
     protocol_type_t protocol = NoD;
     char modelName[48] = {};
@@ -152,11 +194,25 @@ protocol_type_t MODBUS::autoDetect() // function for autodetect the inverter typ
                     devices[j] = nullptr;
                 }
             }
-            _mCom.setResponseTimeout(normalResponseTimeout);
+            _mCom.setResponseTimeout(device->getResponseTimeout());
             return protocol;
         }
         delete devices[i];
         devices[i] = nullptr;
+
+        if (powMrOnly)
+        {
+            break;
+        }
+    }
+
+    for (size_t i = 0; i < deviceCount; ++i)
+    {
+        if (devices[i] != nullptr)
+        {
+            delete devices[i];
+            devices[i] = nullptr;
+        }
     }
 
     _mCom.setResponseTimeout(normalResponseTimeout);

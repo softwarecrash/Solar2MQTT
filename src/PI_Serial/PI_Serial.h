@@ -199,6 +199,7 @@ public:
     bool isSuspended() const;
     bool isBusy() const;
     void setDelayTime(unsigned long value) { delayTime = value; }
+    void setForcedProtocol(protocol_type_t value) { forcedProtocol = value; }
 
     /**
      * @brief
@@ -238,6 +239,7 @@ private:
     JsonDocument cycleStaticBackup;
 
     MODBUS *modbus = nullptr;
+    protocol_type_t forcedProtocol = NoD;
 
     /**
      * @brief get the crc from a string

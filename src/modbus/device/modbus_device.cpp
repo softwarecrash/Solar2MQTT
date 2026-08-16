@@ -23,6 +23,11 @@ protocol_type_t ModbusDevice::getProtocol() const
     return _protocol;
 }
 
+uint16_t ModbusDevice::getResponseTimeout() const
+{
+    return MODBUS_TIMEOUT_MS;
+}
+
 void ModbusDevice::init(HardwareSerial &serial, int rxPin, int txPin, MODBUS_COM &mCom, bool configureSerial)
 {
     writeLog("Init %s protocol, baud %d, modbusAddr %d", getName(), getBaudRate(), getModbusAddr());

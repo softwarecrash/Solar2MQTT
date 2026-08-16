@@ -21,6 +21,31 @@
     <form id="deviceForm" class="panel">
 
       <div class="detailSplitter">UART / RS232/ RS485</div>
+      <label for="inverterProtocol">Inverter Protocol</label>
+      <select id="inverterProtocol" name="protocol">
+        <option value="AUTO">Auto detect</option>
+        <optgroup label="PI protocol">
+          <option value="PI15">PI15</option>
+          <option value="PI16">PI16</option>
+          <option value="PI18">PI18</option>
+          <option value="PI30">PI30</option>
+          <option value="PI30_MAX">PI30 MAX</option>
+          <option value="PI30_REVO">PI30 REVO</option>
+          <option value="PI30_PIP_GK">PI30 PIP-GK</option>
+          <option value="PI41">PI41</option>
+        </optgroup>
+        <optgroup label="Modbus protocol">
+          <option value="MODBUS_POWMR">PowMr HVM 4501</option>
+          <option value="MODBUS_MUST">Must PV/PH18</option>
+          <option value="MODBUS_DEYE">Deye</option>
+          <option value="MODBUS_ANENJI">Anenji</option>
+          <option value="MODBUS_ANENJI_SRNE">Anenji SRNE</option>
+          <option value="MODBUS_SMG">SMG</option>
+          <option value="MODBUS_SMG_II_11KW">SMG II 11 kW</option>
+        </optgroup>
+      </select>
+      <p class="field-note">Manual selection skips protocol detection. Use Auto detect unless the inverter is detected incorrectly.</p>
+
       <label>UART RX GPIO</label>
       <input name="uartRx" type="number">
 

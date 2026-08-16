@@ -882,6 +882,30 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         modbus = nullptr;
     }
     writeLog("[PI][DETECT] start");
+    if (forcedProtocol != NoD)
+    {
+        protocol = forcedProtocol;
+        if (isModbusProtocol(protocol))
+        {
+            this->my_serialIntf->end();
+            modbus = new MODBUS(this->my_serialIntf, _rxPin, _txPin);
+            if (modbus == nullptr || !modbus->Init() || !modbus->forceProtocol(protocol))
+            {
+                delete modbus;
+                modbus = nullptr;
+                protocol = NoD;
+            }
+        }
+        else
+        {
+            serialIntfBaud = 2400;
+            startChar = protocol == PI18 ? "^Dxxx" : "(";
+            delimiter = protocol == PI18 ? "," : " ";
+            this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+        }
+        writeLog("[PI][DETECT] forced proto=%s", protocolToString(protocol));
+        goto autodetect_done;
+    }
     for (size_t i = 0; i < 3; i++) // try 3 times to detect the inverter
     {
         if (abortAutoDetect.load(std::memory_order_relaxed) || suspendSerial.load(std::memory_order_relaxed))
@@ -979,7 +1003,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         this->my_serialIntf->end();
     }
     piFallbackProtocol = protocol;
-    tryModbus = protocol == NoD || protocol == PI30_UNKNOWN;
+    tryModbus = protocol == NoD || protocol == PI30 || protocol == PI30_UNKNOWN;
     if (tryModbus)
     {
         this->my_serialIntf->end();
@@ -992,7 +1016,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
         if (modbus != nullptr)
         {
             modbus->Init();
-            const protocol_type_t modbusProtocol = modbus->autoDetect();
+            const protocol_type_t modbusProtocol = modbus->autoDetect(piFallbackProtocol == PI30);
             if (modbusProtocol != NoD)
             {
                 protocol = modbusProtocol;
@@ -1002,7 +1026,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
                 delete modbus;
                 modbus = nullptr;
                 protocol = piFallbackProtocol;
-                if (protocol == PI30_UNKNOWN)
+                if (protocol == PI30 || protocol == PI30_UNKNOWN)
                 {
                     this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
                 }
@@ -1019,6 +1043,11 @@ autodetect_done:
 
 void PI_Serial::refineProtocol()
 {
+    if (forcedProtocol != NoD)
+    {
+        return;
+    }
+
     if (!isPi30LikeProtocol(protocol))
     {
         return;

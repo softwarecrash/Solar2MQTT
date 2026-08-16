@@ -45,7 +45,8 @@ public:
      */
     void callback(std::function<void()> func);
     std::function<void()> requestCallback; 
-    protocol_type_t autoDetect();
+    protocol_type_t autoDetect(bool powMrOnly = false);
+    bool forceProtocol(protocol_type_t protocol);
     /**
      * @brief Sends a complete packet with the specified command
      * @details sends the command over the specified serial connection
