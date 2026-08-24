@@ -36,6 +36,7 @@ This page is generated automatically from public device reports submitted throug
 | POWMR | POWMR HVM-6.2M-48V-N | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Build variant is wenmo d1 but tge actual module is esp32 devkit V1 | 1 |
 | SILA | SILA PRO 5600MH | RS232 | PI18 | PI18 | - | - | waveshare_esp32_s3_eth | - | 1 |
 | SUMRY | SP 7000 | RS232 | PI30 | PI30 | - | - | wemos_d1_mini32 | Battery mode must be not lib | 1 |
+| SUMRY | SP-3200 | RS232 | PI30 | 230_0_13_9_230_0_50_0_13_9_3200_3000_24_0_23_0_2 | - | - | esp32c3_supermini | - | 1 |
 | SUMRY | SP7000 | RS232 | PI30 | PI30 | - | - | esp32c3_supermini | - | 1 |
 | SUOER | VMS-V-12K-48-HG | RS485 | PI30_MAX | PI30 | - | - | sp32_s3_wroom_cam | Using an ESP32-S3-N16R8 WROOM CAM with an RS485-to-TTL module. I selected this module because it has an integrated microSD card slot, which I will use for local data logging purposes. | 1 |
 | TAFFWARE | VICTOR NM-ECO-6,2KW PLUS | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | YUSUF from Indonesia | 1 |
