@@ -6,6 +6,7 @@ This page is generated automatically from public device reports submitted throug
 | Manufacturer | Model | Transport | Protocol | Protocol ID | Detected Model | Firmware | Build Variant | Notes | Reports |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | ECO | RS232 | NOD | NOD | - | - | wemos_d1_mini32 | - | 1 |
+| ANENJI | 6.2KWT | RS232 | MODBUS_SMG | MODBUS_SMG | - | - | wemos_d1_mini32 | Thanks, friend! Thanks to you, I finally managed to connect Anennji 6.2kWt with Home assistant! | 1 |
 | ANENJI | ANJ-4200W-24V-W-AE | RS232 | MODBUS_SMG | MODBUS_SMG | SMG 99432512106945 | - | esp32s3_supermini | This is an intermediate version of the inverter with the full model number on the box: ps399-anj-4200w-24v-w-ae. Its key feature is upgraded solar panel array specifications: PV Array Power: 6200W, PV Voltage: 500V, PV Current: 27A, Max Charge Current: 120A. | 1 |
 | ANENJI | ANJ-HHS-11000W-48V-WIFI | RS485 | MODBUS_SMG_II_11KW | MODBUS_SMG_II_11KW | SMG-II 11KW 92B32601101629 | - | esp32c3_supermini | But Grid Power (kw/h) not included. | 1 |
 | ANERN | AN-EX-PRO10200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | The Solar wattage is detected a 0200 instead of 10200, Need to spoof data to set to 10200 to display correct solar percentage. | 1 |
