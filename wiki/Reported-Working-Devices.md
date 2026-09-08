@@ -11,6 +11,7 @@ This page is generated automatically from public device reports submitted throug
 | ANENJI | ANJ-HHS-11000W-48V-WIFI | RS485 | MODBUS_SMG_II_11KW | MODBUS_SMG_II_11KW | SMG-II 11KW 92B32601101629 | - | esp32c3_supermini | But Grid Power (kw/h) not included. | 1 |
 | ANERN | AN-EX-PRO10200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | The Solar wattage is detected a 0200 instead of 10200, Need to spoof data to set to 10200 to display correct solar percentage. | 1 |
 | ANERN | AN-SCI-ECO-3200 | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | esp32c3_supermini<br>wemos_d1_mini32 | Actually it is ESP32 30 pin CH340 | 2 |
+| ANERN | AN-SCI-EVO-2000 | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | The firmware may need some work, as sometimes it fails to get the required Live Data from the inverter. I don't remember having this problem with the ESP 8266 config, but I prefer this one because it works reliably with mqtt brokers that require TLS/SSL (which most of them do). | 1 |
 | ANERN | AN-SCI-EVO-4200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | - | 1 |
 | ANERN | SCI-EVO-6200 | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 1 |
 | ANERN | SCI-EVO-6200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 2 |
