@@ -26,7 +26,9 @@ This page is generated automatically from public device reports submitted throug
 | EDECOA | EM-402A | RS232 | PI30 | PI30 | - | - | esp32c3_supermini | Hello from Odessa, Ukraine | 1 |
 | GOOTU | 8.2KW HYBRID INVERTER DUAL MPPT/DUAL OUTPUT AC | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32s3_supermini | - | 1 |
 | INVERTOR | INFINISOLAR V 4 TWIN 6KW HYBRID | RS232 | PI18 | PI18 | - | - | wemos_d1_mini32 | Super work ok | 1 |
+| JESUDOM CHINA | AXPERT VM IV 4,2KW | RS232 | PI30_PIP_GK | PI30 | VMIII-4000 | - | wemos_d1_mini32 | - | 1 |
 | POWERMR | POW-HVM3.2H-24V-N | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | In general, everything works. | 1 |
+| POWMR | 10 | TTL | NOD | NOD | - | - | esp32c3_supermini | - | 1 |
 | POWMR | 6.2 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | - | 1 |
 | POWMR | MPS-V PLUS 3.5KW | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | sp32_s3_wroom_cam | Using an ESP32-S3-N16R8 WROOM CAM with an RS232-to-TTL module. I selected this module because it has an integrated microSD card slot, which I will use for data logging purposes. | 1 |
 | POWMR | POW-HVM10.2M | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Keeps on disconnecting from WIFI. Only recognizes 1 string of PV.<br>Гібридний інвертор PowMr 10.2 кВт (POW-HVM10.2M), підключення через MAX3232 (RS232), стабільна робота підтверджена. PowMr POW-HVM10.2M 10.2kW hybrid inverter, connected via MAX3232 (RS232), confirmed stable operation. | 2 |
