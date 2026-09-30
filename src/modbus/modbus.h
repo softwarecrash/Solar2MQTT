@@ -52,6 +52,12 @@ public:
      * @details sends the command over the specified serial connection
      */
     String requestData(String command);
+    bool consumePowMrLivePassCompleted()
+    {
+        const bool ready = _powmrLivePassCompleted;
+        _powmrLivePassCompleted = false;
+        return ready;
+    }
 
 private:
     static constexpr unsigned long kCommandDelayMs = 200;
@@ -63,6 +69,8 @@ private:
     long long int connectionCounter = 0;
 
     byte qexCounter = 0;
+    bool _powmrHybrid = false;
+    bool _powmrLivePassCompleted = false;
 
     void prepareRegisters();
     void stabilizeSerial();
