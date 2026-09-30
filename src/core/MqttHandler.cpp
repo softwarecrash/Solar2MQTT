@@ -75,7 +75,14 @@ bool isPowMrParallelOnlyKey(const char *key)
         DESCR_Parallel_Max_Num,
     };
 
-    return stringEqualsAny(key, keys, sizeof(keys) / sizeof(keys[0]));
+    for (const char *candidate : keys)
+    {
+        if (strcmp(key, candidate) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool isPowMrWritableSettingKey(const char *key)
