@@ -141,6 +141,7 @@ public:
             String qpibi;
             String qmn;
             String qflag;
+            String qbeqi;
             // dynamic
             String q1;
             String qpigs;
@@ -234,7 +235,9 @@ private:
     unsigned long powMrPiLastQpigsAt = 0;
     unsigned long powMrPiLastQpiriAt = 0;
     unsigned long powMrPiLastQflagAt = 0;
+    unsigned long powMrPiLastQbeqiAt = 0;
     bool powMrPiFlagRefreshRequested = true;
+    bool powMrPiEqualizationRefreshRequested = true;
 
     long long int connectionCounter = 0;
 

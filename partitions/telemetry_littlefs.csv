@@ -1,0 +1,10 @@
+# Name,    Type, SubType, Offset,   Size,     Flags
+# Shared 4MB-compatible layout: dual OTA + LittleFS energy-counter backlog.
+# Larger-flash ESP32-S3 targets can use this layout as well; the first 4MB are reserved identically.
+# NVS stays at the legacy offset so Wi-Fi/MQTT/device settings survive migration.
+nvs,       data, nvs,      0x9000,   0x5000,
+otadata,   data, ota,      0xe000,   0x2000,
+app0,      app,  ota_0,    0x10000,  0x1C0000,
+app1,      app,  ota_1,    0x1D0000, 0x1C0000,
+backlog,   data, littlefs, 0x390000, 0x60000,
+coredump,  data, coredump, 0x3F0000, 0x10000,

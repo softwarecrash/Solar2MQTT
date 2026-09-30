@@ -31,8 +31,8 @@ private:
     static constexpr uint16_t kSettingsBlockCount = 11;
     static constexpr uint16_t kConfigBlockStart = 4546;
     static constexpr uint16_t kConfigBlockCount = 10;
-    static constexpr uint16_t kStatusBlockStart = 4556;
-    static constexpr uint16_t kStatusBlockCount = 6;
+    static constexpr uint16_t kStatusBlockStart = 4557;
+    static constexpr uint16_t kStatusBlockCount = 1;
 
     inline static const modbus_register_t registers_live[] = {
         {4501, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP, DESCR_Inverter_Operation_Mode, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},
@@ -46,8 +46,8 @@ private:
         {4509, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP, DESCR_Battery_Discharge_Current, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},
         {4510, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP_ONE_DECIMAL, DESCR_AC_Out_Voltage, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},
         {4511, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP_ONE_DECIMAL, DESCR_AC_Out_Frequency, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},
-        {4512, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP, DESCR_AC_Out_Watt, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},
-        {4513, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP, DESCR_AC_Out_VA, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},
+        {4512, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP, DESCR_AC_Out_VA, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},
+        {4513, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP, DESCR_AC_Out_Watt, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},
         {4514, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP, DESCR_Output_Load_Percent, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},
         {4530, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP, DESCR_Fault_Code, 0, {}, nullptr, kFaultBlockStart, kFaultBlockCount},
         {4555, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME_SWAP, "Charger_Status", 0, {.bitfield = {"Off", "Idle", "Charging"}}, nullptr, kConfigBlockStart, kConfigBlockCount},
@@ -59,6 +59,7 @@ private:
         {4536, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME_SWAP, DESCR_Charger_Source_Priority, 0, {.bitfield = {"Utility first", "Solar first", "Solar and Utility", "Solar only"}}, nullptr, kSettingsBlockStart, kSettingsBlockCount},
         {4537, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME_SWAP, DESCR_Output_Source_Priority, 0, {.bitfield = {"Utility first", "Solar first", "SBU priority"}}, nullptr, kSettingsBlockStart, kSettingsBlockCount},
         {4538, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME_SWAP, DESCR_Input_Voltage_Range, 0, {.bitfield = {"Appliances", "UPS"}}, nullptr, kSettingsBlockStart, kSettingsBlockCount},
+        {4539, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME_SWAP, "Battery_Type", 0, {.bitfield = {"AGM", "FLD", "USE", "LIB", "LIC", "LIP", "LIL"}}, nullptr, kSettingsBlockStart, kSettingsBlockCount},
         {4540, MODBUS_TYPE_HOLDING, REGISTER_TYPE_CUSTOM_VAL_NAME_SWAP, DESCR_AC_Out_Rating_Frequency, 0, {.bitfield = {"50", "60"}}, nullptr, kSettingsBlockStart, kSettingsBlockCount},
         {4541, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP, DESCR_Current_Max_Charging_Current, 0, {}, nullptr, kSettingsBlockStart, kSettingsBlockCount},
         {4542, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP, DESCR_AC_Out_Rating_Voltage, 0, {}, nullptr, kSettingsBlockStart, kSettingsBlockCount},

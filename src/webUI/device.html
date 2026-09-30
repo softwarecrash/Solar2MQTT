@@ -35,8 +35,8 @@
           <option value="PI41">PI41</option>
         </optgroup>
         <optgroup label="Modbus protocol">
-          <option value="MODBUS_POWMR_PI">PI+Modbus — PowMr HVM (manual)</option>
-          <option value="MODBUS_POWMR">PowMr HVM 4501 — Modbus only</option>
+          <option value="MODBUS_POWMR_PI">PI+Modbus — PowMr HVM (только совместимый PowMr)</option>
+          <option value="MODBUS_POWMR">PowMr HVM 4501 — только Modbus</option>
           <option value="MODBUS_MUST">Must PV/PH18</option>
           <option value="MODBUS_DEYE">Deye</option>
           <option value="MODBUS_ANENJI">Anenji</option>
@@ -45,7 +45,7 @@
           <option value="MODBUS_SMG_II_11KW">SMG II 11 kW</option>
         </optgroup>
       </select>
-      <p class="field-note">Manual selection skips protocol detection. PI+Modbus is never auto-detected and is only for PowMr devices that support both interfaces on the same UART.</p>
+      <p class="field-note">Manual selection skips protocol detection. PI+Modbus is never auto-detected and must only be selected for a PowMr that supports both interfaces on the same UART.</p>
 
       <label>UART RX GPIO</label>
       <input name="uartRx" type="number">
@@ -92,9 +92,12 @@
         <button id="reportDeviceBtn" type="button" class="btn">Report Working Device</button>
       </div>
     </div>
+
+
   </div>
 
   <div id="toast"><span id="toast-icon">i</span><span id="toast-msg"></span></div>
+  <script src="/i18n.js"></script>
   <script src="/statusbar.js"></script>
   <script src="/backgroundCanvas.js"></script>
   <script src="/app.js"></script>

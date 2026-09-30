@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Solar2MQTT - Inverter Settings</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <canvas id="particleCanvas"></canvas>
+  <div id="container">
+    <div id="header">
+      <a href="/"><img id="logo" src="/logo.svg" alt="Solar2MQTT Logo"></a>
+      <h1>Inverter Settings</h1>
+    </div>
+    <div id="statusbar"></div>
+
+    <div id="inverterSettingsPanel" class="panel">
+      <div class="detailSplitter">PowMr / Victor</div>
+      <p class="field-note">Only known parameters are shown. Saving writes only changed fields; every write is verified by reading the register back.</p>
+
+      <form id="inverterSettingsForm">
+        <div class="detailSplitter">Priorities and Modes</div>
+
+        <label for="invOutputMode">Output mode</label>
+        <select id="invOutputMode" data-command="outputmode">
+          <option value="UTI">UTI — Utility first</option>
+          <option value="SUB">SUB — Solar → Utility → Battery</option>
+          <option value="SBU">SBU — Solar → Battery → Utility</option>
+        </select>
+
+        <label for="invChargerPriority">Charging priority</label>
+        <select id="invChargerPriority" data-setting="chargerpriority">
+          <option value="UTILITY">Utility first</option>
+          <option value="SOLAR">Solar first</option>
+          <option value="SOLAR_UTILITY">Solar and Utility</option>
+          <option value="SOLAR_ONLY">Solar only</option>
+        </select>
+
+        <label for="invInputRange">Input voltage range</label>
+        <select id="invInputRange" data-setting="inputrange">
+          <option value="APL">Appliances</option>
+          <option value="UPS">UPS</option>
+        </select>
+
+        <label for="invBatteryType">Battery type / BMS</label>
+        <select id="invBatteryType" data-command="batterytype">
+          <option value="AGM">AGM</option>
+          <option value="FLD">FLD</option>
+          <option value="USE">USE</option>
+          <option value="LIB">LIB — lithium, no BMS protocol</option>
+          <option value="LIC">LIC — PACE RS232</option>
+          <option value="LIP">LIP — PACE RS485</option>
+          <option value="LIL">LIL — PYLON RS485</option>
+        </select>
+
+        <div class="detailSplitter">AC</div>
+
+        <label for="invOutputFreq">Output frequency</label>
+        <select id="invOutputFreq" data-setting="outputfreq">
+          <option value="50">50 Hz</option>
+          <option value="60">60 Hz</option>
+        </select>
+
+        <label for="invOutputVoltage">Output voltage</label>
+        <select id="invOutputVoltage" data-setting="outputvoltage">
+          <option value="220">220 V</option>
+          <option value="230">230 V</option>
+          <option value="240">240 V</option>
+        </select>
+
+        <div class="detailSplitter">Charging Currents</div>
+
+        <label for="invMaxCharge">Maximum charging current, A</label>
+        <input id="invMaxCharge" type="number" min="0" max="120" step="1" data-setting="maxcharge">
+
+        <label for="invUtilityCharge">Maximum utility charging current, A</label>
+        <input id="invUtilityCharge" type="number" min="0" max="120" step="1" data-setting="utilitycharge">
+
+        <div class="detailSplitter">Battery Voltages</div>
+
+        <label for="invRecharge">Switch to utility / Recharge, V</label>
+        <input id="invRecharge" type="number" min="40" max="60" step="0.1" data-setting="recharge">
+
+        <label for="invRedischarge">Return to battery / Redischarge, V</label>
+        <input id="invRedischarge" type="number" min="40" max="60" step="0.1" data-setting="redischarge">
+
+        <label for="invBulk">Bulk / CV, V</label>
+        <input id="invBulk" type="number" min="40" max="60" step="0.1" data-setting="bulk">
+
+        <label for="invFloat">Float, V</label>
+        <input id="invFloat" type="number" min="40" max="60" step="0.1" data-setting="float">
+
+        <label for="invCutoff">Low DC cut-off voltage, V</label>
+        <input id="invCutoff" type="number" min="40" max="60" step="0.1" data-setting="cutoff">
+
+        <div class="detailSplitter">Equalization</div>
+        <p class="field-note">For LIL/PYLON these parameters normally should not be used for manual charge control. They are shown because the registers are known.</p>
+
+        <label class="switch-row" for="invEqEnabled">
+          <span>Equalization enabled</span>
+          <input id="invEqEnabled" class="ea-switch" type="checkbox">
+        </label>
+        <div class="kv"><span class="k">Equalization active now</span><span class="v" id="invEqActive">-</span></div>
+
+        <label for="invEqVoltage">Equalization voltage, V</label>
+        <input id="invEqVoltage" type="number" min="40" max="60" step="0.1" data-setting="equalizationvoltage">
+
+        <label for="invEqTime">Equalization time, min</label>
+        <input id="invEqTime" type="number" min="0" max="999" step="1" data-setting="equalizationtime">
+
+        <label for="invEqTimeout">Equalization timeout, min</label>
+        <input id="invEqTimeout" type="number" min="0" max="999" step="1" data-setting="equalizationtimeout">
+
+        <label for="invEqInterval">Equalization interval, days</label>
+        <input id="invEqInterval" type="number" min="0" max="999" step="1" data-setting="equalizationinterval">
+
+        <div class="detailSplitter">Device flags</div>
+        <p id="invPiSettingsNote" class="field-note">These switches require PI+Modbus mode.</p>
+
+        <label class="switch-row" for="invBuzzer">
+          <span>Buzzer</span>
+          <input id="invBuzzer" class="ea-switch" type="checkbox">
+        </label>
+        <label class="switch-row" for="invOverloadBypass">
+          <span>Overload bypass</span>
+          <input id="invOverloadBypass" class="ea-switch" type="checkbox">
+        </label>
+        <label class="switch-row" for="invPowerSaving">
+          <span>Power saving</span>
+          <input id="invPowerSaving" class="ea-switch" type="checkbox">
+        </label>
+        <label class="switch-row" for="invLcdReset">
+          <span>LCD reset to default</span>
+          <input id="invLcdReset" class="ea-switch" type="checkbox">
+        </label>
+        <label class="switch-row" for="invDataLogPopup">
+          <span>Data log pop-up</span>
+          <input id="invDataLogPopup" class="ea-switch" type="checkbox">
+        </label>
+        <label class="switch-row" for="invFeedToGrid">
+          <span>Solar feed to grid</span>
+          <input id="invFeedToGrid" class="ea-switch" type="checkbox">
+        </label>
+        <label class="switch-row" for="invOverloadRestart">
+          <span>Restart after overload</span>
+          <input id="invOverloadRestart" class="ea-switch" type="checkbox">
+        </label>
+        <label class="switch-row" for="invOverTempRestart">
+          <span>Restart after over-temperature</span>
+          <input id="invOverTempRestart" class="ea-switch" type="checkbox">
+        </label>
+        <label class="switch-row" for="invLcdBacklight">
+          <span>LCD backlight</span>
+          <input id="invLcdBacklight" class="ea-switch" type="checkbox">
+        </label>
+        <label class="switch-row" for="invPrimaryAlarm">
+          <span>Primary source interrupt alarm</span>
+          <input id="invPrimaryAlarm" class="ea-switch" type="checkbox">
+        </label>
+        <label class="switch-row" for="invRecordFault">
+          <span>Record fault code</span>
+          <input id="invRecordFault" class="ea-switch" type="checkbox">
+        </label>
+
+        <div class="button-stack" style="margin-top:16px;">
+          <button id="inverterReloadBtn" type="button" class="btn btn-outline">Reload values</button>
+          <button id="inverterSaveBtn" type="submit" class="btn">Save changes</button>
+          <a class="btn btn-outline" href="/menu">Back</a>
+        </div>
+      </form>
+
+      <div class="detailSplitter">Result</div>
+      <pre id="inverterSettingsResult" class="preview">-</pre>
+    </div>
+  </div>
+
+  <div id="toast"><span id="toast-icon">i</span><span id="toast-msg"></span></div>
+  <script src="/i18n.js"></script>
+  <script src="/statusbar.js"></script>
+  <script src="/backgroundCanvas.js"></script>
+  <script src="/inverter.js"></script>
+</body>
+</html>

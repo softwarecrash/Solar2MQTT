@@ -1,0 +1,38 @@
+name: Build exact working USB recovery 2.0.7
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/build-recovery-2.0.7.yml'
+  workflow_dispatch:
+
+jobs:
+  build-recovery:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout known working 2.0.7 source
+        uses: actions/checkout@v4
+        with:
+          ref: 216d979abdc02d389feddc6f9f738abdd1deb2a4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Install PlatformIO
+        run: pip install platformio
+      - name: Build exact ATOM Lite 2.0.7
+        run: pio run -e m5stack_atom_lite
+      - name: Verify recovery artifacts
+        run: |
+          test -s ".firmware/Solar2MQTT_m5stack_atom_lite_V0.0.0-dev-2.0.7.bin"
+          test -s ".firmware/Solar2MQTT_m5stack_atom_lite_V0.0.0-dev-2.0.7.bin.ota"
+          sha256sum .firmware/Solar2MQTT_m5stack_atom_lite_V0.0.0-dev-2.0.7.bin
+          sha256sum .firmware/Solar2MQTT_m5stack_atom_lite_V0.0.0-dev-2.0.7.bin.ota
+          ls -lh .firmware/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Solar2MQTT-working-USB-2.0.7
+          path: |
+            .firmware/Solar2MQTT_m5stack_atom_lite_V0.0.0-dev-2.0.7.bin
+            .firmware/Solar2MQTT_m5stack_atom_lite_V0.0.0-dev-2.0.7.bin.ota
+          if-no-files-found: error

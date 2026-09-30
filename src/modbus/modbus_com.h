@@ -15,15 +15,7 @@ typedef enum
     READ_FAIL = 0,
     READ_OK = 1,
 } response_type_t;
- 
 
-/**
- * @class MODBUS_COM
- * @brief This class is responsible for Modbus communication, managing the RS485 transceiver, and interacting with a Modbus master.
- * 
- * The class is designed to handle communication through Modbus over an RS485 network. It supports reading Modbus registers and converting them to JSON format.
- * The communication direction (transmission/reception) is managed through a configurable ESP32 GPIO and the class provides helper functions for decoding various register types.
- */ 
 class MODBUS_COM
 {
 public:
@@ -38,12 +30,15 @@ public:
     uint16_t getResponseTimeout();
     void setResponseTimeout(uint16_t timeoutMs);
     bool readHoldingBlock(uint16_t startRegister, uint16_t registerCount, uint16_t *buffer, size_t bufferLen);
+    bool writeHoldingRegister(uint16_t registerId, uint16_t rawValue);
+    uint8_t getLastWriteResult() const;
+    const char *getLastWriteResultText() const;
     void clearReadCache();
-    
+
 private:
     String toBinary(uint16_t input);
     bool decodeDiematicDecimal(uint16_t int_input, int8_t decimals, float *value_ptr);
-    const char *getModbusResultText(uint8_t result);
+    const char *getModbusResultText(uint8_t result) const;
     bool logModbusResult(uint8_t result, uint16_t startRegister, uint16_t registerCount);
     bool getModbusValue(uint16_t register_id,
                         modbus_entity_t modbus_entity,
@@ -63,6 +58,7 @@ private:
     uint16_t _cacheStartRegister = 0;
     uint16_t _cacheRegisterCount = 0;
     uint16_t _cacheValues[MAX_HOLDING_BLOCK_WORDS] = {};
+    uint8_t _lastWriteResult = 0;
 };
 
 #endif
