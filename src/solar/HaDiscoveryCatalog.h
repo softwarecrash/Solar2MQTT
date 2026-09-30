@@ -239,7 +239,7 @@ static const HaEntityDescriptor HA_STATIC_DESCRIPTORS[] = {
     {DESCR_LCD_Backlight_Enabled, "lightbulb-on-outline", "", ""},
     {DESCR_LCD_Reset_To_Default_Enabled, "restore", "", ""},
     {DESCR_Machine_Type, "state-machine", "", ""},
-    {DESCR_Max_Charging_Time_At_CV_Stage, "clock-time-eight-outline", "s", "duration"},
+    {DESCR_Max_Charging_Time_At_CV_Stage, "clock-time-eight-outline", "min", "duration"},
     {DESCR_Max_Discharging_Current, "battery-outline", "A", "current"},
     {DESCR_MPPT_String, "string-lights", "", ""},
     {DESCR_Operation_Logic, "cog-outline", "", ""},
