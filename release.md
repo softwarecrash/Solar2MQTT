@@ -1,5 +1,11 @@
 Release Notes
 
+- 2.0.18Q cleans up PowMr Home Assistant discovery after validation on the tested ATOM Lite + RS232 setup.
+- Unsupported `Tracker_Temperature=0` is no longer exposed as a misleading MPPT temperature sensor in `MODBUS_POWMR_PI`.
+- `Max_Charging_Time_At_CV_Stage` now uses minutes in Home Assistant instead of seconds.
+- Parallel-only QPIRI fields (`PV_OK_Condition_For_Parallel`, `PV_Power_Balance`, `Parallel_Max_Num`) stay available in raw/API data but are hidden from Home Assistant.
+- Battery equalization controls/status are grouped under a dedicated child Home Assistant device linked to the main Solar2MQTT device.
+
 - 2.0.18P completes PowMr PI+Modbus configuration handling in the built-in Web UI.
 - The inverter settings page now exposes battery equalization enable/disable plus all QFLAG settings as real toggle switches and shows whether equalization is currently active.
 - Web switches are available only when `MODBUS_POWMR_PI` is active and are disabled in pure Modbus mode.
