@@ -156,6 +156,31 @@ bool hasRevoSignature(int qpiriFields, int qpigsFields, int qallFields)
            qpiriFields <= 21;
 }
 
+void restoreJsonObject(JsonObject target, JsonObjectConst backup)
+{
+    target.clear();
+    for (JsonPairConst entry : backup)
+    {
+        target[entry.key()] = entry.value();
+    }
+}
+
+void copySelectedJsonKeys(JsonObject target,
+                          JsonObjectConst source,
+                          const char *const *keys,
+                          size_t count)
+{
+    for (size_t i = 0; i < count; ++i)
+    {
+        const char *key = keys[i];
+        JsonVariantConst value = source[key];
+        if (!value.isNull())
+        {
+            target[key] = value;
+        }
+    }
+}
+
 bool hasExpectedResponsePrefix(const String &response, const char *startChar)
 {
     if (startChar == nullptr || startChar[0] == '\0')
@@ -440,6 +465,16 @@ bool PI_Serial::loop()
             if (isModbus())
             {
                 modbus->loop();
+
+                if (isPowMrPiHybridProtocol(protocol) &&
+                    modbus->consumePowMrLivePassCompleted())
+                {
+                    pollPowMrPiSupplement();
+                    if (requestCallback)
+                    {
+                        requestCallback();
+                    }
+                }
             }
             else if (isRawOnlyPiProtocol(protocol))
             {
@@ -1207,6 +1242,211 @@ bool PI_Serial::requestUnsupportedPiDynamic()
     return true;
 }
 
+void PI_Serial::backupPowMrNativeState(JsonDocument &staticBackup, JsonDocument &liveBackup) const
+{
+    staticBackup.set(staticData);
+    liveBackup.set(liveData);
+}
+
+void PI_Serial::restorePowMrNativeState(JsonDocument &staticBackup, JsonDocument &liveBackup)
+{
+    restoreJsonObject(staticData, staticBackup.as<JsonObjectConst>());
+    restoreJsonObject(liveData, liveBackup.as<JsonObjectConst>());
+}
+
+bool PI_Serial::runPowMrPiSupplementCommand(const char *command)
+{
+    if (!isPowMrPiHybridProtocol(protocol) || command == nullptr || command[0] == '\0')
+    {
+        return false;
+    }
+
+    JsonDocument staticBackup;
+    JsonDocument liveBackup;
+    backupPowMrNativeState(staticBackup, liveBackup);
+
+    const protocol_type_t savedProtocol = protocol;
+    const char *savedStartChar = startChar;
+    const char *savedDelimiter = delimiter;
+    const unsigned int savedBaud = serialIntfBaud;
+
+    protocol = PI30_MAX;
+    startChar = "(";
+    delimiter = " ";
+    serialIntfBaud = 2400;
+    this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+
+    bool ok = false;
+    if (strcmp(command, "Q1") == 0)
+    {
+        ok = PIXX_Q1();
+    }
+    else if (strcmp(command, "QPIGS") == 0)
+    {
+        ok = PIXX_QPIGS();
+    }
+    else if (strcmp(command, "QPIRI") == 0)
+    {
+        ok = PIXX_QPIRI();
+    }
+    else if (strcmp(command, "QFLAG") == 0)
+    {
+        ok = PIXX_QFLAG();
+    }
+
+    JsonDocument piStatic;
+    JsonDocument piLive;
+    piStatic.set(staticData);
+    piLive.set(liveData);
+
+    protocol = savedProtocol;
+    startChar = savedStartChar;
+    delimiter = savedDelimiter;
+    serialIntfBaud = savedBaud;
+    this->my_serialIntf->begin(serialIntfBaud == 0 ? 2400 : serialIntfBaud,
+                              SERIAL_8N1, _rxPin, _txPin);
+
+    restorePowMrNativeState(staticBackup, liveBackup);
+
+    if (!ok)
+    {
+        writeLog("[POWMR][PI+MODBUS] %s supplement failed", command);
+        return false;
+    }
+
+    if (strcmp(command, "QPIRI") == 0)
+    {
+        static const char *const keys[] = {
+            DESCR_AC_In_Rating_Voltage,
+            DESCR_AC_In_Rating_Current,
+            DESCR_AC_Out_Rating_Current,
+            DESCR_AC_Out_Rating_Apparent_Power,
+            DESCR_AC_Out_Rating_Active_Power,
+            DESCR_Battery_Rating_Voltage,
+            DESCR_Parallel_Max_Num,
+            DESCR_Machine_Type,
+            DESCR_Topology,
+            DESCR_Output_Mode,
+            DESCR_PV_OK_Condition_For_Parallel,
+            DESCR_PV_Power_Balance,
+            DESCR_Max_Charging_Time_At_CV_Stage,
+            DESCR_Operation_Logic,
+            DESCR_Max_Discharging_Current,
+        };
+        copySelectedJsonKeys(staticData, piStatic.as<JsonObjectConst>(),
+                             keys, sizeof(keys) / sizeof(keys[0]));
+    }
+    else if (strcmp(command, "QPIGS") == 0)
+    {
+        static const char *const keys[] = {
+            DESCR_Inverter_Bus_Voltage,
+            DESCR_Inverter_Bus_Temperature,
+            DESCR_PV1_Input_Current,
+            DESCR_Battery_SCC_Volt,
+            DESCR_EEPROM_Version,
+            DESCR_PV_Charging_Power,
+            DESCR_Device_Status,
+            DESCR_Solar_Feed_To_Grid_Status,
+            DESCR_Country,
+            DESCR_Solar_Feed_To_Grid_Power,
+        };
+        copySelectedJsonKeys(liveData, piLive.as<JsonObjectConst>(),
+                             keys, sizeof(keys) / sizeof(keys[0]));
+    }
+    else if (strcmp(command, "QFLAG") == 0)
+    {
+        static const char *const keys[] = {
+            DESCR_Buzzer_Enabled,
+            DESCR_Overload_Bypass_Enabled,
+            DESCR_Power_Saving_Enabled,
+            DESCR_LCD_Reset_To_Default_Enabled,
+            DESCR_Data_Log_Pop_Up,
+            DESCR_Overload_Restart_Enabled,
+            DESCR_Over_Temperature_Restart_Enabled,
+            DESCR_LCD_Backlight_Enabled,
+            DESCR_Primary_Source_Interrupt_Alarm_Enabled,
+            DESCR_Record_Fault_Code_Enabled,
+            DESCR_Solar_Feed_To_Grid_Enabled,
+        };
+        copySelectedJsonKeys(staticData, piStatic.as<JsonObjectConst>(),
+                             keys, sizeof(keys) / sizeof(keys[0]));
+    }
+    else if (strcmp(command, "Q1") == 0)
+    {
+        static const char *const keys[] = {
+            DESCR_Time_Until_Absorb_Charge,
+            DESCR_Time_Until_Float_Charge,
+            DESCR_SCC_Flag,
+            DESCR_Allow_SCC_On_Flag,
+            DESCR_Charge_Average_Current,
+            DESCR_Tracker_Temperature,
+            DESCR_Battery_Temperature,
+            DESCR_Transformer_Temperature,
+            DESCR_Fan_Lock_Status,
+            DESCR_Fan_Speed,
+            DESCR_SCC_Charge_Power,
+            DESCR_Parallel_Warning,
+            DESCR_Sync_Frequency,
+            DESCR_Inverter_Charge_State,
+        };
+        copySelectedJsonKeys(liveData, piLive.as<JsonObjectConst>(),
+                             keys, sizeof(keys) / sizeof(keys[0]));
+    }
+
+    return true;
+}
+
+bool PI_Serial::pollPowMrPiSupplement()
+{
+    if (!isPowMrPiHybridProtocol(protocol))
+    {
+        return false;
+    }
+
+    const unsigned long now = millis();
+
+    if (powMrPiFlagRefreshRequested ||
+        powMrPiLastQflagAt == 0 ||
+        (now - powMrPiLastQflagAt) >= 60000UL)
+    {
+        if (runPowMrPiSupplementCommand("QFLAG"))
+        {
+            powMrPiLastQflagAt = now;
+            powMrPiFlagRefreshRequested = false;
+        }
+        return true;
+    }
+
+    if (powMrPiLastQpiriAt == 0 || (now - powMrPiLastQpiriAt) >= 300000UL)
+    {
+        if (runPowMrPiSupplementCommand("QPIRI"))
+        {
+            powMrPiLastQpiriAt = now;
+        }
+        return true;
+    }
+
+    if (powMrPiLastQpigsAt == 0 || (now - powMrPiLastQpigsAt) >= 5000UL)
+    {
+        if (runPowMrPiSupplementCommand("QPIGS"))
+        {
+            powMrPiLastQpigsAt = now;
+        }
+        return true;
+    }
+
+    if (powMrPiLastQ1At == 0 || (now - powMrPiLastQ1At) >= 2000UL)
+    {
+        if (runPowMrPiSupplementCommand("Q1"))
+        {
+            powMrPiLastQ1At = now;
+        }
+        return true;
+    }
+
+    return false;
+}
+
 bool PI_Serial::isValidResponse(const String &response) const
 {
     return !response.isEmpty() &&
@@ -1220,7 +1460,45 @@ bool PI_Serial::sendCustomCommand()
     if (customCommandBuffer == "")
         return false;
 
-    if (isModbus())
+    if (isModbus() && isPowMrPiHybridProtocol(protocol) &&
+        customCommandBuffer.startsWith("powmr pi "))
+    {
+        String piCommand = customCommandBuffer.substring(9);
+        piCommand.trim();
+
+        if (piCommand.isEmpty())
+        {
+            get.raw.commandAnswer = "ERROR: syntax powmr pi <PI30-command>";
+        }
+        else
+        {
+            const protocol_type_t savedProtocol = protocol;
+            const char *savedStartChar = startChar;
+            const char *savedDelimiter = delimiter;
+            const unsigned int savedBaud = serialIntfBaud;
+
+            protocol = PI30_MAX;
+            startChar = "(";
+            delimiter = " ";
+            serialIntfBaud = 2400;
+            this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+            get.raw.commandAnswer = requestData(piCommand);
+
+            if ((piCommand.startsWith("PE") || piCommand.startsWith("PD")) &&
+                piCommand.length() >= 3)
+            {
+                powMrPiFlagRefreshRequested = true;
+            }
+
+            protocol = savedProtocol;
+            startChar = savedStartChar;
+            delimiter = savedDelimiter;
+            serialIntfBaud = savedBaud;
+            this->my_serialIntf->begin(serialIntfBaud == 0 ? 2400 : serialIntfBaud,
+                                      SERIAL_8N1, _rxPin, _txPin);
+        }
+    }
+    else if (isModbus())
     {
         get.raw.commandAnswer = modbus->requestData(customCommandBuffer);
     }
@@ -1228,6 +1506,7 @@ bool PI_Serial::sendCustomCommand()
     {
         get.raw.commandAnswer = requestData(customCommandBuffer);
     }
+
     customCommandBuffer = "";
     return true;
 }

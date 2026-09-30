@@ -81,8 +81,14 @@ void MODBUS::loop()
     connection = connectionCounter < MAX_CONNECTION_ATTEMPTS;
     if (_mCom.isAllRegistersRead(*cur_info_registers))
     {
+        const bool completedLivePass = (cur_info_registers == &live_info);
         requestStaticData = false;
-        if (requestCallback)
+
+        if (_powmrHybrid && completedLivePass)
+        {
+            _powmrLivePassCompleted = true;
+        }
+        else if (requestCallback)
         {
             requestCallback();
         }
@@ -108,10 +114,17 @@ bool MODBUS::forceProtocol(protocol_type_t protocol)
     delete device;
     device = nullptr;
 
+    _powmrHybrid = false;
+    _powmrLivePassCompleted = false;
+
     switch (protocol)
     {
     case MODBUS_POWMR:
         device = new PowMr();
+        break;
+    case MODBUS_POWMR_PI:
+        device = new PowMr();
+        _powmrHybrid = true;
         break;
     case MODBUS_DEYE:
         device = new Deye();
@@ -151,6 +164,8 @@ bool MODBUS::forceProtocol(protocol_type_t protocol)
 protocol_type_t MODBUS::autoDetect(bool powMrOnly) // function for autodetect the inverter type
 {
     protocol_type_t protocol = NoD;
+    _powmrHybrid = false;
+    _powmrLivePassCompleted = false;
     char modelName[48] = {};
     long activeBaudRate = 0;
     const uint16_t normalResponseTimeout = _mCom.getResponseTimeout();
