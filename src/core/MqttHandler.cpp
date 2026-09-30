@@ -1150,6 +1150,24 @@ void MqttHandler::publishHaSection(JsonDocument &snapshot,
         {
             continue;
         }
+        // Some PowMr/Victor HVM units return Tracker_Temperature=0 from the
+        // PI30 Q1 supplement because that sensor is not implemented. Do not
+        // expose a misleading 0 °C entity in Home Assistant. On a forced
+        // discovery pass also clear any retained discovery config left by an
+        // older firmware so Home Assistant removes the stale entity.
+        if (strcmp(stateSection, "LiveData") == 0 &&
+            isPowMrPiHybridProtocolName(activeProtocol) &&
+            strcmp(key, DESCR_Tracker_Temperature) == 0 &&
+            value.as<double>() == 0.0)
+        {
+            if (force)
+            {
+                const String staleTopic = buildDiscoveryTopic(deviceId, "sensor", key);
+                _mqtt.publish(staleTopic.c_str(), "", true);
+            }
+            continue;
+        }
+
         const HaEntityDescriptor *descriptor = findDescriptor(key, descriptors, descriptorCount);
         if (descriptor == nullptr)
         {
