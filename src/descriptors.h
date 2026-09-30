@@ -105,6 +105,10 @@
 #define DESCR_Battery_Average_Current "Battery_Average_Current"
 #define DESCR_Battery_Average_Power "Battery_Average_Power"
 #define DESCR_Battery_Charging_Power "Battery_Charging_Power"
+#define DESCR_Battery_Charging_Power_Calculated "Battery_Charging_Power_Calculated"
+#define DESCR_Battery_Discharging_Power_Calculated "Battery_Discharging_Power_Calculated"
+#define DESCR_Battery_Charge_Energy "Battery_Charge_Energy"
+#define DESCR_Battery_Discharge_Energy "Battery_Discharge_Energy"
 #define DESCR_PV_Input_Power "PV_Input_Power"
 #define DESCR_PV_Charge_Current "PV_Charge_Current"
 // QPIGS2
@@ -158,6 +162,9 @@
 #define DESCR_Record_Fault_Code_Enabled "Record_Fault_Code_Enabled"
 #define DESCR_Data_Log_Pop_Up "Data_Log_Pop_Up"
 #define DESCR_Solar_Feed_To_Grid_Enabled "Solar_Feed_To_Grid_Enabled"
+// QBEQI
+#define DESCR_Battery_Equalization_Enabled "Battery_Equalization_Enabled"
+#define DESCR_Battery_Equalization_Active "Battery_Equalization_Active"
 // QMN
 #define DESCR_Device_Model "Device_Model"
 // QMOD
@@ -192,7 +199,9 @@
 #define DESCR_Machine_Type "Machine_Type"                                       // SS
 #define DESCR_Topology "Topology"                                               // T
 #define DESCR_Output_Mode "Output_Mode"                                         // U
-#define DESCR_Battery_Redischarge_Voltage "Battery_Redischarge_Voltage"         // VV.V
+#define DESCR_Battery_Redischarge_Voltage "Battery_Redischarge_Voltage"
+#define DESCR_Battery_Back_To_Utility_SOC "Battery_Back_To_Utility_SOC"
+#define DESCR_Battery_Back_To_Battery_SOC "Battery_Back_To_Battery_SOC"         // VV.V
 #define DESCR_PV_OK_Condition_For_Parallel "PV_OK_Condition_For_Parallel"       // W
 #define DESCR_PV_Power_Balance "PV_Power_Balance"                               // X
 #define DESCR_Max_Charging_Time_At_CV_Stage "Max_Charging_Time_At_CV_Stage"     // YYY

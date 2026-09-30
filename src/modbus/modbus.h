@@ -3,7 +3,10 @@
 
 #include <HardwareSerial.h>
 #include <ArduinoJson.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 #include "modbus_com.h"
+#include "powmr_hunt.h"
 #include "device/modbus_device.h"
 #include "device/must_pv_ph18/must_pv_ph18.h"
 #include "device/deye/deye.h"
@@ -52,6 +55,13 @@ public:
      * @details sends the command over the specified serial connection
      */
     String requestData(String command);
+    bool isDiagnosticBusy() const { return _powmrDumpRunning; }
+    bool consumePowMrLivePassCompleted()
+    {
+        const bool ready = _powmrLivePassCompleted;
+        _powmrLivePassCompleted = false;
+        return ready;
+    }
 
 private:
     static constexpr unsigned long kCommandDelayMs = 200;
@@ -66,6 +76,13 @@ private:
 
     void prepareRegisters();
     void stabilizeSerial();
+    static void powmrDumpTask(void *param);
+    void runPowmrDump();
+    PowmrHunt _powmrHunt;
+    void stepPowmrHunt();
+    String powmrHuntCommand(String command);
+    void capturePowmrSocSample();
+    String buildPowmrSocDiag() const;
 
     /**
      * @brief Serial interface used for communication
@@ -76,6 +93,41 @@ private:
     int _txPin;
     ModbusDevice *device = nullptr; 
     MODBUS_COM _mCom;
+
+    volatile bool _powmrLivePassCompleted = false;
+    volatile bool _powmrDumpRunning = false;
+    volatile bool _powmrDumpReady = false;
+    volatile uint16_t _powmrDumpCurrentRegister = 0;
+    volatile uint16_t _powmrDumpReadable = 0;
+    volatile uint16_t _powmrDumpFailed = 0;
+    volatile bool _powmrCustomScan = false;
+    volatile uint16_t _powmrScanStart = 0;
+    volatile uint16_t _powmrScanEnd = 0;
+    String _powmrDumpResult;
+    TaskHandle_t _powmrDumpTask = nullptr;
+
+    struct PowMrSocSample
+    {
+        uint32_t uptimeSeconds = 0;
+        uint16_t batteryDeciVolts = 0;
+        uint8_t socPercent = 0;
+        uint16_t chargeAmps = 0;
+        uint16_t dischargeAmps = 0;
+        bool valid = false;
+    };
+
+    static constexpr uint8_t kPowMrSocHistorySize = 72;
+    static constexpr uint32_t kPowMrSocSampleIntervalMs = 5UL * 60UL * 1000UL;
+    PowMrSocSample _powmrSocHistory[kPowMrSocHistorySize] = {};
+    uint8_t _powmrSocHistoryHead = 0;
+    uint8_t _powmrSocHistoryCount = 0;
+    unsigned long _powmrSocLastSampleMs = 0;
+
+    static constexpr uint8_t kPowMrWatchCount = 64;
+    uint16_t _powmrWatchValues[kPowMrWatchCount] = {};
+    bool _powmrWatchValid = false;
+    uint32_t _powmrWatchCapturedAt = 0;
+
 };
 
 #endif

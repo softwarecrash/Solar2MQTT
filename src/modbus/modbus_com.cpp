@@ -74,7 +74,7 @@ void MODBUS_COM::setResponseTimeout(uint16_t timeoutMs)
     _mb.setResponseTimeout(timeoutMs);
 }
 
-const char *MODBUS_COM::getModbusResultText(uint8_t result)
+const char *MODBUS_COM::getModbusResultText(uint8_t result) const
 {
     switch (result)
     {
@@ -97,7 +97,20 @@ const char *MODBUS_COM::getModbusResultText(uint8_t result)
     case _mb.ku8MBInvalidCRC:
         return "Invalid CRC";
     default:
-        return "Unknown error";
+        // Some inverter firmwares return the exception byte with bit 7 set.
+        switch (result & 0x7F)
+        {
+        case 0x01:
+            return "Illegal Function (vendor high-bit exception)";
+        case 0x02:
+            return "Illegal Data Address (vendor high-bit exception)";
+        case 0x03:
+            return "Illegal Data Value (vendor high-bit exception)";
+        case 0x04:
+            return "Slave Device Failure (vendor high-bit exception)";
+        default:
+            return "Unknown error";
+        }
     }
 }
 
@@ -130,6 +143,46 @@ bool MODBUS_COM::readHoldingBlock(uint16_t startRegister, uint16_t registerCount
 
     memcpy(buffer, _cacheValues, registerCount * sizeof(uint16_t));
     return true;
+}
+
+bool MODBUS_COM::writeHoldingRegister(uint16_t registerId, uint16_t rawValue)
+{
+    clearReadCache();
+    _lastWriteResult = 0;
+
+    for (uint8_t i = 0; i < MODBUS_RETRIES; ++i)
+    {
+        // Victor/PowMr rejected function 0x10 with vendor exception 0x81.
+        // For one holding register use standard Modbus function 0x06.
+        const uint8_t result = _mb.writeSingleRegister(registerId, rawValue);
+        _lastWriteResult = result;
+        if (result == _mb.ku8MBSuccess)
+        {
+            writeLog("Modbus holding write 0x06 OK reg=%u raw=%u",
+                     static_cast<unsigned int>(registerId),
+                     static_cast<unsigned int>(rawValue));
+            return true;
+        }
+
+        writeLog("Modbus holding write 0x06 failed reg=%u raw=%u result=%u (%s)",
+                 static_cast<unsigned int>(registerId),
+                 static_cast<unsigned int>(rawValue),
+                 static_cast<unsigned int>(result),
+                 getModbusResultText(result));
+        waitBeforeRetry(i);
+    }
+
+    return false;
+}
+
+uint8_t MODBUS_COM::getLastWriteResult() const
+{
+    return _lastWriteResult;
+}
+
+const char *MODBUS_COM::getLastWriteResultText() const
+{
+    return getModbusResultText(_lastWriteResult);
 }
 
 void MODBUS_COM::clearReadCache()

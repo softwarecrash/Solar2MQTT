@@ -1,0 +1,4 @@
+M5Stack ATOM Lite + ATOMIC RS232 Base
+RX = GPIO22
+TX = GPIO19
+DE = -1
