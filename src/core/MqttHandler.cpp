@@ -62,6 +62,22 @@ bool isPowMrPiHybridProtocolName(const char *protocol)
 }
 
 
+bool isPowMrParallelOnlyKey(const char *key)
+{
+    if (key == nullptr)
+    {
+        return false;
+    }
+
+    const char *const keys[] = {
+        DESCR_PV_OK_Condition_For_Parallel,
+        DESCR_PV_Power_Balance,
+        DESCR_Parallel_Max_Num,
+    };
+
+    return stringEqualsAny(key, keys, sizeof(keys) / sizeof(keys[0]));
+}
+
 bool isPowMrWritableSettingKey(const char *key)
 {
     if (key == nullptr)
@@ -173,7 +189,8 @@ bool isApprovedHaDiscoveryKey(const char *component, const char *key, bool powMr
 
         // PowMr writable settings are exposed as select/number entities.
         // Purge older generic sensor discovery for the same keys.
-        if (powMr && isPowMrWritableSettingKey(key))
+        if (powMr && (isPowMrWritableSettingKey(key) ||
+                      isPowMrParallelOnlyKey(key)))
         {
             return false;
         }
@@ -1150,6 +1167,17 @@ void MqttHandler::publishHaSection(JsonDocument &snapshot,
         {
             continue;
         }
+        if (strcmp(stateSection, "DeviceData") == 0 &&
+            isPowMrPiHybridProtocolName(activeProtocol) &&
+            isPowMrParallelOnlyKey(key))
+        {
+            if (force)
+            {
+                purgeHaDiscoveryKey(_mqtt, deviceId, key);
+            }
+            continue;
+        }
+
         // Some PowMr/Victor HVM units return Tracker_Temperature=0 from the
         // PI30 Q1 supplement because that sensor is not implemented. Do not
         // expose a misleading 0 °C entity in Home Assistant. On a forced
