@@ -379,6 +379,38 @@ void populateDeviceInfo(JsonDocument &doc, JsonDocument &snapshot)
     device["sw_version"] = STRVERSION;
 }
 
+void populateEqualizationDeviceInfo(JsonDocument &doc, JsonDocument &snapshot)
+{
+    const String parentDeviceId = getHaDeviceId();
+    const String equalizationDeviceId = parentDeviceId + "_equalization";
+
+    JsonObject device = doc["device"].to<JsonObject>();
+    device["identifiers"][0] = equalizationDeviceId;
+    device["name"] = String(_settings.get.deviceName()) + " — Выравнивание АКБ";
+    device["manufacturer"] = "SoftWareCrash";
+    device["model"] = "PowMr battery equalization";
+    device["sw_version"] = STRVERSION;
+    device["via_device"] = parentDeviceId;
+}
+
+bool isPowMrEqualizationKey(const char *key)
+{
+    if (key == nullptr)
+    {
+        return false;
+    }
+
+    const char *const keys[] = {
+        DESCR_Battery_Equalization_Enabled,
+        DESCR_Battery_Equalization_Active,
+        "Battery_Equalization_Voltage",
+        "Battery_Equalization_Time",
+        "Battery_Equalization_Timeout",
+        "Battery_Equalization_Interval",
+    };
+    return stringEqualsAny(key, keys, sizeof(keys) / sizeof(keys[0]));
+}
+
 void publishJsonValue(PubSubClient &client, const String &topic, JsonVariantConst value, bool retained = true)
 {
     String payload;
@@ -1252,7 +1284,14 @@ void MqttHandler::publishHaSection(JsonDocument &snapshot,
             doc["state_class"] = descriptor->stateClass;
         }
 
-        populateDeviceInfo(doc, snapshot);
+        if (isPowMrProtocolName(activeProtocol) && isPowMrEqualizationKey(key))
+        {
+            populateEqualizationDeviceInfo(doc, snapshot);
+        }
+        else
+        {
+            populateDeviceInfo(doc, snapshot);
+        }
 
         String payload;
         serializeJson(doc, payload);
@@ -1462,7 +1501,14 @@ void MqttHandler::publishHaPowMrSettings(JsonDocument &snapshot,
             doc["unit_of_measurement"] = unit;
         }
 
-        populateDeviceInfo(doc, snapshot);
+        if (isPowMrEqualizationKey(key))
+        {
+            populateEqualizationDeviceInfo(doc, snapshot);
+        }
+        else
+        {
+            populateDeviceInfo(doc, snapshot);
+        }
 
         String payload;
         serializeJson(doc, payload);
@@ -1553,7 +1599,14 @@ void MqttHandler::publishHaPowMrSettings(JsonDocument &snapshot,
         doc["entity_category"] = "config";
         doc["qos"] = 1;
 
-        populateDeviceInfo(doc, snapshot);
+        if (isPowMrEqualizationKey(key))
+        {
+            populateEqualizationDeviceInfo(doc, snapshot);
+        }
+        else
+        {
+            populateDeviceInfo(doc, snapshot);
+        }
 
         String payload;
         serializeJson(doc, payload);
