@@ -3,8 +3,46 @@
 #include <cassert>
 #include <vector>
 
+static void testSlowPasses(bool includeQbeqi, PowMrPiSupplementQuery failingQuery,
+                           uint32_t passInterval, uint32_t start)
+{
+    PowMrPiSupplementScheduler scheduler;
+    unsigned counts[6] = {};
+    unsigned lastQ1Pass = 0;
+    for (unsigned pass = 1; pass <= 120; ++pass)
+    {
+        const uint32_t now = start + pass * passInterval;
+        const auto query = scheduler.next(now,
+            failingQuery == PowMrPiSupplementQuery::QFLAG,
+            failingQuery == PowMrPiSupplementQuery::QBEQI, includeQbeqi);
+        assert(query != PowMrPiSupplementQuery::None);
+        assert(includeQbeqi || query != PowMrPiSupplementQuery::QBEQI);
+        ++counts[static_cast<unsigned>(query)];
+        scheduler.record(query, now, query != failingQuery);
+        if (query == PowMrPiSupplementQuery::Q1) lastQ1Pass = pass;
+
+        // Q1 is due on every slow pass. Even with other due/failed queries,
+        // it must get an opportunity within one round of at most five queries.
+        assert(pass - lastQ1Pass < 5);
+    }
+    assert(counts[static_cast<unsigned>(PowMrPiSupplementQuery::QFLAG)] > 1);
+    assert(counts[static_cast<unsigned>(PowMrPiSupplementQuery::QPIRI)] > 1);
+    assert(counts[static_cast<unsigned>(PowMrPiSupplementQuery::QPIGS)] > 1);
+    if (includeQbeqi)
+        assert(counts[static_cast<unsigned>(PowMrPiSupplementQuery::QBEQI)] > 1);
+}
+
 int main()
 {
+    for (bool includeQbeqi : {false, true})
+        for (auto failingQuery : {PowMrPiSupplementQuery::None,
+                                  PowMrPiSupplementQuery::QFLAG,
+                                  PowMrPiSupplementQuery::QBEQI,
+                                  PowMrPiSupplementQuery::QPIGS})
+            for (uint32_t interval : {8500U, 35000U, 85000U})
+                for (uint32_t start : {0U, UINT32_MAX - 20000U})
+                    testSlowPasses(includeQbeqi, failingQuery, interval, start);
+
     PowMrPiSupplementScheduler scheduler;
     std::vector<PowMrPiSupplementQuery> seen;
 

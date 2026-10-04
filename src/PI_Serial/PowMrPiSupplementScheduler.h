@@ -20,11 +20,22 @@ public:
                                 bool forceQbeqi = false,
                                 bool includeQbeqi = false) const
     {
-        if (due(_qflag, now, 60000UL, forceQflag)) return PowMrPiSupplementQuery::QFLAG;
-        if (includeQbeqi && due(_qbeqi, now, 60000UL, forceQbeqi)) return PowMrPiSupplementQuery::QBEQI;
-        if (due(_qpiri, now, 300000UL, false)) return PowMrPiSupplementQuery::QPIRI;
-        if (due(_qpigs, now, 5000UL, false)) return PowMrPiSupplementQuery::QPIGS;
-        if (due(_q1, now, 2000UL, false)) return PowMrPiSupplementQuery::Q1;
+        const PowMrPiSupplementQuery queries[kQueryCount] = {
+            PowMrPiSupplementQuery::QFLAG, PowMrPiSupplementQuery::QBEQI,
+            PowMrPiSupplementQuery::QPIRI, PowMrPiSupplementQuery::QPIGS,
+            PowMrPiSupplementQuery::Q1};
+        const uint32_t intervals[kQueryCount] = {60000UL, 60000UL, 300000UL, 5000UL, 2000UL};
+        const bool forced[kQueryCount] = {forceQflag, forceQbeqi, false, false, false};
+
+        // A Modbus pass may take longer than a query's interval. Resume after
+        // the last attempted query so an always-due query cannot starve others.
+        for (uint8_t offset = 0; offset < kQueryCount; ++offset)
+        {
+            const uint8_t index = (_nextQueryIndex + offset) % kQueryCount;
+            const auto query = queries[index];
+            if (query == PowMrPiSupplementQuery::QBEQI && !includeQbeqi) continue;
+            if (due(*stateFor(query), now, intervals[index], forced[index])) return query;
+        }
         return PowMrPiSupplementQuery::None;
     }
 
@@ -33,6 +44,9 @@ public:
         QueryState *state = stateFor(query);
         if (state == nullptr) return;
 
+        // Enum values are one-based and follow the polling order above.
+        // Advance on failure too; the per-query retry backoff still applies.
+        _nextQueryIndex = static_cast<uint8_t>(query) % kQueryCount;
         state->attempted = true;
         state->lastAttemptAt = now;
         if (success)
@@ -53,6 +67,9 @@ public:
     }
 
 private:
+    static constexpr uint8_t kQueryCount = 5;
+    uint8_t _nextQueryIndex = 0;
+
     struct QueryState
     {
         uint32_t lastAttemptAt = 0;
