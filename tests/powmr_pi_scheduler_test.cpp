@@ -106,5 +106,16 @@ int main()
     assert(qbeqiSawQpigs);
     assert(qbeqiSawQ1);
 
+    // The first retry is delayed by 2 seconds.
+    PowMrPiSupplementScheduler retry;
+    assert(retry.next(100, true) == PowMrPiSupplementQuery::QFLAG);
+    retry.record(PowMrPiSupplementQuery::QFLAG, 100, false);
+    assert(retry.next(200, true) == PowMrPiSupplementQuery::QPIRI);
+    retry.record(PowMrPiSupplementQuery::QPIRI, 200, true);
+    retry.record(PowMrPiSupplementQuery::QPIGS, 300, true);
+    retry.record(PowMrPiSupplementQuery::Q1, 400, true);
+    assert(retry.next(1999, true) == PowMrPiSupplementQuery::None);
+    assert(retry.next(2100, true) == PowMrPiSupplementQuery::QFLAG);
+
     return 0;
 }

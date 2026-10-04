@@ -24,3 +24,15 @@ jobs:
       - name: Run inverter UI missing-value regression test
         if: hashFiles('tests/inverter_ui_missing_values_test.cjs') != ''
         run: node tests/inverter_ui_missing_values_test.cjs
+
+  firmware-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Install PlatformIO
+        run: pip install platformio
+      - name: Build M5Stack ATOM Lite
+        run: pio run -e m5stack_atom_lite
