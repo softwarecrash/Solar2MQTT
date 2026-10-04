@@ -1,6 +1,7 @@
 #ifndef PI_SERIAL_H
 #define PI_SERIAL_H
 #include "descriptors.h"
+#include "PowMrPiSupplementScheduler.h"
 #include <atomic>
 #include <HardwareSerial.h>
 #include <stdlib.h>
@@ -230,6 +231,9 @@ private:
     unsigned long lastSuccessfulDynamicCycleAt = 0;
     byte requestCounter = 0;
 
+    PowMrPiSupplementScheduler powMrPiSupplementScheduler;
+    bool powMrPiFlagRefreshRequested = true;
+
     long long int connectionCounter = 0;
 
     byte qexCounter = 0;
@@ -266,6 +270,10 @@ private:
     void refineProtocol();
     bool requestUnsupportedPiStatic();
     bool requestUnsupportedPiDynamic();
+    bool pollPowMrPiSupplement();
+    bool runPowMrPiSupplementCommand(const char *command);
+    void backupPowMrNativeState(JsonDocument &staticBackup, JsonDocument &liveBackup) const;
+    void restorePowMrNativeState(JsonDocument &staticBackup, JsonDocument &liveBackup);
     bool requestAndStoreRaw(const char *command, String &target, bool &hadSuccessfulReply);
     bool isValidResponse(const String &response) const;
     void logStaticSummary() const;

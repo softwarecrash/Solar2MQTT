@@ -58,6 +58,42 @@ String buildDiscoveryTopic(const String &baseTopic, const char *component, const
     return String("homeassistant/") + component + "/" + baseTopic + "/" + key + "/config";
 }
 
+bool isPowMrPiHybridProtocolName(const char *protocol)
+{
+    return protocol != nullptr && strcmp(protocol, "MODBUS_POWMR_PI") == 0;
+}
+
+bool isPowMrPiSwitchKey(const char *key)
+{
+    if (key == nullptr)
+    {
+        return false;
+    }
+
+    const char *const keys[] = {
+        DESCR_Buzzer_Enabled,
+        DESCR_Overload_Bypass_Enabled,
+        DESCR_Power_Saving_Enabled,
+        DESCR_LCD_Reset_To_Default_Enabled,
+        DESCR_Data_Log_Pop_Up,
+        DESCR_Overload_Restart_Enabled,
+        DESCR_Over_Temperature_Restart_Enabled,
+        DESCR_LCD_Backlight_Enabled,
+        DESCR_Primary_Source_Interrupt_Alarm_Enabled,
+        DESCR_Record_Fault_Code_Enabled,
+        DESCR_Solar_Feed_To_Grid_Enabled,
+    };
+
+    for (const char *candidate : keys)
+    {
+        if (strcmp(candidate, key) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 String sanitizeRawMqttText(const char *value)
 {
     if (value == nullptr || value[0] == '\0')
@@ -554,6 +590,7 @@ void MqttHandler::publishHaDiscovery(bool force)
                      force);
     publishHaEspInternalTemperature(snapshot, snapshot["EspData"].as<JsonObjectConst>(), currentTopics, force);
     publishHaDs18b20(snapshot, snapshot["LiveData"].as<JsonObjectConst>(), currentTopics, force);
+    publishHaPowMrPiSettings(snapshot, snapshot["DeviceData"].as<JsonObjectConst>(), currentTopics, force);
 
     if (!force)
     {
@@ -592,6 +629,14 @@ void MqttHandler::publishHaSection(JsonDocument &snapshot,
         }
 
         const char *key = entry.key().c_str();
+        const char *activeProtocol = snapshot["Status"]["protocol"] | "";
+        if (strcmp(stateSection, "DeviceData") == 0 &&
+            isPowMrPiHybridProtocolName(activeProtocol) &&
+            isPowMrPiSwitchKey(key))
+        {
+            continue;
+        }
+
         const HaEntityDescriptor *descriptor = findDescriptor(key, descriptors, descriptorCount);
         const bool binarySensor = value.is<bool>();
         const char *component = binarySensor ? "binary_sensor" : "sensor";
@@ -727,6 +772,83 @@ void MqttHandler::publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst liveV
         String payload;
         serializeJson(doc, payload);
 
+        _mqtt.publish(topic.c_str(), payload.c_str(), true);
+        appendTopicIfMissing(_haDiscoveryTopics, topic);
+    }
+}
+
+void MqttHandler::publishHaPowMrPiSettings(JsonDocument &snapshot,
+                                                JsonObjectConst deviceValues,
+                                                std::vector<String> &currentTopics,
+                                                bool force)
+{
+    const char *protocol = snapshot["Status"]["protocol"] | "";
+    if (!isPowMrPiHybridProtocolName(protocol))
+    {
+        return;
+    }
+
+    struct SwitchDef
+    {
+        const char *key;
+        const char *name;
+        char flag;
+    };
+
+    static const SwitchDef switches[] = {
+        {DESCR_Buzzer_Enabled, "Buzzer", 'a'},
+        {DESCR_Overload_Bypass_Enabled, "Overload bypass", 'b'},
+        {DESCR_Power_Saving_Enabled, "Power saving", 'j'},
+        {DESCR_LCD_Reset_To_Default_Enabled, "LCD reset to default", 'k'},
+        {DESCR_Data_Log_Pop_Up, "Data log pop-up", 'l'},
+        {DESCR_Solar_Feed_To_Grid_Enabled, "Solar feed to grid", 'd'},
+        {DESCR_Overload_Restart_Enabled, "Overload restart", 'u'},
+        {DESCR_Over_Temperature_Restart_Enabled, "Over-temperature restart", 'v'},
+        {DESCR_LCD_Backlight_Enabled, "LCD backlight", 'x'},
+        {DESCR_Primary_Source_Interrupt_Alarm_Enabled, "Primary source interrupt alarm", 'y'},
+        {DESCR_Record_Fault_Code_Enabled, "Record fault code", 'z'},
+    };
+
+    const String topicBase = baseTopic();
+    const String deviceId = getHaDeviceId();
+    const String availabilityTopic = topicBase + "/Alive";
+    const String commandTopic = topicBase + "/DeviceControl/Set_Command";
+
+    for (const SwitchDef &setting : switches)
+    {
+        JsonVariantConst state = deviceValues[setting.key];
+        if (!state.is<bool>())
+        {
+            continue;
+        }
+
+        const String topic = buildDiscoveryTopic(deviceId, "switch", setting.key);
+        appendTopicIfMissing(currentTopics, topic);
+        if (!force && hasHaDiscoveryTopic(topic))
+        {
+            continue;
+        }
+
+        JsonDocument doc;
+        doc["name"] = setting.name;
+        doc["state_topic"] = topicBase + "/DeviceData/" + setting.key;
+        doc["command_topic"] = commandTopic;
+        doc["payload_on"] = String("powmr pi PE") + setting.flag;
+        doc["payload_off"] = String("powmr pi PD") + setting.flag;
+        doc["state_on"] = "true";
+        doc["state_off"] = "false";
+        doc["availability_topic"] = availabilityTopic;
+        doc["payload_available"] = "true";
+        doc["payload_not_available"] = "false";
+        doc["unique_id"] = buildUniqueId(deviceId, "PowMrPiSetting", setting.key);
+        doc["icon"] = "mdi:toggle-switch";
+        doc["entity_category"] = "config";
+        doc["qos"] = 1;
+
+        populateDeviceInfo(doc, snapshot);
+
+        String payload;
+        serializeJson(doc, payload);
         _mqtt.publish(topic.c_str(), payload.c_str(), true);
         appendTopicIfMissing(_haDiscoveryTopics, topic);
     }
