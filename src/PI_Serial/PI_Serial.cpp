@@ -1404,47 +1404,40 @@ bool PI_Serial::pollPowMrPiSupplement()
     }
 
     const unsigned long now = millis();
+    const PowMrPiSupplementQuery query =
+        powMrPiSupplementScheduler.next(now, powMrPiFlagRefreshRequested);
 
-    if (powMrPiFlagRefreshRequested ||
-        powMrPiLastQflagAt == 0 ||
-        (now - powMrPiLastQflagAt) >= 60000UL)
+    const char *command = nullptr;
+    switch (query)
     {
-        if (runPowMrPiSupplementCommand("QFLAG"))
-        {
-            powMrPiLastQflagAt = now;
-            powMrPiFlagRefreshRequested = false;
-        }
-        return true;
+    case PowMrPiSupplementQuery::QFLAG:
+        command = "QFLAG";
+        break;
+    case PowMrPiSupplementQuery::QPIRI:
+        command = "QPIRI";
+        break;
+    case PowMrPiSupplementQuery::QPIGS:
+        command = "QPIGS";
+        break;
+    case PowMrPiSupplementQuery::Q1:
+        command = "Q1";
+        break;
+    default:
+        return false;
     }
 
-    if (powMrPiLastQpiriAt == 0 || (now - powMrPiLastQpiriAt) >= 300000UL)
+    // Record every attempt, not only successful ones. Failed requests enter
+    // retry backoff so a persistent CRC/timeout/NAK cannot monopolize every
+    // completed Modbus pass and starve the remaining supplement queries.
+    const bool ok = runPowMrPiSupplementCommand(command);
+    powMrPiSupplementScheduler.record(query, now, ok);
+
+    if (ok && query == PowMrPiSupplementQuery::QFLAG)
     {
-        if (runPowMrPiSupplementCommand("QPIRI"))
-        {
-            powMrPiLastQpiriAt = now;
-        }
-        return true;
+        powMrPiFlagRefreshRequested = false;
     }
 
-    if (powMrPiLastQpigsAt == 0 || (now - powMrPiLastQpigsAt) >= 5000UL)
-    {
-        if (runPowMrPiSupplementCommand("QPIGS"))
-        {
-            powMrPiLastQpigsAt = now;
-        }
-        return true;
-    }
-
-    if (powMrPiLastQ1At == 0 || (now - powMrPiLastQ1At) >= 2000UL)
-    {
-        if (runPowMrPiSupplementCommand("Q1"))
-        {
-            powMrPiLastQ1At = now;
-        }
-        return true;
-    }
-
-    return false;
+    return true;
 }
 
 bool PI_Serial::isValidResponse(const String &response) const
