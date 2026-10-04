@@ -1460,62 +1460,50 @@ bool PI_Serial::pollPowMrPiSupplement()
     }
 
     const unsigned long now = millis();
+    const PowMrPiSupplementQuery query =
+        powMrPiSupplementScheduler.next(now,
+                                        powMrPiFlagRefreshRequested,
+                                        powMrPiEqualizationRefreshRequested,
+                                        true);
 
-    // One PI30 request at most per completed Modbus pass. This keeps the
-    // hybrid mode conservative on the shared 2400-baud UART.
-    if (powMrPiFlagRefreshRequested ||
-        powMrPiLastQflagAt == 0 ||
-        (now - powMrPiLastQflagAt) >= 60000UL)
+    const char *command = nullptr;
+    switch (query)
     {
-        const bool ok = runPowMrPiSupplementCommand("QFLAG");
-        if (ok)
-        {
-            powMrPiLastQflagAt = now;
-            powMrPiFlagRefreshRequested = false;
-        }
-        return true;
+    case PowMrPiSupplementQuery::QFLAG:
+        command = "QFLAG";
+        break;
+    case PowMrPiSupplementQuery::QBEQI:
+        command = "QBEQI";
+        break;
+    case PowMrPiSupplementQuery::QPIRI:
+        command = "QPIRI";
+        break;
+    case PowMrPiSupplementQuery::QPIGS:
+        command = "QPIGS";
+        break;
+    case PowMrPiSupplementQuery::Q1:
+        command = "Q1";
+        break;
+    default:
+        return false;
     }
 
-    if (powMrPiEqualizationRefreshRequested ||
-        powMrPiLastQbeqiAt == 0 ||
-        (now - powMrPiLastQbeqiAt) >= 60000UL)
+    // Every attempt is tracked. Failed/unsupported/CRC-bad queries enter a
+    // retry backoff, so they cannot consume every completed Modbus pass and
+    // starve the remaining PI supplement queries.
+    const bool ok = runPowMrPiSupplementCommand(command);
+    powMrPiSupplementScheduler.record(query, now, ok);
+
+    if (ok && query == PowMrPiSupplementQuery::QFLAG)
     {
-        if (runPowMrPiSupplementCommand("QBEQI"))
-        {
-            powMrPiLastQbeqiAt = now;
-            powMrPiEqualizationRefreshRequested = false;
-        }
-        return true;
+        powMrPiFlagRefreshRequested = false;
+    }
+    else if (ok && query == PowMrPiSupplementQuery::QBEQI)
+    {
+        powMrPiEqualizationRefreshRequested = false;
     }
 
-    if (powMrPiLastQpiriAt == 0 || (now - powMrPiLastQpiriAt) >= 300000UL)
-    {
-        if (runPowMrPiSupplementCommand("QPIRI"))
-        {
-            powMrPiLastQpiriAt = now;
-        }
-        return true;
-    }
-
-    if (powMrPiLastQpigsAt == 0 || (now - powMrPiLastQpigsAt) >= 5000UL)
-    {
-        if (runPowMrPiSupplementCommand("QPIGS"))
-        {
-            powMrPiLastQpigsAt = now;
-        }
-        return true;
-    }
-
-    if (powMrPiLastQ1At == 0 || (now - powMrPiLastQ1At) >= 2000UL)
-    {
-        if (runPowMrPiSupplementCommand("Q1"))
-        {
-            powMrPiLastQ1At = now;
-        }
-        return true;
-    }
-
-    return false;
+    return true;
 }
 
 bool PI_Serial::isValidResponse(const String &response) const
