@@ -231,10 +231,7 @@ private:
     unsigned long lastSuccessfulDynamicCycleAt = 0;
     byte requestCounter = 0;
 
-    unsigned long powMrPiLastQ1At = 0;
-    unsigned long powMrPiLastQpigsAt = 0;
-    unsigned long powMrPiLastQpiriAt = 0;
-    unsigned long powMrPiLastQflagAt = 0;
+    PowMrPiSupplementScheduler powMrPiSupplementScheduler;
     bool powMrPiFlagRefreshRequested = true;
 
     long long int connectionCounter = 0;
