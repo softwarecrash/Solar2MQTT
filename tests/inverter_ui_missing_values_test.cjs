@@ -61,10 +61,11 @@ const context = {
   },
 };
 
-vm.createContext(context);
-vm.runInContext(source, context);
-assert.equal(typeof domReady, "function");
-await domReady();
+(async () => {
+  vm.createContext(context);
+  vm.runInContext(source, context);
+  assert.equal(typeof domReady, "function");
+  await domReady();
 
 const batteryType = elements.get("invBatteryType");
 assert.equal(batteryType.value, "AGM");
@@ -75,4 +76,8 @@ assert.equal(typeof submit, "function");
 await submit({ preventDefault() {} });
 
 assert.equal(commandPosts, 0, "Save without edits must not write an unavailable HTML default");
-assert.equal(elements.get("inverterSettingsResult").textContent, "No changes.");
+  assert.equal(elements.get("inverterSettingsResult").textContent, "No changes.");
+})().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
