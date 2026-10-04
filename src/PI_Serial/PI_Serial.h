@@ -1,6 +1,7 @@
 #ifndef PI_SERIAL_H
 #define PI_SERIAL_H
 #include "descriptors.h"
+#include "PowMrPiSupplementScheduler.h"
 #include <atomic>
 #include <HardwareSerial.h>
 #include <stdlib.h>
@@ -231,11 +232,7 @@ private:
     unsigned long lastSuccessfulDynamicCycleAt = 0;
     byte requestCounter = 0;
 
-    unsigned long powMrPiLastQ1At = 0;
-    unsigned long powMrPiLastQpigsAt = 0;
-    unsigned long powMrPiLastQpiriAt = 0;
-    unsigned long powMrPiLastQflagAt = 0;
-    unsigned long powMrPiLastQbeqiAt = 0;
+    PowMrPiSupplementScheduler powMrPiSupplementScheduler;
     bool powMrPiFlagRefreshRequested = true;
     bool powMrPiEqualizationRefreshRequested = true;
 
