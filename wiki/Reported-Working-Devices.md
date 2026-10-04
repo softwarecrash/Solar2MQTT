@@ -17,6 +17,7 @@ This page is generated automatically from public device reports submitted throug
 | ANERN | SCI-EVO-6200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 2 |
 | ANERN | SCI-EVO4200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 1 |
 | ANINEREL | ANL-4200T-24L-W | RS232 | MODBUS_SMG | MODBUS_SMG | SMG 99432608105291 | - | wemos_d1_mini32 | - | 1 |
+| DATOUBOSS | DT2430 | RS232 | PI30 | PI30 | VMII-3000 | - | wemos_d1_mini32 | - | 1 |
 | EASUN | EASUN SMS-6.5KP | RS232 | MODBUS_DEYE | MODBUS_DEYE | 02020475 | - | esp32c3_supermini | Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working?<br>Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working? email tomfli@wp.pl | 2 |
 | EASUN | IGRID SV IV 5.6 KW | RS232 | PI18 | 18 | - | - | wemos_d1_mini32 | Works fantastic, 88 entities, perfect real time data, flowless integration in HA through mttq. Huge thanks! | 1 |
 | EASUN | SMH-II-2.2 | RS232 | PI30 | PI30 | - | - | esp32s3_supermini | - | 1 |
