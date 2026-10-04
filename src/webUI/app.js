@@ -1,6 +1,8 @@
 const state = {
   statusSocket: null,
   toastTimer: null,
+  commandBusy: false,
+  commandWaiting: false,
   previewFocusTimers: {},
   reportContext: null,
 };
@@ -76,6 +78,10 @@ function getDeviceFirmwareVersion(data = {}) {
 }
 
 function showNotice(message, isError = false) {
+  if (state.commandWaiting) {
+    message = "Command sent. Waiting for answer...";
+    isError = false;
+  }
   const toast = byId("toast");
   const toastIcon = byId("toast-icon");
   const toastMessage = byId("toast-msg");
@@ -90,7 +96,7 @@ function showNotice(message, isError = false) {
     if (state.toastTimer) {
       window.clearTimeout(state.toastTimer);
     }
-    state.toastTimer = window.setTimeout(() => {
+    state.toastTimer = state.commandWaiting ? null : window.setTimeout(() => {
       toast.classList.remove("show");
     }, 2800);
   }
@@ -111,6 +117,7 @@ function showNotice(message, isError = false) {
 }
 
 function clearNotice() {
+  if (state.commandWaiting) return;
   const toast = byId("toast");
   if (toast) {
     toast.classList.remove("show");
@@ -746,6 +753,12 @@ function renderStatus(data) {
   setText("devicename", data.deviceName || data.EspData?.Device_name || "Solar2MQTT");
   setText("pageTitleDevice", data.EspData?.Device_name || "Solar2MQTT");
   setText("loopbackInfo", data.loopback?.message || "-");
+
+  const activeProtocol =
+    data.Status?.protocol ||
+    data.EspData?.detect_protocol_name ||
+    data.protocol ||
+    "";
   setText("metricPvPower", formatValue(totalSolarPower(data), " W"));
   setText("metricBatteryPercent", formatValue(data.LiveData?.Battery_Percent, " %"));
   setText("metricBatteryVoltage", formatValue(data.LiveData?.Battery_Voltage ?? data.LiveData?.Positive_Battery_Voltage, " V"));
@@ -940,19 +953,105 @@ function getCommandAnswerValue(data) {
   return typeof answer === "string" ? answer.trim() : "";
 }
 
-async function waitForCommandAnswer(timeoutMs = 3500, intervalMs = 150) {
-  const startedAt = Date.now();
-  let lastData = {};
-
-  while ((Date.now() - startedAt) < timeoutMs) {
-    lastData = (await fetchJson("/api/data")) || {};
-    if (getCommandAnswerValue(lastData)) {
-      return lastData;
+async function waitForCommandAnswer(intervalMs = 500) {
+  state.commandWaiting = true;
+  showNotice("Command sent. Waiting for answer...");
+  try {
+    while (true) {
+      try {
+        const data = (await fetchJson("/api/data", { cache: "no-store" })) || {};
+        if (getCommandAnswerValue(data)) return data;
+      } catch (error) {
+        // A temporary polling failure must not resend the command or end the wait.
+      }
+      await new Promise((resolve) => window.setTimeout(resolve, intervalMs));
     }
-    await new Promise((resolve) => window.setTimeout(resolve, intervalMs));
+  } finally {
+    state.commandWaiting = false;
   }
+}
 
-  return lastData;
+// Poll status only. Never repeat a baseline/compare when an answer is delayed.
+async function waitForPowmrHunt(data) {
+  if (!getCommandAnswerValue(data).startsWith("POWMR_HUNT RUNNING")) return data;
+  let cancelRequested = false;
+  const cancel = document.createElement("button");
+  cancel.type = "button";
+  cancel.textContent = "Остановить поиск";
+  cancel.addEventListener("click", () => { cancelRequested = true; cancel.disabled = true; });
+  byId("commandForm")?.appendChild(cancel);
+  try {
+    while (getCommandAnswerValue(data).startsWith("POWMR_HUNT RUNNING")) {
+      setText("commandAnswer", getCommandAnswerValue(data));
+      showNotice("Поиск регистров выполняется. Ждём завершения…");
+      await new Promise((resolve) => window.setTimeout(resolve, 3000));
+      const body = new URLSearchParams();
+      body.set("command", cancelRequested ? "powmr hunt cancel" : "powmr hunt status");
+      // Status/cancel are idempotent, unlike start. A lost HTTP reply is safe to retry.
+      try {
+        await fetchJson("/api/command", { method: "POST", body });
+        data = await waitForCommandAnswer();
+      } catch (error) {
+        showNotice("Связь прервалась. Продолжаем ждать результат…");
+      }
+    }
+    const resultBody = new URLSearchParams();
+    resultBody.set("command", "powmr hunt result");
+    await fetchJson("/api/command", { method: "POST", body: resultBody });
+    return await waitForCommandAnswer();
+  } finally {
+    cancel.remove();
+  }
+}
+
+const commandHistoryKey = "solar2mqtt.commandHistory";
+let commandHistory = [];
+
+function renderCommandHistory() {
+  const list = byId("commandHistory");
+  if (!list) return;
+  list.replaceChildren();
+  for (const command of commandHistory) {
+    const option = document.createElement("option");
+    option.value = command;
+    list.appendChild(option);
+  }
+}
+
+function loadCommandHistory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(commandHistoryKey) || "[]");
+    commandHistory = Array.isArray(saved)
+      ? [...new Set(saved.filter(value => typeof value === "string" && value.trim() && value.length <= 256))].slice(0, 50)
+      : [];
+  } catch (error) {
+    commandHistory = [];
+  }
+  renderCommandHistory();
+}
+
+function rememberCommand(command) {
+  command = command.trim();
+  if (!command || command.length > 256) return;
+  commandHistory = [command, ...commandHistory.filter(value => value !== command)].slice(0, 50);
+  try { localStorage.setItem(commandHistoryKey, JSON.stringify(commandHistory)); } catch (error) {}
+  renderCommandHistory();
+}
+
+async function runConsoleCommand(handler) {
+  if (state.commandBusy) return;
+  state.commandBusy = true;
+  const controls = [...document.querySelectorAll(
+    '#commandForm button, #commandForm input[type="submit"], #socDiagBtn, #bmsDiagBtn, #powmrWatchBtn'
+  )];
+  const disabled = controls.map((node) => node.disabled);
+  controls.forEach((node) => { node.disabled = true; });
+  try {
+    return await handler();
+  } finally {
+    state.commandBusy = false;
+    controls.forEach((node, index) => { node.disabled = disabled[index]; });
+  }
 }
 
 function focusPreview(previewId) {
@@ -1002,7 +1101,13 @@ function bindSubmit(formId, handler) {
     clearNotice();
 
     try {
-      await handler(event.currentTarget);
+      const form = event.currentTarget;
+      if (formId === "commandForm") {
+        if (!byId("commandInput")?.value.trim()) return;
+        await runConsoleCommand(() => handler(form));
+      } else {
+        await handler(form);
+      }
     } catch (error) {
       showNotice(error.message, true);
     }
@@ -1019,7 +1124,11 @@ function bindClick(id, handler) {
     clearNotice();
 
     try {
-      await handler();
+      if (["socDiagBtn", "bmsDiagBtn", "powmrWatchBtn"].includes(id)) {
+        await runConsoleCommand(handler);
+      } else {
+        await handler();
+      }
     } catch (error) {
       showNotice(error.message, true);
     }
@@ -1027,6 +1136,7 @@ function bindClick(id, handler) {
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
+  loadCommandHistory();
   connectStatusSocket();
   await Promise.allSettled([loadStatus(), loadSettings()]);
 
@@ -1045,13 +1155,21 @@ window.addEventListener("DOMContentLoaded", async () => {
     showNotice(result?.message || "Device settings applied.");
   });
 
+
+
+
+
+
   bindSubmit("commandForm", async (form) => {
+    const submittedCommand = byId("commandInput")?.value || "";
     await postForm("/api/command", form);
+    rememberCommand(submittedCommand);
     const commandInput = byId("commandInput");
     if (commandInput) {
       commandInput.value = "";
     }
-    const data = await waitForCommandAnswer();
+    let data = await waitForCommandAnswer();
+    data = await waitForPowmrHunt(data);
     setText("commandAnswer", data.RawData?.CommandAnswer || "-");
 
     const preview = byId("dataPreview");
@@ -1123,6 +1241,68 @@ window.addEventListener("DOMContentLoaded", async () => {
     focusPreview("dataPreview");
     showNotice("JSON data loaded.");
   });
+
+  bindClick("socDiagBtn", async () => {
+    const body = new URLSearchParams();
+    body.set("command", "powmr socdiag");
+    await fetchJson("/api/command", { method: "POST", body });
+    const data = await waitForCommandAnswer();
+    const answer = data.RawData?.CommandAnswer || "-";
+    setText("commandAnswer", answer);
+    const preview = byId("dataPreview");
+    if (preview) {
+      preview.textContent = JSON.stringify(data || {}, null, 2);
+    }
+    setText("dataPreviewMeta", `Last updated: ${new Date().toLocaleTimeString("en-GB")}`);
+    if (answer && answer !== "-") {
+      showNotice("SOC history loaded.");
+    } else {
+      showNotice("SOC history command sent. No answer received yet.", true);
+    }
+  });
+
+  bindClick("bmsDiagBtn", async () => {
+    const body = new URLSearchParams();
+    body.set("command", "powmr bmsdiag");
+    await fetchJson("/api/command", { method: "POST", body });
+    const data = await waitForCommandAnswer();
+    const answer = data.RawData?.CommandAnswer || "-";
+    setText("commandAnswer", answer);
+    const preview = byId("dataPreview");
+    if (preview) {
+      preview.textContent = JSON.stringify(data || {}, null, 2);
+    }
+    setText("dataPreviewMeta", `Last updated: ${new Date().toLocaleTimeString("en-GB")}`);
+    if (answer.startsWith("POWMR_BMS_DIAG")) {
+      showNotice("BMS / SOC snapshot loaded.");
+    } else if (answer && answer !== "-") {
+      showNotice(answer, true);
+    } else {
+      showNotice("BMS / SOC snapshot command sent. No answer received yet.", true);
+    }
+  });
+
+  bindClick("powmrWatchBtn", async () => {
+    const body = new URLSearchParams();
+    body.set("command", "powmr watch");
+    await fetchJson("/api/command", { method: "POST", body });
+    const data = await waitForCommandAnswer();
+    const answer = data.RawData?.CommandAnswer || "-";
+    setText("commandAnswer", answer);
+    const preview = byId("dataPreview");
+    if (preview) {
+      preview.textContent = JSON.stringify(data || {}, null, 2);
+    }
+    setText("dataPreviewMeta", `Last updated: ${new Date().toLocaleTimeString("en-GB")}`);
+    if (answer.startsWith("POWMR_WATCH")) {
+      showNotice("Register watch snapshot loaded.");
+    } else if (answer && answer !== "-") {
+      showNotice(answer, true);
+    } else {
+      showNotice("Register watch command sent. No answer received yet.", true);
+    }
+  });
+
 
   bindClick("rebootBtn", async () => {
     await fetchJson("/api/reboot", { method: "POST" });

@@ -7,6 +7,7 @@
 #include <WiFiClientSecure.h>
 #include <vector>
 
+#include "core/EnergyBacklog.h"
 #include "solar/HaDiscoveryCatalog.h"
 
 class SolarState;
@@ -26,6 +27,7 @@ public:
     void triggerFullStatePublish();
     void triggerHaDiscovery();
     void publishSensorImmediate(uint8_t index, float temperature);
+    void flushPersistentEnergy();
 
 private:
     static MqttHandler *s_instance;
@@ -38,6 +40,7 @@ private:
     WiFiClientSecure _secureClient;
     Client *_netClient;
     PubSubClient _mqtt;
+    EnergyBacklog _energyBacklog;
 
     bool _pendingFullPublish;
     bool _pendingHaDiscovery;
@@ -45,6 +48,13 @@ private:
     bool _pendingLegacyDs18Cleanup;
     bool _configured;
     bool _lastConnected;
+    bool _replayingEnergyBacklog;
+    bool _haDiscoverySweepActive;
+    bool _haDiscoverySweepPowMr;
+    unsigned long _haDiscoverySweepStartedMs;
+    String _haDiscoverySweepTopic;
+    bool _pendingDelayedHaDiscovery;
+    unsigned long _delayedHaDiscoveryAt;
     unsigned long _lastReconnectAttempt;
     unsigned long _lastAlivePublish;
     unsigned long _lastStatePublish;
@@ -73,8 +83,10 @@ private:
                           bool force);
     void publishHaEspInternalTemperature(JsonDocument &snapshot, JsonObjectConst espValues, std::vector<String> &currentTopics, bool force);
     void publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst liveValues, std::vector<String> &currentTopics, bool force);
-    void publishHaPowMrPiSettings(JsonDocument &snapshot, JsonObjectConst deviceValues, std::vector<String> &currentTopics, bool force);
+    void publishHaPowMrSettings(JsonDocument &snapshot, JsonObjectConst deviceValues, std::vector<String> &currentTopics, bool force);
     bool hasHaDiscoveryTopic(const String &topic) const;
+    void startHaDiscoverySweep();
+    void stopHaDiscoverySweep();
     void setupSubscriptions();
     String baseTopic() const;
 };

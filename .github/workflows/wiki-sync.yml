@@ -38,8 +38,8 @@ jobs:
           trap 'rm -rf "$temp_dir"' EXIT
 
           if ! git clone "$WIKI_URL" "$temp_dir"; then
-            echo "::error::GitHub Wiki could not be cloned. Enable the repository wiki and create the first wiki page manually once so the .wiki.git backend exists."
-            exit 1
+            echo "::notice::GitHub Wiki backend is not available; skipping Wiki sync. The wiki/ files remain available in the main repository."
+            exit 0
           fi
 
           rsync -a --delete --exclude '.git/' wiki/ "$temp_dir/"

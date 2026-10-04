@@ -219,11 +219,14 @@ void WebServerHandler::registerRoutes()
     serveAsset("/device", device_html_gz_mime, device_html_gz, device_html_gz_len);
     serveAsset("/settingsedit", device_html_gz_mime, device_html_gz, device_html_gz_len);
     serveAsset("/devicesettings", device_html_gz_mime, device_html_gz, device_html_gz_len);
+    serveAsset("/invertersettings", inverter_html_gz_mime, inverter_html_gz, inverter_html_gz_len);
     serveAsset("/firmware", firmware_html_gz_mime, firmware_html_gz, firmware_html_gz_len);
     serveAsset("/firmwareupdate", firmware_html_gz_mime, firmware_html_gz, firmware_html_gz_len);
     serveAsset("/debug", debug_html_gz_mime, debug_html_gz, debug_html_gz_len);
     serveAsset("/webserial", webserial_html_gz_mime, webserial_html_gz, webserial_html_gz_len);
     serveAsset("/app.js", app_js_gz_mime, app_js_gz, app_js_gz_len);
+    serveAsset("/i18n.js", i18n_js_gz_mime, i18n_js_gz, i18n_js_gz_len);
+    serveAsset("/inverter.js", inverter_js_gz_mime, inverter_js_gz, inverter_js_gz_len);
     serveAsset("/style.css", style_css_gz_mime, style_css_gz, style_css_gz_len);
     serveAsset("/backgroundCanvas.js", backgroundCanvas_js_gz_mime, backgroundCanvas_js_gz, backgroundCanvas_js_gz_len);
     serveAsset("/statusbar.js", statusbar_js_gz_mime, statusbar_js_gz, statusbar_js_gz_len);

@@ -22,8 +22,9 @@
       <div class="detailSplitter">Command Sender</div>
       
       <form id="commandForm" class="command-row">
-        <input id="commandInput" type="text" name="command" autocomplete="off" spellcheck="false" placeholder="QPI, autodetect, setp 1, sim on/off/status">
+        <input id="commandInput" type="text" name="command" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" list="commandHistory" placeholder="QPI, autodetect, setp 1, sim on/off/status">
         <button type="submit" class="btn">Send</button>
+        <datalist id="commandHistory"></datalist>
       </form>
 
       <div class="detailSplitter">Actions</div>
@@ -32,6 +33,9 @@
         <button id="haBtn" type="button" class="btn">HA Discovery</button>
         <button id="reportBtn" type="button" class="btn">Download Report</button>
         <button id="previewDataBtn" type="button" class="btn">Refresh Preview</button>
+        <button id="socDiagBtn" type="button" class="btn">SOC History</button>
+        <button id="bmsDiagBtn" type="button" class="btn">BMS / SOC Snapshot</button>
+        <button id="powmrWatchBtn" type="button" class="btn">Register Watch</button>
         <button id="rebootBtn" type="button" class="btn">Reboot</button>
         <a class="btn btn-outline" href="/webserial" target="_blank" rel="noopener">Web Serial</a>
       </div>
@@ -59,6 +63,7 @@
   </div>
 
   <div id="toast"><span id="toast-icon">i</span><span id="toast-msg"></span></div>
+  <script src="/i18n.js"></script>
   <script src="/statusbar.js"></script>
   <script src="/backgroundCanvas.js"></script>
   <script src="/app.js"></script>

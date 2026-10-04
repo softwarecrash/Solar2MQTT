@@ -1,0 +1,61 @@
+name: Build Other ESP32 Targets
+
+# Compile every supported non-ATOM ESP32 target against the shared firmware source.
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'platformio.ini'
+      - 'src/**'
+      - 'include/**'
+      - 'tools/**'
+      - 'partitions/**'
+      - '.github/workflows/build-other-esp32.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: other-esp32-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        env:
+          - wemos_d1_mini32
+          - esp32c3_supermini
+          - esp32s3_supermini
+          - waveshare_esp32_s3_eth
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Install PlatformIO
+        run: pip install platformio
+      - name: Read firmware version
+        run: |
+          VER="$(awk -F' = ' '/^custom_source_version =/{print $2; exit}' platformio.ini)"
+          test -n "$VER"
+          echo "FW_VERSION=$VER" >> "$GITHUB_ENV"
+          echo "Firmware version: $VER"
+      - name: Build ${{ matrix.env }}
+        run: pio run -e "${{ matrix.env }}"
+      - name: Verify firmware artifacts
+        run: |
+          test -s ".firmware/Solar2MQTT_${{ matrix.env }}_V${FW_VERSION}.bin.ota"
+          test -s ".firmware/Solar2MQTT_${{ matrix.env }}_V${FW_VERSION}.bin"
+          ls -lh ".firmware/Solar2MQTT_${{ matrix.env }}_V${FW_VERSION}.bin"*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Solar2MQTT-${{ matrix.env }}-${{ env.FW_VERSION }}
+          path: |
+            .firmware/Solar2MQTT_${{ matrix.env }}_V${{ env.FW_VERSION }}.bin.ota
+            .firmware/Solar2MQTT_${{ matrix.env }}_V${{ env.FW_VERSION }}.bin
+          if-no-files-found: error

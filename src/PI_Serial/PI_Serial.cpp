@@ -359,6 +359,7 @@ PI_Serial::PI_Serial(HardwareSerial &serialPort, int rx, int tx)
     get.raw.qpibi.reserve(80);
     get.raw.qmn.reserve(48);
     get.raw.qflag.reserve(24);
+    get.raw.qbeqi.reserve(80);
     get.raw.q1.reserve(64);
     get.raw.qpigs.reserve(96);
     get.raw.qpigs2.reserve(24);
@@ -466,10 +467,17 @@ bool PI_Serial::loop()
             {
                 modbus->loop();
 
-                if (isPowMrPiHybridProtocol(protocol) &&
-                    modbus->consumePowMrLivePassCompleted())
+                // The Modbus driver marks a completed PowMr live pass so the
+                // outer PI layer can publish one coherent state update. Pure
+                // MODBUS_POWMR stays Modbus-only. The explicit
+                // MODBUS_POWMR_PI mode may add selected PI30-only fields.
+                if (isPowMrProtocol(protocol) && modbus->consumePowMrLivePassCompleted())
                 {
-                    pollPowMrPiSupplement();
+                    if (isPowMrPiHybridProtocol(protocol))
+                    {
+                        pollPowMrPiSupplement();
+                    }
+
                     if (requestCallback)
                     {
                         requestCallback();
@@ -1293,6 +1301,28 @@ bool PI_Serial::runPowMrPiSupplementCommand(const char *command)
     {
         ok = PIXX_QFLAG();
     }
+    else if (strcmp(command, "QBEQI") == 0)
+    {
+        get.raw.qbeqi = requestData("QBEQI");
+        if (isValidResponse(get.raw.qbeqi))
+        {
+            char buffer[128];
+            get.raw.qbeqi.toCharArray(buffer, sizeof(buffer));
+            char *fields[12];
+            const int fieldCount = pi_split_fields(buffer, ' ', fields, 12);
+            if (fieldCount >= 1 &&
+                (strcmp(fields[0], "0") == 0 || strcmp(fields[0], "1") == 0))
+            {
+                staticData[DESCR_Battery_Equalization_Enabled] = strcmp(fields[0], "1") == 0;
+                if (fieldCount >= 9 &&
+                    (strcmp(fields[8], "0") == 0 || strcmp(fields[8], "1") == 0))
+                {
+                    liveData[DESCR_Battery_Equalization_Active] = strcmp(fields[8], "1") == 0;
+                }
+                ok = true;
+            }
+        }
+    }
 
     JsonDocument piStatic;
     JsonDocument piLive;
@@ -1333,8 +1363,10 @@ bool PI_Serial::runPowMrPiSupplementCommand(const char *command)
             DESCR_Operation_Logic,
             DESCR_Max_Discharging_Current,
         };
-        copySelectedJsonKeys(staticData, piStatic.as<JsonObjectConst>(),
-                             keys, sizeof(keys) / sizeof(keys[0]));
+        copySelectedJsonKeys(staticData,
+                             piStatic.as<JsonObjectConst>(),
+                             keys,
+                             sizeof(keys) / sizeof(keys[0]));
     }
     else if (strcmp(command, "QPIGS") == 0)
     {
@@ -1350,8 +1382,28 @@ bool PI_Serial::runPowMrPiSupplementCommand(const char *command)
             DESCR_Country,
             DESCR_Solar_Feed_To_Grid_Power,
         };
-        copySelectedJsonKeys(liveData, piLive.as<JsonObjectConst>(),
-                             keys, sizeof(keys) / sizeof(keys[0]));
+        copySelectedJsonKeys(liveData,
+                             piLive.as<JsonObjectConst>(),
+                             keys,
+                             sizeof(keys) / sizeof(keys[0]));
+    }
+    else if (strcmp(command, "QBEQI") == 0)
+    {
+        static const char *const staticKeys[] = {
+            DESCR_Battery_Equalization_Enabled,
+        };
+        copySelectedJsonKeys(staticData,
+                             piStatic.as<JsonObjectConst>(),
+                             staticKeys,
+                             sizeof(staticKeys) / sizeof(staticKeys[0]));
+
+        static const char *const liveKeys[] = {
+            DESCR_Battery_Equalization_Active,
+        };
+        copySelectedJsonKeys(liveData,
+                             piLive.as<JsonObjectConst>(),
+                             liveKeys,
+                             sizeof(liveKeys) / sizeof(liveKeys[0]));
     }
     else if (strcmp(command, "QFLAG") == 0)
     {
@@ -1368,8 +1420,10 @@ bool PI_Serial::runPowMrPiSupplementCommand(const char *command)
             DESCR_Record_Fault_Code_Enabled,
             DESCR_Solar_Feed_To_Grid_Enabled,
         };
-        copySelectedJsonKeys(staticData, piStatic.as<JsonObjectConst>(),
-                             keys, sizeof(keys) / sizeof(keys[0]));
+        copySelectedJsonKeys(staticData,
+                             piStatic.as<JsonObjectConst>(),
+                             keys,
+                             sizeof(keys) / sizeof(keys[0]));
     }
     else if (strcmp(command, "Q1") == 0)
     {
@@ -1389,8 +1443,10 @@ bool PI_Serial::runPowMrPiSupplementCommand(const char *command)
             DESCR_Sync_Frequency,
             DESCR_Inverter_Charge_State,
         };
-        copySelectedJsonKeys(liveData, piLive.as<JsonObjectConst>(),
-                             keys, sizeof(keys) / sizeof(keys[0]));
+        copySelectedJsonKeys(liveData,
+                             piLive.as<JsonObjectConst>(),
+                             keys,
+                             sizeof(keys) / sizeof(keys[0]));
     }
 
     return true;
@@ -1405,13 +1461,19 @@ bool PI_Serial::pollPowMrPiSupplement()
 
     const unsigned long now = millis();
     const PowMrPiSupplementQuery query =
-        powMrPiSupplementScheduler.next(now, powMrPiFlagRefreshRequested);
+        powMrPiSupplementScheduler.next(now,
+                                        powMrPiFlagRefreshRequested,
+                                        powMrPiEqualizationRefreshRequested,
+                                        true);
 
     const char *command = nullptr;
     switch (query)
     {
     case PowMrPiSupplementQuery::QFLAG:
         command = "QFLAG";
+        break;
+    case PowMrPiSupplementQuery::QBEQI:
+        command = "QBEQI";
         break;
     case PowMrPiSupplementQuery::QPIRI:
         command = "QPIRI";
@@ -1426,15 +1488,19 @@ bool PI_Serial::pollPowMrPiSupplement()
         return false;
     }
 
-    // Record every attempt, not only successful ones. Failed requests enter
-    // retry backoff so a persistent CRC/timeout/NAK cannot monopolize every
-    // completed Modbus pass and starve the remaining supplement queries.
+    // Every attempt is tracked. Failed/unsupported/CRC-bad queries enter a
+    // retry backoff, so they cannot consume every completed Modbus pass and
+    // starve the remaining PI supplement queries.
     const bool ok = runPowMrPiSupplementCommand(command);
     powMrPiSupplementScheduler.record(query, now, ok);
 
     if (ok && query == PowMrPiSupplementQuery::QFLAG)
     {
         powMrPiFlagRefreshRequested = false;
+    }
+    else if (ok && query == PowMrPiSupplementQuery::QBEQI)
+    {
+        powMrPiEqualizationRefreshRequested = false;
     }
 
     return true;
@@ -1458,13 +1524,15 @@ bool PI_Serial::sendCustomCommand()
     {
         String piCommand = customCommandBuffer.substring(9);
         piCommand.trim();
-
         if (piCommand.isEmpty())
         {
             get.raw.commandAnswer = "ERROR: syntax powmr pi <PI30-command>";
         }
         else
         {
+            // PowMr/Victor exposes both Modbus RTU and a Voltronic-like PI30
+            // command interface on the same 2400-baud UART. Temporarily parse
+            // the reply as PI30 without changing the active Modbus protocol.
             const protocol_type_t savedProtocol = protocol;
             const char *savedStartChar = startChar;
             const char *savedDelimiter = delimiter;
@@ -1476,11 +1544,14 @@ bool PI_Serial::sendCustomCommand()
             serialIntfBaud = 2400;
             this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
             get.raw.commandAnswer = requestData(piCommand);
-
             if ((piCommand.startsWith("PE") || piCommand.startsWith("PD")) &&
                 piCommand.length() >= 3)
             {
                 powMrPiFlagRefreshRequested = true;
+            }
+            if (piCommand.startsWith("PBEQE"))
+            {
+                powMrPiEqualizationRefreshRequested = true;
             }
 
             protocol = savedProtocol;
@@ -1499,7 +1570,6 @@ bool PI_Serial::sendCustomCommand()
     {
         get.raw.commandAnswer = requestData(customCommandBuffer);
     }
-
     customCommandBuffer = "";
     return true;
 }

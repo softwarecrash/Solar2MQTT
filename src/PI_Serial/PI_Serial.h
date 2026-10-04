@@ -142,6 +142,7 @@ public:
             String qpibi;
             String qmn;
             String qflag;
+            String qbeqi;
             // dynamic
             String q1;
             String qpigs;
@@ -233,6 +234,7 @@ private:
 
     PowMrPiSupplementScheduler powMrPiSupplementScheduler;
     bool powMrPiFlagRefreshRequested = true;
+    bool powMrPiEqualizationRefreshRequested = true;
 
     long long int connectionCounter = 0;
 

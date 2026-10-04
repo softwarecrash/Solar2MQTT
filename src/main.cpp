@@ -181,6 +181,7 @@ void loop()
     if (g_pendingRestart && static_cast<int32_t>(millis() - g_restartAt) >= 0)
     {
         g_pendingRestart = false;
+        mqttHandler.flushPersistentEnergy();
         inverterService.shutdown();
         delay(25);
         ESP.restart();

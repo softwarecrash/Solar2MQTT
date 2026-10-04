@@ -21,6 +21,9 @@ jobs:
         run: g++ -std=c++17 -Wall -Wextra -Werror tests/powmr_pi_scheduler_test.cpp -o /tmp/powmr_pi_scheduler_test
       - name: Run scheduler regression test
         run: /tmp/powmr_pi_scheduler_test
+      - name: Run inverter UI missing-value regression test
+        if: hashFiles('tests/inverter_ui_missing_values_test.cjs') != ''
+        run: node tests/inverter_ui_missing_values_test.cjs
 
   firmware-build:
     runs-on: ubuntu-latest
