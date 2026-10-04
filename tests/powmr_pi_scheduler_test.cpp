@@ -37,5 +37,36 @@ int main()
     assert(sawQpigs);
     assert(sawQ1);
 
+    // Unsupported QBEQI gets the same treatment: its forced refresh remains
+    // pending, but retries are backed off and cannot block the other queries.
+    PowMrPiSupplementScheduler qbeqiScheduler;
+    assert(qbeqiScheduler.next(100, false, false, true) == PowMrPiSupplementQuery::QFLAG);
+    qbeqiScheduler.record(PowMrPiSupplementQuery::QFLAG, 100, true);
+
+    bool qbeqiSawQpiri = false;
+    bool qbeqiSawQpigs = false;
+    bool qbeqiSawQ1 = false;
+    for (uint32_t now = 200; now <= 5000; now += 100)
+    {
+        const auto query = qbeqiScheduler.next(now, false, true, true);
+        if (query == PowMrPiSupplementQuery::None) continue;
+
+        if (query == PowMrPiSupplementQuery::QBEQI)
+        {
+            qbeqiScheduler.record(query, now, false);
+            continue;
+        }
+
+        qbeqiSawQpiri = qbeqiSawQpiri || query == PowMrPiSupplementQuery::QPIRI;
+        qbeqiSawQpigs = qbeqiSawQpigs || query == PowMrPiSupplementQuery::QPIGS;
+        qbeqiSawQ1 = qbeqiSawQ1 || query == PowMrPiSupplementQuery::Q1;
+        qbeqiScheduler.record(query, now, true);
+    }
+
+    assert(qbeqiScheduler.failures(PowMrPiSupplementQuery::QBEQI) >= 2);
+    assert(qbeqiSawQpiri);
+    assert(qbeqiSawQpigs);
+    assert(qbeqiSawQ1);
+
     return 0;
 }
