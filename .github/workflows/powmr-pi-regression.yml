@@ -1,0 +1,23 @@
+name: PowMr PI regression tests
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches:
+      - 'upstream/powmr-pi-core-clean'
+      - 'upstream/powmr-pi-modbus'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scheduler:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build scheduler regression test
+        run: g++ -std=c++17 -Wall -Wextra -Werror tests/powmr_pi_scheduler_test.cpp -o /tmp/powmr_pi_scheduler_test
+      - name: Run scheduler regression test
+        run: /tmp/powmr_pi_scheduler_test
