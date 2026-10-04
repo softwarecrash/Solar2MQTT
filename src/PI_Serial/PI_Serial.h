@@ -1,6 +1,7 @@
 #ifndef PI_SERIAL_H
 #define PI_SERIAL_H
 #include "descriptors.h"
+#include "PowMrPiSupplementScheduler.h"
 #include <atomic>
 #include <HardwareSerial.h>
 #include <stdlib.h>
