@@ -110,10 +110,19 @@
     for (const [id, key] of fields) {
       const el = byId(id);
       if (!el) continue;
+
+      // Never leave an HTML default armed for saving. A field becomes
+      // writable only after its current value was actually loaded from the
+      // inverter.
+      initial.delete(id);
+      el.disabled = true;
+
       const raw = findValue(data, key);
       if (raw == null) continue;
+
       const value = normalize(id, raw);
       el.value = value;
+      el.disabled = false;
       initial.set(id, String(el.value));
     }
 
@@ -200,7 +209,7 @@
 
       for (const [id, key, action] of fields) {
         const el = byId(id);
-        if (!el) continue;
+        if (!el || el.disabled || !initial.has(id)) continue;
         const current = String(el.value);
         if (initial.get(id) === current) continue;
         changed.push({ type: "value", id, key, action, value: current });
