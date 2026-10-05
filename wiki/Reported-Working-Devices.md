@@ -20,6 +20,8 @@ This page is generated automatically from public device reports submitted throug
 | DATOUBOSS | DT2430 | RS232 | PI30 | PI30 | VMII-3000 | - | wemos_d1_mini32 | - | 1 |
 | EASUN | EASUN SMS-6.5KP | RS232 | MODBUS_DEYE | MODBUS_DEYE | 02020475 | - | esp32c3_supermini | Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working?<br>Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working? email tomfli@wp.pl | 2 |
 | EASUN | IGRID SV IV 5.6 KW | RS232 | PI18 | 18 | - | - | wemos_d1_mini32 | Works fantastic, 88 entities, perfect real time data, flowless integration in HA through mttq. Huge thanks! | 1 |
+| EASUN | ISOLAR-SMH-III-4.2KW-WIFI | RS232 | MODBUS_POWMR | MODBUS_POWMR | PowMr HVM Modbus 4501 | - | wemos_d1_mini32 | Solar2MQTT-0.0.0-dev-2.0.18Q | 1 |
+| EASUN | ISOLAR-SMH-III-4.2KW-WIFI | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Solar2MQTT-2.0.4 | 1 |
 | EASUN | SMH-II-2.2 | RS232 | PI30 | PI30 | - | - | esp32s3_supermini | - | 1 |
 | EASUN | SMW8000 | RS232 | PI30_MAX | PI30 | MKS2-8000 | - | esp32c3_supermini | Pv2-input Power nieje vždy aktuálny ,zamrza | 2 |
 | ECGSOLAX | VICTOR MAX-10.2 KW-M | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Using ESP32. Pin assignment: UART Rx: GPIO19 UART Tx: GPIO23 You can get power from the RS232/Wifi port (RJ45) using a 5V stepdown: RJ45 Pin 8: Ground RJ45 Pin 4: VCC (Check voltage first before connecting.) | 1 |
