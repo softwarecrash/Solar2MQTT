@@ -397,7 +397,7 @@ bool PI_Serial::Init()
     }
     if (suspendSerial.load(std::memory_order_relaxed))
     {
-        this->my_serialIntf->setTimeout(500);
+        this->my_serialIntf->setTimeout(1500);
         this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
         return true;
     }
@@ -410,7 +410,7 @@ bool PI_Serial::Init()
         }
         return true;
     }
-    this->my_serialIntf->setTimeout(500);
+    this->my_serialIntf->setTimeout(1500);
     if (protocol == NoD)
     {
         this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
