@@ -33,6 +33,15 @@ private:
     static constexpr uint16_t kConfigBlockCount = 10;
     static constexpr uint16_t kStatusBlockStart = 4557;
     static constexpr uint16_t kStatusBlockCount = 1;
+    // Second MPPT. These registers are not in any PowMr documentation I could
+    // find; they were located with `powmr scan` on a live Daxtromn
+    // VMII-NXPW5KW (10.2 kW, two PV inputs): 4563 voltage (0.1 V),
+    // 4564 power (W). Confirmed by reading 4504/4505 and 4563/4564 in the same
+    // scan pass under broken cloud, so the samples are simultaneous: Pearson
+    // correlation between 4505 and 4564 was 0.972 and both voltages stayed in
+    // the same 310-340 V band. Other HVM models may map these differently.
+    static constexpr uint16_t kPv2BlockStart = 4563;
+    static constexpr uint16_t kPv2BlockCount = 2;
 
     inline static const modbus_register_t registers_live[] = {
         {4501, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP, DESCR_Inverter_Operation_Mode, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},
@@ -40,6 +49,8 @@ private:
         {4503, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP_ONE_DECIMAL, DESCR_AC_In_Frequency, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},
         {4504, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP_ONE_DECIMAL, DESCR_PV_Input_Voltage, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},
         {4505, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP, DESCR_PV_Input_Power, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},
+        {4563, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP_ONE_DECIMAL, DESCR_PV2_Input_Voltage, 0, {}, nullptr, kPv2BlockStart, kPv2BlockCount},
+        {4564, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP, DESCR_PV2_Input_Power, 0, {}, nullptr, kPv2BlockStart, kPv2BlockCount},
         {4506, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP_ONE_DECIMAL, DESCR_Battery_Voltage, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},
         {4507, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP, DESCR_Battery_Percent, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},
         {4508, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP, DESCR_Battery_Charge_Current, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},
