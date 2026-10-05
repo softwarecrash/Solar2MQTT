@@ -252,14 +252,7 @@ void GitHubOtaUpdater::doCheck()
     }
 
     const JsonArray assets = doc["assets"].as<JsonArray>();
-    String assetVariant = _buildVariant;
-    // ATOM Lite uses the rs232 build variant internally, while the existing
-    // firmware artifact naming convention is m5stack_atom_lite.
-    if (assetVariant == "m5stack_atom_lite_rs232")
-    {
-        assetVariant = "m5stack_atom_lite";
-    }
-    const String matchToken = "_" + assetVariant + "_V";
+    const String matchToken = "_" + _buildVariant + "_V";
     for (JsonVariantConst asset : assets)
     {
         const String name = asset["name"] | "";
