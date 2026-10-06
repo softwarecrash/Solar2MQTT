@@ -220,6 +220,7 @@ public:
 
 private: 
     unsigned int serialIntfBaud;
+    unsigned long piReadTimeoutMs() const;
     std::atomic<uint8_t> busyCount{0};
     std::atomic_bool suspendSerial{false};
     std::atomic_bool abortAutoDetect{false};

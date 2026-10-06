@@ -387,6 +387,30 @@ PI_Serial::~PI_Serial()
     }
 }
 
+unsigned long PI_Serial::piReadTimeoutMs() const
+{
+    // Stream::readStringUntil() applies its timeout to every byte it waits
+    // for, so this value covers two separate things: the inverter's turnaround
+    // before the first byte arrives, and any stall between bytes once it has
+    // started sending. The turnaround belongs to the device and does not change
+    // with baud; the byte timing does. Deriving that half from the configured
+    // baud keeps slow links working without making fast ones block longer than
+    // they need to.
+    //
+    // The longest PI30 replies (QPIGS, QPIRI) run to roughly 110 bytes; round
+    // up for units that pad their answers.
+    constexpr unsigned long kLongestReplyBytes = 120UL;
+    constexpr unsigned long kBitsPerByte = 10UL; // SERIAL_8N1
+    // Turnaround measured on a Daxtromn VMII-NXPW5KW was 50-100 ms; the rest is
+    // headroom for units that are slower to compose a long reply.
+    constexpr unsigned long kTurnaroundMs = 350UL;
+
+    const unsigned long baud = serialIntfBaud == 0 ? 2400UL : serialIntfBaud;
+    const unsigned long replyMs =
+        (kLongestReplyBytes * kBitsPerByte * 1000UL) / baud;
+    return replyMs + kTurnaroundMs;
+}
+
 bool PI_Serial::Init()
 {
     // Null check the serial interface
@@ -397,7 +421,7 @@ bool PI_Serial::Init()
     }
     if (suspendSerial.load(std::memory_order_relaxed))
     {
-        this->my_serialIntf->setTimeout(1500);
+        this->my_serialIntf->setTimeout(piReadTimeoutMs());
         this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
         return true;
     }
@@ -410,7 +434,7 @@ bool PI_Serial::Init()
         }
         return true;
     }
-    this->my_serialIntf->setTimeout(1500);
+    this->my_serialIntf->setTimeout(piReadTimeoutMs());
     if (protocol == NoD)
     {
         this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
