@@ -411,6 +411,16 @@ unsigned long PI_Serial::piReadTimeoutMs() const
     return replyMs + kTurnaroundMs;
 }
 
+void PI_Serial::beginSerial(unsigned int baud)
+{
+    // Autodetect and the loopback restore both re-open the port at a different
+    // baud, so the timeout has to be recomputed every time rather than once in
+    // Init(). Pairing the two here is what keeps them from drifting apart.
+    serialIntfBaud = baud;
+    this->my_serialIntf->setTimeout(piReadTimeoutMs());
+    this->my_serialIntf->begin(baud, SERIAL_8N1, _rxPin, _txPin);
+}
+
 bool PI_Serial::Init()
 {
     // Null check the serial interface
@@ -421,8 +431,7 @@ bool PI_Serial::Init()
     }
     if (suspendSerial.load(std::memory_order_relaxed))
     {
-        this->my_serialIntf->setTimeout(piReadTimeoutMs());
-        this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+        this->beginSerial(serialIntfBaud);
         return true;
     }
     autoDetect();
@@ -434,10 +443,12 @@ bool PI_Serial::Init()
         }
         return true;
     }
+    // beginSerial() sets the timeout itself; this covers the branch where the
+    // port is already open at the right baud and no begin() follows.
     this->my_serialIntf->setTimeout(piReadTimeoutMs());
     if (protocol == NoD)
     {
-        this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+        this->beginSerial(serialIntfBaud);
     }
     return true;
 }
@@ -968,7 +979,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
             serialIntfBaud = 2400;
             startChar = protocol == PI18 ? "^Dxxx" : "(";
             delimiter = protocol == PI18 ? "," : " ";
-            this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+            this->beginSerial(serialIntfBaud);
         }
         writeLog("[PI][DETECT] forced proto=%s", protocolToString(protocol));
         goto autodetect_done;
@@ -983,7 +994,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
 
         startChar = "(";
         serialIntfBaud = 2400;
-        this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+        this->beginSerial(serialIntfBaud);
         get.raw.qpi = this->requestData("QPI");
         if (abortAutoDetect.load(std::memory_order_relaxed) || suspendSerial.load(std::memory_order_relaxed))
         {
@@ -1026,7 +1037,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
             break;
         }
         startChar = "^Dxxx";
-        this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+        this->beginSerial(serialIntfBaud);
         get.raw.qpi = this->requestData("^P005PI");
         if (abortAutoDetect.load(std::memory_order_relaxed) || suspendSerial.load(std::memory_order_relaxed))
         {
@@ -1043,7 +1054,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
 
         startChar = "(";
         delimiter = " ";
-        this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+        this->beginSerial(serialIntfBaud);
         get.raw.qpiri = this->requestData("QPIRI");
         if (isValidResponse(get.raw.qpiri))
         {
@@ -1095,7 +1106,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
                 protocol = piFallbackProtocol;
                 if (protocol == PI30 || protocol == PI30_UNKNOWN)
                 {
-                    this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+                    this->beginSerial(serialIntfBaud);
                 }
             }
         }
@@ -1306,7 +1317,7 @@ bool PI_Serial::runPowMrPiSupplementCommand(const char *command)
     startChar = "(";
     delimiter = " ";
     serialIntfBaud = 2400;
-    this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+    this->beginSerial(serialIntfBaud);
 
     bool ok = false;
     if (strcmp(command, "Q1") == 0)
@@ -1357,8 +1368,7 @@ bool PI_Serial::runPowMrPiSupplementCommand(const char *command)
     startChar = savedStartChar;
     delimiter = savedDelimiter;
     serialIntfBaud = savedBaud;
-    this->my_serialIntf->begin(serialIntfBaud == 0 ? 2400 : serialIntfBaud,
-                              SERIAL_8N1, _rxPin, _txPin);
+    this->beginSerial(serialIntfBaud == 0 ? 2400 : serialIntfBaud);
 
     restorePowMrNativeState(staticBackup, liveBackup);
 
@@ -1566,7 +1576,7 @@ bool PI_Serial::sendCustomCommand()
             startChar = "(";
             delimiter = " ";
             serialIntfBaud = 2400;
-            this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+            this->beginSerial(serialIntfBaud);
             get.raw.commandAnswer = requestData(piCommand);
             if ((piCommand.startsWith("PE") || piCommand.startsWith("PD")) &&
                 piCommand.length() >= 3)
@@ -1582,8 +1592,7 @@ bool PI_Serial::sendCustomCommand()
             startChar = savedStartChar;
             delimiter = savedDelimiter;
             serialIntfBaud = savedBaud;
-            this->my_serialIntf->begin(serialIntfBaud == 0 ? 2400 : serialIntfBaud,
-                                      SERIAL_8N1, _rxPin, _txPin);
+            this->beginSerial(serialIntfBaud == 0 ? 2400 : serialIntfBaud);
         }
     }
     else if (isModbus())
