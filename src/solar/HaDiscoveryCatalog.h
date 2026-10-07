@@ -366,6 +366,7 @@ static const HaEntityDescriptor HA_LIVE_DESCRIPTORS[] = {
     {DESCR_PV_Generation_Sum, "solar-power-variant", "Wh", "energy"},
     {DESCR_PV_Generation_Year, "solar-power-variant", "Wh", "energy"},
     {DESCR_PV_Input_Power, "solar-power-variant", "W", "power", "measurement"},
+    {DESCR_PV_Total_Input_Power, "solar-power-variant", "W", "power", "measurement"},
     {DESCR_PV_Input_Voltage, "solar-power-variant", "V", "voltage", "measurement"},
     {DESCR_PV1_Input_Current, "solar-power-variant", "A", "current", "measurement"},
     {DESCR_PV1_Input_Power, "solar-power-variant", "W", "power", "measurement"},

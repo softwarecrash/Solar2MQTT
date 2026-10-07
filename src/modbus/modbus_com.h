@@ -30,6 +30,8 @@ public:
     uint16_t getResponseTimeout();
     void setResponseTimeout(uint16_t timeoutMs);
     bool readHoldingBlock(uint16_t startRegister, uint16_t registerCount, uint16_t *buffer, size_t bufferLen);
+    // One attempt, a separate response budget, no retry delay; restores normal polling.
+    bool readHoldingBlockOnce(uint16_t startRegister, uint16_t registerCount, uint16_t *buffer, size_t bufferLen, uint16_t timeoutMs, uint8_t *resultOut = nullptr);
     bool writeHoldingRegister(uint16_t registerId, uint16_t rawValue);
     uint8_t getLastWriteResult() const;
     const char *getLastWriteResultText() const;
