@@ -1,3 +1,6 @@
+#include "PiReplyReader.h"
+#include "SerialSettingsGuard.h"
+#include "SerialSettingsGuard.h"
 // #define isDEBUG
 #include "ArduinoJson.h"
 #include "PI_Serial.h"
@@ -389,26 +392,11 @@ PI_Serial::~PI_Serial()
 
 unsigned long PI_Serial::piReadTimeoutMs() const
 {
-    // Stream::readStringUntil() applies its timeout to every byte it waits
-    // for, so this value covers two separate things: the inverter's turnaround
-    // before the first byte arrives, and any stall between bytes once it has
-    // started sending. The turnaround belongs to the device and does not change
-    // with baud; the byte timing does. Deriving that half from the configured
-    // baud keeps slow links working without making fast ones block longer than
-    // they need to.
-    //
-    // The longest PI30 replies (QPIGS, QPIRI) run to roughly 110 bytes; round
-    // up for units that pad their answers.
-    constexpr unsigned long kLongestReplyBytes = 120UL;
-    constexpr unsigned long kBitsPerByte = 10UL; // SERIAL_8N1
-    // Turnaround measured on a Daxtromn VMII-NXPW5KW was 50-100 ms; the rest is
-    // headroom for units that are slower to compose a long reply.
-    constexpr unsigned long kTurnaroundMs = 350UL;
-
+    // A single frame deadline, including first-byte turnaround. Silence is
+    // limited separately to 500 ms and inter-byte stalls to 200 ms.
     const unsigned long baud = serialIntfBaud == 0 ? 2400UL : serialIntfBaud;
-    const unsigned long replyMs =
-        (kLongestReplyBytes * kBitsPerByte * 1000UL) / baud;
-    return replyMs + kTurnaroundMs;
+    return (PiReplyReader::kMaxReplyBytes * 10UL * 1000UL + baud - 1) / baud +
+           PiReplyReader::kFirstByteTimeoutMs;
 }
 
 void PI_Serial::beginSerial(unsigned int baud)
@@ -896,7 +884,8 @@ bool PI_Serial::loopbackTest(String &details)
         return false;
     }
 
-    unsigned int baud = serialIntfBaud == 0 ? 2400 : serialIntfBaud;
+    SerialSettingsGuard<HardwareSerial> restore(*my_serialIntf, SERIAL_8N1, _rxPin, _txPin, serialIntfBaud);
+    const unsigned long baud = restore.baud();
     this->my_serialIntf->begin(baud, SERIAL_8N1, _rxPin, _txPin);
     this->my_serialIntf->setTimeout(200);
 
@@ -914,6 +903,7 @@ bool PI_Serial::loopbackTest(String &details)
     char buffer[8] = {};
     size_t readLen = this->my_serialIntf->readBytes(buffer, patternLen);
     bool ok = (readLen == patternLen && memcmp(buffer, pattern, patternLen) == 0);
+    // The guard restores the UART and timeout for either test result.
     details = ok ? "Loopback OK" : "Loopback failed";
     return ok;
 }
@@ -1627,7 +1617,26 @@ String PI_Serial::requestData(String command)
     this->my_serialIntf->flush();
 
     delay(20);
-    commandBuffer = this->my_serialIntf->readStringUntil('\r');
+    struct Transport
+    {
+        HardwareSerial &serial;
+        const std::atomic_bool &suspended;
+        uint32_t now() const { return millis(); }
+        int read() { return serial.read(); }
+        void pause() { delay(1); }
+        bool cancelled() const { return suspended.load(std::memory_order_relaxed); }
+    } transport{*my_serialIntf, suspendSerial};
+    char replyBuffer[PiReplyReader::kMaxReplyBytes];
+    const auto reply = PiReplyReader::read(transport, replyBuffer, sizeof(replyBuffer), piReadTimeoutMs());
+    if (reply.status == PiReplyReader::Status::Complete)
+    {
+        commandBuffer.concat(replyBuffer, reply.length);
+    }
+    else if (reply.length > 0)
+    {
+        writeLog("[PI][WARN] cmd=%s incomplete reply status=%u bytes=%u",
+                 command.c_str(), static_cast<unsigned>(reply.status), static_cast<unsigned>(reply.length));
+    }
 
     const size_t cbLen = commandBuffer.length();
     const char *cbBuf = commandBuffer.c_str();
