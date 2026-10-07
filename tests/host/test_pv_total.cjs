@@ -1,0 +1,13 @@
+const fs=require('node:fs');
+const path=require('node:path');
+const vm=require('node:vm');
+const assert=require('node:assert/strict');
+const source=fs.readFileSync(path.join(__dirname,'../../src/webUI/app.js'),'utf8');
+new vm.Script(source);
+const names=['isDataValuePresent','parseNumber','pickDataValue','pickDataNumber','getSolarChannelInfo','totalSolarPower'];
+const selected=names.map(name=>{const start=source.indexOf('function '+name+'(');assert(start>=0);const end=source.indexOf('\n}',start)+2;return source.slice(start,end);}).join('\n');
+const context={};vm.createContext(context);vm.runInContext(selected,context);
+const cases=[{"name":"dual MPPT total","data":{"LiveData":{"PV_Input_Power":1000,"PV2_Input_Power":900,"PV_Total_Input_Power":1900}},"want":1900},{"name":"existing single MPPT","data":{"LiveData":{"PV_Input_Power":1000}},"want":1000},{"name":"existing aggregate takes precedence","data":{"LiveData":{"PV_Input_Power":1900,"PV1_Input_Power":1000,"PV2_Input_Power":900}},"want":1900},{"name":"night zero","data":{"LiveData":{"PV_Input_Power":1000,"PV_Total_Input_Power":0}},"want":0},{"name":"separate channels","data":{"LiveData":{"PV1_Input_Power":1000,"PV2_Input_Power":900}},"want":1900}];
+cases.push({name:'no PV measurements',data:{LiveData:{}},want:null});
+for(const test of cases) assert.equal(context.totalSolarPower(test.data),test.want,test.name);
+console.log('PV total: '+cases.length+' display and compatibility scenarios passed');

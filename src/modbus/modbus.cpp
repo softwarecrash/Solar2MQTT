@@ -177,6 +177,7 @@ void MODBUS::loop()
 
         if (completedLivePass && device != nullptr && device->getProtocol() == MODBUS_POWMR)
         {
+            static_cast<PowMr *>(device)->pollPv2(_mCom, liveData);
             capturePowmrSocSample();
             _powmrLivePassCompleted = true;
         }
