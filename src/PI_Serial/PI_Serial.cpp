@@ -392,11 +392,9 @@ PI_Serial::~PI_Serial()
 
 unsigned long PI_Serial::piReadTimeoutMs() const
 {
-    // A single frame deadline, including first-byte turnaround. Silence is
-    // limited separately to 500 ms and inter-byte stalls to 200 ms.
-    const unsigned long baud = serialIntfBaud == 0 ? 2400UL : serialIntfBaud;
-    return (PiReplyReader::kMaxReplyBytes * 10UL * 1000UL + baud - 1) / baud +
-           PiReplyReader::kFirstByteTimeoutMs;
+    // Preserve the PR's baud-dependent first-byte allowance. The bounded
+    // reader has a separate frame deadline and inter-byte stall budget.
+    return PiReplyReader::firstByteTimeoutMs(serialIntfBaud);
 }
 
 void PI_Serial::beginSerial(unsigned int baud)
@@ -1627,7 +1625,8 @@ String PI_Serial::requestData(String command)
         bool cancelled() const { return suspended.load(std::memory_order_relaxed); }
     } transport{*my_serialIntf, suspendSerial};
     char replyBuffer[PiReplyReader::kMaxReplyBytes];
-    const auto reply = PiReplyReader::read(transport, replyBuffer, sizeof(replyBuffer), piReadTimeoutMs());
+    const auto reply = PiReplyReader::read(transport, replyBuffer, sizeof(replyBuffer),
+                                           PiReplyReader::frameTimeoutMs(serialIntfBaud), piReadTimeoutMs());
     if (reply.status == PiReplyReader::Status::Complete)
     {
         commandBuffer.concat(replyBuffer, reply.length);
