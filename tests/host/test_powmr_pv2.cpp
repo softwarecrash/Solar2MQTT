@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cstdio>
 #include <cmath>
+#include <initializer_list>
 struct Device {
     PowMrPv2 driver;
     PowMrPv2::ReadResult result=PowMrPv2::ReadResult::Ok;
@@ -15,6 +16,10 @@ struct Device {
     }
 };
 int main() {
+    for (uint8_t code : {1, 2, 3, 0x81, 0x82, 0x83})
+        assert(PowMrPv2::classifyFailure(code)==PowMrPv2::ReadResult::Unsupported);
+    for (uint8_t code : {0, 4, 0x84, 0xE0, 0xE1, 0xE2, 0xE3})
+        assert(PowMrPv2::classifyFailure(code)==PowMrPv2::ReadResult::Failed);
     Device good;good.poll(0);good.poll(1000);
     assert(good.reads==2 && good.published==2 && std::abs(good.outputVoltage-314.0f)<0.01f && good.outputPower==1075);
     good.voltage10=0;good.power=0;good.poll(2000);assert(good.published==3 && good.outputVoltage==0);

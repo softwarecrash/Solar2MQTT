@@ -8,6 +8,12 @@ class PowMrPv2
 {
 public:
     enum class ReadResult { Ok, Unsupported, Failed };
+    static ReadResult classifyFailure(uint8_t result)
+    {
+        // PowMr variants may set bit 7 in the exception code itself.
+        const uint8_t exception = result & 0x7F;
+        return exception >= 1 && exception <= 3 ? ReadResult::Unsupported : ReadResult::Failed;
+    }
     static constexpr uint16_t kResponseTimeoutMs = 250;
     static constexpr uint32_t kFailureBackoffMs = 5UL * 60UL * 1000UL;
     static constexpr uint32_t kInactiveProbeMs = 60UL * 1000UL;

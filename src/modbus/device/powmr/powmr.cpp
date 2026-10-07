@@ -20,9 +20,7 @@ void PowMr::pollPv2(MODBUS_COM &mCom, JsonObject live)
             uint8_t result = 0;
             if (mCom.readHoldingBlockOnce(4563, 2, words, 2, PowMrPv2::kResponseTimeoutMs, &result))
                 return PowMrPv2::ReadResult::Ok;
-            if (result == ModbusMaster::ku8MBIllegalFunction || result == ModbusMaster::ku8MBIllegalDataAddress)
-                return PowMrPv2::ReadResult::Unsupported;
-            return PowMrPv2::ReadResult::Failed;
+            return PowMrPv2::classifyFailure(result);
         },
         [&](float voltage, uint16_t power) {
             live[DESCR_PV2_Input_Voltage] = voltage;
