@@ -110,6 +110,7 @@
 #define DESCR_Battery_Charge_Energy "Battery_Charge_Energy"
 #define DESCR_Battery_Discharge_Energy "Battery_Discharge_Energy"
 #define DESCR_PV_Input_Power "PV_Input_Power"
+#define DESCR_PV_Total_Input_Power "PV_Total_Input_Power"
 #define DESCR_PV_Charge_Current "PV_Charge_Current"
 // QPIGS2
 #define DESCR_PV2_Input_Current "PV2_Input_Current"

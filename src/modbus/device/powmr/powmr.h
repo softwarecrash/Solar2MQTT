@@ -2,6 +2,7 @@
 #define MODBUS_POWMR_H
 
 #include <modbus/device/modbus_device.h>
+#include "PowMrPv2.h"
 
 class PowMr : public ModbusDevice
 {
@@ -13,6 +14,7 @@ public:
     const char *getName() const override;
     uint16_t getResponseTimeout() const override { return kResponseTimeoutMs; }
     bool retrieveModel(MODBUS_COM &mCom, char *modelBuffer, size_t bufferSize) override;
+    void pollPv2(MODBUS_COM &mCom, JsonObject live);
     size_t getLiveRegistersCount() const override;
     size_t getStaticRegistersCount() const override;
 
@@ -33,6 +35,7 @@ private:
     static constexpr uint16_t kConfigBlockCount = 10;
     static constexpr uint16_t kStatusBlockStart = 4557;
     static constexpr uint16_t kStatusBlockCount = 1;
+    PowMrPv2 _pv2;
 
     inline static const modbus_register_t registers_live[] = {
         {4501, MODBUS_TYPE_HOLDING, REGISTER_TYPE_U16_SWAP, DESCR_Inverter_Operation_Mode, 0, {}, nullptr, kMainBlockStart, kMainBlockCount},

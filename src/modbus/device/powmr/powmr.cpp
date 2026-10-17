@@ -13,6 +13,31 @@ bool isZeroOrInRange(uint16_t value, uint16_t minimum, uint16_t maximum)
 }
 } // namespace
 
+void PowMr::pollPv2(MODBUS_COM &mCom, JsonObject live)
+{
+    _pv2.poll(millis(),
+        [&](uint16_t *words) {
+            uint8_t result = 0;
+            if (mCom.readHoldingBlockOnce(4563, 2, words, 2, PowMrPv2::kResponseTimeoutMs, &result))
+                return PowMrPv2::ReadResult::Ok;
+            return PowMrPv2::classifyFailure(result);
+        },
+        [&](float voltage, uint16_t power) {
+            live[DESCR_PV2_Input_Voltage] = voltage;
+            live[DESCR_PV2_Input_Power] = power;
+            if (!live[DESCR_PV_Input_Power].isNull())
+            {
+                live[DESCR_PV_Total_Input_Power] = live[DESCR_PV_Input_Power].as<uint32_t>() + power;
+            }
+        },
+        [&]() {
+            live.remove(DESCR_PV2_Input_Voltage);
+            live.remove(DESCR_PV2_Input_Power);
+            live.remove(DESCR_PV_Total_Input_Power);
+            writeLog("PowMr PV2 unavailable; optional probe suppressed or backed off");
+        });
+}
+
 const modbus_register_t *PowMr::getLiveRegisters() const
 {
     return registers_live;

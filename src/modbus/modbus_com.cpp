@@ -185,6 +185,29 @@ const char *MODBUS_COM::getLastWriteResultText() const
     return getModbusResultText(_lastWriteResult);
 }
 
+bool MODBUS_COM::readHoldingBlockOnce(uint16_t startRegister, uint16_t registerCount,
+                                     uint16_t *buffer, size_t bufferLen, uint16_t timeoutMs, uint8_t *resultOut)
+{
+    if (buffer == nullptr || registerCount == 0 || registerCount > MAX_HOLDING_BLOCK_WORDS || bufferLen < registerCount)
+    {
+        return false;
+    }
+    const uint16_t savedTimeout = getResponseTimeout();
+    setResponseTimeout(timeoutMs);
+    const uint8_t result = _mb.readHoldingRegisters(startRegister, registerCount);
+    setResponseTimeout(savedTimeout);
+    if (resultOut != nullptr) *resultOut = result;
+    if (!logModbusResult(result, startRegister, registerCount))
+    {
+        return false;
+    }
+    for (uint16_t i = 0; i < registerCount; ++i)
+    {
+        buffer[i] = _mb.getResponseBuffer(i);
+    }
+    return true;
+}
+
 void MODBUS_COM::clearReadCache()
 {
     _cacheValid = false;

@@ -451,7 +451,7 @@ function normalizeOverviewLabel(field) {
 }
 
 function totalSolarPower(data) {
-  const totalPower = pickDataNumber(data, ["PV_Input_Power", "PV_Charging_Power", "SCC_Charge_Power"], ["LiveData"]);
+  const totalPower = pickDataNumber(data, ["PV_Total_Input_Power", "PV_Input_Power", "PV_Charging_Power", "SCC_Charge_Power"], ["LiveData"]);
   if (totalPower !== null) {
     return totalPower;
   }
