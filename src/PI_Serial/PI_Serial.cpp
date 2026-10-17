@@ -1,3 +1,6 @@
+#include "PiReplyReader.h"
+#include "SerialSettingsGuard.h"
+#include "SerialSettingsGuard.h"
 // #define isDEBUG
 #include "ArduinoJson.h"
 #include "PI_Serial.h"
@@ -387,6 +390,23 @@ PI_Serial::~PI_Serial()
     }
 }
 
+unsigned long PI_Serial::piReadTimeoutMs() const
+{
+    // Preserve the PR's baud-dependent first-byte allowance. The bounded
+    // reader has a separate frame deadline and inter-byte stall budget.
+    return PiReplyReader::firstByteTimeoutMs(serialIntfBaud);
+}
+
+void PI_Serial::beginSerial(unsigned int baud)
+{
+    // Autodetect and the loopback restore both re-open the port at a different
+    // baud, so the timeout has to be recomputed every time rather than once in
+    // Init(). Pairing the two here is what keeps them from drifting apart.
+    serialIntfBaud = baud;
+    this->my_serialIntf->setTimeout(piReadTimeoutMs());
+    this->my_serialIntf->begin(baud, SERIAL_8N1, _rxPin, _txPin);
+}
+
 bool PI_Serial::Init()
 {
     // Null check the serial interface
@@ -397,8 +417,7 @@ bool PI_Serial::Init()
     }
     if (suspendSerial.load(std::memory_order_relaxed))
     {
-        this->my_serialIntf->setTimeout(500);
-        this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+        this->beginSerial(serialIntfBaud);
         return true;
     }
     autoDetect();
@@ -410,10 +429,12 @@ bool PI_Serial::Init()
         }
         return true;
     }
-    this->my_serialIntf->setTimeout(500);
+    // beginSerial() sets the timeout itself; this covers the branch where the
+    // port is already open at the right baud and no begin() follows.
+    this->my_serialIntf->setTimeout(piReadTimeoutMs());
     if (protocol == NoD)
     {
-        this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+        this->beginSerial(serialIntfBaud);
     }
     return true;
 }
@@ -861,7 +882,8 @@ bool PI_Serial::loopbackTest(String &details)
         return false;
     }
 
-    unsigned int baud = serialIntfBaud == 0 ? 2400 : serialIntfBaud;
+    SerialSettingsGuard<HardwareSerial> restore(*my_serialIntf, SERIAL_8N1, _rxPin, _txPin, serialIntfBaud);
+    const unsigned long baud = restore.baud();
     this->my_serialIntf->begin(baud, SERIAL_8N1, _rxPin, _txPin);
     this->my_serialIntf->setTimeout(200);
 
@@ -879,6 +901,7 @@ bool PI_Serial::loopbackTest(String &details)
     char buffer[8] = {};
     size_t readLen = this->my_serialIntf->readBytes(buffer, patternLen);
     bool ok = (readLen == patternLen && memcmp(buffer, pattern, patternLen) == 0);
+    // The guard restores the UART and timeout for either test result.
     details = ok ? "Loopback OK" : "Loopback failed";
     return ok;
 }
@@ -944,7 +967,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
             serialIntfBaud = 2400;
             startChar = protocol == PI18 ? "^Dxxx" : "(";
             delimiter = protocol == PI18 ? "," : " ";
-            this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+            this->beginSerial(serialIntfBaud);
         }
         writeLog("[PI][DETECT] forced proto=%s", protocolToString(protocol));
         goto autodetect_done;
@@ -959,7 +982,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
 
         startChar = "(";
         serialIntfBaud = 2400;
-        this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+        this->beginSerial(serialIntfBaud);
         get.raw.qpi = this->requestData("QPI");
         if (abortAutoDetect.load(std::memory_order_relaxed) || suspendSerial.load(std::memory_order_relaxed))
         {
@@ -1002,7 +1025,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
             break;
         }
         startChar = "^Dxxx";
-        this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+        this->beginSerial(serialIntfBaud);
         get.raw.qpi = this->requestData("^P005PI");
         if (abortAutoDetect.load(std::memory_order_relaxed) || suspendSerial.load(std::memory_order_relaxed))
         {
@@ -1019,7 +1042,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
 
         startChar = "(";
         delimiter = " ";
-        this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+        this->beginSerial(serialIntfBaud);
         get.raw.qpiri = this->requestData("QPIRI");
         if (isValidResponse(get.raw.qpiri))
         {
@@ -1071,7 +1094,7 @@ void PI_Serial::autoDetect() // function for autodetect the inverter type
                 protocol = piFallbackProtocol;
                 if (protocol == PI30 || protocol == PI30_UNKNOWN)
                 {
-                    this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+                    this->beginSerial(serialIntfBaud);
                 }
             }
         }
@@ -1282,7 +1305,7 @@ bool PI_Serial::runPowMrPiSupplementCommand(const char *command)
     startChar = "(";
     delimiter = " ";
     serialIntfBaud = 2400;
-    this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+    this->beginSerial(serialIntfBaud);
 
     bool ok = false;
     if (strcmp(command, "Q1") == 0)
@@ -1333,8 +1356,7 @@ bool PI_Serial::runPowMrPiSupplementCommand(const char *command)
     startChar = savedStartChar;
     delimiter = savedDelimiter;
     serialIntfBaud = savedBaud;
-    this->my_serialIntf->begin(serialIntfBaud == 0 ? 2400 : serialIntfBaud,
-                              SERIAL_8N1, _rxPin, _txPin);
+    this->beginSerial(serialIntfBaud == 0 ? 2400 : serialIntfBaud);
 
     restorePowMrNativeState(staticBackup, liveBackup);
 
@@ -1542,7 +1564,7 @@ bool PI_Serial::sendCustomCommand()
             startChar = "(";
             delimiter = " ";
             serialIntfBaud = 2400;
-            this->my_serialIntf->begin(serialIntfBaud, SERIAL_8N1, _rxPin, _txPin);
+            this->beginSerial(serialIntfBaud);
             get.raw.commandAnswer = requestData(piCommand);
             if ((piCommand.startsWith("PE") || piCommand.startsWith("PD")) &&
                 piCommand.length() >= 3)
@@ -1558,8 +1580,7 @@ bool PI_Serial::sendCustomCommand()
             startChar = savedStartChar;
             delimiter = savedDelimiter;
             serialIntfBaud = savedBaud;
-            this->my_serialIntf->begin(serialIntfBaud == 0 ? 2400 : serialIntfBaud,
-                                      SERIAL_8N1, _rxPin, _txPin);
+            this->beginSerial(serialIntfBaud == 0 ? 2400 : serialIntfBaud);
         }
     }
     else if (isModbus())
@@ -1594,7 +1615,27 @@ String PI_Serial::requestData(String command)
     this->my_serialIntf->flush();
 
     delay(20);
-    commandBuffer = this->my_serialIntf->readStringUntil('\r');
+    struct Transport
+    {
+        HardwareSerial &serial;
+        const std::atomic_bool &suspended;
+        uint32_t now() const { return millis(); }
+        int read() { return serial.read(); }
+        void pause() { delay(1); }
+        bool cancelled() const { return suspended.load(std::memory_order_relaxed); }
+    } transport{*my_serialIntf, suspendSerial};
+    char replyBuffer[PiReplyReader::kMaxReplyBytes];
+    const auto reply = PiReplyReader::read(transport, replyBuffer, sizeof(replyBuffer),
+                                           PiReplyReader::frameTimeoutMs(serialIntfBaud), piReadTimeoutMs());
+    if (reply.status == PiReplyReader::Status::Complete)
+    {
+        commandBuffer.concat(replyBuffer, reply.length);
+    }
+    else if (reply.length > 0)
+    {
+        writeLog("[PI][WARN] cmd=%s incomplete reply status=%u bytes=%u",
+                 command.c_str(), static_cast<unsigned>(reply.status), static_cast<unsigned>(reply.length));
+    }
 
     const size_t cbLen = commandBuffer.length();
     const char *cbBuf = commandBuffer.c_str();
