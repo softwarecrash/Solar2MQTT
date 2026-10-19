@@ -977,13 +977,13 @@ async function waitForPowmrHunt(data) {
   let cancelRequested = false;
   const cancel = document.createElement("button");
   cancel.type = "button";
-  cancel.textContent = "Остановить поиск";
+  cancel.textContent = "Stop search";
   cancel.addEventListener("click", () => { cancelRequested = true; cancel.disabled = true; });
   byId("commandForm")?.appendChild(cancel);
   try {
     while (getCommandAnswerValue(data).startsWith("POWMR_HUNT RUNNING")) {
       setText("commandAnswer", getCommandAnswerValue(data));
-      showNotice("Поиск регистров выполняется. Ждём завершения…");
+      showNotice("Register search is running. Waiting for completion...");
       await new Promise((resolve) => window.setTimeout(resolve, 3000));
       const body = new URLSearchParams();
       body.set("command", cancelRequested ? "powmr hunt cancel" : "powmr hunt status");
@@ -992,7 +992,7 @@ async function waitForPowmrHunt(data) {
         await fetchJson("/api/command", { method: "POST", body });
         data = await waitForCommandAnswer();
       } catch (error) {
-        showNotice("Связь прервалась. Продолжаем ждать результат…");
+        showNotice("Connection interrupted. Still waiting for the result...");
       }
     }
     const resultBody = new URLSearchParams();

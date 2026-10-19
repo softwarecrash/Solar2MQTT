@@ -393,7 +393,7 @@ void populateEqualizationDeviceInfo(JsonDocument &doc, JsonDocument &snapshot)
 
     JsonObject device = doc["device"].to<JsonObject>();
     device["identifiers"][0] = equalizationDeviceId;
-    device["name"] = String(_settings.get.deviceName()) + " — Выравнивание АКБ";
+    device["name"] = String(_settings.get.deviceName()) + " - Battery Equalization";
     device["manufacturer"] = "SoftWareCrash";
     device["model"] = "PowMr battery equalization";
     device["sw_version"] = STRVERSION;
@@ -873,7 +873,7 @@ bool MqttHandler::ensureConnected()
     }
 
     // Run one more forced discovery after startup/static polling settles so
-    // retained DeviceData configs are guaranteed to receive the Russian names.
+    // retained DeviceData configs are guaranteed to receive the current entity names.
     _pendingDelayedHaDiscovery = _settings.get.mqttHAEnabled();
     _delayedHaDiscoveryAt = millis() + 10000UL;
 
@@ -1252,12 +1252,9 @@ void MqttHandler::publishHaSection(JsonDocument &snapshot,
         }
 
         JsonDocument doc;
-        const char *ruName = haRussianName(key);
-        doc["name"] = (ruName != nullptr && ruName[0] != '\0')
-                          ? ruName
-                          : ((descriptor->displayName != nullptr && descriptor->displayName[0] != '\0')
-                                 ? descriptor->displayName
-                                 : key);
+        doc["name"] = (descriptor->displayName != nullptr && descriptor->displayName[0] != '\0')
+                          ? descriptor->displayName
+                          : key;
         if (descriptor->defaultEntityId != nullptr && descriptor->defaultEntityId[0] != '\0')
         {
             doc["default_entity_id"] = descriptor->defaultEntityId;
@@ -1331,7 +1328,7 @@ void MqttHandler::publishHaEspInternalTemperature(JsonDocument &snapshot,
     }
 
     JsonDocument doc;
-    doc["name"] = "Температура ESP32";
+    doc["name"] = "ESP32 Temperature";
     doc["state_topic"] = topicBase + "/EspData/" + DESCR_ESP_Internal_Temperature;
     doc["availability_topic"] = availabilityTopic;
     doc["payload_available"] = "true";
@@ -1375,7 +1372,7 @@ void MqttHandler::publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst liveV
         }
 
         JsonDocument doc;
-        doc["name"] = String("Температура ") + key;
+        doc["name"] = String("Temperature ") + key;
         doc["state_topic"] = topicBase + "/LiveData/" + key;
         doc["availability_topic"] = availabilityTopic;
         doc["payload_available"] = "true";
@@ -1442,7 +1439,7 @@ void MqttHandler::publishHaPowMrSettings(JsonDocument &snapshot,
         if (strcmp(key, DESCR_Output_Source_Priority) == 0)
         {
             // Keep MQTT state payloads stable for existing consumers.
-            doc["value_template"] = "{% set modes = {'Utility first': 'UTI — сначала сеть', 'Solar first': 'SUB — солнце → сеть → батарея', 'SBU priority': 'SBU — солнце → батарея → сеть'} %}{{ modes.get(value, value) }}";
+            doc["value_template"] = "{% set modes = {'Utility first': 'UTI - Utility first', 'Solar first': 'SUB - Solar > Utility > Battery', 'SBU priority': 'SBU - Solar > Battery > Utility'} %}{{ modes.get(value, value) }}";
         }
         doc["availability_topic"] = availabilityTopic;
         doc["payload_available"] = "true";
@@ -1622,42 +1619,42 @@ void MqttHandler::publishHaPowMrSettings(JsonDocument &snapshot,
     };
 
     publishSelect(DESCR_Output_Source_Priority,
-                  "Режим питания нагрузки",
-                  {"UTI — сначала сеть", "SUB — солнце → сеть → батарея", "SBU — солнце → батарея → сеть"},
-                  "{% if value == 'UTI — сначала сеть' %}powmr outputmode UTI{% elif value == 'SUB — солнце → сеть → батарея' %}powmr outputmode SUB{% elif value == 'SBU — солнце → батарея → сеть' %}powmr outputmode SBU{% endif %}");
+                  "Output Source Priority",
+                  {"UTI - Utility first", "SUB - Solar > Utility > Battery", "SBU - Solar > Battery > Utility"},
+                  "{% if value == 'UTI - Utility first' %}powmr outputmode UTI{% elif value == 'SUB - Solar > Utility > Battery' %}powmr outputmode SUB{% elif value == 'SBU - Solar > Battery > Utility' %}powmr outputmode SBU{% endif %}");
 
     publishSelect(DESCR_Charger_Source_Priority,
-                  "Приоритет источника зарядки",
+                  "Charger Source Priority",
                   {"Utility first", "Solar first", "Solar and Utility", "Solar only"},
                   "{% if value == 'Utility first' %}powmr setting chargerpriority UTILITY{% elif value == 'Solar first' %}powmr setting chargerpriority SOLAR{% elif value == 'Solar and Utility' %}powmr setting chargerpriority SOLAR_UTILITY{% else %}powmr setting chargerpriority SOLAR_ONLY{% endif %}");
 
     publishSelect(DESCR_Input_Voltage_Range,
-                  "Диапазон входного напряжения AC",
+                  "Input Voltage Range",
                   {"Appliances", "UPS"},
                   "{% if value == 'UPS' %}powmr setting inputrange UPS{% else %}powmr setting inputrange APL{% endif %}");
 
     publishSelect("Battery_Type",
-                  "Тип АКБ / протокол BMS",
+                  "Battery Type / BMS Protocol",
                   {"AGM", "FLD", "USE", "LIB", "LIC", "LIP", "LIL"},
                   "powmr batterytype {{ value }}");
 
     publishSelect(DESCR_AC_Out_Rating_Frequency,
-                  "Частота выхода AC",
+                  "AC Output Frequency",
                   {"50", "60"},
                   "powmr setting outputfreq {{ value }}");
 
-    publishNumber(DESCR_Current_Max_Charging_Current, "Максимальный ток зарядки АКБ", "maxcharge", 0, 120, 1, "A");
-    publishNumber(DESCR_AC_Out_Rating_Voltage, "Напряжение выхода AC", "outputvoltage", 220, 240, 10, "V");
-    publishNumber(DESCR_Current_Max_AC_Charging_Current, "Максимальный ток зарядки от сети", "utilitycharge", 0, 120, 1, "A");
-    publishNumber(DESCR_Battery_Recharge_Voltage, "Напряжение перехода на заряд АКБ", "recharge", 40.0f, 60.0f, 0.1f, "V");
-    publishNumber(DESCR_Battery_Redischarge_Voltage, "Напряжение возврата на АКБ", "redischarge", 40.0f, 60.0f, 0.1f, "V");
-    publishNumber(DESCR_Battery_Bulk_Voltage, "Напряжение основного заряда АКБ", "bulk", 40.0f, 60.0f, 0.1f, "V");
-    publishNumber(DESCR_Battery_Float_Voltage, "Напряжение поддерживающего заряда АКБ", "float", 40.0f, 60.0f, 0.1f, "V");
-    publishNumber(DESCR_Battery_Under_Voltage, "Напряжение отключения АКБ", "cutoff", 40.0f, 60.0f, 0.1f, "V");
-    publishNumber("Battery_Equalization_Voltage", "Напряжение выравнивания АКБ", "equalizationvoltage", 40.0f, 60.0f, 0.1f, "V");
-    publishNumber("Battery_Equalization_Time", "Время выравнивания АКБ", "equalizationtime", 0, 999, 1, "min");
-    publishNumber("Battery_Equalization_Timeout", "Тайм-аут выравнивания АКБ", "equalizationtimeout", 0, 999, 1, "min");
-    publishNumber("Battery_Equalization_Interval", "Интервал выравнивания АКБ", "equalizationinterval", 0, 999, 1, "d");
+    publishNumber(DESCR_Current_Max_Charging_Current, "Maximum Battery Charging Current", "maxcharge", 0, 120, 1, "A");
+    publishNumber(DESCR_AC_Out_Rating_Voltage, "AC Output Voltage", "outputvoltage", 220, 240, 10, "V");
+    publishNumber(DESCR_Current_Max_AC_Charging_Current, "Maximum AC Charging Current", "utilitycharge", 0, 120, 1, "A");
+    publishNumber(DESCR_Battery_Recharge_Voltage, "Battery Recharge Voltage", "recharge", 40.0f, 60.0f, 0.1f, "V");
+    publishNumber(DESCR_Battery_Redischarge_Voltage, "Battery Redischarge Voltage", "redischarge", 40.0f, 60.0f, 0.1f, "V");
+    publishNumber(DESCR_Battery_Bulk_Voltage, "Battery Bulk Voltage", "bulk", 40.0f, 60.0f, 0.1f, "V");
+    publishNumber(DESCR_Battery_Float_Voltage, "Battery Float Voltage", "float", 40.0f, 60.0f, 0.1f, "V");
+    publishNumber(DESCR_Battery_Under_Voltage, "Battery Under Voltage", "cutoff", 40.0f, 60.0f, 0.1f, "V");
+    publishNumber("Battery_Equalization_Voltage", "Battery Equalization Voltage", "equalizationvoltage", 40.0f, 60.0f, 0.1f, "V");
+    publishNumber("Battery_Equalization_Time", "Battery Equalization Time", "equalizationtime", 0, 999, 1, "min");
+    publishNumber("Battery_Equalization_Timeout", "Battery Equalization Timeout", "equalizationtimeout", 0, 999, 1, "min");
+    publishNumber("Battery_Equalization_Interval", "Battery Equalization Interval", "equalizationinterval", 0, 999, 1, "d");
 
     const char *const piSwitchKeys[] = {
         DESCR_Battery_Equalization_Enabled,
@@ -1677,14 +1674,14 @@ void MqttHandler::publishHaPowMrSettings(JsonDocument &snapshot,
     if (hybridPi)
     {
         publishCommandSwitch(DESCR_Battery_Equalization_Enabled,
-                             "Выравнивание АКБ",
+                             "Battery Equalization Enabled",
                              "powmr pi PBEQE1",
                              "powmr pi PBEQE0");
-        publishSwitch(DESCR_Overload_Bypass_Enabled, "Байпас при перегрузке", 'b');
-        publishSwitch(DESCR_Power_Saving_Enabled, "Режим энергосбережения", 'j');
-        publishSwitch(DESCR_Solar_Feed_To_Grid_Enabled, "Разрешение отдачи в сеть", 'd');
-        publishSwitch(DESCR_Overload_Restart_Enabled, "Перезапуск после перегрузки", 'u');
-        publishSwitch(DESCR_Over_Temperature_Restart_Enabled, "Перезапуск после перегрева", 'v');
+        publishSwitch(DESCR_Overload_Bypass_Enabled, "Overload Bypass Enabled", 'b');
+        publishSwitch(DESCR_Power_Saving_Enabled, "Power Saving Enabled", 'j');
+        publishSwitch(DESCR_Solar_Feed_To_Grid_Enabled, "Solar Feed To Grid Enabled", 'd');
+        publishSwitch(DESCR_Overload_Restart_Enabled, "Overload Restart Enabled", 'u');
+        publishSwitch(DESCR_Over_Temperature_Restart_Enabled, "Over Temperature Restart Enabled", 'v');
 
         // These are local panel/service preferences. Keep them configurable in
         // the inverter Web UI, but remove them from HA to avoid config clutter.

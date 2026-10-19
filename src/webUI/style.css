@@ -68,7 +68,7 @@ a {
 
 #header {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) max-content;
+  grid-template-columns: 36px minmax(0, 1fr);
   align-items: center;
   column-gap: 10px;
   margin: 8px 0 14px;
@@ -86,40 +86,12 @@ a {
   overflow-wrap: anywhere;
 }
 
-.language-toggle {
-  position: static;
-  justify-self: end;
-  width: 80px;
-  min-width: 80px;
-  height: 34px;
-  padding: 0 24px 0 10px;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  background: var(--surface-2);
-  color: var(--ea-text);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.language-toggle:hover {
-  border-color: var(--ea-primary);
-  background: var(--surface-3);
-}
-
 @media (max-width: 420px) {
   #header {
-    grid-template-columns: 30px minmax(0, 1fr) max-content;
+    grid-template-columns: 30px minmax(0, 1fr);
     column-gap: 7px;
   }
 
-  .language-toggle {
-    width: 80px;
-    min-width: 80px;
-    padding: 0 24px 0 10px;
-  }
 }
 
 #logo {
