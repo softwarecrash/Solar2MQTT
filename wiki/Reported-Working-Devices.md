@@ -36,6 +36,8 @@ This page is generated automatically from public device reports submitted throug
 | POWMR | 10 | TTL | NOD | NOD | - | - | esp32c3_supermini | - | 1 |
 | POWMR | 6.2 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | - | 1 |
 | POWMR | MPS-V PLUS 3.5KW | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | sp32_s3_wroom_cam | Using an ESP32-S3-N16R8 WROOM CAM with an RS232-to-TTL module. I selected this module because it has an integrated microSD card slot, which I will use for data logging purposes. | 1 |
+| POWMR | POW-HVM10.2M | RS232 | MODBUS_RTU | 15 | POW-HVM10.2M-48V | VER:00021.03 | ESP32_Modbus_2400bps | Confirmed working on PowMr 10.2kW model. Connection settings require Slave ID 5 and 2400 baud rate. Pins used: RJ45 Pin 1 (TX), Pin 2 (RX), Pin 8 (GND). | 1 |
+| POWMR | POW-HVM10.2M | RS232 | PI30 | PI30 | - | - | wemos_d1_mini32 | PowMr 10.2kW model responds to PI30 text commands but requires ignoring CRC or matching the specific long-frame variant. | 1 |
 | POWMR | POW-HVM10.2M | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Keeps on disconnecting from WIFI. Only recognizes 1 string of PV.<br>Гібридний інвертор PowMr 10.2 кВт (POW-HVM10.2M), підключення через MAX3232 (RS232), стабільна робота підтверджена. PowMr POW-HVM10.2M 10.2kW hybrid inverter, connected via MAX3232 (RS232), confirmed stable operation. | 2 |
 | POWMR | POW-HVM4.2K-24V-D | TTL | NOD | NOD | - | - | wemos_d1_mini32 | - | 1 |
 | POWMR | POW-HVM4.2K-24V-N | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Working with MAX3232 | 1 |
