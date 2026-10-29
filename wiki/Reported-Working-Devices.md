@@ -32,6 +32,7 @@ This page is generated automatically from public device reports submitted throug
 | GOOTU | 8.2KW HYBRID INVERTER DUAL MPPT/DUAL OUTPUT AC | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32s3_supermini | - | 1 |
 | INVERTOR | INFINISOLAR V 4 TWIN 6KW HYBRID | RS232 | PI18 | PI18 | - | - | wemos_d1_mini32 | Super work ok | 1 |
 | JESUDOM CHINA | AXPERT VM IV 4,2KW | RS232 | PI30_PIP_GK | PI30 | VMIII-4000 | - | wemos_d1_mini32 | - | 1 |
+| MARSRIVA | MR-SPH 4200 / VMII-4200 | RS232 | PI30_PIP_GK | PI30 | VMII-4200 | - | wemos_d1_mini32 | ESP32-WROOM-32 + MAX3232 вихід MAX3232 RXD (дані з інвертора) → GPIO19 (UART RX) вхід MAX3232 TXD (дані до інвертора) → GPIO23 (UART TX) VCC → 3V3, GND → GND | 1 |
 | POWERMR | POW-HVM3.2H-24V-N | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | In general, everything works. | 1 |
 | POWMR | 10 | TTL | NOD | NOD | - | - | esp32c3_supermini | - | 1 |
 | POWMR | 6.2 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | - | 1 |
