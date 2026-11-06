@@ -1,6 +1,7 @@
 #include "core/WebServerHandler.h"
 
 #include <ArduinoJson.h>
+#include <AsyncJson.h>
 #include <Update.h>
 #include <WiFi.h>
 
@@ -797,6 +798,38 @@ void WebServerHandler::registerRoutes()
         response->addHeader("Content-Disposition", "attachment; filename=solar2mqtt-debug.txt");
         _state.writeDebugReport(*response);
         request->send(response); });
+
+    _server.on("/api/debug/energy", HTTP_GET, [this](AsyncWebServerRequest *request)
+               {
+        if (!isAuthorized(request))
+            return request->requestAuthentication();
+        JsonDocument doc;
+        _mqttHandler.copyBatteryDiagnostics(doc);
+        String payload;
+        serializeJson(doc, payload);
+        AsyncWebServerResponse *response = request->beginResponse(200, "application/json", payload);
+        response->addHeader("Cache-Control", "no-store");
+        request->send(response); });
+
+    auto *batteryMigration = new AsyncCallbackJsonWebHandler("/api/debug/energy/migration",
+        [this](AsyncWebServerRequest *request, JsonVariant &json)
+        {
+            if (!isAuthorized(request))
+                return request->requestAuthentication();
+            if (!json.is<JsonObject>())
+            {
+                request->send(400, "application/json", "{\"success\":false,\"error\":\"expected_object\"}");
+                return;
+            }
+            JsonDocument response;
+            const int status = _mqttHandler.queueBatteryMigration(json.as<JsonObjectConst>(), response);
+            String payload;
+            serializeJson(response, payload);
+            request->send(status, "application/json", payload);
+        });
+    batteryMigration->setMethod(HTTP_POST);
+    batteryMigration->setMaxContentLength(2048);
+    _server.addHandler(batteryMigration);
 
     _server.on("/api/settings/backup", HTTP_GET, [this](AsyncWebServerRequest *request)
                {

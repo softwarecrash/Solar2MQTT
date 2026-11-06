@@ -2,6 +2,8 @@
 
 #include <ArduinoJson.h>
 #include <initializer_list>
+#include <cmath>
+#include <esp_random.h>
 #include <WiFi.h>
 
 #include "core/SettingsPrefs.h"
@@ -494,6 +496,10 @@ void MqttHandler::begin()
     _pendingDelayedHaDiscovery = false;
     _delayedHaDiscoveryAt = 0;
     _energyBacklog.begin();
+    char bootId[33];
+    snprintf(bootId, sizeof(bootId), "%08x%08x%08x%08x", static_cast<unsigned>(esp_random()),
+             static_cast<unsigned>(esp_random()), static_cast<unsigned>(esp_random()), static_cast<unsigned>(esp_random()));
+    initializeBatteryApi(getHaDeviceId(), String(bootId));
 }
 
 void MqttHandler::reconfigure()
@@ -558,6 +564,8 @@ void MqttHandler::loop()
     // freshest inverter voltage/current readings. This runs independently
     // from MQTT so an outage never creates an energy gap.
     _energyBacklog.updateBatteryEnergy(_state, _inverterService.batterySampleTiming(now), now);
+    processBatteryMigration(now);
+    refreshBatteryDiagnostics(now);
 
     // Keep the cumulative inverter-reported PV/grid energy counters in
     // LittleFS while MQTT is unavailable.
@@ -687,7 +695,9 @@ void MqttHandler::publishSensorImmediate(uint8_t index, float temperature)
 
 void MqttHandler::flushPersistentEnergy()
 {
-    _energyBacklog.flushBatteryEnergy();
+    if (!_energyBacklog.flushBatteryEnergy())
+        writeLog("[BatteryEnergy] Checkpoint not verified before restart; inspect /api/debug/energy");
+    refreshBatteryDiagnostics(millis(), true);
 }
 
 void MqttHandler::globalCallback(char *topic, uint8_t *payload, unsigned int length)
@@ -908,10 +918,10 @@ bool MqttHandler::ensureConnected()
     // survive indefinitely as stale entities in Home Assistant.
     {
         JsonDocument snapshot;
-        const bool completeSnapshot = _state.snapshotTo(snapshot);
+        _state.snapshotTo(snapshot);
         const String deviceId = getHaDeviceId();
 
-        if (completeSnapshot) for (JsonPairConst entry : snapshot["DeviceData"].as<JsonObjectConst>())
+        for (JsonPairConst entry : snapshot["DeviceData"].as<JsonObjectConst>())
         {
             const char *key = entry.key().c_str();
             if (isPowMrWritableSettingKey(key))
@@ -926,7 +936,7 @@ bool MqttHandler::ensureConnected()
             }
         }
 
-        if (completeSnapshot) for (JsonPairConst entry : snapshot["LiveData"].as<JsonObjectConst>())
+        for (JsonPairConst entry : snapshot["LiveData"].as<JsonObjectConst>())
         {
             const char *key = entry.key().c_str();
             if (strncmp(key, "DS18B20_", 8) == 0)
@@ -946,7 +956,7 @@ bool MqttHandler::ensureConnected()
     {
         JsonDocument snapshot;
         const bool completeSnapshot = _state.snapshotTo(snapshot);
-        if (completeSnapshot) for (JsonPairConst entry : snapshot["LiveData"].as<JsonObjectConst>())
+        for (JsonPairConst entry : snapshot["LiveData"].as<JsonObjectConst>())
         {
             const char *key = entry.key().c_str();
             if (strncmp(key, "DS18B20_", 8) != 0)
@@ -959,7 +969,8 @@ bool MqttHandler::ensureConnected()
             _mqtt.publish(legacyRootTopic.c_str(), "", true);
             _mqtt.publish(legacyEspDataTopic.c_str(), "", true);
         }
-        if (completeSnapshot) _pendingLegacyDs18Cleanup = false;
+        if (completeSnapshot)
+            _pendingLegacyDs18Cleanup = false;
     }
     _pendingFullPublish = usesImmediateStatePublishing();
     if (!usesImmediateStatePublishing())
@@ -1146,7 +1157,10 @@ void MqttHandler::publishHaDiscovery(bool force)
     }
 
     std::vector<String> currentTopics;
-    currentTopics.reserve(_haDiscoveryTopics.size() + 16);
+    // Only a forced pass reconciles the retained topic set. Incremental passes
+    // must not allocate a second list that is discarded before reconciliation.
+    if (force)
+        currentTopics.reserve(_haDiscoveryTopics.size() + 16);
 
     publishHaSection(snapshot,
                      "DeviceData",
@@ -1165,6 +1179,8 @@ void MqttHandler::publishHaDiscovery(bool force)
     publishHaEspInternalTemperature(snapshot, snapshot["EspData"].as<JsonObjectConst>(), currentTopics, force);
     publishHaDs18b20(snapshot, snapshot["LiveData"].as<JsonObjectConst>(), currentTopics, force);
     publishHaPowMrSettings(snapshot, snapshot["DeviceData"].as<JsonObjectConst>(), currentTopics, force);
+    if (force)
+        preserveBatteryDiscoveryTopics(currentTopics);
 
     if (!force)
     {
@@ -1179,7 +1195,7 @@ void MqttHandler::publishHaDiscovery(bool force)
         }
     }
 
-    _haDiscoveryTopics = currentTopics;
+    _haDiscoveryTopics.swap(currentTopics);
 }
 
 void MqttHandler::publishHaSection(JsonDocument &snapshot,
@@ -1249,7 +1265,8 @@ void MqttHandler::publishHaSection(JsonDocument &snapshot,
         const char *component = binarySensor ? "binary_sensor" : "sensor";
         const String topic = buildDiscoveryTopic(deviceId, component, key);
 
-        appendTopicIfMissing(currentTopics, topic);
+        if (force)
+            appendTopicIfMissing(currentTopics, topic);
         if (!force && hasHaDiscoveryTopic(topic))
         {
             continue;
@@ -1325,7 +1342,8 @@ void MqttHandler::publishHaEspInternalTemperature(JsonDocument &snapshot,
     const String availabilityTopic = topicBase + "/Alive";
     const String topic = buildDiscoveryTopic(deviceId, "sensor", DESCR_ESP_Internal_Temperature);
 
-    appendTopicIfMissing(currentTopics, topic);
+    if (force)
+        appendTopicIfMissing(currentTopics, topic);
     if (!force && hasHaDiscoveryTopic(topic))
     {
         return;
@@ -1369,7 +1387,8 @@ void MqttHandler::publishHaDs18b20(JsonDocument &snapshot, JsonObjectConst liveV
         }
 
         const String topic = buildDiscoveryTopic(deviceId, "sensor", key);
-        appendTopicIfMissing(currentTopics, topic);
+        if (force)
+            appendTopicIfMissing(currentTopics, topic);
         if (!force && hasHaDiscoveryTopic(topic))
         {
             continue;
@@ -1429,7 +1448,8 @@ void MqttHandler::publishHaPowMrSettings(JsonDocument &snapshot,
         }
 
         const String topic = buildDiscoveryTopic(deviceId, "select", key);
-        appendTopicIfMissing(currentTopics, topic);
+        if (force)
+            appendTopicIfMissing(currentTopics, topic);
         if (!force && hasHaDiscoveryTopic(topic))
         {
             return;
@@ -1482,7 +1502,8 @@ void MqttHandler::publishHaPowMrSettings(JsonDocument &snapshot,
         }
 
         const String topic = buildDiscoveryTopic(deviceId, "number", key);
-        appendTopicIfMissing(currentTopics, topic);
+        if (force)
+            appendTopicIfMissing(currentTopics, topic);
         if (!force && hasHaDiscoveryTopic(topic))
         {
             return;
@@ -1535,7 +1556,8 @@ void MqttHandler::publishHaPowMrSettings(JsonDocument &snapshot,
         }
 
         const String topic = buildDiscoveryTopic(deviceId, "switch", key);
-        appendTopicIfMissing(currentTopics, topic);
+        if (force)
+            appendTopicIfMissing(currentTopics, topic);
         if (!force && hasHaDiscoveryTopic(topic))
         {
             return;
@@ -1582,7 +1604,8 @@ void MqttHandler::publishHaPowMrSettings(JsonDocument &snapshot,
         }
 
         const String topic = buildDiscoveryTopic(deviceId, "switch", key);
-        appendTopicIfMissing(currentTopics, topic);
+        if (force)
+            appendTopicIfMissing(currentTopics, topic);
         if (!force && hasHaDiscoveryTopic(topic))
         {
             return;
@@ -1773,4 +1796,169 @@ void MqttHandler::setupSubscriptions()
 String MqttHandler::baseTopic() const
 {
     return String(_settings.get.mqttTopic());
+}
+
+void MqttHandler::initializeBatteryApi(const String &deviceId, const String &bootId)
+{
+    if (_batteryApiMutex == nullptr)
+        _batteryApiMutex = xSemaphoreCreateMutex();
+    _batteryApiDeviceId = deviceId;
+    _batteryApiBootId = bootId;
+    _batteryApiHaveRefresh = false;
+    refreshBatteryDiagnostics(millis(), true);
+}
+
+void MqttHandler::refreshBatteryDiagnostics(unsigned long nowMs, bool force)
+{
+    if (_batteryApiMutex == nullptr || (!force && _batteryApiHaveRefresh &&
+        static_cast<uint32_t>(nowMs - _batteryApiLastRefreshMs) < 1000))
+        return;
+    JsonDocument next;
+    _energyBacklog.writeBatteryDiagnostics(next.to<JsonObject>(), nowMs);
+    next["deviceId"] = _batteryApiDeviceId;
+    next["bootId"] = _batteryApiBootId;
+    next["mqttTopic"] = baseTopic();
+    next["firmware"] = STRVERSION;
+    const BatterySampleTiming sample = _inverterService.batterySampleTiming(nowMs);
+    JsonObject timing = next["reading"].to<JsonObject>();
+    timing["available"] = sample.available;
+    timing["sequence"] = sample.sequence;
+    timing["sampledAtMs"] = sample.sampledAtMs;
+    timing["acceptedAtMs"] = sample.acceptedAtMs;
+    timing["validForMs"] = sample.validForMs;
+    timing["ageMs"] = static_cast<uint32_t>(nowMs - sample.sampledAtMs);
+    timing["fresh"] = sample.available && static_cast<uint32_t>(nowMs - sample.sampledAtMs) <= sample.validForMs;
+    {
+        BatteryApiLock lock(_batteryApiMutex);
+        _batteryApiCache.set(next);
+    }
+    _batteryApiLastRefreshMs = nowMs;
+    _batteryApiHaveRefresh = true;
+}
+
+void MqttHandler::copyBatteryDiagnostics(JsonDocument &target)
+{
+    BatteryApiLock lock(_batteryApiMutex);
+    target.set(_batteryApiCache);
+    target["job"]["requestId"] = _batteryJobId;
+    target["job"]["state"] = _batteryJobState;
+    target["job"]["error"] = _batteryJobError;
+    target["job"]["busy"] = _batteryApiBusy;
+}
+
+int MqttHandler::queueBatteryMigration(JsonObjectConst request, JsonDocument &response)
+{
+    response.clear();
+    auto reject = [&](int status, const char *error)
+    {
+        response["success"] = false;
+        response["error"] = error;
+        return status;
+    };
+    if (_batteryApiMutex == nullptr)
+        return reject(503, "battery_api_not_ready");
+    const char *id = request["requestId"] | "";
+    const char *operation = request["operation"] | "";
+    const char *history = request["historyMode"] | "";
+    if (!request["schema"].is<int>() || request["schema"].as<int>() != 1 ||
+        strcmp(request["unit"] | "", "kWh") != 0 || !EnergyBacklog::validBatteryMigrationId(id) ||
+        !request["chargeKwh"].is<double>() || !request["dischargeKwh"].is<double>())
+        return reject(400, "invalid_migration_schema");
+    const double charge = request["chargeKwh"].as<double>();
+    const double discharge = request["dischargeKwh"].as<double>();
+    if (!std::isfinite(charge) || !std::isfinite(discharge) || charge < 0 || discharge < 0 || charge > 1.0e9 || discharge > 1.0e9)
+        return reject(400, "invalid_counter_value");
+    if (!((strcmp(operation, "restore") == 0 && strcmp(history, "carry_visible_baseline") == 0) ||
+          (strcmp(operation, "start_zero") == 0 && strcmp(history, "start_new_series") == 0 && charge == 0 && discharge == 0)))
+        return reject(400, "invalid_migration_operation");
+    BatteryApiLock lock(_batteryApiMutex);
+    if (_batteryApiDeviceId != (request["deviceId"] | ""))
+        return reject(409, "device_mismatch");
+    if (!(_batteryApiCache["migration"]["pending"] | true) &&
+        strcmp(_batteryApiCache["migration"]["receipt"] | "", id) == 0)
+    {
+        response["success"] = true;
+        response["state"] = "already_applied";
+        response["requestId"] = id;
+        return 200;
+    }
+    if (_batteryApiBootId != (request["bootId"] | ""))
+        return reject(409, "boot_changed_refresh_diagnostics");
+    if (_batteryApiBusy)
+    {
+        if (_batteryApiRequest.id != id || _batteryApiRequest.chargeKwh != charge || _batteryApiRequest.dischargeKwh != discharge)
+            return reject(409, "another_migration_in_progress");
+        response["success"] = true;
+        response["state"] = "queued";
+        response["requestId"] = id;
+        return 202;
+    }
+    if (!(_batteryApiCache["migration"]["pending"] | false))
+        return reject(409, "already_initialized");
+    if (!(_batteryApiCache["storage"]["available"] | false))
+        return reject(503, "battery_storage_unavailable");
+    if ((_batteryApiCache["migration"]["recoveryRequired"] | false) &&
+        !(request["acknowledgeRecovery"] | false))
+        return reject(409, "explicit_recovery_acknowledgement_required");
+    _batteryApiRequest.id = id;
+    _batteryApiRequest.chargeKwh = charge;
+    _batteryApiRequest.dischargeKwh = discharge;
+    _batteryApiQueued = _batteryApiBusy = true;
+    _batteryJobId = id;
+    _batteryJobState = "queued";
+    _batteryJobError = "";
+    response["success"] = true;
+    response["state"] = "queued";
+    response["requestId"] = id;
+    return 202;
+}
+
+void MqttHandler::processBatteryMigration(unsigned long nowMs)
+{
+    if (_batteryApiMutex == nullptr)
+        return;
+    BatteryMigrationRequest request;
+    {
+        BatteryApiLock lock(_batteryApiMutex);
+        if (!_batteryApiQueued)
+            return;
+        request = _batteryApiRequest;
+        _batteryApiQueued = false;
+    }
+    String error;
+    const bool ok = _energyBacklog.applyBatteryMigration(request.id.c_str(), request.chargeKwh,
+                                                        request.dischargeKwh, nowMs, error);
+    if (ok)
+    {
+        _energyBacklog.updateBatteryEnergy(_state, _inverterService.batterySampleTiming(nowMs), nowMs);
+        // Pending migration reserves these topics even on a new broker. Forget
+        // only the local reservations so normal discovery publishes both configs
+        // with their existing names/IDs, without deleting any retained config.
+        const String deviceId = getHaDeviceId();
+        for (const char *key : {DESCR_Battery_Charge_Energy, DESCR_Battery_Discharge_Energy})
+        {
+            const String topic = buildDiscoveryTopic(deviceId, "sensor", key);
+            for (auto it = _haDiscoveryTopics.begin(); it != _haDiscoveryTopics.end();)
+                it = (*it == topic) ? _haDiscoveryTopics.erase(it) : it + 1;
+        }
+        triggerFullStatePublish();
+    }
+    refreshBatteryDiagnostics(nowMs, true);
+    {
+        BatteryApiLock lock(_batteryApiMutex);
+        _batteryJobState = ok ? "applied" : "failed";
+        _batteryJobError = error;
+        _batteryApiBusy = false;
+    }
+}
+
+void MqttHandler::preserveBatteryDiscoveryTopics(std::vector<String> &topics) const
+{
+    if (!_energyBacklog.batteryMigrationPending())
+        return;
+    const String id = getHaDeviceId();
+    // The absence of provisional totals is deliberate during first migration.
+    // Keep the two old discovery configurations, without sending a fake zero.
+    appendTopicIfMissing(topics, buildDiscoveryTopic(id, "sensor", DESCR_Battery_Charge_Energy));
+    appendTopicIfMissing(topics, buildDiscoveryTopic(id, "sensor", DESCR_Battery_Discharge_Energy));
 }

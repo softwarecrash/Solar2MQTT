@@ -5,6 +5,11 @@
 #include <Preferences.h>
 #include <PubSubClient.h>
 #include <stddef.h>
+#include <cmath>
+#include <initializer_list>
+#include <string.h>
+#include <esp_partition.h>
+#include <esp_ota_ops.h>
 
 #include "core/SolarState.h"
 #include "descriptors.h"
@@ -26,8 +31,6 @@ constexpr const char *BATTERY_SLOT_A = "/battery_a.bin";
 constexpr const char *BATTERY_SLOT_B = "/battery_b.bin";
 constexpr uint32_t BATTERY_RECORD_MAGIC = 0x42415445UL; // "BATE"
 constexpr uint16_t BATTERY_RECORD_VERSION = 1;
-constexpr unsigned long BATTERY_INTEGRATE_INTERVAL_MS = 1000UL;
-constexpr unsigned long BATTERY_MAX_SAMPLE_GAP_MS = 10000UL;
 constexpr unsigned long BATTERY_PUBLISH_INTERVAL_MS = 1000UL;
 constexpr unsigned long BATTERY_CHECKPOINT_RETRY_MS = 10000UL;
 constexpr unsigned long BATTERY_CHECKPOINT_INTERVAL_MS = 2UL * 60UL * 1000UL;
@@ -60,7 +63,9 @@ struct EnergyRecord
 static_assert(ENERGY_KEY_COUNT == 8, "Energy backlog format expects 8 counters");
 static_assert(sizeof(EnergyRecord) == 80, "Unexpected EnergyRecord size");
 
-struct BatteryEnergyRecord
+// V1 files are imported without deleting or changing them. V2 adds an atomic
+// migration receipt and a pending flag, so a replay cannot add an offset twice.
+struct LegacyBatteryEnergyRecord
 {
     uint32_t magic;
     uint32_t sequence;
@@ -70,8 +75,24 @@ struct BatteryEnergyRecord
     uint16_t reserved;
     uint32_t checksum;
 };
-
-static_assert(sizeof(BatteryEnergyRecord) == 32, "Unexpected BatteryEnergyRecord size");
+struct BatteryEnergyRecord
+{
+    uint32_t magic;
+    uint32_t sequence;
+    uint64_t chargeMilliWh;
+    uint64_t dischargeMilliWh;
+    uint8_t migrationId[16];
+    uint16_t version;
+    uint16_t flags;
+    uint32_t checksum;
+};
+static_assert(sizeof(LegacyBatteryEnergyRecord) == 32, "Unexpected legacy battery record size");
+static_assert(sizeof(BatteryEnergyRecord) == 48, "Unexpected battery record size");
+constexpr uint16_t BATTERY_RECORD_VERSION_V2 = 2;
+constexpr uint16_t BATTERY_PENDING_MIGRATION = 1;
+constexpr double BATTERY_MAX_COUNTER_WH = 1.0e12;
+const char *const BATTERY_FILES_V2[] = {"/battery_v2_a.bin", "/battery_v2_b.bin"};
+const char *const BATTERY_NVS_KEYS[] = {"counter_a", "counter_b"};
 
 uint32_t recordChecksum(const EnergyRecord &record)
 {
@@ -95,11 +116,10 @@ bool recordValid(const EnergyRecord &record)
            record.checksum == recordChecksum(record);
 }
 
-uint32_t batteryRecordChecksum(const BatteryEnergyRecord &record)
-{
-    const uint8_t *bytes = reinterpret_cast<const uint8_t *>(&record);
-    const size_t length = offsetof(BatteryEnergyRecord, checksum);
 
+uint32_t batteryChecksum(const void *record, size_t length)
+{
+    const uint8_t *bytes = static_cast<const uint8_t *>(record);
     uint32_t hash = 2166136261UL;
     for (size_t i = 0; i < length; ++i)
     {
@@ -111,24 +131,133 @@ uint32_t batteryRecordChecksum(const BatteryEnergyRecord &record)
 
 bool batteryRecordValid(const BatteryEnergyRecord &record)
 {
-    return record.magic == BATTERY_RECORD_MAGIC &&
-           record.version == BATTERY_RECORD_VERSION &&
-           record.checksum == batteryRecordChecksum(record);
+    return record.magic == BATTERY_RECORD_MAGIC && record.version == BATTERY_RECORD_VERSION_V2 &&
+           (record.flags & ~BATTERY_PENDING_MIGRATION) == 0 &&
+           record.chargeMilliWh <= 1000000000000000ULL &&
+           record.dischargeMilliWh <= 1000000000000000ULL &&
+           record.checksum == batteryChecksum(&record, offsetof(BatteryEnergyRecord, checksum));
 }
 
-bool readBatteryRecord(const char *path, BatteryEnergyRecord &record)
+bool importLegacyBatteryRecord(const LegacyBatteryEnergyRecord &legacy, BatteryEnergyRecord &record)
+{
+    if (legacy.magic != BATTERY_RECORD_MAGIC || legacy.version != BATTERY_RECORD_VERSION ||
+        legacy.checksum != batteryChecksum(&legacy, offsetof(LegacyBatteryEnergyRecord, checksum)) ||
+        legacy.chargeMilliWh > 1000000000000000ULL || legacy.dischargeMilliWh > 1000000000000000ULL)
+        return false;
+    record = {};
+    record.magic = legacy.magic;
+    record.sequence = legacy.sequence;
+    record.chargeMilliWh = legacy.chargeMilliWh;
+    record.dischargeMilliWh = legacy.dischargeMilliWh;
+    record.version = BATTERY_RECORD_VERSION_V2;
+    record.checksum = batteryChecksum(&record, offsetof(BatteryEnergyRecord, checksum));
+    return true;
+}
+
+bool newerBatterySequence(uint32_t a, uint32_t b)
+{
+    return static_cast<int32_t>(a - b) > 0;
+}
+
+bool readBatteryFile(const char *path, BatteryEnergyRecord &record, bool legacy = false)
 {
     File file = LittleFS.open(path, "r");
     if (!file)
-    {
         return false;
+    bool ok = false;
+    if (legacy && file.size() == sizeof(LegacyBatteryEnergyRecord))
+    {
+        LegacyBatteryEnergyRecord old{};
+        ok = file.read(reinterpret_cast<uint8_t *>(&old), sizeof(old)) == sizeof(old) &&
+             importLegacyBatteryRecord(old, record);
     }
-
-    const bool ok = file.size() == sizeof(record) &&
-                    file.read(reinterpret_cast<uint8_t *>(&record), sizeof(record)) == sizeof(record) &&
-                    batteryRecordValid(record);
+    else if (!legacy && file.size() == sizeof(record))
+        ok = file.read(reinterpret_cast<uint8_t *>(&record), sizeof(record)) == sizeof(record) && batteryRecordValid(record);
     file.close();
     return ok;
+}
+
+bool writeBatteryFile(const char *path, const BatteryEnergyRecord &record)
+{
+    File file = LittleFS.open(path, "w");
+    if (!file)
+        return false;
+    const size_t written = file.write(reinterpret_cast<const uint8_t *>(&record), sizeof(record));
+    file.flush();
+    file.close();
+    BatteryEnergyRecord check{};
+    return written == sizeof(record) && readBatteryFile(path, check) && memcmp(&record, &check, sizeof(record)) == 0;
+}
+
+bool readBatteryNvs(Preferences &prefs, const char *key, BatteryEnergyRecord &record)
+{
+    return prefs.getBytesLength(key) == sizeof(record) &&
+           prefs.getBytes(key, &record, sizeof(record)) == sizeof(record) && batteryRecordValid(record);
+}
+
+bool writeBatteryNvs(const char *key, const BatteryEnergyRecord &record)
+{
+    Preferences prefs;
+    if (!prefs.begin("batenergy", false))
+        return false;
+    const size_t written = prefs.putBytes(key, &record, sizeof(record));
+    BatteryEnergyRecord check{};
+    const bool ok = written == sizeof(record) && readBatteryNvs(prefs, key, check) && memcmp(&record, &check, sizeof(record)) == 0;
+    prefs.end();
+    return ok;
+}
+
+bool erasedBacklogPartition()
+{
+    const esp_partition_t *partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, BACKLOG_PARTITION);
+    if (partition == nullptr)
+        return false;
+    uint8_t bytes[256];
+    for (size_t offset = 0; offset < partition->size; offset += sizeof(bytes))
+    {
+        const size_t length = (partition->size - offset) < sizeof(bytes) ? partition->size - offset : sizeof(bytes);
+        if (esp_partition_read(partition, offset, bytes, length) != ESP_OK)
+            return false;
+        for (size_t i = 0; i < length; ++i)
+            if (bytes[i] != 0xff)
+                return false;
+    }
+    return true;
+}
+
+bool parseBatteryMigrationId(const char *text, uint8_t id[16])
+{
+    if (text == nullptr || strlen(text) != 32)
+        return false;
+    bool nonzero = false;
+    for (size_t i = 0; i < 16; ++i)
+    {
+        unsigned value = 0;
+        for (size_t j = 0; j < 2; ++j)
+        {
+            const char c = text[i * 2 + j];
+            const unsigned digit = c >= '0' && c <= '9' ? c - '0' : c >= 'a' && c <= 'f' ? c - 'a' + 10 : 16;
+            if (digit > 15)
+                return false;
+            value = value * 16 + digit;
+        }
+        id[i] = static_cast<uint8_t>(value);
+        nonzero = nonzero || value != 0;
+    }
+    return nonzero;
+}
+
+void appendEnergyPartition(JsonObject target, const esp_partition_t *partition)
+{
+    target["present"] = partition != nullptr;
+    if (partition != nullptr)
+    {
+        target["label"] = partition->label;
+        target["address"] = partition->address;
+        target["size"] = partition->size;
+        target["type"] = static_cast<unsigned>(partition->type);
+        target["subtype"] = static_cast<unsigned>(partition->subtype);
+    }
 }
 
 bool readEnergyValues(SolarState &state, EnergyRecord &record)
@@ -202,39 +331,69 @@ EnergyBacklog::EnergyBacklog()
 
 void EnergyBacklog::begin()
 {
-    _ready = LittleFS.begin(true, "/littlefs", 5, BACKLOG_PARTITION);
+    inspectBatteryPartitions();
+    _batteryLastError = "";
+    _batteryStorageWarning = "";
+    const bool partitionPresent = _batteryPartitions["backlog"]["present"] | false;
+    _ready = partitionPresent && LittleFS.begin(false, "/littlefs", 5, BACKLOG_PARTITION);
+    if (!_ready && partitionPresent && erasedBacklogPartition())
+    {
+        // Only an entirely erased, unused partition may be initialized here.
+        // A damaged filesystem is never formatted as an implicit recovery step.
+        _ready = LittleFS.format() && LittleFS.begin(false, "/littlefs", 5, BACKLOG_PARTITION);
+        _batteryPartitions["backlog"]["initializedErasedPartition"] = _ready;
+    }
+    if (!_ready)
+        _batteryStorageWarning = partitionPresent ? "backlog_mount_failed" : "backlog_partition_missing";
+
+    Preferences prefs;
+    _batteryNvsAvailable = prefs.begin("batenergy", false);
+    if (_batteryNvsAvailable)
+    {
+        _batteryPreferNvs = prefs.getBool("prefer_nvs", false);
+        _batteryLegacyInitialized = prefs.getBool("initialized", false);
+        _batteryFactoryResetPending = prefs.getBool("factory_reset", false);
+        if (!_ready && !_batteryPreferNvs)
+        {
+            // An inaccessible filesystem may contain a higher old sequence.
+            // Once recovery starts in NVS, do not later resurrect those files
+            // simply because the filesystem becomes readable again.
+            _batteryPreferNvs = prefs.putBool("prefer_nvs", true) == 1;
+            if (!_batteryPreferNvs)
+            {
+                _batteryNvsAvailable = false;
+                _batteryStorageWarning = "nvs_backend_marker_write_failed";
+            }
+        }
+        prefs.end();
+    }
+    _batteryStore = _batteryPreferNvs ? (_batteryNvsAvailable ? BatteryStore::Nvs : BatteryStore::None)
+                                    : (_ready ? BatteryStore::LittleFs : (_batteryNvsAvailable ? BatteryStore::Nvs : BatteryStore::None));
+    resetBatteryEnergyIfFactoryReset();
+    if (!_batteryFactoryResetPending)
+        loadBatteryEnergyCheckpoint();
+    _batteryHaveIntegrationTime = false;
+    _batteryHaveSample = false;
+    _batteryActivePowerW = 0;
+    _batteryHaveStatePublish = false;
+    _batteryLastCheckpointMs = millis();
+    if (_batteryDirty && !_batteryRecoveryRequired)
+        saveBatteryEnergyCheckpoint(true);
+    writeLog("[BatteryEnergy] storage=%s pending=%d restored=%d error=%s", _batteryStore == BatteryStore::LittleFs ? "littlefs" : _batteryStore == BatteryStore::Nvs ? "nvs" : "none", _batteryMigrationPending, _batteryLoadedCheckpoint, _batteryLastError.c_str());
     if (!_ready)
     {
-        writeLog("[EnergyBacklog] LittleFS mount failed; offline counters disabled");
+        writeLog("[EnergyBacklog] LittleFS unavailable; inverter-counter backlog disabled");
         return;
     }
-
     repairTrailingPartialRecord();
-    resetBatteryEnergyIfFactoryReset();
-    loadBatteryEnergyCheckpoint();
-    _batteryLastIntegrateMs = 0;
-    _batteryLastCheckpointMs = millis();
-
     File file = LittleFS.open(BACKLOG_FILE, "r");
     if (file)
     {
         EnergyRecord record{};
         while (file.read(reinterpret_cast<uint8_t *>(&record), sizeof(record)) == sizeof(record))
-        {
             if (recordValid(record) && record.sequence >= _nextSequence)
-            {
                 _nextSequence = record.sequence + 1;
-            }
-        }
-
-        writeLog("[EnergyBacklog] Ready, pending=%u bytes, next_seq=%u",
-                 static_cast<unsigned>(file.size()),
-                 static_cast<unsigned>(_nextSequence));
         file.close();
-    }
-    else
-    {
-        writeLog("[EnergyBacklog] Ready, backlog empty");
     }
 }
 
@@ -497,119 +656,253 @@ bool EnergyBacklog::repairTrailingPartialRecord()
 
 void EnergyBacklog::resetBatteryEnergyIfFactoryReset()
 {
+    if (!_batteryFactoryResetPending)
+        return;
+    _batteryMigrationPending = true;
     Preferences prefs;
-    if (!prefs.begin("batenergy", false))
+    if (!_batteryNvsAvailable || !prefs.begin("batenergy", false))
     {
+        _batteryStore = BatteryStore::None;
+        _batteryLastError = "factory_reset_nvs_unavailable";
         return;
     }
-
-    const bool initialized = prefs.getBool("initialized", false);
-    if (!initialized)
+    // A deliberate factory reset is explicit. Missing legacy initialization
+    // metadata alone must never delete an otherwise valid checkpoint.
+    if (prefs.putBool("prefer_nvs", true) != 1)
+    {
+        prefs.end();
+        _batteryStore = BatteryStore::None;
+        _batteryLastError = "factory_reset_marker_write_failed";
+        return;
+    }
+    _batteryPreferNvs = true;
+    for (const char *key : BATTERY_NVS_KEYS)
+    {
+        if (prefs.isKey(key) && !prefs.remove(key))
+        {
+            prefs.end();
+            _batteryStore = BatteryStore::None;
+            _batteryMigrationPending = true;
+            _batteryLastError = "factory_reset_checkpoint_remove_failed";
+            return;
+        }
+    }
+    prefs.end();
+    if (_ready)
     {
         LittleFS.remove(BATTERY_SLOT_A);
         LittleFS.remove(BATTERY_SLOT_B);
-        prefs.putBool("initialized", true);
-        writeLog("[BatteryEnergy] Initialized fresh persistent counters");
+        LittleFS.remove(BATTERY_FILES_V2[0]);
+        LittleFS.remove(BATTERY_FILES_V2[1]);
     }
-    prefs.end();
+    _batteryStore = BatteryStore::Nvs;
+    _batteryChargeWh = _batteryDischargeWh = 0;
+    _batteryCheckpointSequence = _batteryWriteSequence = 0;
+    _batteryNvsSlot = _batteryFileSlot = -1;
+    memset(_batteryMigrationId, 0, sizeof(_batteryMigrationId));
+    _batteryMigrationPending = false;
+    _batteryDirty = true;
 }
 
 void EnergyBacklog::loadBatteryEnergyCheckpoint()
 {
-    BatteryEnergyRecord a{};
-    BatteryEnergyRecord b{};
-    const bool validA = readBatteryRecord(BATTERY_SLOT_A, a);
-    const bool validB = readBatteryRecord(BATTERY_SLOT_B, b);
-
-    const BatteryEnergyRecord *latest = nullptr;
-    if (validA && validB)
+    BatteryEnergyRecord best{};
+    bool found = false, legacySelected = false;
+    uint32_t fileSequence = 0, nvsSequence = 0;
+    _batteryFileSlot = _batteryNvsSlot = -1;
+    _batteryHadRecords = false;
+    auto consider = [&](const BatteryEnergyRecord &record, bool legacy)
     {
-        latest = (a.sequence >= b.sequence) ? &a : &b;
-    }
-    else if (validA)
+        if (!found || (!legacy && legacySelected) || (legacy == legacySelected && newerBatterySequence(record.sequence, best.sequence)))
+        {
+            best = record;
+            found = true;
+            legacySelected = legacy;
+        }
+    };
+    if (_ready && !_batteryPreferNvs)
     {
-        latest = &a;
+        for (int i = 0; i < 2; ++i)
+        {
+            BatteryEnergyRecord record{};
+            _batteryHadRecords = _batteryHadRecords || LittleFS.exists(BATTERY_FILES_V2[i]);
+            if (readBatteryFile(BATTERY_FILES_V2[i], record))
+            {
+                consider(record, false);
+                if (_batteryFileSlot < 0 || newerBatterySequence(record.sequence, fileSequence))
+                {
+                    _batteryFileSlot = i;
+                    fileSequence = record.sequence;
+                }
+            }
+        }
+        for (const char *name : {BATTERY_SLOT_A, BATTERY_SLOT_B})
+        {
+            BatteryEnergyRecord record{};
+            _batteryHadRecords = _batteryHadRecords || LittleFS.exists(name);
+            if (readBatteryFile(name, record, true))
+                consider(record, true);
+        }
     }
-    else if (validB)
+    Preferences prefs;
+    if (_batteryNvsAvailable && prefs.begin("batenergy", false))
     {
-        latest = &b;
+        for (int i = 0; i < 2; ++i)
+        {
+            BatteryEnergyRecord record{};
+            _batteryHadRecords = _batteryHadRecords || prefs.isKey(BATTERY_NVS_KEYS[i]);
+            if (readBatteryNvs(prefs, BATTERY_NVS_KEYS[i], record))
+            {
+                consider(record, false);
+                if (_batteryNvsSlot < 0 || newerBatterySequence(record.sequence, nvsSequence))
+                {
+                    _batteryNvsSlot = i;
+                    nvsSequence = record.sequence;
+                }
+            }
+        }
+        prefs.end();
     }
-
-    if (latest == nullptr)
+    _batteryLoadedCheckpoint = found;
+    _batteryRecoveryRequired = !found && _batteryHadRecords;
+    if (found)
     {
-        _batteryChargeWh = 0.0;
-        _batteryDischargeWh = 0.0;
-        _batteryCheckpointSequence = 0;
-        _batteryDirty = false;
-        writeLog("[BatteryEnergy] No checkpoint; counters start at zero");
-        return;
+        _batteryChargeWh = static_cast<double>(best.chargeMilliWh) / 1000.0;
+        _batteryDischargeWh = static_cast<double>(best.dischargeMilliWh) / 1000.0;
+        _batteryCheckpointSequence = _batteryWriteSequence = best.sequence;
+        memcpy(_batteryMigrationId, best.migrationId, sizeof(_batteryMigrationId));
+        _batteryMigrationPending = (best.flags & BATTERY_PENDING_MIGRATION) != 0;
+        _batteryLastSaveOk = true;
+        // Import legacy records, or move the latest fallback record back to a
+        // working preferred backend, using a verified new-format checkpoint.
+        _batteryDirty = legacySelected || (_batteryStore == BatteryStore::LittleFs &&
+                         (_batteryFileSlot < 0 || newerBatterySequence(best.sequence, fileSequence)));
     }
-
-    _batteryChargeWh = static_cast<double>(latest->chargeMilliWh) / 1000.0;
-    _batteryDischargeWh = static_cast<double>(latest->dischargeMilliWh) / 1000.0;
-    _batteryCheckpointSequence = latest->sequence;
-    _batteryDirty = false;
-
-    writeLog("[BatteryEnergy] Restored charge=%.3f kWh discharge=%.3f kWh seq=%u",
-             _batteryChargeWh / 1000.0,
-             _batteryDischargeWh / 1000.0,
-             static_cast<unsigned>(_batteryCheckpointSequence));
+    else
+    {
+        _batteryChargeWh = _batteryDischargeWh = 0;
+        _batteryCheckpointSequence = _batteryWriteSequence = 0;
+        memset(_batteryMigrationId, 0, sizeof(_batteryMigrationId));
+        _batteryMigrationPending = !_ready || _batteryPreferNvs || _batteryLegacyInitialized || _batteryHadRecords;
+        _batteryDirty = true;
+        if (_batteryRecoveryRequired)
+            _batteryLastError = "no_valid_checkpoint_recovery_required";
+    }
 }
 
 bool EnergyBacklog::saveBatteryEnergyCheckpoint(bool force)
 {
-    if (!_ready || (!_batteryDirty && !force))
+    _batteryLastCheckpointAttemptMs = millis();
+    _batteryHaveCheckpointAttempt = true;
+    if (_batteryRecoveryRequired || _batteryMigrationUncertain)
     {
-        return !_batteryDirty;
+        _batteryLastSaveOk = false;
+        return false;
     }
-
+    if (_batteryStore == BatteryStore::None)
+    {
+        _batteryLastSaveOk = false;
+        _batteryLastError = "battery_storage_unavailable";
+        return false;
+    }
+    if (!_batteryDirty && !force)
+        return true;
+    if (!std::isfinite(_batteryChargeWh) || !std::isfinite(_batteryDischargeWh) ||
+        _batteryChargeWh < 0 || _batteryDischargeWh < 0 ||
+        _batteryChargeWh > BATTERY_MAX_COUNTER_WH || _batteryDischargeWh > BATTERY_MAX_COUNTER_WH)
+    {
+        _batteryLastSaveOk = false;
+        _batteryLastError = "counter_out_of_range";
+        return false;
+    }
     BatteryEnergyRecord record{};
     record.magic = BATTERY_RECORD_MAGIC;
-    record.sequence = _batteryCheckpointSequence + 1U;
-    record.chargeMilliWh = static_cast<uint64_t>(_batteryChargeWh * 1000.0 + 0.5);
-    record.dischargeMilliWh = static_cast<uint64_t>(_batteryDischargeWh * 1000.0 + 0.5);
-    record.version = BATTERY_RECORD_VERSION;
-    record.reserved = 0;
-    record.checksum = batteryRecordChecksum(record);
-
-    const char *path = (record.sequence & 1U) ? BATTERY_SLOT_A : BATTERY_SLOT_B;
-    File file = LittleFS.open(path, "w");
-    if (!file)
+    record.sequence = ++_batteryWriteSequence;
+    // A verified deliberate-restart checkpoint must not round a published
+    // total down and look like a counter reset to Home Assistant. The upward
+    // disk quantization is less than one milliWh and only carried in on boot.
+    record.chargeMilliWh = static_cast<uint64_t>(std::ceil(_batteryChargeWh * 1000.0));
+    record.dischargeMilliWh = static_cast<uint64_t>(std::ceil(_batteryDischargeWh * 1000.0));
+    record.version = BATTERY_RECORD_VERSION_V2;
+    record.flags = _batteryMigrationPending ? BATTERY_PENDING_MIGRATION : 0;
+    memcpy(record.migrationId, _batteryMigrationId, sizeof(record.migrationId));
+    record.checksum = batteryChecksum(&record, offsetof(BatteryEnergyRecord, checksum));
+    bool ok = false;
+    if (_batteryStore == BatteryStore::LittleFs)
     {
-        writeLog("[BatteryEnergy] Checkpoint open failed");
+        const int slot = _batteryFileSlot == 0 ? 1 : 0;
+        ok = writeBatteryFile(BATTERY_FILES_V2[slot], record);
+        if (ok)
+            _batteryFileSlot = slot;
+        else if (_batteryNvsAvailable)
+        {
+            const int nvsSlot = _batteryNvsSlot == 0 ? 1 : 0;
+            ok = writeBatteryNvs(BATTERY_NVS_KEYS[nvsSlot], record);
+            if (ok)
+            {
+                _batteryNvsSlot = nvsSlot;
+                _batteryStore = BatteryStore::Nvs;
+                _batteryStorageWarning = "littlefs_checkpoint_failed_using_nvs";
+            }
+        }
+    }
+    else
+    {
+        const int slot = _batteryNvsSlot == 0 ? 1 : 0;
+        ok = writeBatteryNvs(BATTERY_NVS_KEYS[slot], record);
+        if (ok)
+            _batteryNvsSlot = slot;
+    }
+    _batteryLastSaveOk = ok;
+    if (!ok)
+    {
+        _batteryLastError = "checkpoint_write_or_verify_failed";
         return false;
     }
-
-    const size_t written = file.write(reinterpret_cast<const uint8_t *>(&record), sizeof(record));
-    file.flush();
-    file.close();
-
-    if (written != sizeof(record))
-    {
-        writeLog("[BatteryEnergy] Checkpoint write failed: %u/%u",
-                 static_cast<unsigned>(written),
-                 static_cast<unsigned>(sizeof(record)));
-        return false;
-    }
-
-    BatteryEnergyRecord verify{};
-    if (!readBatteryRecord(path, verify) || verify.sequence != record.sequence)
-    {
-        writeLog("[BatteryEnergy] Checkpoint verification failed");
-        return false;
-    }
-
     _batteryCheckpointSequence = record.sequence;
     _batteryLastCheckpointMs = millis();
     _batteryDirty = false;
-    return true;
+    _batteryLastError = "";
+    Preferences prefs;
+    if (_batteryNvsAvailable && prefs.begin("batenergy", false))
+    {
+        if (!_batteryLegacyInitialized)
+        {
+            _batteryLegacyInitialized = prefs.putBool("initialized", true) == 1;
+            if (!_batteryLegacyInitialized)
+                _batteryStorageWarning = "legacy_marker_write_failed";
+        }
+        if (_batteryFactoryResetPending)
+        {
+            if (prefs.remove("factory_reset"))
+                _batteryFactoryResetPending = false;
+            else
+            {
+                _batteryDirty = true;
+                _batteryLastSaveOk = false;
+                _batteryLastError = "factory_reset_finalize_failed";
+            }
+        }
+        prefs.end();
+    }
+    return _batteryLastSaveOk;
 }
 
 void EnergyBacklog::publishBatteryEnergyState(SolarState &state)
 {
     JsonObject live = state.doc()["LiveData"].as<JsonObject>();
-    live[DESCR_Battery_Charge_Energy] = _batteryChargeWh / 1000.0;
-    live[DESCR_Battery_Discharge_Energy] = _batteryDischargeWh / 1000.0;
+    if (_batteryMigrationPending)
+    {
+        // Preserve HA's last retained totals until the old visible baseline is
+        // carried over. A provisional zero would create an extra statistics reset.
+        live.remove(DESCR_Battery_Charge_Energy);
+        live.remove(DESCR_Battery_Discharge_Energy);
+    }
+    else
+    {
+        live[DESCR_Battery_Charge_Energy] = _batteryChargeWh / 1000.0;
+        live[DESCR_Battery_Discharge_Energy] = _batteryDischargeWh / 1000.0;
+    }
     state.refreshBindings();
     state.commitLocalState();
     _batteryLastStatePublishMs = millis();
@@ -694,17 +987,13 @@ void EnergyBacklog::updateBatteryEnergy(SolarState &state, const BatterySampleTi
     // second. Explicit restart/migration flushes are handled separately.
     if (_batteryDirty && static_cast<uint32_t>(now - _batteryLastCheckpointMs) >= BATTERY_CHECKPOINT_INTERVAL_MS &&
         (!_batteryHaveCheckpointAttempt || static_cast<uint32_t>(now - _batteryLastCheckpointAttemptMs) >= BATTERY_CHECKPOINT_RETRY_MS))
-    {
-        _batteryLastCheckpointAttemptMs = now;
-        _batteryHaveCheckpointAttempt = true;
         saveBatteryEnergyCheckpoint(false);
-    }
 }
 
-void EnergyBacklog::flushBatteryEnergy()
+bool EnergyBacklog::flushBatteryEnergy()
 {
     advanceBatteryEnergy(millis());
-    saveBatteryEnergyCheckpoint(false);
+    return saveBatteryEnergyCheckpoint(false);
 }
 
 bool EnergyBacklog::startReplay()
@@ -824,6 +1113,15 @@ void EnergyBacklog::cancelReplay()
     _replayOffset = 0;
 }
 
+void EnergyBacklog::inspectBatteryPartitions()
+{
+    _batteryPartitions.clear();
+    appendEnergyPartition(_batteryPartitions["runningApp"].to<JsonObject>(), esp_ota_get_running_partition());
+    appendEnergyPartition(_batteryPartitions["nextOtaApp"].to<JsonObject>(), esp_ota_get_next_update_partition(nullptr));
+    appendEnergyPartition(_batteryPartitions["backlog"].to<JsonObject>(), esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, BACKLOG_PARTITION));
+    appendEnergyPartition(_batteryPartitions["nvs"].to<JsonObject>(), esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_ANY, "nvs"));
+}
+
 void EnergyBacklog::advanceBatteryEnergy(uint32_t untilMs)
 {
     if (!_batteryHaveIntegrationTime)
@@ -851,4 +1149,118 @@ void EnergyBacklog::advanceBatteryEnergy(uint32_t untilMs)
         }
     }
     _batteryLastIntegrateMs = untilMs;
+}
+
+String EnergyBacklog::batteryMigrationReceipt() const
+{
+    char text[33];
+    const char *hex = "0123456789abcdef";
+    for (size_t i = 0; i < sizeof(_batteryMigrationId); ++i)
+    {
+        text[i * 2] = hex[_batteryMigrationId[i] >> 4];
+        text[i * 2 + 1] = hex[_batteryMigrationId[i] & 15];
+    }
+    text[32] = '\0';
+    return String(text);
+}
+
+bool EnergyBacklog::applyBatteryMigration(const char *requestId, double chargeKwh,
+                                         double dischargeKwh, unsigned long nowMs, String &error)
+{
+    error = "";
+    uint8_t id[16];
+    if (!parseBatteryMigrationId(requestId, id) || !std::isfinite(chargeKwh) || !std::isfinite(dischargeKwh) ||
+        chargeKwh < 0 || dischargeKwh < 0 || chargeKwh > BATTERY_MAX_COUNTER_WH / 1000 || dischargeKwh > BATTERY_MAX_COUNTER_WH / 1000)
+    {
+        error = "invalid_migration";
+        return false;
+    }
+    if (!_batteryMigrationPending)
+    {
+        if (memcmp(id, _batteryMigrationId, sizeof(id)) == 0)
+            return true;
+        error = "already_initialized";
+        return false;
+    }
+    if (_batteryMigrationUncertain && (_batteryUncertainRequest != requestId ||
+        _batteryUncertainChargeKwh != chargeKwh || _batteryUncertainDischargeKwh != dischargeKwh))
+    {
+        error = "retry_same_migration_request";
+        return false;
+    }
+    advanceBatteryEnergy(nowMs);
+    const double oldCharge = _batteryChargeWh, oldDischarge = _batteryDischargeWh;
+    const bool recovery = _batteryRecoveryRequired;
+    if (oldCharge + chargeKwh * 1000 > BATTERY_MAX_COUNTER_WH || oldDischarge + dischargeKwh * 1000 > BATTERY_MAX_COUNTER_WH)
+    {
+        error = "counter_out_of_range";
+        return false;
+    }
+    _batteryChargeWh += chargeKwh * 1000;
+    _batteryDischargeWh += dischargeKwh * 1000;
+    memcpy(_batteryMigrationId, id, sizeof(id));
+    _batteryMigrationPending = _batteryMigrationUncertain = _batteryRecoveryRequired = false;
+    _batteryDirty = true;
+    if (saveBatteryEnergyCheckpoint(true))
+    {
+        _batteryUncertainRequest = "";
+        _batteryHaveStatePublish = false;
+        return true;
+    }
+    _batteryChargeWh = oldCharge;
+    _batteryDischargeWh = oldDischarge;
+    memset(_batteryMigrationId, 0, sizeof(_batteryMigrationId));
+    _batteryMigrationPending = true;
+    _batteryRecoveryRequired = recovery;
+    _batteryMigrationUncertain = true;
+    _batteryUncertainRequest = requestId;
+    _batteryUncertainChargeKwh = chargeKwh;
+    _batteryUncertainDischargeKwh = dischargeKwh;
+    _batteryDirty = true;
+    error = "migration_checkpoint_not_verified";
+    return false;
+}
+
+void EnergyBacklog::writeBatteryDiagnostics(JsonObject target, unsigned long nowMs) const
+{
+    target["schema"] = 1;
+    target["uptimeMs"] = static_cast<uint32_t>(nowMs);
+    target["partitions"] = _batteryPartitions.as<JsonObjectConst>();
+    JsonObject storage = target["storage"].to<JsonObject>();
+    storage["backend"] = _batteryStore == BatteryStore::LittleFs ? "littlefs" : _batteryStore == BatteryStore::Nvs ? "nvs" : "none";
+    storage["available"] = _batteryStore != BatteryStore::None;
+    storage["filesystemMounted"] = _ready;
+    storage["nvsAvailable"] = _batteryNvsAvailable;
+    storage["loadedCheckpoint"] = _batteryLoadedCheckpoint;
+    storage["sequence"] = _batteryCheckpointSequence;
+    storage["lastWriteOk"] = _batteryLastSaveOk;
+    storage["lastWriteAtMs"] = static_cast<uint32_t>(_batteryLastCheckpointMs);
+    storage["dirty"] = _batteryDirty;
+    storage["warning"] = _batteryStorageWarning;
+    storage["error"] = _batteryLastError;
+    JsonObject migration = target["migration"].to<JsonObject>();
+    migration["pending"] = _batteryMigrationPending;
+    migration["recoveryRequired"] = _batteryRecoveryRequired;
+    migration["writeUncertain"] = _batteryMigrationUncertain;
+    migration["factoryResetPending"] = _batteryFactoryResetPending;
+    migration["receipt"] = batteryMigrationReceipt();
+    migration["uncertainRequest"] = _batteryUncertainRequest;
+    target["chargeKwh"] = _batteryChargeWh / 1000.0;
+    target["dischargeKwh"] = _batteryDischargeWh / 1000.0;
+    JsonObject integration = target["integration"].to<JsonObject>();
+    integration["lastAcceptedPowerW"] = _batteryActivePowerW;
+    integration["powerW"] = _batteryHaveSample && static_cast<uint32_t>(nowMs - _batterySample.sampledAtMs) <= _batterySample.validForMs ? _batteryActivePowerW : 0;
+    integration["measurementValid"] = _batteryMeasurementValid;
+    integration["direction"] = _batteryDirection;
+    integration["lastIntegratedAtMs"] = static_cast<uint32_t>(_batteryLastIntegrateMs);
+    integration["sampleSequence"] = _batterySample.sequence;
+    integration["sampledAtMs"] = _batterySample.sampledAtMs;
+    integration["acceptedAtMs"] = _batterySample.acceptedAtMs;
+    integration["validForMs"] = _batterySample.validForMs;
+}
+
+bool EnergyBacklog::validBatteryMigrationId(const char *text)
+{
+    uint8_t id[16];
+    return parseBatteryMigrationId(text, id);
 }

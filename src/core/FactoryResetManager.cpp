@@ -116,7 +116,21 @@ void FactoryResetManager::performFactoryReset()
 {
     Serial.println(F("[FactoryReset] Erasing NVS"));
     nvs_flash_erase();
-    initNvs();
+    if (initNvs() == ESP_OK)
+    {
+        nvs_handle_t energy = {};
+        if (nvs_open("batenergy", NVS_READWRITE, &energy) == ESP_OK)
+        {
+            // Only a deliberate reset authorizes discarding old counter files.
+            // An absent initialization key after an upgrade is insufficient.
+            const esp_err_t marked = nvs_set_u8(energy, "factory_reset", 1);
+            if (marked != ESP_OK || nvs_commit(energy) != ESP_OK)
+                Serial.println(F("[FactoryReset] Battery reset marker could not be saved"));
+            nvs_close(energy);
+        }
+        else
+            Serial.println(F("[FactoryReset] Battery reset namespace unavailable"));
+    }
     delay(200);
     ESP.restart();
 }

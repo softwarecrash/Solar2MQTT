@@ -33,7 +33,7 @@ static void timedIntegration()
         }
         near(e._batteryChargeWh, 1.0 / 3);
         near(e._batteryDischargeWh, 0);
-        assert(storage.fsWrites <= 1);
+        assert(storage.fsWrites == 1);
     }
     reset();
     SolarState state;

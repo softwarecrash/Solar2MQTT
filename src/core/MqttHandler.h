@@ -6,6 +6,7 @@
 #include <WiFiClient.h>
 #include <WiFiClientSecure.h>
 #include <vector>
+#include <freertos/semphr.h>
 
 #include "core/EnergyBacklog.h"
 #include "solar/HaDiscoveryCatalog.h"
@@ -28,6 +29,8 @@ public:
     void triggerHaDiscovery();
     void publishSensorImmediate(uint8_t index, float temperature);
     void flushPersistentEnergy();
+    void copyBatteryDiagnostics(JsonDocument &target);
+    int queueBatteryMigration(JsonObjectConst request, JsonDocument &response);
 
 private:
     static MqttHandler *s_instance;
@@ -41,6 +44,34 @@ private:
     Client *_netClient;
     PubSubClient _mqtt;
     EnergyBacklog _energyBacklog;
+    struct BatteryMigrationRequest
+    {
+        String id;
+        double chargeKwh = 0;
+        double dischargeKwh = 0;
+    };
+    // HTTP only reads this cache or queues a request. Inverter state, NVS and
+    // filesystem mutations stay on the main loop, outside this short lock.
+    class BatteryApiLock
+    {
+    public:
+        explicit BatteryApiLock(SemaphoreHandle_t mutex) : _mutex(mutex) { if (_mutex) xSemaphoreTake(_mutex, portMAX_DELAY); }
+        ~BatteryApiLock() { if (_mutex) xSemaphoreGive(_mutex); }
+    private:
+        SemaphoreHandle_t _mutex;
+    };
+    SemaphoreHandle_t _batteryApiMutex = nullptr;
+    JsonDocument _batteryApiCache;
+    String _batteryApiDeviceId;
+    String _batteryApiBootId;
+    BatteryMigrationRequest _batteryApiRequest;
+    bool _batteryApiQueued = false;
+    bool _batteryApiBusy = false;
+    String _batteryJobId;
+    String _batteryJobState;
+    String _batteryJobError;
+    uint32_t _batteryApiLastRefreshMs = 0;
+    bool _batteryApiHaveRefresh = false;
 
     bool _pendingFullPublish;
     bool _pendingHaDiscovery;
@@ -89,4 +120,8 @@ private:
     void stopHaDiscoverySweep();
     void setupSubscriptions();
     String baseTopic() const;
+    void initializeBatteryApi(const String &deviceId, const String &bootId);
+    void refreshBatteryDiagnostics(unsigned long nowMs, bool force = false);
+    void processBatteryMigration(unsigned long nowMs);
+    void preserveBatteryDiscoveryTopics(std::vector<String> &topics) const;
 };
