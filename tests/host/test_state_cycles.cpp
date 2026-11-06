@@ -1,6 +1,7 @@
 #include "pi_fixture.h"
 #include "pi_snapshot_cases.h"
 #include "pi_startup_cases.h"
+#include "pi_model_cases.h"
 
 int main()
 {
@@ -13,5 +14,7 @@ int main()
     lateStartupRefinement();
     startupRollbackRegressions();
     modbusTimingDelegation();
+    legacyModelFailures();
+    legacyModelFallback();
     std::puts("Snapshot/publication regressions passed.");
 }

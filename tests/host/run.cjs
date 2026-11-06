@@ -3,7 +3,7 @@ const { harness } = require('./support/native.cjs');
 const native = require('./run_state_cycles.cjs');
 
 const portable = ["snapshot-memory","pi-transport","powmr-pv2","pv-total","qpigs2","pv2-polling","qpigs","harness","migration","zero-start","discovery-memory","ota","ota-ui","firmware-writer"];
-const groups = [...portable, ...native.groups];
+const groups = [...portable, ...native.groups, 'isolation'];
 
 async function runGroup(group) {
   if (native.groups.includes(group)) return native.runGroup(group);

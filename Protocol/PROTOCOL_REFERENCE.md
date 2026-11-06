@@ -180,7 +180,7 @@ Minimum dump set for new unknown serial devices:
 | `PI15` | `QPI`, `QSVFW2`, `QMD`, `QFLAG`, `QPIRI`, `QPIGS`, `QMOD`, `QPIWS` | raw-only |
 | `PI16` | `QPI`, `QFLAG`, `QPIRI`, `QPIGS`, `QMOD`, `QPIWS`, `QPIBI` | structured classic status, `QPIBI` raw |
 | `PI18` | `^P005PI`, `^P007PIRI`, `^P005GS`, `Q1`, `^P006MOD`, `^P007FLAG`, `^P005FWS` | `^P004T`, `^P013ED`, `^P011EM`, `^P009EY`, `^P005ET` |
-| `PI30` | `QPI`, `QMN`, `QPIRI`, `QPIGS`, `QMOD`, `QFLAG`, `QPIWS`, `Q1` | `QET`, `QT`, `QEY`, `QEM`, `QED`, `QLT`, `QLY`, `QLM`, `QLD` |
+| `PI30` | `QPI`, `QMN` (legacy `QMD` fallback on NAK), `QPIRI`, `QPIGS`, `QMOD`, `QFLAG`, `QPIWS`, `Q1` | `QET`, `QT`, `QEY`, `QEM`, `QED`, `QLT`, `QLY`, `QLM`, `QLD` (device-dependent) |
 | `PI30_MAX` | PI30 base | `QFLAG d`, `QPIRI >= 28`, extended `QPIWS` |
 | `PI30_REVO` | PI30 base | `QALL`, REVO `QPIGS` tail |
 | `PI30_PIP_GK` | PI30 base | `QMOD = E`, extended `QPIWS` |
@@ -189,6 +189,24 @@ Minimum dump set for new unknown serial devices:
 | `MODBUS_MUST` | holding registers from the MUST table | model / charger detection |
 | `MODBUS_ANENJI` | holding registers from the Anenji table | serial number registers |
 | `MODBUS_DEYE` | core holding registers | currently partial coverage |
+
+### 7.1 Legacy Model And Manual Inquiries
+
+For PI30-like devices, a valid QMN remains the preferred model source. Only
+an explicit QMN `NAK` triggers one QMD inquiry in that static acquisition;
+timeouts and CRC failures do not trigger the fallback. QMD's first model
+field is 15 characters, padded with `#` or spaces. Only its bounded,
+validated model text is published through the existing `Device_Model` field.
+The other QMD rating fields are not applied; QPIRI remains authoritative.
+QMD is optional: CRC, timeout, rejection or invalid model text remain visible
+in RawData without restarting initialization. A previously validated model
+is retained if available; otherwise it remains unknown. There is one QMD
+attempt per static acquisition, with no retry before every normal measurement.
+
+On the PIP 4048MSD / main firmware 75.20, the captured QMD reply is
+`#####INVERTEX5K ###5000 99 1/1 230 230 04 12.0`. The internal identifier
+`INVERTEX5K` is not the marketing model name. Its generic rating payload must
+not replace this device's QPIRI values of 5000 VA, 4000 W and 48 V.
 
 The protected manual read path additionally recognizes the exact legacy
 inquiries `QVFW4`, `QDI`, `QMCHGCR`, `QMUCHGCR`, `QMSCHGCR`, `QOPM`, `QCST`
