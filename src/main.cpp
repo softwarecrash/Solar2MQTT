@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <ESPAsyncWebServer.h>
+#include <cstdio>
 
 #include "core/Ds18b20Service.h"
 #include "core/FactoryResetManager.h"
@@ -88,11 +89,28 @@ void updateRuntimeState()
     solarState.doc()["EspData"]["Simulation_Mode"] = inverterService.simulationEnabled() ? "PI30" : "";
     solarState.refreshBindings();
 }
+void processPendingRestart()
+{
+    const uint32_t nowMs = millis();
+    if ((g_pendingRestart && static_cast<int32_t>(nowMs - g_restartAt) >= 0) ||
+        otaUpdater.consumeRestartRequest(nowMs))
+    {
+        g_pendingRestart = false;
+        mqttHandler.flushPersistentEnergy();
+        inverterService.shutdown();
+        delay(25);
+        ESP.restart();
+    }
+}
 } // namespace
 
 void setup()
 {
     LogSerial.begin(MONITOR_SPEED);
+    // Allocate ESP-IDF's lazy console/UART locks before networking can log
+    // an error under heap pressure. HardwareSerial alone does not use them.
+    std::fputc('\n', stdout);
+    std::fflush(stdout);
     printBootBanner();
     g_bootBannerRepeats = 1;
     g_bootBannerNextAt = millis() + 1500;
@@ -178,14 +196,7 @@ void loop()
         webServerHandler.notifyStatusBar();
     }
 
-    if (g_pendingRestart && static_cast<int32_t>(millis() - g_restartAt) >= 0)
-    {
-        g_pendingRestart = false;
-        mqttHandler.flushPersistentEnergy();
-        inverterService.shutdown();
-        delay(25);
-        ESP.restart();
-    }
+    processPendingRestart();
 
     updateRuntimeState();
     webServerHandler.setMqttConnected(mqttHandler.isConnected());

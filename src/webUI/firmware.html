@@ -248,12 +248,14 @@
       rebootWatchTimer = setTimeout(tick, 900);
     }
 
+    let otaState = "idle";
     function updateOtaUi(json) {
       if (!json) return;
       const updateBtn = document.getElementById("otaUpdateBtn");
       const progressWrap = document.getElementById("otaProgressWrap");
 
       const state = json.state || "idle";
+      otaState = state;
       const busy = !!json.busy;
       const latest = json.latest || "-";
       const error = json.error || "";
@@ -277,8 +279,9 @@
           watchRebootAndRedirect();
         }
       } else if (state === "error") {
-        updateBtn.textContent = error ? "Update error" : "Update failed";
-        updateBtn.disabled = true;
+        updateBtn.textContent = "Retry update check";
+        updateBtn.disabled = busy;
+        setFwStatus(error || "Update check failed.", true);
       } else if (state === "up_to_date") {
         updateBtn.textContent = "Up to date";
         updateBtn.disabled = true;
@@ -309,26 +312,30 @@
     async function fetchOtaStatus() {
       try {
         const res = await fetch("/ota/status", { cache: "no-store" });
-        if (!res.ok) return;
+        if (!res.ok) throw new Error("Update status failed: " + res.status);
         const json = await res.json();
         updateOtaUi(json);
         if (!json.busy) stopOtaPoll();
-      } catch {
+      } catch (error) {
         stopOtaPoll();
+        updateOtaUi({state: "error", error: error.message || "Update status unavailable."});
       }
     }
 
     async function requestOtaCheck() {
+      setFwStatus("Checking GitHub release...", false);
       try {
         const res = await fetch("/ota/check", { method: "POST", cache: "no-store" });
         if (res.ok) {
-          updateOtaUi(await res.json());
+          const json = await res.json();
+          if (json.state !== "error") setFwStatus("", false);
+          updateOtaUi(json);
           startOtaPoll();
         } else {
-          setFwStatus("Update check failed: " + res.status, true);
+          updateOtaUi({state: "error", error: "Update check failed: " + res.status});
         }
       } catch {
-        setFwStatus("Update check failed.", true);
+        updateOtaUi({state: "error", error: "Update check failed. Device unreachable."});
       }
     }
 
@@ -376,6 +383,8 @@
     });
 
     document.getElementById("otaUpdateBtn").addEventListener("click", async () => {
+      if (otaState === "error") return requestOtaCheck();
+      if (otaState !== "update_available") return;
       try {
         const res = await fetch("/ota/update", { method: "POST", cache: "no-store" });
         if (res.ok) {

@@ -79,7 +79,8 @@ bool PI_Serial::PIXX_QPIGS2()
   {
     String commandAnswer = this->requestData("QPIGS2");
     get.raw.qpigs2 = commandAnswer;
-    // Keep the previous PV2 values if this reply fails its CRC.
+    // A CRC failure is rolled back by the polling cycle; do not expose a gap
+    // while the request is still in progress.
     if (commandAnswer == DESCR_req_ERCRC)
       return false;
 

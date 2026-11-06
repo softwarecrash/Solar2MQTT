@@ -34,8 +34,7 @@ struct PiReplyReader
             if (transport.cancelled()) return {Status::Cancelled, length};
             const uint32_t now = transport.now();
             const uint32_t gapLimit = length == 0 ? firstByteTimeoutMs : kInterByteTimeoutMs;
-            if (static_cast<uint32_t>(now - start) >= frameTimeoutMs ||
-                static_cast<uint32_t>(now - lastByte) >= gapLimit)
+            if (static_cast<uint32_t>(now - start) >= frameTimeoutMs)
                 return {Status::Timeout, length};
             const int value = transport.read();
             if (value >= 0)
@@ -47,6 +46,10 @@ struct PiReplyReader
             }
             else
             {
+                // A scheduler pause is not UART silence: consume queued bytes
+                // before applying idle budgets. The hard frame cap stays above.
+                if (static_cast<uint32_t>(now - lastByte) >= gapLimit)
+                    return {Status::Timeout, length};
                 // Yield while waiting rather than spinning inside Stream::timedRead().
                 transport.pause();
             }

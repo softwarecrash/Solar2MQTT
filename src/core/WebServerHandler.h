@@ -52,7 +52,7 @@ private:
     void setupStatusWebSocket();
     bool buildStatusJson(JsonDocument &doc);
     void refreshStatusPayload();
-    String lastStatusPayloadCopy();
+    bool copyLastStatusPayload(String &payload);
     void setLastStatusPayload(const String &payload);
     void sendAsset(AsyncWebServerRequest *request, const char *mime, const uint8_t *data, size_t len);
 };

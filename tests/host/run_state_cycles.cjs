@@ -4,7 +4,7 @@ const { extract } = require('./support/extract.cjs');
 const writeMocks = require('./support/mocks.cjs');
 const production = require('./support/production.cjs');
 
-const groups = ["pi","pi-energy","energy","modbus","queries","storage","battery-api"];
+const groups = ["pi","pi-energy","energy","modbus","queries","storage","battery-api","restart"];
 
 function runGroup(group, options = {}) {
   if (!groups.includes(group)) throw Error('Unknown native group: ' + group);
