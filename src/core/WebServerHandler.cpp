@@ -356,15 +356,13 @@ void WebServerHandler::registerRoutes()
             return request->requestAuthentication();
         }
 
-        JsonDocument snapshot;
-        if (!_state.snapshotTo(snapshot))
+        String json;
+        if (!_state.serializeSnapshot(json))
         {
-            request->send(503, "text/plain", "Snapshot unavailable");
+            request->send(503, "application/json", "{\"error\":\"Not enough memory for data snapshot\"}");
             return;
         }
-        String json;
-        serializeJson(snapshot, json);
-        request->send(200, "application/json", json); });
+        sendCompleteJson(request, json); });
 
     _server.on("/api/settings", HTTP_GET, [this](AsyncWebServerRequest *request)
                {

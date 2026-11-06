@@ -23,6 +23,7 @@ public:
     JsonObject raw();
     JsonObject status();
     bool snapshotTo(JsonDocument &target);
+    bool serializeSnapshot(String &output);
     bool commitInverterState();
     bool commitLocalState();
     bool recoverWorkingState();

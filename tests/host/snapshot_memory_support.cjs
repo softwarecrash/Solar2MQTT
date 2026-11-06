@@ -53,5 +53,7 @@ public:
  const a=src.indexOf('class SnapshotLock'),b=src.indexOf('\n};',a);
  if(a<0||b<0)throw Error('Missing snapshot lock');
  const get=name=>{for(const r of ['void','bool']){try{return extract(src,`${r} SolarState::${name}`);}catch(e){if(!e.message.startsWith('Missing production function'))throw e;}}throw Error(`Missing SolarState::${name}`);};
- h.write('production-snapshot.inc',src.slice(a,b+3)+'\n'+extract(src,'JsonObject ensureObject')+'\n'+extract(src,'void copyObjectSection')+'\n'+extract(src,'JsonDocument &SolarState::doc')+'\n'+['ensureObjects','refreshBindings','commitInverterState','commitLocalState','snapshotTo','recoverWorkingState'].map(get).join('\n'));
+ const serializer=src.indexOf('template <typename Writer>\nclass SnapshotJsonSerializer'),serializerEnd=src.indexOf('JsonObject ensureObject',serializer);
+ if(serializer<0||serializerEnd<0)throw Error('Missing snapshot serializer');
+ h.write('production-snapshot.inc','#include "core/JsonOutput.h"\n'+src.slice(a,b+3)+'\n'+src.slice(serializer,serializerEnd)+'\n'+extract(src,'JsonObject ensureObject')+'\n'+extract(src,'void copyObjectSection')+'\n'+extract(src,'JsonDocument &SolarState::doc')+'\n'+['ensureObjects','refreshBindings','commitInverterState','commitLocalState','snapshotTo','serializeSnapshot','recoverWorkingState'].map(get).join('\n'));
 };

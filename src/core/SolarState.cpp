@@ -1,4 +1,5 @@
 #include "core/SolarState.h"
+#include "core/JsonOutput.h"
 
 #include <esp_heap_caps.h>
 #include <string.h>
@@ -23,6 +24,76 @@ public:
     ~SnapshotLock() { if (_mutex != nullptr) xSemaphoreGive(_mutex); }
 private:
     SemaphoreHandle_t _mutex;
+};
+
+// Render the same overlay as snapshotTo without allocating another full document.
+// Both passes run under SnapshotLock, so all borrowed keys/values remain valid.
+template <typename Writer>
+class SnapshotJsonSerializer
+{
+public:
+    explicit SnapshotJsonSerializer(Writer &writer) : _writer(writer) {}
+
+    bool write(JsonObjectConst inverter, JsonObjectConst local)
+    {
+        text("{\"RawData\":{");
+        bool first = true, commandAnswerWritten = false;
+        for (JsonPairConst entry : inverter["RawData"].as<JsonObjectConst>())
+        {
+            const bool commandAnswer = entry.key() == JsonString("CommandAnswer", true);
+            pair(entry.key(), commandAnswer ? local["CommandAnswer"] : entry.value(), first);
+            commandAnswerWritten |= commandAnswer;
+        }
+        if (!commandAnswerWritten)
+            pair(JsonString("CommandAnswer", true), local["CommandAnswer"], first);
+        text("},\"DeviceData\":");
+        object(inverter["DeviceData"].as<JsonObjectConst>());
+        text(",\"LiveData\":{");
+        first = true;
+        const JsonObjectConst values = inverter["LiveData"].as<JsonObjectConst>();
+        const JsonObjectConst overlay = local["LocalData"].as<JsonObjectConst>();
+        for (JsonPairConst entry : values)
+        {
+            const JsonVariantConst replacement = overlay[entry.key()];
+            pair(entry.key(), replacement.isUnbound() ? entry.value() : replacement, first);
+        }
+        for (JsonPairConst entry : overlay)
+            if (values[entry.key()].isUnbound())
+                pair(entry.key(), entry.value(), first);
+        text("},\"EspData\":");
+        object(local["EspData"].as<JsonObjectConst>());
+        text(",\"Status\":");
+        object(local["Status"].as<JsonObjectConst>());
+        text("}");
+        return _ok;
+    }
+
+private:
+    Writer &_writer;
+    JsonDocument _key;
+    bool _ok = true;
+
+    void text(const char *value)
+    {
+        _writer.write(reinterpret_cast<const uint8_t *>(value), strlen(value));
+    }
+    void object(JsonObjectConst value)
+    {
+        if (value.isNull()) text("{}");
+        else serializeJson(value, _writer);
+    }
+    void pair(JsonString key, JsonVariantConst value, bool &first)
+    {
+        if (!first) text(",");
+        first = false;
+        // Linked strings do not retain an embedded NUL's explicit length.
+        // Copy only that unusual case; normal snapshot keys need no allocation.
+        const bool linked = memchr(key.c_str(), '\0', key.size()) == nullptr;
+        if (!_key.set(JsonString(key.c_str(), key.size(), linked))) _ok = false;
+        serializeJson(_key, _writer);
+        text(":");
+        serializeJson(value, _writer);
+    }
 };
 
 JsonObject ensureObject(JsonDocument &doc, const char *key)
@@ -219,7 +290,27 @@ bool SolarState::snapshotTo(JsonDocument &target)
     return true;
 }
 
-
+bool SolarState::serializeSnapshot(String &output)
+{
+    output = "";
+    if (_snapshotMutex == nullptr)
+        return false;
+    SnapshotLock lock(_snapshotMutex);
+    const JsonObjectConst inverter = _inverterSnapshot.as<JsonObjectConst>();
+    const JsonObjectConst local = _localSnapshot.as<JsonObjectConst>();
+    JsonSizeWriter counter;
+    SnapshotJsonSerializer<JsonSizeWriter> measure(counter);
+    if (!measure.write(inverter, local) || !output.reserve(counter.size))
+        return false;
+    JsonStringWriter writer{output};
+    SnapshotJsonSerializer<JsonStringWriter> serializer(writer);
+    if (!serializer.write(inverter, local) || output.length() != counter.size)
+    {
+        output = "";
+        return false;
+    }
+    return true;
+}
 
 bool SolarState::recoverWorkingState()
 {
