@@ -15,7 +15,8 @@ extern FakeLogSerial LogSerial;
  h.write('MycilaDS18.h',`#pragma once
 #include <cstdint>
 #include <cstddef>
-#if defined(__GNUC__) && __GNUC__ < 7
+// Clang advertises an old GCC compatibility version but provides <optional>.
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 7
 namespace std {
 template <typename T> class optional {
  bool present;
