@@ -2,6 +2,7 @@
 #define PI_SERIAL_H
 #include "descriptors.h"
 #include "PowMrPiSupplementScheduler.h"
+#include "solar/SolarTypes.h"
 #include <atomic>
 #include <HardwareSerial.h>
 #include <stdlib.h>
@@ -200,6 +201,17 @@ public:
     void setSuspend(bool enabled);
     bool isSuspended() const;
     bool isBusy() const;
+    bool hasCompleteStateUpdate() const { return completeStateUpdate; }
+    bool hasCompleteDynamicStateUpdate() const
+    {
+        return completeStateUpdate && (isModbusProtocol(protocol)
+                    ? modbus != nullptr && modbus->hasCompleteDynamicStateUpdate()
+                    : !requestStaticData);
+    }
+    void restartStateRead() { stateReadRetryPending = true; }
+    bool hasFreshBatterySample(unsigned long nowMs) const;
+    BatterySampleTiming batterySampleTiming() const;
+    unsigned long connectionHoldMs() const;
     void setDelayTime(unsigned long value) { delayTime = value; }
     void setForcedProtocol(protocol_type_t value) { forcedProtocol = value; }
 
@@ -227,6 +239,22 @@ private:
     std::atomic_bool abortAutoDetect{false};
     bool cycleBackupActive = false;
     bool cycleHadSuccessfulReply = false;
+    bool cycleHadDynamicReply = false;
+    bool completeStateUpdate = false;
+    bool stateReadRetryPending = false;
+    bool haveDynamicReply = false;
+    bool haveBatterySample = false;
+    bool cycleHadBatterySample = false;
+    enum class Qpigs21Layout { None, Standard, Revo };
+    Qpigs21Layout cycleQpigs21Layout = Qpigs21Layout::None;
+    unsigned long cycleStartedAt = 0;
+    unsigned long lastCycleDurationMs = 0;
+    unsigned long lastDynamicReplyAt = 0;
+    unsigned long pendingBatterySampleAt = 0;
+    unsigned long lastBatterySampleAt = 0;
+    uint32_t lastBatteryAcceptedAt = 0;
+    uint32_t lastBatteryValidForMs = 0;
+    uint32_t batterySampleSequence = 0;
 
     unsigned long previousTime = 0;
     unsigned long delayTime = 100;
@@ -245,6 +273,7 @@ private:
     String customCommandBuffer;
     JsonDocument cycleLiveBackup;
     JsonDocument cycleStaticBackup;
+    decltype(get.raw) cycleRawBackup;
 
     MODBUS *modbus = nullptr;
     protocol_type_t forcedProtocol = NoD;
@@ -271,6 +300,9 @@ private:
     void restoreCycleBackup();
     void clearCycleBackup();
     void markSuccessfulDynamicCycle();
+    void noteBatterySample();
+    void noteSuccessfulReply(const String &command);
+    void notifyStateUpdate(bool complete);
     void refineProtocol();
     bool requestUnsupportedPiStatic();
     bool requestUnsupportedPiDynamic();

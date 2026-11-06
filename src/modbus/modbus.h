@@ -5,6 +5,7 @@
 #include <ArduinoJson.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include "solar/SolarTypes.h"
 #include "modbus_com.h"
 #include "powmr_hunt.h"
 #include "device/modbus_device.h"
@@ -56,6 +57,13 @@ public:
      */
     String requestData(String command);
     bool isDiagnosticBusy() const { return _powmrDumpRunning; }
+    void setPollIntervalMs(uint32_t intervalMs) { _pollIntervalMs = intervalMs; }
+    BatterySampleTiming batterySampleTiming() const;
+    void acceptBatterySample();
+    // Call from the polling task after the previous completion callback returns.
+    void restartStateRead();
+    // Classifies the most recent completion callback / deferred PowMr event.
+    bool hasCompleteDynamicStateUpdate() const { return _completeDynamicStateUpdate; }
     bool consumePowMrLivePassCompleted()
     {
         const bool ready = _powmrLivePassCompleted;
@@ -67,6 +75,18 @@ private:
     static constexpr unsigned long kCommandDelayMs = 200;
     static constexpr unsigned long kSerialStabilizationDelayMs = 250;
     unsigned long previousTime = 0;
+    enum BatteryField : uint8_t { Voltage = 1, Charge = 2, Discharge = 4, NetCurrent = 8 };
+    uint32_t _pollIntervalMs = 100;
+    uint32_t _batteryPassStartedAtMs = 0;
+    uint32_t _batteryOldestReadAtMs = 0;
+    uint8_t _batteryRequiredFields = 0;
+    uint8_t _batteryReadFields = 0;
+    BatterySampleTiming _batterySample;
+    BatterySampleTiming _pendingBatterySample;
+    static uint8_t batteryFieldMask(const char *name);
+    void beginBatteryPass();
+    void noteBatteryRegister(const modbus_register_t &reg, bool success);
+    void finishBatteryPass();
 
     byte requestCounter = 0;
 
@@ -94,6 +114,7 @@ private:
     ModbusDevice *device = nullptr; 
     MODBUS_COM _mCom;
 
+    bool _completeDynamicStateUpdate = false;
     volatile bool _powmrLivePassCompleted = false;
     volatile bool _powmrDumpRunning = false;
     volatile bool _powmrDumpReady = false;

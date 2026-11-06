@@ -33,7 +33,8 @@ unused SCC3 fields; integer zero; division by zero; five-digit numeric bounds;
 127/128-byte payload boundary; stale-field clearing and recovery. The three-
 and eleven-field branches are unchanged and are replayed with extra precision.
 All three layouts also exercise NAK/NOA/CRC, empty/malformed/oversized replies,
-clearing of owned fields and recovery. A CRC reply preserves the previous PV2 values; owned fields are no longer cleared while
+clearing of owned fields and recovery. A CRC reply preserves the previous values
+until the polling cycle rolls back; owned fields are no longer cleared while
 waiting for the reply. Numeric-token/status-bit validation is
 extended only for the twelve-field layout; the older branches are not rewritten.
 
@@ -61,11 +62,7 @@ it neither justifies a one-watt offset nor establishes current semantics for
 every device with twelve fields. The LCD's aggregate PV-to-battery 1 A reading
 is not an independent PV2 input-current reference.
 
-The PI30 QPIGS cleanup also preserves QPIGS2-owned fields until their own
-reply is processed. `node tests/host/run_pv2_polling.cjs` replays repeated
-QPIGS/QPIGS2 sequences for MAX, legacy PIP and PI41, including reply failures.
-
-Existing descriptors are used; REVO inference, QEX, Q1, discovery, simulation and UI behavior
+Existing descriptors are used; QEX, Q1, discovery, simulation and UI behavior
 are outside this fix. See `Protocol/PROTOCOL_REFERENCE.md` for all field positions.
 
 `--compat` runs the existing-format cases and prints complete parsed snapshots.
@@ -73,6 +70,10 @@ This allows a direct comparison against the original parser. The full test
 must fail with the original parser because that parser ignores the twelve-field
 reply. Host tests replay captured data; they do not flash either board or prove
 live UART/MQTT behavior.
+
+`run_state_cycles.cjs` additionally tests complete polling cycles, concurrent
+snapshot readers, actual MQTT publication functions and battery-data freshness;
+see `README_state_cycles.md`.
 
 `--recorded` also prints the two captured twelve-field daytime replies and a
 night reply. Compare it before/after a formatting-only change. `--formats`

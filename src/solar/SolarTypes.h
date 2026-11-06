@@ -1,6 +1,34 @@
 #pragma once
 
 #include <Arduino.h>
+#include <string.h>
+
+// Timing of a battery reading accepted with a complete inverter update.
+// Acquisition time bounds freshness; acceptance time marks the observable
+// change of power used by the local energy integrator. All clocks wrap at 32 bits.
+struct BatterySampleTiming
+{
+    bool available = false;
+    uint32_t sequence = 0;
+    uint32_t sampledAtMs = 0;
+    uint32_t acceptedAtMs = 0;
+    uint32_t validForMs = 0;
+};
+
+// Covers two full passes of the largest supported Modbus profile at the
+// maximum configured 5 s poll interval, including UART overhead. PI readers
+// retain their own shorter 120 s bound. This is not a checkpoint interval.
+constexpr uint32_t kMaxBatterySampleValidityMs = 6UL * 60UL * 1000UL;
+
+// Updated independently of an inverter poll; never roll these back with a PI cycle.
+inline bool isLocalLiveDataKey(const char *key)
+{
+    return strncmp(key, "DS18B20_", 8) == 0 ||
+           strcmp(key, "Battery_Charge_Energy") == 0 ||
+           strcmp(key, "Battery_Discharge_Energy") == 0 ||
+           strcmp(key, "Battery_Charging_Power_Calculated") == 0 ||
+           strcmp(key, "Battery_Discharging_Power_Calculated") == 0;
+}
 
 enum protocol_type_t
 {

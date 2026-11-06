@@ -139,8 +139,9 @@ bool Ds18b20Service::discoverSensors()
     return true;
 }
 
-void Ds18b20Service::loop()
+void Ds18b20Service::loop(JsonObject target)
 {
+    _target = target;
     if (!_enabled)
     {
         return;

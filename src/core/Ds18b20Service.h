@@ -13,7 +13,7 @@ public:
     Ds18b20Service();
 
     void begin(uint8_t pin, JsonObject target);
-    void loop();
+    void loop(JsonObject target);
     size_t sensorCount() const { return _sensorCount; }
 
     void setCallback(std::function<void(uint8_t, float)> callback) { _callback = callback; }

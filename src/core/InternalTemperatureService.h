@@ -11,7 +11,7 @@ public:
     InternalTemperatureService();
 
     void begin(JsonObject target);
-    void loop();
+    void loop(JsonObject target);
 
     bool supported() const { return _supported; }
     bool hasValue() const { return _hasValue; }

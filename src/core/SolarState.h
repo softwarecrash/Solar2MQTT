@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <freertos/semphr.h>
 
 #include "solar/SolarTypes.h"
 
@@ -21,7 +22,11 @@ public:
     void refreshBindings();
     JsonObject raw();
     JsonObject status();
-    void snapshotTo(JsonDocument &target);
+    bool snapshotTo(JsonDocument &target);
+    bool commitInverterState();
+    bool commitLocalState();
+    bool recoverWorkingState();
+    void resetInverterState();
 
     void updateRuntime(const char *deviceName,
                        protocol_type_t protocol,
@@ -39,4 +44,7 @@ public:
 
 private:
     void ensureObjects();
+    JsonDocument _inverterSnapshot;
+    JsonDocument _localSnapshot;
+    SemaphoreHandle_t _snapshotMutex = nullptr;
 };

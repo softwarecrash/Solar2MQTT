@@ -50,7 +50,7 @@ private:
     bool isAuthorized(AsyncWebServerRequest *request);
     void registerRoutes();
     void setupStatusWebSocket();
-    void buildStatusJson(JsonDocument &doc);
+    bool buildStatusJson(JsonDocument &doc);
     void refreshStatusPayload();
     String lastStatusPayloadCopy();
     void setLastStatusPayload(const String &payload);

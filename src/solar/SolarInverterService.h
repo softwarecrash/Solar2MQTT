@@ -22,6 +22,8 @@ public:
     void queueCommand(const String &command);
 
     bool isConnected() const;
+    bool hasFreshBatterySample(unsigned long nowMs) const;
+    BatterySampleTiming batterySampleTiming(unsigned long nowMs) const;
     bool isBusy() const;
     protocol_type_t protocol() const;
     const char *protocolName() const;
@@ -42,6 +44,7 @@ public:
 private:
     void createClient();
     void refreshRawState();
+    void handleClientUpdate();
     void handleLoopback();
     void handleSimulation();
     void setCommandAnswer(const String &answer);
@@ -59,6 +62,11 @@ private:
     bool _simulationEnabled;
     bool _transportPaused;
     uint32_t _simulationLastUpdateMs;
+    BatterySampleTiming _committedBatterySample{};
+    bool _awaitingFreshState = false;
+    bool _recoveryStaticComplete = false;
+    bool _recoveryNeedsBattery = false;
+    BatterySampleTiming _recoverySample{};
 
     bool _loopbackRequested;
     bool _loopbackInProgress;

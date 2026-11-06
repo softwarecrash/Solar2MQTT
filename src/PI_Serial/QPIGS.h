@@ -153,10 +153,31 @@ const char *const P005GS[][28] = {
     {DESCR_Local_Parallel_ID, "0"},             // b
 };
 
+// Keep fields owned by QPIGS2 and QPIWS until their own replies are handled.
+// The alternative tables still clear fields when switching PI18/PI30 layouts.
+static void pi_clear_qpigs_alternatives(JsonObject values, bool pi18Layout)
+{
+  for (const char *key : qallList)
+  {
+    if (strcmp(key, DESCR_Fault_Code) != 0 && strcmp(key, DESCR_Warning_Code) != 0)
+      values.remove(key);
+  }
+  for (const auto &field : P005GS)
+  {
+    const char *key = field[0];
+    if (!pi18Layout && (strcmp(key, DESCR_PV2_Input_Voltage) == 0 ||
+                       strcmp(key, DESCR_PV2_Input_Power) == 0 ||
+                       strcmp(key, DESCR_Battery_SCC2_Volt) == 0))
+      continue;
+    values.remove(key);
+  }
+}
+
 bool PI_Serial::PIXX_QPIGS()
 {
   const char *const *qpigsList = nullptr;
   unsigned int qpigsList_length = 0;
+  bool hasBatteryStatus = false;
   String previousOperationMode;
   if (liveData[DESCR_Inverter_Operation_Mode].is<JsonVariantConst>())
   {
@@ -272,16 +293,7 @@ bool PI_Serial::PIXX_QPIGS()
     pi_clear_json_fields(liveData, qpigs_90);
     pi_clear_json_fields(liveData, qpigs_21);
     pi_clear_json_fields(liveData, qpigs_21_revo);
-    pi_clear_json_fields(liveData, qallList);
-    // PV2 values belong to QPIGS2; keep them until that reply is processed.
-    for (const auto &field : P005GS)
-    {
-      const char *key = field[0];
-      if (strcmp(key, DESCR_PV2_Input_Voltage) != 0 &&
-          strcmp(key, DESCR_PV2_Input_Power) != 0 &&
-          strcmp(key, DESCR_Battery_SCC2_Volt) != 0)
-        liveData.remove(key);
-    }
+    pi_clear_qpigs_alternatives(liveData, false);
     liveData.remove(DESCR_Battery_Load);
     liveData.remove(DESCR_PV_Input_Power);
     liveData.remove(DESCR_PV_Input_Voltage);
@@ -296,6 +308,7 @@ bool PI_Serial::PIXX_QPIGS()
     {
       qpigsList = qpigs_106;
       qpigsList_length = qpigs_106_length;
+      hasBatteryStatus = true;
       for (unsigned int i = 0; i < qpigsList_length && i < (unsigned int)StringCount; i++)
       {
         if (fieldsQPIGS[i][0] != '\0' && strcmp(qpigsList[i], "") != 0)
@@ -318,6 +331,7 @@ bool PI_Serial::PIXX_QPIGS()
     {
       qpigsList = qpigs_90;
       qpigsList_length = qpigs_90_length;
+      hasBatteryStatus = true;
       for (unsigned int i = 0; i < qpigsList_length && i < (unsigned int)StringCount; i++)
       {
         if (fieldsQPIGS[i][0] != '\0' && strcmp(qpigsList[i], "") != 0)
@@ -334,7 +348,9 @@ bool PI_Serial::PIXX_QPIGS()
     else if (StringCount >= (int)qpigs_21_length)
     {
       qpigsList = useRevoQpigsLayout ? qpigs_21_revo : qpigs_21;
+      cycleQpigs21Layout = useRevoQpigsLayout ? Qpigs21Layout::Revo : Qpigs21Layout::Standard;
       qpigsList_length = qpigs_21_length;
+      hasBatteryStatus = true;
       for (unsigned int i = 0; i < qpigsList_length && i < (unsigned int)StringCount; i++)
       {
         if (fieldsQPIGS[i][0] != '\0' && strcmp(qpigsList[i], "") != 0)
@@ -368,6 +384,7 @@ bool PI_Serial::PIXX_QPIGS()
            if (fieldsQALL[i][0] != '\0' && strcmp(qallList[i], "") != 0)
              liveData[qallList[i]] = pi_parse_float2(fieldsQALL[i]);
         }
+        hasBatteryStatus = true;
         const char *modeStr = liveData[DESCR_Inverter_Operation_Mode].as<const char *>();
         char modeChar = modeStr ? modeStr[0] : '\0';
         liveData[DESCR_Inverter_Operation_Mode] = getModeDesc(modeChar);
@@ -381,16 +398,23 @@ bool PI_Serial::PIXX_QPIGS()
     }
 
     normalizeBusTemperature();
+    if (hasBatteryStatus)
+      noteBatterySample();
 
     return true;
   }
   else if (protocol == PI18)
   {
+    String commandAnswer = this->requestData("^P005GS");
+    get.raw.qpigs = commandAnswer;
+    if (commandAnswer == DESCR_req_NAK || commandAnswer == DESCR_req_NOA)
+      return true;
+    if (commandAnswer == DESCR_req_ERCRC)
+      return false;
     pi_clear_json_fields(liveData, qpigs_106);
     pi_clear_json_fields(liveData, qpigs_90);
     pi_clear_json_fields(liveData, qpigs_21);
-    pi_clear_json_fields(liveData, qallList);
-    pi_clear_json_field_pairs(liveData, P005GS);
+    pi_clear_qpigs_alternatives(liveData, true);
     liveData.remove(DESCR_Battery_Load);
     liveData.remove(DESCR_PV_Input_Power);
     liveData.remove(DESCR_PV_Input_Voltage);
@@ -401,12 +425,6 @@ bool PI_Serial::PIXX_QPIGS()
       liveData[DESCR_Inverter_Operation_Mode] = previousOperationMode;
     }
 
-    String commandAnswer = this->requestData("^P005GS");
-    get.raw.qpigs = commandAnswer;
-    if (commandAnswer == DESCR_req_NAK || commandAnswer == DESCR_req_NOA)
-      return true;
-    if (commandAnswer == DESCR_req_ERCRC)
-      return false;
     char bufP005[256];
     commandAnswer.toCharArray(bufP005, sizeof(bufP005));
     char *fieldsP005[30];
@@ -440,6 +458,7 @@ bool PI_Serial::PIXX_QPIGS()
          liveData[DESCR_PV_Charging_Power].as<double>(),
          liveData[DESCR_PV_Input_Voltage].as<double>());
        liveData[DESCR_Battery_Load] = (liveData[DESCR_Battery_Charge_Current].as<unsigned short>() - liveData[DESCR_Battery_Discharge_Current].as<unsigned short>());
+       noteBatterySample();
       }
     return true;
   }

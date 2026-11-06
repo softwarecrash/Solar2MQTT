@@ -211,6 +211,7 @@ bool MODBUS_COM::readHoldingBlockOnce(uint16_t startRegister, uint16_t registerC
 void MODBUS_COM::clearReadCache()
 {
     _cacheValid = false;
+    _cacheReadAtMs = 0;
     _cacheStartRegister = 0;
     _cacheRegisterCount = 0;
     memset(_cacheValues, 0, sizeof(_cacheValues));
@@ -248,6 +249,7 @@ bool MODBUS_COM::loadHoldingBlock(uint16_t startRegister, uint16_t registerCount
 void MODBUS_COM::storeReadCache(uint16_t startRegister, uint16_t registerCount)
 {
     _cacheValid = true;
+    _cacheReadAtMs = millis();
     _cacheStartRegister = startRegister;
     _cacheRegisterCount = registerCount;
     for (uint16_t i = 0; i < registerCount; ++i)
@@ -450,6 +452,7 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
             else
             {
                 writeLog("Invalid Diematic value");
+                return false;
             }
             break;
 
@@ -461,6 +464,7 @@ bool MODBUS_COM::readModbusRegisterToJson(const modbus_register_t *reg, JsonObje
             else
             {
                 writeLog("Invalid Diematic value");
+                return false;
             }
             break;
         case REGISTER_TYPE_BITFIELD:

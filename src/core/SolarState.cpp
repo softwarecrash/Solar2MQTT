@@ -1,6 +1,7 @@
 #include "core/SolarState.h"
 
 #include <esp_heap_caps.h>
+#include <string.h>
 
 JsonDocument g_stateDoc;
 JsonObject deviceJson;
@@ -9,12 +10,27 @@ JsonObject liveData;
 
 namespace
 {
+// Protect the completed snapshot from asynchronous HTTP readers. Never held
+// while waiting for the inverter or publishing MQTT packets.
+class SnapshotLock
+{
+public:
+    explicit SnapshotLock(SemaphoreHandle_t mutex) : _mutex(mutex)
+    {
+        if (_mutex != nullptr)
+            xSemaphoreTake(_mutex, portMAX_DELAY);
+    }
+    ~SnapshotLock() { if (_mutex != nullptr) xSemaphoreGive(_mutex); }
+private:
+    SemaphoreHandle_t _mutex;
+};
+
 JsonObject ensureObject(JsonDocument &doc, const char *key)
 {
     JsonVariant section = doc[key];
     if (section.isNull())
     {
-        return section.to<JsonObject>();
+        return doc[key].to<JsonObject>();
     }
     return section.as<JsonObject>();
 }
@@ -65,6 +81,9 @@ void appendSection(Print &out, const char *name, JsonObjectConst object)
 
 void SolarState::begin()
 {
+    if (_snapshotMutex == nullptr)
+        _snapshotMutex = xSemaphoreCreateMutex();
+    resetInverterState();
     g_stateDoc.clear();
     ensureObjects();
     status()["mqttConnected"] = false;
@@ -72,6 +91,7 @@ void SolarState::begin()
     status()["inverterConnected"] = false;
     status()["ethActive"] = false;
     status()["apMode"] = false;
+    commitLocalState();
 }
 
 JsonDocument &SolarState::doc()
@@ -106,15 +126,111 @@ JsonObject SolarState::status()
     return g_stateDoc["Status"].as<JsonObject>();
 }
 
-void SolarState::snapshotTo(JsonDocument &target)
+bool SolarState::commitInverterState()
 {
-    ensureObjects();
+    if (_snapshotMutex == nullptr || g_stateDoc.overflowed())
+        return false;
+    // Build separately: an allocation failure must not damage the last complete
+    // reading or pair its raw reply with only part of the decoded values.
+    JsonDocument candidate(_inverterSnapshot.allocator());
+    copyObjectSection(candidate, "RawData", g_stateDoc["RawData"].as<JsonObjectConst>());
+    copyObjectSection(candidate, "DeviceData", g_stateDoc["DeviceData"].as<JsonObjectConst>());
+    JsonObject values = candidate["LiveData"].to<JsonObject>();
+    for (JsonPairConst entry : g_stateDoc["LiveData"].as<JsonObjectConst>())
+        if (!isLocalLiveDataKey(entry.key().c_str()))
+            values[entry.key()] = entry.value();
+    if (candidate.overflowed())
+        return false;
+    SnapshotLock lock(_snapshotMutex);
+    swap(_inverterSnapshot, candidate);
+    return true;
+}
+
+void SolarState::resetInverterState()
+{
+    SnapshotLock lock(_snapshotMutex);
+    _inverterSnapshot.clear();
+    _localSnapshot.clear();
+}
+
+bool SolarState::commitLocalState()
+{
+    if (_snapshotMutex == nullptr || g_stateDoc.overflowed())
+        return false;
+    {
+        // Runtime status is checked on every loop. Reuse the complete snapshot
+        // when its published values are identical, without churning the heap.
+        SnapshotLock lock(_snapshotMutex);
+        bool unchanged =
+            _localSnapshot["EspData"].as<JsonObjectConst>() == g_stateDoc["EspData"].as<JsonObjectConst>() &&
+            _localSnapshot["Status"].as<JsonObjectConst>() == g_stateDoc["Status"].as<JsonObjectConst>() &&
+            _localSnapshot["CommandAnswer"].as<JsonVariantConst>() == g_stateDoc["RawData"]["CommandAnswer"].as<JsonVariantConst>();
+        const JsonObjectConst previous = _localSnapshot["LocalData"].as<JsonObjectConst>();
+        size_t localCount = 0;
+        for (JsonPairConst entry : g_stateDoc["LiveData"].as<JsonObjectConst>())
+        {
+            if (!isLocalLiveDataKey(entry.key().c_str()))
+                continue;
+            ++localCount;
+            if (previous[entry.key()].isUnbound() || previous[entry.key()] != entry.value())
+                unchanged = false;
+        }
+        if (unchanged && previous.size() == localCount)
+            return true;
+    }
+    // Local counters/status update more often than inverter readings. Keep their
+    // transaction small instead of cloning the entire inverter on every tick.
+    JsonDocument candidate(_localSnapshot.allocator());
+    copyObjectSection(candidate, "EspData", g_stateDoc["EspData"].as<JsonObjectConst>());
+    copyObjectSection(candidate, "Status", g_stateDoc["Status"].as<JsonObjectConst>());
+    JsonObject local = candidate["LocalData"].to<JsonObject>();
+    for (JsonPairConst entry : g_stateDoc["LiveData"].as<JsonObjectConst>())
+        if (isLocalLiveDataKey(entry.key().c_str()))
+            local[entry.key()] = entry.value();
+    candidate["CommandAnswer"] = g_stateDoc["RawData"]["CommandAnswer"];
+    if (candidate.overflowed())
+        return false;
+    SnapshotLock lock(_snapshotMutex);
+    swap(_localSnapshot, candidate);
+    return true;
+}
+
+bool SolarState::snapshotTo(JsonDocument &target)
+{
+    // HTTP runs asynchronously: readers only access the protected snapshot,
+    // never the JSON objects being edited by the poller and local services.
     target.clear();
-    copyObjectSection(target, "RawData", g_stateDoc["RawData"].as<JsonObjectConst>());
-    copyObjectSection(target, "EspData", g_stateDoc["EspData"].as<JsonObjectConst>());
-    copyObjectSection(target, "DeviceData", g_stateDoc["DeviceData"].as<JsonObjectConst>());
-    copyObjectSection(target, "LiveData", g_stateDoc["LiveData"].as<JsonObjectConst>());
-    copyObjectSection(target, "Status", g_stateDoc["Status"].as<JsonObjectConst>());
+    if (_snapshotMutex == nullptr)
+        return false;
+    SnapshotLock lock(_snapshotMutex);
+    copyObjectSection(target, "RawData", _inverterSnapshot["RawData"].as<JsonObjectConst>());
+    copyObjectSection(target, "DeviceData", _inverterSnapshot["DeviceData"].as<JsonObjectConst>());
+    copyObjectSection(target, "LiveData", _inverterSnapshot["LiveData"].as<JsonObjectConst>());
+    copyObjectSection(target, "EspData", _localSnapshot["EspData"].as<JsonObjectConst>());
+    copyObjectSection(target, "Status", _localSnapshot["Status"].as<JsonObjectConst>());
+    for (JsonPairConst entry : _localSnapshot["LocalData"].as<JsonObjectConst>())
+        target["LiveData"][entry.key()] = entry.value();
+    target["RawData"]["CommandAnswer"] = _localSnapshot["CommandAnswer"];
+    if (target.overflowed())
+    {
+        target.clear();
+        return false;
+    }
+    return true;
+}
+
+
+
+bool SolarState::recoverWorkingState()
+{
+    // clear() alone would reset the sticky overflow flag but discard all data.
+    // Restore only from complete published snapshots, then rebind parser views.
+    JsonDocument recovered;
+    if (!snapshotTo(recovered))
+        return false;
+    swap(g_stateDoc, recovered);
+    refreshBindings();
+    return !g_stateDoc.overflowed();
 }
 
 void SolarState::updateRuntime(const char *deviceName,
@@ -161,6 +277,7 @@ void SolarState::updateRuntime(const char *deviceName,
     doc["Status"]["ip"] = ipAddress;
 
     refreshBindings();
+    commitLocalState();
 }
 
 void SolarState::updateRaw(const char *key, const String &value)
@@ -177,7 +294,11 @@ void SolarState::updateRaw(const char *key, const String &value)
 void SolarState::writeDebugReport(Print &out)
 {
     JsonDocument snapshot;
-    snapshotTo(snapshot);
+    if (!snapshotTo(snapshot))
+    {
+        out.print("Debug report unavailable: not enough memory.\n");
+        return;
+    }
 
     out.print("Solar2MQTT Debug Report\n\n");
     appendSection(out, "RawData", snapshot["RawData"].as<JsonObjectConst>());
@@ -190,7 +311,8 @@ void SolarState::writeDebugReport(Print &out)
 String SolarState::buildDebugReport()
 {
     JsonDocument snapshot;
-    snapshotTo(snapshot);
+    if (!snapshotTo(snapshot))
+        return "Debug report unavailable: not enough memory.\n";
 
     String out;
     out.reserve(4096);

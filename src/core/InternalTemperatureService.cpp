@@ -78,8 +78,9 @@ void InternalTemperatureService::begin(JsonObject target)
     _nextPollAt = millis() + kPollIntervalMs;
 }
 
-void InternalTemperatureService::loop()
+void InternalTemperatureService::loop(JsonObject target)
 {
+    _target = target;
     if (!_supported)
     {
         return;

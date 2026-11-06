@@ -1,11 +1,12 @@
 'use strict';
 const { harness } = require('./support/native.cjs');
-const native = { groups: [] };
+const native = require('./run_state_cycles.cjs');
 
-const portable = ["pi-transport","powmr-pv2","pv-total","qpigs2","pv2-polling","qpigs"];
+const portable = ["snapshot-memory","pi-transport","powmr-pv2","pv-total","qpigs2","pv2-polling","qpigs"];
 const groups = [...portable, ...native.groups];
 
 async function runGroup(group) {
+  if (group === 'snapshot-memory') return require('./run_snapshot_memory.cjs').runTests();
   if (native.groups.includes(group)) return native.runGroup(group);
   if (group === 'pv2-polling') return require('./run_pv2_polling.cjs').runTests();
   if (group === 'qpigs') return require('./run_qpigs.cjs').runTests();

@@ -36,6 +36,7 @@ public:
     uint8_t getLastWriteResult() const;
     const char *getLastWriteResultText() const;
     void clearReadCache();
+    uint32_t cachedReadAtMs() const { return _cacheReadAtMs; }
 
 private:
     String toBinary(uint16_t input);
@@ -57,6 +58,7 @@ private:
 
     ModbusMaster _mb;
     bool _cacheValid = false;
+    uint32_t _cacheReadAtMs = 0;
     uint16_t _cacheStartRegister = 0;
     uint16_t _cacheRegisterCount = 0;
     uint16_t _cacheValues[MAX_HOLDING_BLOCK_WORDS] = {};

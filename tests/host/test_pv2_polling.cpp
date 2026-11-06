@@ -88,6 +88,9 @@ JsonObject liveData;
 class PI_Serial
 {
   public:
+    enum class Qpigs21Layout { None, Standard, Revo };
+    Qpigs21Layout cycleQpigs21Layout = Qpigs21Layout::None;
+    void noteBatterySample() {}
     protocol_type_t protocol = PI30_PIP_GK;
     const char *delimiter = " ";
     protocol_type_t forcedProtocol = PI30_PIP_GK;

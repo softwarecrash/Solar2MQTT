@@ -2,20 +2,17 @@ bool PI_Serial::PIXX_QPIWS()
 {
     if (isClassicPiStatusProtocol(protocol))
     {
-        liveData.remove(DESCR_Fault_Code);
-        liveData.remove(DESCR_Warning_Code);
-
         String commandAnswer = this->requestData("QPIWS");
         get.raw.qpiws = commandAnswer;
-        if (commandAnswer == DESCR_req_NAK || commandAnswer == DESCR_req_NOA)
-        {
-            return true;
-        }
         if (commandAnswer == DESCR_req_ERCRC)
         {
             return false;
         }
 
+        liveData.remove(DESCR_Fault_Code);
+        liveData.remove(DESCR_Warning_Code);
+
+        // REVO may supply status through QALL even when QPIWS is unsupported.
         if (get.raw.qall.length() > 0 &&
             get.raw.qall != DESCR_req_NAK &&
             get.raw.qall != DESCR_req_NOA &&
@@ -99,6 +96,9 @@ bool PI_Serial::PIXX_QPIWS()
             }
         }
 
+        if (commandAnswer == DESCR_req_NAK || commandAnswer == DESCR_req_NOA)
+            return true;
+
         const size_t length = commandAnswer.length();
         refineProtocol();
         if (length >= 32)
@@ -163,8 +163,6 @@ bool PI_Serial::PIXX_QPIWS()
         return true;
     }
     else if(protocol == PI18){
-        liveData.remove(DESCR_Fault_Code);
-
         String commandAnswer = this->requestData("^P005FWS");
         get.raw.qpiws = commandAnswer;
         if (commandAnswer == DESCR_req_NAK || commandAnswer == DESCR_req_NOA)
@@ -175,6 +173,7 @@ bool PI_Serial::PIXX_QPIWS()
         {
             return false;
         }
+        liveData.remove(DESCR_Fault_Code);
         //[C: ^P005FWS][CR: B69E][CC: B69E][L:  36] from valqk
         //QPIWS 00,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
         if (commandAnswer.length() == 36)

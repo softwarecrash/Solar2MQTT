@@ -908,10 +908,10 @@ bool MqttHandler::ensureConnected()
     // survive indefinitely as stale entities in Home Assistant.
     {
         JsonDocument snapshot;
-        _state.snapshotTo(snapshot);
+        const bool completeSnapshot = _state.snapshotTo(snapshot);
         const String deviceId = getHaDeviceId();
 
-        for (JsonPairConst entry : snapshot["DeviceData"].as<JsonObjectConst>())
+        if (completeSnapshot) for (JsonPairConst entry : snapshot["DeviceData"].as<JsonObjectConst>())
         {
             const char *key = entry.key().c_str();
             if (isPowMrWritableSettingKey(key))
@@ -926,7 +926,7 @@ bool MqttHandler::ensureConnected()
             }
         }
 
-        for (JsonPairConst entry : snapshot["LiveData"].as<JsonObjectConst>())
+        if (completeSnapshot) for (JsonPairConst entry : snapshot["LiveData"].as<JsonObjectConst>())
         {
             const char *key = entry.key().c_str();
             if (strncmp(key, "DS18B20_", 8) == 0)
@@ -945,8 +945,8 @@ bool MqttHandler::ensureConnected()
     if (_pendingLegacyDs18Cleanup)
     {
         JsonDocument snapshot;
-        _state.snapshotTo(snapshot);
-        for (JsonPairConst entry : snapshot["LiveData"].as<JsonObjectConst>())
+        const bool completeSnapshot = _state.snapshotTo(snapshot);
+        if (completeSnapshot) for (JsonPairConst entry : snapshot["LiveData"].as<JsonObjectConst>())
         {
             const char *key = entry.key().c_str();
             if (strncmp(key, "DS18B20_", 8) != 0)
@@ -959,7 +959,7 @@ bool MqttHandler::ensureConnected()
             _mqtt.publish(legacyRootTopic.c_str(), "", true);
             _mqtt.publish(legacyEspDataTopic.c_str(), "", true);
         }
-        _pendingLegacyDs18Cleanup = false;
+        if (completeSnapshot) _pendingLegacyDs18Cleanup = false;
     }
     _pendingFullPublish = usesImmediateStatePublishing();
     if (!usesImmediateStatePublishing())
@@ -986,8 +986,10 @@ void MqttHandler::publishAlive()
 
 void MqttHandler::publishState()
 {
+    _state.commitLocalState();
     JsonDocument snapshot;
-    _state.snapshotTo(snapshot);
+    if (!_state.snapshotTo(snapshot))
+        return;
 
     if (_settings.get.mqttJson())
     {
@@ -1062,8 +1064,10 @@ void MqttHandler::publishRawState(JsonObjectConst rawObject)
 
 void MqttHandler::publishHaDiscovery(bool force)
 {
+    _state.commitLocalState();
     JsonDocument snapshot;
-    _state.snapshotTo(snapshot);
+    if (!_state.snapshotTo(snapshot))
+        return;
 
     if (force)
     {
@@ -1720,7 +1724,8 @@ void MqttHandler::startHaDiscoverySweep()
     }
 
     JsonDocument snapshot;
-    _state.snapshotTo(snapshot);
+    if (!_state.snapshotTo(snapshot))
+        return;
     const char *protocol = snapshot["Status"]["protocol"] | "";
     _haDiscoverySweepPowMr = isPowMrProtocolName(protocol);
 

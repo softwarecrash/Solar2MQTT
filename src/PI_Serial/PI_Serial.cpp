@@ -22,7 +22,8 @@ extern void writeLog(const char *format, ...);
 
 namespace
 {
-constexpr unsigned long kPiConnectionHoldMs = 5000UL;
+constexpr unsigned long kPiMinConnectionHoldMs = 5000UL;
+constexpr unsigned long kPiMaxConnectionHoldMs = 120000UL;
 
 String sanitizeLogText(const String &value, size_t maxLen = 64)
 {
@@ -425,7 +426,7 @@ bool PI_Serial::Init()
     {
         if (requestCallback)
         {
-            modbus->callback(requestCallback);
+            modbus->callback([this]() { notifyStateUpdate(true); });
         }
         return true;
     }
@@ -446,7 +447,21 @@ bool PI_Serial::loop()
         return false;
     }
 
+    // A source-document allocation failure is reported from the completion
+    // callback. Restart here, after the previous switch/callback has returned.
+    if (stateReadRetryPending)
+    {
+        stateReadRetryPending = false;
+        clearCycleBackup();
+        requestCounter = 0;
+        requestStaticData = true;
+        if (modbus != nullptr)
+            modbus->restartStateRead();
+    }
+
     const unsigned long now = millis();
+    if (!isModbus())
+        connection = haveDynamicReply && (now - lastDynamicReplyAt) <= connectionHoldMs();
     constexpr unsigned long kNoDeviceRetryMs = 30000UL;
 
     if (protocol == NoD)
@@ -460,10 +475,7 @@ bool PI_Serial::loop()
         autoDetect();
         previousTime = now;
         nextDetectAt = (protocol == NoD) ? (now + kNoDeviceRetryMs) : (now + delayTime);
-        if (requestCallback)
-        {
-            requestCallback();
-        }
+        notifyStateUpdate(false);
         connection = false;
         return true;
     }
@@ -474,18 +486,16 @@ bool PI_Serial::loop()
         {
             if (sendCustomCommand())
             {
-                clearCycleBackup();
+                restoreCycleBackup();
                 requestStaticData = true;
                 requestCounter = 0;
                 previousTime = millis();
-                if (requestCallback)
-                {
-                    requestCallback();
-                }
+                notifyStateUpdate(false);
                 return true;
             }
             if (isModbus())
             {
+                modbus->setPollIntervalMs(delayTime);
                 modbus->loop();
 
                 // The Modbus driver marks a completed PowMr live pass so the
@@ -499,10 +509,7 @@ bool PI_Serial::loop()
                         pollPowMrPiSupplement();
                     }
 
-                    if (requestCallback)
-                    {
-                        requestCallback();
-                    }
+                    notifyStateUpdate(true);
                 }
             }
             else if (isRawOnlyPiProtocol(protocol))
@@ -520,6 +527,7 @@ bool PI_Serial::loop()
                             requestCounter = 0;
                             requestStaticData = false;
                             logStaticSummary();
+                            notifyStateUpdate(true);
                         }
                     }
                     else
@@ -539,10 +547,7 @@ bool PI_Serial::loop()
                             refineProtocol();
                             logDynamicSummary();
                             markSuccessfulDynamicCycle();
-                            if (requestCallback)
-                            {
-                                requestCallback();
-                            }
+                            notifyStateUpdate(true);
                         }
                     }
                     else
@@ -604,15 +609,13 @@ bool PI_Serial::loop()
                             {
                                 clearCycleBackup();
                                 logStaticSummary();
+                                notifyStateUpdate(true);
                             }
                             else
                             {
                                 writeLog("[PI][WARN] proto=%s no valid static data", protocolToString(protocol));
                                 restoreCycleBackup();
-                                if (requestCallback)
-                                {
-                                    requestCallback();
-                                }
+                                notifyStateUpdate(false);
                             }
                         }
                         else
@@ -712,24 +715,30 @@ bool PI_Serial::loop()
                         break;
                     case 7:
                         refineProtocol();
-                        if (cycleHadSuccessfulReply)
+                        // QPIRI can identify the model after QPIGS was parsed.
+                        // Retry a conflicting layout before publishing or accepting
+                        // its battery sample; keep the newly detected protocol.
+                        if ((cycleQpigs21Layout == Qpigs21Layout::Revo &&
+                             (protocol == PI16 || protocol == PI41 ||
+                              protocol == PI30_PIP_GK || protocol == PI30_MAX)) ||
+                            (cycleQpigs21Layout == Qpigs21Layout::Standard && protocol == PI30_REVO))
+                        {
+                            writeLog("[PI][WARN] proto=%s QPIGS layout changed; retry cycle", protocolToString(protocol));
+                            restoreCycleBackup();
+                            notifyStateUpdate(false);
+                        }
+                        else if (cycleHadSuccessfulReply)
                         {
                             logDynamicSummary();
                             markSuccessfulDynamicCycle();
-                            if (requestCallback)
-                            {
-                                requestCallback();
-                            }
+                            notifyStateUpdate(true);
                             clearCycleBackup();
                         }
                         else
                         {
                             writeLog("[PI][WARN] proto=%s no valid dynamic data", protocolToString(protocol));
                             restoreCycleBackup();
-                            if (requestCallback)
-                            {
-                                requestCallback();
-                            }
+                            notifyStateUpdate(false);
                         }
                         requestCounter = 0;
                         break;
@@ -743,8 +752,8 @@ bool PI_Serial::loop()
             }
             else
             {
-                connection = (lastSuccessfulDynamicCycleAt != 0) &&
-                             ((millis() - lastSuccessfulDynamicCycleAt) <= kPiConnectionHoldMs);
+                connection = haveDynamicReply &&
+                             ((millis() - lastDynamicReplyAt) <= connectionHoldMs());
             }
             previousTime = millis();
         }
@@ -758,8 +767,13 @@ void PI_Serial::beginCycleBackup()
     cycleStaticBackup.clear();
     copyJsonObject(cycleLiveBackup.to<JsonObject>(), JsonObjectConst(liveData));
     copyJsonObject(cycleStaticBackup.to<JsonObject>(), JsonObjectConst(staticData));
+    cycleRawBackup = get.raw;
     cycleBackupActive = true;
     cycleHadSuccessfulReply = false;
+    cycleHadBatterySample = false;
+    cycleHadDynamicReply = false;
+    cycleQpigs21Layout = Qpigs21Layout::None;
+    cycleStartedAt = millis();
 }
 
 void PI_Serial::restoreCycleBackup()
@@ -769,8 +783,21 @@ void PI_Serial::restoreCycleBackup()
         return;
     }
 
-    copyJsonObject(liveData, cycleLiveBackup.as<JsonObjectConst>());
+    // Local energy counters and temperatures can advance during the PI cycle.
+    JsonDocument localValues;
+    for (JsonPairConst entry : JsonObjectConst(liveData))
+        if (isLocalLiveDataKey(entry.key().c_str()))
+            localValues[entry.key()] = entry.value();
+    liveData.clear();
+    for (JsonPairConst entry : cycleLiveBackup.as<JsonObjectConst>())
+        if (!isLocalLiveDataKey(entry.key().c_str()))
+            liveData[entry.key()] = entry.value();
+    for (JsonPairConst entry : localValues.as<JsonObjectConst>())
+        liveData[entry.key()] = entry.value();
     copyJsonObject(staticData, cycleStaticBackup.as<JsonObjectConst>());
+    const String commandAnswer = get.raw.commandAnswer;
+    get.raw = cycleRawBackup;
+    get.raw.commandAnswer = commandAnswer;
     clearCycleBackup();
 }
 
@@ -778,15 +805,95 @@ void PI_Serial::clearCycleBackup()
 {
     cycleBackupActive = false;
     cycleHadSuccessfulReply = false;
+    cycleHadBatterySample = false;
     cycleLiveBackup.clear();
+    cycleQpigs21Layout = Qpigs21Layout::None;
     cycleStaticBackup.clear();
 }
 
 void PI_Serial::markSuccessfulDynamicCycle()
 {
-    lastSuccessfulDynamicCycleAt = millis();
-    connection = true;
+    const unsigned long now = millis();
+    if (cycleBackupActive && cycleHadDynamicReply)
+        lastCycleDurationMs = now - cycleStartedAt + delayTime;
+    if (cycleHadBatterySample)
+    {
+        lastBatterySampleAt = pendingBatterySampleAt;
+        haveBatterySample = true;
+        lastBatteryAcceptedAt = now;
+        lastBatteryValidForMs = connectionHoldMs();
+        ++batterySampleSequence;
+    }
+    lastSuccessfulDynamicCycleAt = now;
+    connection = haveDynamicReply && (now - lastDynamicReplyAt) <= connectionHoldMs();
     connectionCounter = 0;
+}
+
+unsigned long PI_Serial::connectionHoldMs() const
+{
+    // Eight scheduled steps plus UART time. Learn only from completed cycles,
+    // not from the length of an outage, and keep the failure deadline bounded.
+    unsigned long hold = delayTime > (kPiMaxConnectionHoldMs - kPiMinConnectionHoldMs) / 8UL
+                             ? kPiMaxConnectionHoldMs : 8UL * delayTime + kPiMinConnectionHoldMs;
+    // A committed reading can already be almost one cycle old. The next
+    // complete update may take slightly longer than the preceding one.
+    const unsigned long observed = lastCycleDurationMs > (kPiMaxConnectionHoldMs - kPiMinConnectionHoldMs) / 2UL
+                                      ? kPiMaxConnectionHoldMs : lastCycleDurationMs * 2UL + kPiMinConnectionHoldMs;
+    if (observed > hold)
+        hold = observed;
+    return hold > kPiMaxConnectionHoldMs ? kPiMaxConnectionHoldMs : hold;
+}
+
+bool PI_Serial::hasFreshBatterySample(unsigned long nowMs) const
+{
+    const BatterySampleTiming sample = batterySampleTiming();
+    return sample.available && static_cast<uint32_t>(nowMs - sample.sampledAtMs) <= sample.validForMs;
+}
+
+BatterySampleTiming PI_Serial::batterySampleTiming() const
+{
+    if (isModbusProtocol(protocol))
+        return !isSuspended() && modbus != nullptr ? modbus->batterySampleTiming() : BatterySampleTiming{};
+    BatterySampleTiming sample;
+    sample.available = !isSuspended() && haveBatterySample &&
+                       (!isModbusProtocol(protocol) || connection);
+    sample.sequence = batterySampleSequence;
+    sample.sampledAtMs = lastBatterySampleAt;
+    sample.acceptedAtMs = lastBatteryAcceptedAt;
+    // Freeze the lease with its battery reading. Status-only replies must not
+    // repeatedly extend the lifetime of an old battery value.
+    sample.validForMs = lastBatteryValidForMs;
+    return sample;
+}
+
+void PI_Serial::noteBatterySample()
+{
+    pendingBatterySampleAt = millis();
+    cycleHadBatterySample = true;
+}
+
+void PI_Serial::noteSuccessfulReply(const String &command)
+{
+    // Manual diagnostics are not responses from the regular measurement cycle.
+    if (isClassicPiStatusProtocol(protocol) && !cycleBackupActive)
+        return;
+    cycleHadSuccessfulReply = true;
+    if (!requestStaticData && command != "QPIRI")
+    {
+        lastDynamicReplyAt = millis();
+        haveDynamicReply = true;
+        cycleHadDynamicReply = true;
+    }
+}
+
+void PI_Serial::notifyStateUpdate(bool complete)
+{
+    if (complete && isModbus() && modbus != nullptr)
+        modbus->acceptBatterySample();
+    completeStateUpdate = complete;
+    if (requestCallback)
+        requestCallback();
+    completeStateUpdate = false;
 }
 
 void PI_Serial::logStaticSummary() const
@@ -1536,6 +1643,8 @@ bool PI_Serial::isValidResponse(const String &response) const
            response != DESCR_req_ERCRC;
 }
 
+
+
 bool PI_Serial::sendCustomCommand()
 {
     if (customCommandBuffer == "")
@@ -1720,7 +1829,7 @@ String PI_Serial::requestData(String command)
         commandBuffer != DESCR_req_NOA &&
         commandBuffer != DESCR_req_ERCRC)
     {
-        cycleHadSuccessfulReply = true;
+        noteSuccessfulReply(command);
         commandBuffer = sanitizePiReplyText(commandBuffer);
     }
 

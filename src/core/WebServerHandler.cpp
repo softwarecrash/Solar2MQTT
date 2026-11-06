@@ -308,7 +308,11 @@ void WebServerHandler::registerRoutes()
         }
 
         JsonDocument snapshot;
-        _state.snapshotTo(snapshot);
+        if (!_state.snapshotTo(snapshot))
+        {
+            request->send(503, "text/plain", "Snapshot unavailable");
+            return;
+        }
         String json;
         serializeJson(snapshot, json);
         request->send(200, "application/json", json); });
@@ -1004,10 +1008,11 @@ void WebServerHandler::setupStatusWebSocket()
     _server.addHandler(&_wsStatus);
 }
 
-void WebServerHandler::buildStatusJson(JsonDocument &doc)
+bool WebServerHandler::buildStatusJson(JsonDocument &doc)
 {
     JsonDocument snapshot;
-    _state.snapshotTo(snapshot);
+    if (!_state.snapshotTo(snapshot))
+        return false;
 
     const bool snapshotMqttConnected =
         snapshot["Status"]["mqttConnected"].is<bool>() ? snapshot["Status"]["mqttConnected"].as<bool>() :
@@ -1056,12 +1061,14 @@ void WebServerHandler::buildStatusJson(JsonDocument &doc)
     copyObjectSection(doc, "EspData", snapshot["EspData"].as<JsonObjectConst>());
     copyObjectSection(doc, "DeviceData", snapshot["DeviceData"].as<JsonObjectConst>());
     copyObjectSection(doc, "LiveData", snapshot["LiveData"].as<JsonObjectConst>());
+    return !doc.overflowed();
 }
 
 void WebServerHandler::refreshStatusPayload()
 {
     JsonDocument doc;
-    buildStatusJson(doc);
+    if (!buildStatusJson(doc))
+        return;
 
     String payload;
     payload.reserve(2048);

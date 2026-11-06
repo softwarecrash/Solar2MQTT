@@ -163,8 +163,8 @@ void loop()
     }
     inverterService.setTransportPaused(wifiManager.isInApMode());
     inverterService.loop();
-    ds18b20Service.loop();
-    internalTemperatureService.loop();
+    ds18b20Service.loop(liveData);
+    internalTemperatureService.loop(solarState.doc()["EspData"].as<JsonObject>());
     mqttHandler.loop();
 
     if (g_pendingInverterReconfigure && static_cast<int32_t>(millis() - g_inverterReconfigureAt) >= 0)

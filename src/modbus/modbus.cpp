@@ -132,6 +132,29 @@ void MODBUS::prepareRegisters()
         .array_size = device->getStaticRegistersCount(),
         .curr_register = 0};
     previousTime = millis();
+    _batterySample = {};
+    _pendingBatterySample = {};
+    _batteryReadFields = 0;
+    _completeDynamicStateUpdate = false;
+    _powmrLivePassCompleted = false;
+}
+
+void MODBUS::restartStateRead()
+{
+    static_info.curr_register = 0;
+    live_info.curr_register = 0;
+    requestStaticData = true;
+    _completeDynamicStateUpdate = false;
+    _powmrLivePassCompleted = false;
+    _pendingBatterySample = {};
+    _batteryRequiredFields = 0;
+    _batteryReadFields = 0;
+    _batteryPassStartedAtMs = 0;
+    _batteryOldestReadAtMs = 0;
+    // Preserve the sequence so only a newly acquired tuple can advance it.
+    _batterySample.available = false;
+    _mCom.clearReadCache();
+    previousTime = millis();
 }
 
 void MODBUS::loop()
@@ -157,7 +180,15 @@ void MODBUS::loop()
     {
         cur_info_registers = &static_info;
     }
-    switch (_mCom.parseModbusToJson(*cur_info_registers))
+    const bool livePass = cur_info_registers == &live_info;
+    const size_t registerIndex = cur_info_registers->curr_register >= cur_info_registers->array_size
+                                     ? 0 : cur_info_registers->curr_register;
+    if (livePass && registerIndex == 0)
+        beginBatteryPass();
+    const response_type_t result = _mCom.parseModbusToJson(*cur_info_registers);
+    if (livePass && registerIndex < live_info.array_size)
+        noteBatteryRegister(live_info.registers[registerIndex], result == READ_OK);
+    switch (result)
     {
     case READ_OK:
         connectionCounter = 0;
@@ -173,6 +204,9 @@ void MODBUS::loop()
     if (_mCom.isAllRegistersRead(*cur_info_registers))
     {
         const bool completedLivePass = (cur_info_registers == &live_info);
+        _completeDynamicStateUpdate = completedLivePass;
+        if (completedLivePass)
+            finishBatteryPass();
         requestStaticData = false;
 
         if (completedLivePass && device != nullptr && device->getProtocol() == MODBUS_POWMR)
@@ -195,6 +229,82 @@ void MODBUS::loop()
 void MODBUS::callback(std::function<void()> func)
 {
     requestCallback = func;
+}
+
+uint8_t MODBUS::batteryFieldMask(const char *name)
+{
+    if (name == nullptr) return 0;
+    if (strcmp(name, DESCR_Battery_Voltage) == 0) return Voltage;
+    if (strcmp(name, DESCR_Battery_Charge_Current) == 0) return Charge;
+    if (strcmp(name, DESCR_Battery_Discharge_Current) == 0) return Discharge;
+    if (strcmp(name, DESCR_Battery_Load) == 0) return NetCurrent;
+    return 0;
+}
+
+void MODBUS::beginBatteryPass()
+{
+    uint8_t available = 0;
+    for (size_t i = 0; i < live_info.array_size; ++i)
+        available |= batteryFieldMask(live_info.registers[i].name);
+    _batteryRequiredFields = (available & (Voltage | Charge | Discharge)) == (Voltage | Charge | Discharge)
+                                 ? Voltage | Charge | Discharge
+                                 : ((available & (Voltage | NetCurrent)) == (Voltage | NetCurrent) ? Voltage | NetCurrent : 0);
+    _batteryReadFields = 0;
+    _pendingBatterySample = {};
+    // Include the interval preceding the first register in the observed pass.
+    const uint32_t stepMs = _pollIntervalMs > kCommandDelayMs ? _pollIntervalMs : kCommandDelayMs;
+    _batteryPassStartedAtMs = static_cast<uint32_t>(millis()) - stepMs;
+}
+
+void MODBUS::noteBatteryRegister(const modbus_register_t &reg, bool success)
+{
+    const uint8_t field = batteryFieldMask(reg.name) & _batteryRequiredFields;
+    if (field == 0) return;
+    if (!success || reg.type == REGISTER_TYPE_VIRTUAL_CALLBACK)
+    {
+        _batteryReadFields &= ~field;
+        return;
+    }
+    // A cached block can have been acquired well before this register's turn.
+    const uint32_t acquiredAt = _mCom.cachedReadAtMs();
+    const uint32_t now = millis();
+    if (_batteryReadFields == 0 || static_cast<uint32_t>(now - acquiredAt) > static_cast<uint32_t>(now - _batteryOldestReadAtMs))
+        _batteryOldestReadAtMs = acquiredAt;
+    _batteryReadFields |= field;
+}
+
+void MODBUS::finishBatteryPass()
+{
+    if (_batteryRequiredFields == 0 || (_batteryReadFields & _batteryRequiredFields) != _batteryRequiredFields)
+        return;
+    const uint32_t now = millis();
+    const uint32_t duration = now - _batteryPassStartedAtMs;
+    if (duration > 0x7fffffffUL) return;
+    const uint32_t stepMs = _pollIntervalMs > kCommandDelayMs ? _pollIntervalMs : kCommandDelayMs;
+    const uint64_t expected = static_cast<uint64_t>(live_info.array_size) * stepMs;
+    const uint64_t cycle = expected > duration ? expected : duration;
+    const uint64_t allowance = cycle * 2ULL + 5000ULL;
+    const uint32_t validity = allowance > kMaxBatterySampleValidityMs ? kMaxBatterySampleValidityMs : static_cast<uint32_t>(allowance);
+    if (static_cast<uint32_t>(now - _batteryOldestReadAtMs) >= validity) return;
+    _pendingBatterySample.available = true;
+    _pendingBatterySample.sampledAtMs = _batteryOldestReadAtMs;
+    _pendingBatterySample.validForMs = validity;
+}
+
+void MODBUS::acceptBatterySample()
+{
+    if (!_pendingBatterySample.available) return;
+    _pendingBatterySample.sequence = _batterySample.sequence + 1;
+    _pendingBatterySample.acceptedAtMs = millis();
+    _batterySample = _pendingBatterySample;
+    _pendingBatterySample = {};
+}
+
+BatterySampleTiming MODBUS::batterySampleTiming() const
+{
+    BatterySampleTiming sample = _batterySample;
+    sample.available = sample.available && connection && !_powmrDumpRunning;
+    return sample;
 }
 
 void MODBUS::capturePowmrSocSample()

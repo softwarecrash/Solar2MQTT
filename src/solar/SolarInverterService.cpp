@@ -433,6 +433,26 @@ bool SolarInverterService::isConnected() const
     return _client != nullptr && _client->connection;
 }
 
+bool SolarInverterService::hasFreshBatterySample(unsigned long nowMs) const
+{
+    const BatterySampleTiming sample = batterySampleTiming(nowMs);
+    return sample.available && static_cast<uint32_t>(nowMs - sample.sampledAtMs) <= sample.validForMs;
+}
+
+BatterySampleTiming SolarInverterService::batterySampleTiming(unsigned long nowMs) const
+{
+    if (_transportPaused)
+        return {};
+    if (_simulationEnabled)
+        return _committedBatterySample;
+    (void)nowMs;
+    // A driver's new timestamp is usable only after the matching values have
+    // been committed. Failed copies must not renew the previous reading.
+    BatterySampleTiming sample = _committedBatterySample;
+    sample.available = sample.available && _client != nullptr && _client->batterySampleTiming().available;
+    return sample;
+}
+
 bool SolarInverterService::isBusy() const
 {
     return _client != nullptr && _client->isBusy();
@@ -503,6 +523,9 @@ String SolarInverterService::consumeCommandAnswer()
 
 void SolarInverterService::createClient()
 {
+    _committedBatterySample = {};
+    _awaitingFreshState = false;
+    _recoveryStaticComplete = false;
     _state.refreshBindings();
 
     if (_client != nullptr)
@@ -512,6 +535,7 @@ void SolarInverterService::createClient()
     }
 
     _serial.end();
+    _state.resetInverterState();
     _state.doc()["DeviceData"].to<JsonObject>().clear();
     clearLiveDataPreservingDs18b20();
     _state.refreshBindings();
@@ -529,13 +553,7 @@ void SolarInverterService::createClient()
         _client->setForcedProtocol(forcedProtocol);
     }
     _client->setDelayTime(_settings.get.pollIntervalMs());
-    _client->callback([this]()
-                      {
-        refreshRawState();
-        if (_callback)
-        {
-            _callback();
-        } });
+    _client->callback([this]() { handleClientUpdate(); });
     if (_simulationEnabled || _transportPaused)
     {
         _client->setSuspend(true);
@@ -548,11 +566,59 @@ void SolarInverterService::createClient()
     else
     {
         refreshRawState();
+        _state.commitInverterState();
     }
     writeLog("Inverter transport ready on RX=%d TX=%d DIR=%d",
              g_inverterHardwareConfig.rxPin,
              g_inverterHardwareConfig.txPin,
              g_inverterHardwareConfig.dirPin);
+}
+
+void SolarInverterService::handleClientUpdate()
+{
+    refreshRawState();
+    if (_client->hasCompleteStateUpdate())
+    {
+        if (_state.doc().overflowed())
+        {
+            _awaitingFreshState = true;
+            _recoveryStaticComplete = false;
+            _recoverySample = _client->batterySampleTiming();
+            _recoveryNeedsBattery = _committedBatterySample.available || _recoverySample.available;
+            if (_state.recoverWorkingState())
+                _client->restartStateRead();
+        }
+        else
+        {
+            const bool dynamic = _client->hasCompleteDynamicStateUpdate();
+            const BatterySampleTiming sample = _client->batterySampleTiming();
+            if (_awaitingFreshState && !dynamic)
+            {
+                _recoveryStaticComplete = true;
+                // Exclude battery samples from earlier rejected cycles, not
+                // just the sample present when the allocation first failed.
+                _recoverySample = sample;
+            }
+            const bool newBatterySample = sample.available &&
+                (sample.sequence != _recoverySample.sequence || sample.acceptedAtMs != _recoverySample.acceptedAtMs);
+            const bool recovered = !_awaitingFreshState ||
+                (_recoveryStaticComplete && dynamic && (!_recoveryNeedsBattery || newBatterySample));
+            if (recovered && _state.commitInverterState())
+            {
+                _committedBatterySample = sample;
+                _awaitingFreshState = false;
+            }
+            else if (_awaitingFreshState && dynamic)
+            {
+                if (recovered)
+                    _recoverySample = sample;
+                if (!_recoveryStaticComplete)
+                    _client->restartStateRead();
+            }
+        }
+    }
+    if (_callback)
+        _callback();
 }
 
 void SolarInverterService::refreshRawState()
@@ -726,6 +792,7 @@ bool SolarInverterService::handleSimulationCommand(const String &command)
 
 void SolarInverterService::enableSimulation()
 {
+    _committedBatterySample = {};
     _state.refreshBindings();
 
     _simulationEnabled = true;
@@ -742,6 +809,7 @@ void SolarInverterService::enableSimulation()
     }
 
     _state.raw().clear();
+    _state.resetInverterState();
     _state.doc()["DeviceData"].to<JsonObject>().clear();
     clearLiveDataPreservingDs18b20();
     _state.refreshBindings();
@@ -1032,6 +1100,16 @@ void SolarInverterService::updateSimulationState(bool forceNotify)
     _state.refreshBindings();
 
     refreshRawState();
+    if (_state.commitInverterState())
+    {
+        _committedBatterySample.available = true;
+        _committedBatterySample.sequence = now;
+        _committedBatterySample.sampledAtMs = now;
+        _committedBatterySample.acceptedAtMs = now;
+        _committedBatterySample.validForMs = 30000;
+    }
+    else if (_state.doc().overflowed())
+        _state.recoverWorkingState();
     _simulationLastUpdateMs = now;
 
     if (forceNotify && _callback)
