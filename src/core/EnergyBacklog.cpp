@@ -28,6 +28,8 @@ constexpr uint32_t BATTERY_RECORD_MAGIC = 0x42415445UL; // "BATE"
 constexpr uint16_t BATTERY_RECORD_VERSION = 1;
 constexpr unsigned long BATTERY_INTEGRATE_INTERVAL_MS = 1000UL;
 constexpr unsigned long BATTERY_MAX_SAMPLE_GAP_MS = 10000UL;
+constexpr unsigned long BATTERY_PUBLISH_INTERVAL_MS = 1000UL;
+constexpr unsigned long BATTERY_CHECKPOINT_RETRY_MS = 10000UL;
 constexpr unsigned long BATTERY_CHECKPOINT_INTERVAL_MS = 2UL * 60UL * 1000UL;
 
 const char *const ENERGY_KEYS[] = {
@@ -132,7 +134,8 @@ bool readBatteryRecord(const char *path, BatteryEnergyRecord &record)
 bool readEnergyValues(SolarState &state, EnergyRecord &record)
 {
     JsonDocument snapshot;
-    state.snapshotTo(snapshot);
+    if (!state.snapshotTo(snapshot))
+        return false;
     JsonObjectConst live = snapshot["LiveData"].as<JsonObjectConst>();
 
     record.mask = 0;
@@ -608,118 +611,99 @@ void EnergyBacklog::publishBatteryEnergyState(SolarState &state)
     live[DESCR_Battery_Charge_Energy] = _batteryChargeWh / 1000.0;
     live[DESCR_Battery_Discharge_Energy] = _batteryDischargeWh / 1000.0;
     state.refreshBindings();
+    state.commitLocalState();
+    _batteryLastStatePublishMs = millis();
+    _batteryHaveStatePublish = true;
 }
 
-void EnergyBacklog::updateBatteryEnergy(SolarState &state,
-                                        bool inverterConnected,
-                                        unsigned long nowMs)
+void EnergyBacklog::updateBatteryEnergy(SolarState &state, const BatterySampleTiming &sample, unsigned long nowMs)
 {
-    if (_batteryLastIntegrateMs == 0)
+    const uint32_t now = nowMs;
+    if (!_batteryHaveIntegrationTime)
+        advanceBatteryEnergy(now);
+    if (static_cast<uint32_t>(now - _batteryLastIntegrateMs) > 0x7fffffffUL)
     {
-        _batteryLastIntegrateMs = nowMs;
-        publishBatteryEnergyState(state);
-        return;
+        _batteryLastIntegrateMs = now;
+        _batteryHaveSample = false;
+        _batteryActivePowerW = 0;
     }
-
-    const unsigned long elapsedMs = nowMs - _batteryLastIntegrateMs;
-    if (elapsedMs < BATTERY_INTEGRATE_INTERVAL_MS)
+    const bool changed = sample.available && (!_batteryHaveSample ||
+                         sample.sequence != _batterySample.sequence || sample.acceptedAtMs != _batterySample.acceptedAtMs);
+    if (changed)
     {
-        return;
-    }
-    _batteryLastIntegrateMs = nowMs;
-
-    JsonObject live = state.doc()["LiveData"].as<JsonObject>();
-    const JsonVariantConst voltageValue = live[DESCR_Battery_Voltage];
-    const JsonVariantConst chargeValue = live[DESCR_Battery_Charge_Current];
-    const JsonVariantConst dischargeValue = live[DESCR_Battery_Discharge_Current];
-    const JsonVariantConst netValue = live[DESCR_Battery_Load];
-
-    bool valid = inverterConnected && elapsedMs <= BATTERY_MAX_SAMPLE_GAP_MS && !voltageValue.isNull();
-    const double voltage = voltageValue.isNull() ? 0.0 : voltageValue.as<double>();
-
-    double netCurrent = 0.0;
-    if (!chargeValue.isNull() && !dischargeValue.isNull())
-    {
-        const double chargeCurrent = chargeValue.as<double>();
-        const double dischargeCurrent = dischargeValue.as<double>();
-        valid = valid &&
-                chargeCurrent >= 0.0 && chargeCurrent <= 1000.0 &&
-                dischargeCurrent >= 0.0 && dischargeCurrent <= 1000.0;
-        netCurrent = chargeCurrent - dischargeCurrent;
-    }
-    else if (!netValue.isNull())
-    {
-        netCurrent = netValue.as<double>();
-        valid = valid && netCurrent >= -1000.0 && netCurrent <= 1000.0;
-    }
-    else
-    {
-        valid = false;
-    }
-
-    valid = valid && voltage >= 5.0 && voltage <= 1000.0;
-
-    int8_t direction = 0;
-    double chargingPowerW = 0.0;
-    double dischargingPowerW = 0.0;
-
-    if (valid && netCurrent > 0.01)
-    {
-        direction = 1;
-        chargingPowerW = voltage * netCurrent;
-    }
-    else if (valid && netCurrent < -0.01)
-    {
-        direction = -1;
-        dischargingPowerW = voltage * (-netCurrent);
-    }
-
-    // These two locally calculated power sensors intentionally use their own
-    // LiveData keys. Some protocols already expose Battery_Charging_Power;
-    // keeping the calculated pair separate avoids changing existing MQTT
-    // topics while allowing migration from HA template helpers.
-    live[DESCR_Battery_Charging_Power_Calculated] = chargingPowerW;
-    live[DESCR_Battery_Discharging_Power_Calculated] = dischargingPowerW;
-
-    if (valid && direction != 0)
-    {
-        const double powerW = direction > 0 ? chargingPowerW : dischargingPowerW;
-        const double energyWh = powerW * static_cast<double>(elapsedMs) / 3600000.0;
-
-        if (direction > 0)
+        // Integrate the previous accepted reading until the actual transition,
+        // including time spent waiting for UART. Never apply the new power to
+        // the entire preceding interval or discard a sub-second phase.
+        const uint32_t sinceCursor = sample.acceptedAtMs - static_cast<uint32_t>(_batteryLastIntegrateMs);
+        const uint32_t untilNow = now - static_cast<uint32_t>(_batteryLastIntegrateMs);
+        if (sinceCursor <= untilNow && untilNow <= 0x7fffffffUL)
+            advanceBatteryEnergy(sample.acceptedAtMs);
+        else
+            advanceBatteryEnergy(now);
+        JsonDocument snapshot;
+        const bool completeSnapshot = state.snapshotTo(snapshot);
+        const JsonObjectConst live = snapshot["LiveData"].as<JsonObjectConst>();
+        const JsonVariantConst voltageValue = live[DESCR_Battery_Voltage];
+        const JsonVariantConst charge = live[DESCR_Battery_Charge_Current];
+        const JsonVariantConst discharge = live[DESCR_Battery_Discharge_Current];
+        const JsonVariantConst net = live[DESCR_Battery_Load];
+        const double voltage = voltageValue.isNull() ? 0 : voltageValue.as<double>();
+        double current = 0;
+        bool valid = completeSnapshot && voltageValue.is<double>() && std::isfinite(voltage) && voltage >= 5 && voltage <= 1000;
+        if (!charge.isNull() && !discharge.isNull())
         {
-            _batteryChargeWh += energyWh;
+            const double in = charge.as<double>(), out = discharge.as<double>();
+            valid = valid && charge.is<double>() && discharge.is<double>() && std::isfinite(in) && std::isfinite(out) && in >= 0 && out >= 0 && in <= 1000 && out <= 1000;
+            current = in - out;
+        }
+        else if (!net.isNull())
+        {
+            current = net.as<double>();
+            valid = valid && net.is<double>();
         }
         else
-        {
-            _batteryDischargeWh += energyWh;
-        }
-        _batteryDirty = true;
+            valid = false;
+        valid = valid && std::isfinite(current) && current >= -1000 && current <= 1000 && sample.validForMs > 0 && sample.validForMs <= kMaxBatterySampleValidityMs &&
+                static_cast<uint32_t>(now - sample.acceptedAtMs) <= 0x7fffffffUL &&
+                static_cast<uint32_t>(sample.acceptedAtMs - sample.sampledAtMs) <= 0x7fffffffUL;
+        _batteryMeasurementValid = valid;
+        _batterySample = sample;
+        // A failed response copy is retryable on the next tick. Do not consume
+        // the new timestamp with an unavailable/partial set of power inputs.
+        _batteryHaveSample = completeSnapshot;
+        _batteryActivePowerW = valid && std::fabs(current) > 0.01 ? voltage * current : 0;
     }
-
-    const bool directionChanged = (_batteryDirection != direction);
-    const bool stoppedActiveFlow = (_batteryDirection != 0 && direction != _batteryDirection);
+    advanceBatteryEnergy(now);
+    if (!sample.available)
+        _batteryActivePowerW = 0;
+    const bool fresh = sample.available && _batteryHaveSample &&
+                       static_cast<uint32_t>(now - _batterySample.sampledAtMs) <= _batterySample.validForMs;
+    const double power = fresh ? _batteryActivePowerW : 0;
+    const int8_t direction = power > 0 ? 1 : power < 0 ? -1 : 0;
+    const bool directionChanged = direction != _batteryDirection;
     _batteryDirection = direction;
-
-    publishBatteryEnergyState(state);
-
-    if (_batteryDirty &&
-        (stoppedActiveFlow || (nowMs - _batteryLastCheckpointMs) >= BATTERY_CHECKPOINT_INTERVAL_MS))
+    if (changed || directionChanged || !_batteryHaveStatePublish ||
+        static_cast<uint32_t>(now - _batteryLastStatePublishMs) >= BATTERY_PUBLISH_INTERVAL_MS)
     {
-        saveBatteryEnergyCheckpoint(false);
+        JsonObject live = state.doc()["LiveData"].as<JsonObject>();
+        live[DESCR_Battery_Charging_Power_Calculated] = power > 0 ? power : 0;
+        live[DESCR_Battery_Discharging_Power_Calculated] = power < 0 ? -power : 0;
+        publishBatteryEnergyState(state);
     }
-
-    if (directionChanged)
+    // Keep flash traffic bounded even if direction changes several times per
+    // second. Explicit restart/migration flushes are handled separately.
+    if (_batteryDirty && static_cast<uint32_t>(now - _batteryLastCheckpointMs) >= BATTERY_CHECKPOINT_INTERVAL_MS &&
+        (!_batteryHaveCheckpointAttempt || static_cast<uint32_t>(now - _batteryLastCheckpointAttemptMs) >= BATTERY_CHECKPOINT_RETRY_MS))
     {
-        writeLog("[BatteryEnergy] direction=%d charge=%.6f kWh discharge=%.6f kWh",
-                 static_cast<int>(direction),
-                 _batteryChargeWh / 1000.0,
-                 _batteryDischargeWh / 1000.0);
+        _batteryLastCheckpointAttemptMs = now;
+        _batteryHaveCheckpointAttempt = true;
+        saveBatteryEnergyCheckpoint(false);
     }
 }
 
 void EnergyBacklog::flushBatteryEnergy()
 {
+    advanceBatteryEnergy(millis());
     saveBatteryEnergyCheckpoint(false);
 }
 
@@ -838,4 +822,33 @@ void EnergyBacklog::cancelReplay()
 {
     _replayActive = false;
     _replayOffset = 0;
+}
+
+void EnergyBacklog::advanceBatteryEnergy(uint32_t untilMs)
+{
+    if (!_batteryHaveIntegrationTime)
+    {
+        _batteryLastIntegrateMs = untilMs;
+        _batteryHaveIntegrationTime = true;
+        return;
+    }
+    const uint32_t elapsed = untilMs - static_cast<uint32_t>(_batteryLastIntegrateMs);
+    if (elapsed > 0x7fffffffUL)
+        return;
+    if (_batteryHaveSample && _batteryActivePowerW != 0)
+    {
+        const uint32_t age = static_cast<uint32_t>(_batteryLastIntegrateMs) - _batterySample.sampledAtMs;
+        const uint32_t remaining = age < _batterySample.validForMs ? _batterySample.validForMs - age : 0;
+        const uint32_t validElapsed = elapsed < remaining ? elapsed : remaining;
+        const double energyWh = std::fabs(_batteryActivePowerW) * static_cast<double>(validElapsed) / 3600000.0;
+        if (energyWh > 0)
+        {
+            if (_batteryActivePowerW > 0)
+                _batteryChargeWh += energyWh;
+            else
+                _batteryDischargeWh += energyWh;
+            _batteryDirty = true;
+        }
+    }
+    _batteryLastIntegrateMs = untilMs;
 }

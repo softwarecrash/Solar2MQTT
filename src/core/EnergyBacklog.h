@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include "solar/SolarTypes.h"
 
 class PubSubClient;
 class SolarState;
@@ -20,7 +21,7 @@ public:
 
     void begin();
     void captureIfNeeded(SolarState &state, bool mqttOffline, unsigned long nowMs);
-    void updateBatteryEnergy(SolarState &state, bool inverterConnected, unsigned long nowMs);
+    void updateBatteryEnergy(SolarState &state, const BatterySampleTiming &sample, unsigned long nowMs);
     void flushBatteryEnergy();
     bool startReplay();
     ReplayResult replayBatch(PubSubClient &client, const String &baseTopic, size_t maxRecords = 2);
@@ -44,6 +45,15 @@ private:
     uint32_t _batteryCheckpointSequence;
     int8_t _batteryDirection;
     bool _batteryDirty;
+    bool _batteryHaveIntegrationTime = false;
+    bool _batteryHaveSample = false;
+    BatterySampleTiming _batterySample;
+    double _batteryActivePowerW = 0;
+    bool _batteryMeasurementValid = false;
+    uint32_t _batteryLastStatePublishMs = 0;
+    bool _batteryHaveStatePublish = false;
+    uint32_t _batteryLastCheckpointAttemptMs = 0;
+    bool _batteryHaveCheckpointAttempt = false;
 
     bool appendCurrentSnapshot(SolarState &state, unsigned long nowMs, bool force);
     bool compactIfNeeded(size_t incomingBytes);
@@ -52,4 +62,5 @@ private:
     bool saveBatteryEnergyCheckpoint(bool force);
     void publishBatteryEnergyState(SolarState &state);
     void resetBatteryEnergyIfFactoryReset();
+    void advanceBatteryEnergy(uint32_t untilMs);
 };

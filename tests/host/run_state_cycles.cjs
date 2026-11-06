@@ -4,7 +4,7 @@ const { extract } = require('./support/extract.cjs');
 const writeMocks = require('./support/mocks.cjs');
 const production = require('./support/production.cjs');
 
-const groups = ["pi"];
+const groups = ["pi","pi-energy","energy","modbus"];
 
 function runGroup(group, options = {}) {
   if (!groups.includes(group)) throw Error('Unknown native group: ' + group);
@@ -40,7 +40,7 @@ function main(args = []) {
   if (args.length > 1) throw Error('Supply one native test group');
   if (selected === '--list') return console.log(groups.join('\n'));
   if (selected === 'state') {
-    for (const group of ["pi"]) runGroup(group);
+    for (const group of ["pi","pi-energy","energy","modbus"]) runGroup(group);
     return;
   }
   runGroup(selected.replace(/^--/, ''));

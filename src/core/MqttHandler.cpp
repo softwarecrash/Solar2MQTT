@@ -557,7 +557,7 @@ void MqttHandler::loop()
     // Battery charge/discharge totals are accumulated locally from the
     // freshest inverter voltage/current readings. This runs independently
     // from MQTT so an outage never creates an energy gap.
-    _energyBacklog.updateBatteryEnergy(_state, _inverterService.isConnected(), now);
+    _energyBacklog.updateBatteryEnergy(_state, _inverterService.batterySampleTiming(now), now);
 
     // Keep the cumulative inverter-reported PV/grid energy counters in
     // LittleFS while MQTT is unavailable.
