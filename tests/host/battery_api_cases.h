@@ -82,12 +82,12 @@ static void apiAndMqtt()
     assert(response["state"] == "already_applied");
     b["requestId"] = otherId;
     assert(f.mqtt.queueBatteryMigration(b.as<JsonObjectConst>(), response) == 409);
-    std::atomic<bool> done{false};
     std::atomic<unsigned> reads{0};
+    // Bound both workers; an unbounded reader can repeatedly reacquire the mutex.
     std::thread reader(
         [&]
         {
-            while (!done)
+            for (unsigned i = 0; i < 100; i++)
             {
                 JsonDocument copy;
                 f.mqtt.copyBatteryDiagnostics(copy);
@@ -100,10 +100,8 @@ static void apiAndMqtt()
         testNow += 1000;
         f.mqtt.refreshBatteryDiagnostics(testNow, true);
     }
-    while (reads.load() == 0)
-        std::this_thread::yield();
-    done = true;
     reader.join();
+    assert(reads.load() == 100);
     reset(false);
     storage.blobs["batenergy:counter_a"] = {1, 2, 3};
     Fixture recovery(PI30_PIP_GK);
