@@ -17,17 +17,18 @@
 #undef private
 #include "production-ota-guard.inc"
 
-// Fail the real std::vector allocation inside extracted library code by its
-// exact payload size. Ordinary application Strings allocate length+1 instead.
+// Target the transport vector by payload size. The HTTP response object uses
+// a separate one-shot nothrow fault so unrelated same-sized allocations survive.
 static bool failVectorAllocation=false;
 static size_t failVectorSize=0;
+static size_t failResponseAllocationSize=0;
 void *operator new(size_t size){if(failVectorAllocation&&size==failVectorSize)throw std::bad_alloc();void *p=std::malloc(size);if(!p)throw std::bad_alloc();return p;}
 void operator delete(void *p)noexcept{std::free(p);}
 void *operator new[](size_t n){return ::operator new(n);}
 void operator delete[](void *p)noexcept{::operator delete(p);}
 void operator delete(void *p,size_t)noexcept{::operator delete(p);}
 void operator delete[](void *p,size_t)noexcept{::operator delete(p);}
-void *operator new(size_t size,const std::nothrow_t &)noexcept{if(failVectorAllocation&&size==failVectorSize)return nullptr;return std::malloc(size);}
+void *operator new(size_t size,const std::nothrow_t &)noexcept{if(failResponseAllocationSize&&size==failResponseAllocationSize){failResponseAllocationSize=0;return nullptr;}if(failVectorAllocation&&size==failVectorSize)return nullptr;return std::malloc(size);}
 void operator delete(void *p,const std::nothrow_t &)noexcept{std::free(p);}
 
 uint32_t testNow=100;FakeEsp ESP;
@@ -271,8 +272,10 @@ static bool exercise(const std::string &fixture,int id){
   (cachedRoute?h._server.status:h._server.data)(&copyFailed);responseCopyFailure=false;
   assert(copyFailed.status==503&&copyFailed.jsonLiveAtSend==0&&responseDeletes==deleted+1);
  }
- AsyncWebServerRequest objectFailed;failVectorSize=sizeof(CheckedJsonResponse);failVectorAllocation=true;
- sendCompleteJson(&objectFailed,String(status));failVectorAllocation=false;assert(objectFailed.status==503);
+ // Fail only the response object once; libc++ may allocate its 503 String at the same size.
+ const String responsePayload(status);AsyncWebServerRequest objectFailed;
+ failResponseAllocationSize=sizeof(CheckedJsonResponse);
+ sendCompleteJson(&objectFailed,responsePayload);assert(failResponseAllocationSize==0&&objectFailed.status==503);
  // Explicit cache-copy failure is distinct from an empty startup cache.
  for(bool locked:{false,true}){
   if(locked)h._statusPayloadMutex=xSemaphoreCreateMutex();
