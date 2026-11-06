@@ -59,6 +59,7 @@ bool PI_Serial::sendCustomCommand() {
     if (customCommandBuffer.isEmpty()) return false;
     get.raw.commandAnswer=requestData(customCommandBuffer);
     customCommandBuffer="";
+    lastCustomCommandWasQuery=false;
     return true;
 }
 `;

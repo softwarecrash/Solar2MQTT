@@ -190,6 +190,16 @@ Minimum dump set for new unknown serial devices:
 | `MODBUS_ANENJI` | holding registers from the Anenji table | serial number registers |
 | `MODBUS_DEYE` | core holding registers | currently partial coverage |
 
+The protected manual read path additionally recognizes the exact legacy
+inquiries `QVFW4`, `QDI`, `QMCHGCR`, `QMUCHGCR`, `QMSCHGCR`, `QOPM`, `QCST`
+and `QCVT` from PI30 2015-09-24, and the older `QFET` energy-start-date
+inquiry. They run between complete normal measurement cycles. A failed polling
+attempt also permits one diagnostic inquiry before normal polling resumes, even
+if initial static reads keep failing. No inquiry interrupts an active partial
+cycle or refreshes a battery measurement or the dynamic-connection timestamp. Their replies
+remain diagnostic and do not create entities or change inverter settings.
+Recognition by the ESP does not imply support by every inverter firmware.
+
 ## 8. Data Field Superset
 
 Important:

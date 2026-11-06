@@ -380,10 +380,13 @@ PI_Serial::PI_Serial(HardwareSerial &serialPort, int rx, int tx)
     get.raw.commandAnswer.reserve(96);
     get.raw.qpiws.reserve(48);
     customCommandBuffer.reserve(32);
+    customCommandMutex = xSemaphoreCreateMutex();
 }
 
 PI_Serial::~PI_Serial()
 {
+    if (customCommandMutex != nullptr)
+        vSemaphoreDelete(customCommandMutex);
     if (modbus != nullptr)
     {
         delete modbus;
@@ -455,6 +458,7 @@ bool PI_Serial::loop()
         clearCycleBackup();
         requestCounter = 0;
         requestStaticData = true;
+        customQuerySlot = false;
         if (modbus != nullptr)
             modbus->restartStateRead();
     }
@@ -486,9 +490,13 @@ bool PI_Serial::loop()
         {
             if (sendCustomCommand())
             {
-                restoreCycleBackup();
-                requestStaticData = true;
-                requestCounter = 0;
+                if (!lastCustomCommandWasQuery)
+                {
+                    restoreCycleBackup();
+                    customQuerySlot = false;
+                    requestStaticData = true;
+                    requestCounter = 0;
+                }
                 previousTime = millis();
                 notifyStateUpdate(false);
                 return true;
@@ -799,6 +807,9 @@ void PI_Serial::restoreCycleBackup()
     get.raw = cycleRawBackup;
     get.raw.commandAnswer = commandAnswer;
     clearCycleBackup();
+    // A failed polling attempt must not permanently block diagnostic reads.
+    // This grants one query slot without accepting or refreshing a measurement.
+    customQuerySlot = true;
 }
 
 void PI_Serial::clearCycleBackup()
@@ -825,6 +836,9 @@ void PI_Serial::markSuccessfulDynamicCycle()
         ++batterySampleSequence;
     }
     lastSuccessfulDynamicCycleAt = now;
+    // One diagnostic query may follow a completed normal update. Consuming
+    // this slot cannot repeatedly displace the next battery measurement.
+    customQuerySlot = true;
     connection = haveDynamicReply && (now - lastDynamicReplyAt) <= connectionHoldMs();
     connectionCounter = 0;
 }
@@ -976,7 +990,14 @@ String PI_Serial::sendCommand(String command)
     {
         return command;
     }
+    if (customCommandMutex == nullptr)
+    {
+        writeLog("[PI][ERR] command queue mutex unavailable");
+        return "";
+    }
+    xSemaphoreTake(customCommandMutex, portMAX_DELAY);
     customCommandBuffer = command;
+    xSemaphoreGive(customCommandMutex);
     return command;
 }
 
@@ -1643,17 +1664,63 @@ bool PI_Serial::isValidResponse(const String &response) const
            response != DESCR_req_ERCRC;
 }
 
-
+bool PI_Serial::isReadOnlyPiQuery(const String &command)
+{
+    // Explicit inquiry names only: starting with Q is not enough to skip the
+    // existing refresh path for an unknown/control command.
+    const char *const queries[] = {
+        "QPI", "QPIRI", "QMN", "QGMN", "QMD", "QPIBI", "QID", "QSID",
+        "QVFW", "QVFW2", "QVFW3", "QSVFW2", "QFLAG", "QMOD", "QPIWS",
+        "QPIGS", "QPIGS2", "QALL", "Q1", "QT", "QET", "QLT", "QBEQI",
+        // PI30 2015-09-24: SCC3 version and charger/output inquiries.
+        "QVFW4", "QDI", "QMCHGCR", "QMUCHGCR", "QMSCHGCR", "QOPM", "QCST", "QCVT",
+        // Older energy-start-date inquiry, retained as a diagnostic response.
+        "QFET"};
+    for (const char *query : queries)
+        if (command == query)
+            return true;
+    const char *const datedQueries[] = {"QEY", "QEM", "QED", "QLY", "QLM", "QLD"};
+    for (size_t i = 0; i < sizeof datedQueries / sizeof datedQueries[0]; ++i)
+    {
+        const size_t digits = (i % 3 == 0) ? 4 : ((i % 3 == 1) ? 6 : 8);
+        if (!command.startsWith(datedQueries[i]) || command.length() != 3 + digits)
+            continue;
+        const char *cursor = command.c_str() + 3;
+        while (*cursor >= '0' && *cursor <= '9')
+            ++cursor;
+        return *cursor == '\0';
+    }
+    return false;
+}
 
 bool PI_Serial::sendCustomCommand()
 {
-    if (customCommandBuffer == "")
+    if (customCommandMutex == nullptr)
         return false;
+    xSemaphoreTake(customCommandMutex, portMAX_DELAY);
+    if (customCommandBuffer == "")
+    {
+        xSemaphoreGive(customCommandMutex);
+        return false;
+    }
+    const bool query = isClassicPiStatusProtocol(protocol) && isReadOnlyPiQuery(customCommandBuffer);
+    if (query && (!customQuerySlot || requestCounter != 0 || cycleBackupActive))
+    {
+        xSemaphoreGive(customCommandMutex);
+        return false;
+    }
+    const String command = customCommandBuffer;
+    customCommandBuffer = "";
+    xSemaphoreGive(customCommandMutex);
+    // Keep the decision paired with the exact command taken from the buffer.
+    // A new HTTP/MQTT command may arrive while UART is waiting for its reply.
+    lastCustomCommandWasQuery = query;
+    customQuerySlot = false;
 
     if (isModbus() && isPowMrPiHybridProtocol(protocol) &&
-        customCommandBuffer.startsWith("powmr pi "))
+        command.startsWith("powmr pi "))
     {
-        String piCommand = customCommandBuffer.substring(9);
+        String piCommand = command.substring(9);
         piCommand.trim();
         if (piCommand.isEmpty())
         {
@@ -1694,13 +1761,12 @@ bool PI_Serial::sendCustomCommand()
     }
     else if (isModbus())
     {
-        get.raw.commandAnswer = modbus->requestData(customCommandBuffer);
+        get.raw.commandAnswer = modbus->requestData(command);
     }
     else
     {
-        get.raw.commandAnswer = requestData(customCommandBuffer);
+        get.raw.commandAnswer = requestData(command);
     }
-    customCommandBuffer = "";
     return true;
 }
 
