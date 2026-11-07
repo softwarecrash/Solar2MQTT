@@ -676,11 +676,6 @@ String GitHubOtaUpdater::normalizeVersion(const String &value)
     version.trim();
     if (version.startsWith("v") || version.startsWith("V"))
         version.remove(0, 1);
-    // platformio.ini prefixes development builds with this marker. Compare
-    // against their embedded base version, while keeping the displayed name.
-    constexpr const char *developmentPrefix = "0.0.0-dev-";
-    if (version.startsWith(developmentPrefix))
-        version.remove(0, strlen(developmentPrefix));
     return version;
 }
 

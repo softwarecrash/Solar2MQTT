@@ -38,8 +38,9 @@ or firmware releases. No new inverter measurement data is introduced.
   of ignored metadata, without calling `HTTPClient::getString()`.
 - All 14658 incomplete prefixes of the recorded response, invalid JSON, HTTP
   failures, closed/read-failing streams and invalid version identifiers.
-- Development-prefix handling, stable/prerelease ordering, ignored build
-  metadata, diagnostic suffix compatibility and numbers without integer overflow.
+- Stable release selection from current and older development builds,
+  stable/prerelease ordering, ignored build metadata, diagnostic suffix
+  compatibility and numbers without integer overflow.
 - Failed mutex/task creation, retries, duplicate/concurrent requests, a worker
   completing before its creator returns, and a pending-restart guard.
 - GNU-linker builds on Windows/Linux inject failed real ArduinoJson allocations

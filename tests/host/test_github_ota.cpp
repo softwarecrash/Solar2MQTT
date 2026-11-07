@@ -115,7 +115,7 @@ static void actualRelease(bool streaming)
 }
 static void versions()
 {
-    assert(GitHubOtaUpdater::compareVersions("V2.0.4", "0.0.0-dev-2.0.6-RC1") < 0);
+    assert(GitHubOtaUpdater::compareVersions("V2.0.4", "0.0.0-dev-2.0.6-RC1") > 0);
     assert(GitHubOtaUpdater::compareVersions("V2.0.4", "V2.0.3") > 0);
     assert(GitHubOtaUpdater::compareVersions("V2.0.4", "2.0.4") == 0);
     assert(GitHubOtaUpdater::compareVersions("2.0.6", "2.0.6-RC1") > 0);
@@ -125,7 +125,7 @@ static void versions()
     GitHubOtaUpdater u("softwarecrash", "Solar2MQTT", "0.0.0-dev-2.0.6-RC1", "wemos_d1_mini32");
     u.begin([] { return true; });
     u.doCheck();
-    assert(status(u)["state"] == "up_to_date" && !u.startUpdate() && ota.updateBegins == 0);
+    assert(status(u)["state"] == "update_available" && ota.updateBegins == 0);
     dispose(u);
 }
 static std::string changedRelease(const std::function<void(JsonDocument &)> &change)
@@ -163,12 +163,13 @@ static void releaseVariants()
     }
     reset();
     expectState("error", "V2.0.3", "m5stack_atom_lite"); // Absent from the captured release.
-    for (const char *current : {"V2.0.0", "V2.0.1", "V2.0.2", "V2.0.3"})
+    for (const char *current :
+         {"V2.0.0", "V2.0.1", "V2.0.2", "V2.0.3", "0.0.0-dev-11.14", "0.0.0-dev-30.5.2"})
     {
         reset();
         expectState("update_available", current);
     }
-    for (const char *current : {"V2.0.4", "  v2.0.4  ", "2.0.4+build", "0.0.0-dev-2.0.6-RC1"})
+    for (const char *current : {"V2.0.4", "  v2.0.4  ", "2.0.4+build", "2.0.6"})
     {
         reset();
         expectState("up_to_date", current);
@@ -299,7 +300,7 @@ static void versionOrdering()
     // are the compatibility examples in its original comparator. Prerelease
     // identifiers below follow the published SemVer precedence examples.
     const std::vector<const char *> order = {
-        "V2.0.0", "V2.0.1", "V2.0.2",  "V2.0.3", "V2.0.4", "0.0.0-dev-2.0.6-RC1",
+        "0.0.0-dev-2.0.6-RC1", "V2.0.0", "V2.0.1", "V2.0.2", "V2.0.3", "V2.0.4",
         "2.0.6",  "2.0.14", "2.0.14A", "2.0.14B"};
     for (size_t i = 0; i < order.size(); ++i)
         for (size_t j = 0; j < order.size(); ++j)

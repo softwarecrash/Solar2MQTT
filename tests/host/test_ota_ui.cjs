@@ -26,9 +26,9 @@ async function test(){
   assert(e('fwStatus').textContent);assert.equal(e('otaUpdateBtn').disabled,false);
   assert(!calls.some(r=>r.url==='/ota/update'));
  }
- calls.length=0;c.updateOtaUi({state:'up_to_date',current:'0.0.0-dev-2.0.6-RC1',latest:release.tag_name.slice(1)});
+ calls.length=0;c.updateOtaUi({state:'up_to_date',current:release.tag_name.slice(1),latest:release.tag_name.slice(1)});
  assert.equal(e('otaUpdateBtn').disabled,true);await f.click();assert.equal(calls.length,0);
- c.updateOtaUi({state:'update_available',latest:release.tag_name.slice(1),busy:false});
+ c.updateOtaUi({state:'update_available',current:'0.0.0-dev-2.0.6-RC1',latest:release.tag_name.slice(1),busy:false});
  assert.equal(e('otaUpdateBtn').textContent,'Update to v2.0.4');
  f.setResponse({state:'downloading',busy:true,progress:42,bytesDone:42,bytesTotal:100});await f.click();
  assert.deepEqual(calls,[{url:'/ota/update',method:'POST'}]);assert.equal(e('otaUpdateBtn').disabled,true);
