@@ -12,3 +12,11 @@ The test executes the firmware reply reader and loopback settings guard against 
 PI replies are bounded to 256 bytes. The existing first-byte allowance is retained: 120 bytes of transmission time plus 350 ms (850 ms at 2400 baud, 475 ms at 9600 baud). Stalls between bytes are limited to 200 ms. The overall frame deadline adds the transmission time of the 256-byte buffer to that allowance (1917 ms at 2400 baud, 742 ms at 9600 baud). A silent device stops at the first-byte allowance, not the overall deadline. The receive timers begin after command transmission and the existing 20 ms settling delay. Waiting yields to the scheduler. Only CR-terminated replies reach the existing CRC/NAK parser.
 
 Hardware tests are still required for UART scheduling, unusually long replies, long inter-byte gaps, and inverter-specific turnaround. Modbus has its own response deadline; these PI changes do not increase the Modbus detection timeout.
+
+## Legacy model fallback
+
+With Node.js, a C++17 compiler and the project's ArduinoJson headers, run
+`node tests/host/run_qmd.cjs`. The runner accepts `CXX` and
+`ARDUINOJSON_INCLUDE` overrides. It compiles the production model parser and
+reply normalization and replays the existing legacy reply. Cases cover QMN
+priority, optional QMD failures, retained ratings and recovery.
