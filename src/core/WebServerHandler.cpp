@@ -1,8 +1,11 @@
 #include "core/WebServerHandler.h"
+#include "core/FirmwareWriter.h"
+#include "core/JsonOutput.h"
 
 #include <ArduinoJson.h>
 #include <Update.h>
 #include <WiFi.h>
+#include <new>
 
 #include "core/GitHubOtaUpdater.h"
 #include "core/LogSerial.h"
@@ -32,6 +35,37 @@ void copyObjectSection(JsonDocument &target, const char *key, JsonObjectConst so
     {
         destination[entry.key()] = entry.value();
     }
+}
+
+bool serializeCompleteJson(const JsonDocument &doc, String &output)
+{
+    output = "";
+    const size_t expected = measureJson(doc);
+    if (doc.overflowed() || !output.reserve(expected))
+        return false;
+    JsonStringWriter writer{output};
+    const size_t written = serializeJson(doc, writer);
+    return written == expected && output.length() == expected;
+}
+
+class CheckedJsonResponse final : public AsyncBasicResponse
+{
+public:
+    explicit CheckedJsonResponse(const String &payload)
+        : AsyncBasicResponse(200, "application/json", payload.c_str()) {}
+    bool complete(size_t expected) const { return _contentLength == expected; }
+};
+
+void sendCompleteJson(AsyncWebServerRequest *request, const String &payload)
+{
+    auto *response = new (std::nothrow) CheckedJsonResponse(payload);
+    if (response == nullptr || !response->complete(payload.length()))
+    {
+        delete response;
+        request->send(503, "application/json", "{\"error\":\"Not enough memory for JSON response\"}");
+        return;
+    }
+    request->send(response);
 }
 
 namespace NetScanCache
@@ -279,26 +313,38 @@ void WebServerHandler::registerRoutes()
             return request->requestAuthentication();
         }
 
-        const String cachedPayload = lastStatusPayloadCopy();
+        String cachedPayload;
+        if (!copyLastStatusPayload(cachedPayload))
+        {
+            request->send(503, "application/json", "{\"error\":\"Not enough memory for status\"}");
+            return;
+        }
         if (cachedPayload.length() > 0)
         {
-            request->send(200, "application/json", cachedPayload);
+            sendCompleteJson(request, cachedPayload);
             return;
         }
 
-        JsonDocument doc;
-        doc["mqttConnected"] = _mqttConnected;
-        doc["inverterConnected"] = _inverterConnected;
-        doc["wifiConnected"] = _wifiManager.getConnectionState();
-        doc["ethActive"] = _wifiManager.isEthActive();
-        doc["apMode"] = _wifiManager.isInApMode();
-        doc["ip"] = _wifiManager.ipAddress();
-        doc["hostName"] = _wifiManager.hostName();
-        doc["protocol"] = _inverterService.protocolName();
-        doc["deviceName"] = _settings.get.deviceName();
         String json;
-        serializeJson(doc, json);
-        request->send(200, "application/json", json); });
+        {
+            JsonDocument doc;
+            doc["mqttConnected"] = _mqttConnected;
+            doc["inverterConnected"] = _inverterConnected;
+            doc["wifiConnected"] = _wifiManager.getConnectionState();
+            doc["ethActive"] = _wifiManager.isEthActive();
+            doc["apMode"] = _wifiManager.isInApMode();
+            doc["ip"] = _wifiManager.ipAddress();
+            doc["hostName"] = _wifiManager.hostName();
+            doc["protocol"] = _inverterService.protocolName();
+            doc["deviceName"] = _settings.get.deviceName();
+            if (!serializeCompleteJson(doc, json))
+            {
+                doc.clear();
+                request->send(503, "application/json", "{\"error\":\"Not enough memory for status\"}");
+                return;
+            }
+        }
+        sendCompleteJson(request, json); });
 
     _server.on("/api/data", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
@@ -897,53 +943,76 @@ void WebServerHandler::registerRoutes()
         response->addHeader("Cache-Control", "no-store");
         request->send(response); });
 
+    struct ManualUpdateContext
+    {
+        bool failed;
+        bool rejected;
+        bool complete;
+        size_t bytes;
+    };
     auto finishUpdate = [this](AsyncWebServerRequest *request)
     {
         if (!isAuthorized(request))
-        {
             return request->requestAuthentication();
-        }
-
-        if (Update.hasError())
+        auto *ctx = static_cast<ManualUpdateContext *>(request->_tempObject);
+        if (!ctx || ctx->failed || !ctx->complete || ctx->bytes == 0)
         {
+            firmwareWriter.cancel(request);
+            request->send(ctx && ctx->rejected ? 409 : 500, "application/json", "{\"success\":false}");
+            return;
+        }
+        // Finalize only after the full multipart request has been received, so
+        // a second file cannot leave a committed image behind on rejection.
+        if (!Update.end(true))
+        {
+            firmwareWriter.cancel(request);
             request->send(500, "application/json", "{\"success\":false}");
             return;
         }
-
+        firmwareWriter.commit(request);
         g_pendingRestart = true;
         g_restartAt = millis() + 500;
         request->send(200, "application/json", "{\"success\":true}");
     };
 
-    auto uploadUpdate = [this](AsyncWebServerRequest *request,
-                               const String &filename,
-                               size_t index,
-                               uint8_t *data,
-                               size_t len,
-                               bool final)
+    auto uploadUpdate = [this](AsyncWebServerRequest *request, const String &filename,
+                               size_t index, uint8_t *data, size_t len, bool final)
     {
-        if (!isAuthorized(request))
-        {
-            return;
-        }
-
+        if (!isAuthorized(request)) return;
+        auto *ctx = static_cast<ManualUpdateContext *>(request->_tempObject);
         if (index == 0)
         {
+            if (ctx)
+            {
+                ctx->failed = true;
+                firmwareWriter.cancel(request);
+                return;
+            }
+            ctx = static_cast<ManualUpdateContext *>(calloc(1, sizeof(ManualUpdateContext)));
+            if (!ctx) return;
+            request->_tempObject = ctx;
+            request->onDisconnect([request]() { firmwareWriter.cancel(request); });
+            if (!firmwareWriter.acquire(request))
+            {
+                ctx->failed = ctx->rejected = true;
+                return;
+            }
             if (!Update.begin(UPDATE_SIZE_UNKNOWN))
             {
-                Update.printError(Serial);
+                ctx->failed = true;
+                firmwareWriter.cancel(request);
+                return;
             }
         }
-
-        if (len > 0 && Update.write(data, len) != len)
+        if (!ctx || ctx->failed || ctx->complete) return;
+        if (len && Update.write(data, len) != len)
         {
-            Update.printError(Serial);
+            ctx->failed = true;
+            firmwareWriter.cancel(request);
+            return;
         }
-
-        if (final && !Update.end(true))
-        {
-            Update.printError(Serial);
-        }
+        ctx->bytes += len;
+        if (final) ctx->complete = true;
     };
 
     _server.on("/update_firmware", HTTP_POST, finishUpdate, uploadUpdate);
@@ -994,8 +1063,11 @@ void WebServerHandler::setupStatusWebSocket()
                       {
         if (type == WS_EVT_CONNECT)
         {
-            const String payload = lastStatusPayloadCopy();
-            if (payload.length() > 0)
+            GitHubOtaUpdater::StatusGuard guard(_otaUpdater);
+            if (!guard)
+                return;
+            String payload;
+            if (copyLastStatusPayload(payload) && payload.length() > 0)
             {
                 client->text(payload);
             }
@@ -1004,10 +1076,12 @@ void WebServerHandler::setupStatusWebSocket()
     _server.addHandler(&_wsStatus);
 }
 
-void WebServerHandler::buildStatusJson(JsonDocument &doc)
+bool WebServerHandler::buildStatusJson(JsonDocument &doc)
 {
     JsonDocument snapshot;
     _state.snapshotTo(snapshot);
+    if (snapshot.overflowed())
+        return false;
 
     const bool snapshotMqttConnected =
         snapshot["Status"]["mqttConnected"].is<bool>() ? snapshot["Status"]["mqttConnected"].as<bool>() :
@@ -1056,47 +1130,56 @@ void WebServerHandler::buildStatusJson(JsonDocument &doc)
     copyObjectSection(doc, "EspData", snapshot["EspData"].as<JsonObjectConst>());
     copyObjectSection(doc, "DeviceData", snapshot["DeviceData"].as<JsonObjectConst>());
     copyObjectSection(doc, "LiveData", snapshot["LiveData"].as<JsonObjectConst>());
+    return !doc.overflowed();
 }
 
 void WebServerHandler::refreshStatusPayload()
 {
-    JsonDocument doc;
-    buildStatusJson(doc);
-
+    GitHubOtaUpdater::StatusGuard guard(_otaUpdater);
+    if (!guard)
+        return;
     String payload;
-    payload.reserve(2048);
-    serializeJson(doc, payload);
+    {
+        JsonDocument doc;
+        if (!buildStatusJson(doc) || !serializeCompleteJson(doc, payload))
+            return;
+    }
     setLastStatusPayload(payload);
-    _wsStatus.textAll(payload);
+    if (_wsStatus.count() > 0 && _wsStatus.availableForWriteAll())
+        _wsStatus.textAll(payload);
 }
 
-String WebServerHandler::lastStatusPayloadCopy()
+bool WebServerHandler::copyLastStatusPayload(String &payload)
 {
     if (_statusPayloadMutex == nullptr)
     {
-        return _lastStatusPayload;
+        const size_t expected = _lastStatusPayload.length();
+        payload = _lastStatusPayload;
+        return payload.length() == expected;
     }
 
-    String payload;
-    if (xSemaphoreTake(_statusPayloadMutex, portMAX_DELAY) == pdTRUE)
-    {
-        payload = _lastStatusPayload;
-        xSemaphoreGive(_statusPayloadMutex);
-    }
-    return payload;
+    if (xSemaphoreTake(_statusPayloadMutex, portMAX_DELAY) != pdTRUE)
+        return false;
+    const size_t expected = _lastStatusPayload.length();
+    payload = _lastStatusPayload;
+    const bool complete = payload.length() == expected;
+    xSemaphoreGive(_statusPayloadMutex);
+    return complete;
 }
 
 void WebServerHandler::setLastStatusPayload(const String &payload)
 {
     if (_statusPayloadMutex == nullptr)
     {
-        _lastStatusPayload = payload;
+        if (_lastStatusPayload.reserve(payload.length()))
+            _lastStatusPayload = payload;
         return;
     }
 
     if (xSemaphoreTake(_statusPayloadMutex, portMAX_DELAY) == pdTRUE)
     {
-        _lastStatusPayload = payload;
+        if (_lastStatusPayload.reserve(payload.length()))
+            _lastStatusPayload = payload;
         xSemaphoreGive(_statusPayloadMutex);
     }
 }

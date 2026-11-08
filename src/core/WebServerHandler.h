@@ -50,9 +50,9 @@ private:
     bool isAuthorized(AsyncWebServerRequest *request);
     void registerRoutes();
     void setupStatusWebSocket();
-    void buildStatusJson(JsonDocument &doc);
+    bool buildStatusJson(JsonDocument &doc);
     void refreshStatusPayload();
-    String lastStatusPayloadCopy();
+    bool copyLastStatusPayload(String &payload);
     void setLastStatusPayload(const String &payload);
     void sendAsset(AsyncWebServerRequest *request, const char *mime, const uint8_t *data, size_t len);
 };

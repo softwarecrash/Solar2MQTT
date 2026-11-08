@@ -27,6 +27,21 @@ public:
     bool startUpdate();
     String statusJson() const;
     bool isBusy() const;
+    // Large status buffers and TLS must not be allocated concurrently. Taking
+    // this guard never waits: WebSocket connect callbacks already hold a lock.
+    class StatusGuard
+    {
+    public:
+        explicit StatusGuard(GitHubOtaUpdater &updater);
+        ~StatusGuard();
+        explicit operator bool() const { return _owner != nullptr; }
+        StatusGuard(const StatusGuard &) = delete;
+        StatusGuard &operator=(const StatusGuard &) = delete;
+    private:
+        GitHubOtaUpdater *_owner = nullptr;
+    };
+    // Consumed by the main loop so energy is flushed before the ESP restarts.
+    bool consumeRestartRequest(uint32_t nowMs);
 
 private:
     static void checkTask(void *param);
@@ -38,6 +53,7 @@ private:
     void setState(State state, const String &error = "");
     void clearTask();
 
+    static bool isValidVersion(const String &value);
     static int compareVersions(const String &left, const String &right);
     static String normalizeVersion(const String &value);
 
@@ -61,5 +77,7 @@ private:
 
     void *_lockHandle = nullptr;
     void *_task = nullptr;
+    bool _restartPending = false;
+    uint32_t _restartAtMs = 0;
     std::function<bool()> _networkConnected;
 };
