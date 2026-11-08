@@ -251,20 +251,22 @@ bool PI_Serial::PIXX_QPIGS()
     };
     const int qpiriFields = countFields(get.raw.qpiri);
     const int qallFields = hasQallResponse ? countFields(commandAnswerQALL) : 0;
-    const bool hasRevoLikeQpigsTail = protocol != PI16 &&
-                                      protocol != PI41 &&
+    const bool canInferRevoLayout = protocol == PI30 || protocol == PI30_UNKNOWN;
+    // Standard QPIRI has 25+ fields, even before the first QPIWS refines PI30.
+    const bool hasRevoLikeQpigsTail = canInferRevoLayout &&
+                                      qpiriFields < 25 &&
                                       !hasQallResponse &&
                                       StringCount >= (int)qpigs_21_length &&
                                       !hasDecimalPoint(fieldsQPIGS[12]) &&
                                       hasDecimalPoint(fieldsQPIGS[13]) &&
                                       isBinaryField(fieldsQPIGS[16]);
-    const bool useRevoQpigsLayout = protocol != PI16 &&
-                                    ((protocol == PI30_REVO) ||
-                                    hasRevoLikeQpigsTail ||
-                                    (qallFields >= (int)qallList_length &&
-                                     StringCount >= (int)qpigs_21_length &&
-                                     qpiriFields > 0 &&
-                                     qpiriFields <= 21));
+    const bool useRevoQpigsLayout = protocol == PI30_REVO ||
+                                    (canInferRevoLayout &&
+                                     (hasRevoLikeQpigsTail ||
+                                      (qallFields >= (int)qallList_length &&
+                                       StringCount >= (int)qpigs_21_length &&
+                                       qpiriFields > 0 &&
+                                       qpiriFields <= 21)));
 
     pi_clear_json_fields(liveData, qpigs_106);
     pi_clear_json_fields(liveData, qpigs_90);
