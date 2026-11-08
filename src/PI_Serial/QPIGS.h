@@ -271,7 +271,15 @@ bool PI_Serial::PIXX_QPIGS()
     pi_clear_json_fields(liveData, qpigs_21);
     pi_clear_json_fields(liveData, qpigs_21_revo);
     pi_clear_json_fields(liveData, qallList);
-    pi_clear_json_field_pairs(liveData, P005GS);
+    // PV2 values belong to QPIGS2; keep them until that reply is processed.
+    for (const auto &field : P005GS)
+    {
+      const char *key = field[0];
+      if (strcmp(key, DESCR_PV2_Input_Voltage) != 0 &&
+          strcmp(key, DESCR_PV2_Input_Power) != 0 &&
+          strcmp(key, DESCR_Battery_SCC2_Volt) != 0)
+        liveData.remove(key);
+    }
     liveData.remove(DESCR_Battery_Load);
     liveData.remove(DESCR_PV_Input_Power);
     liveData.remove(DESCR_PV_Input_Voltage);
