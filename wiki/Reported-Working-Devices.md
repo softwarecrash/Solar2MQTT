@@ -48,6 +48,7 @@ This page is generated automatically from public device reports submitted throug
 | POWMR | POW-HVM6.5K-E | RS232 | MODBUS_POWMR | MODBUS_POWMR | PowMr HVM Modbus 4501 | - | esp32s3_supermini | - | 1 |
 | POWMR | POWHVM62M48VN | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 1 |
 | POWMR | POWMR HVM-6.2M-48V-N | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Build variant is wenmo d1 but tge actual module is esp32 devkit V1 | 1 |
+| SAKO | SUNON V6,5KVA | RS232 | PI30_PIP_GK | PI30 | VMIII-6200 | - | esp32s3_supermini | - | 1 |
 | SILA | SILA PRO 5600MH | RS232 | PI18 | PI18 | - | - | waveshare_esp32_s3_eth | - | 1 |
 | STARK COUNTRY | STARK COUNTRY INV 3000 LT | RS232 | PI30 | PI30 | VP-3000 | - | wemos_d1_mini32 | https://stark-ups.ru/products/istochniki-bespereboynogo-pitaniya/stark-country-inv/3000-inv-lt/ Battery charge readings and other voltages are shown with low resolution after the decimal point. | 1 |
 | SUMRY | SP 7000 | RS232 | PI30 | PI30 | - | - | wemos_d1_mini32 | Battery mode must be not lib | 1 |
