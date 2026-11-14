@@ -786,6 +786,11 @@ void WebServerHandler::registerRoutes()
         {
             return request->requestAuthentication();
         }
+        if (!_settings.get.mqttHAEnabled())
+        {
+            request->send(409, "application/json", "{\"success\":false,\"error\":\"Home Assistant discovery is disabled\"}");
+            return;
+        }
         _mqttHandler.triggerHaDiscovery();
         request->send(200, "application/json", "{\"success\":true}"); });
 
