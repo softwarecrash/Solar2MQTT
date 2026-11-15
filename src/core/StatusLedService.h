@@ -33,6 +33,9 @@ private:
     uint32_t _cycleStartMs = 0;
     uint8_t _cyclePulses = 0;
     bool _attached = false;
+#if defined(STATUS_LED_ADDRESSABLE) && STATUS_LED_ADDRESSABLE
+    int16_t _lastRgbBrightness = -1;
+#endif
 
     uint8_t determinePulseCount(bool wifiConnected, bool mqttEnabled, bool mqttConnected, bool inverterConnected) const;
     static void taskEntry(void* arg);
