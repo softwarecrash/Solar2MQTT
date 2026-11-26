@@ -19,8 +19,11 @@ Solar2MQTT supports optional HTTP basic authentication for the Web UI.
 
 ## Current behavior
 
-- Authentication is skipped in AP mode so initial setup remains reachable.
-- Once the device is on your normal Wi-Fi, the configured username and password protect the Web UI.
+- A configured username and password protect HTTP endpoints and new WebSocket connections on Wi-Fi, Ethernet and in AP mode.
+- With no username configured, initial setup and the Web UI remain accessible without authentication.
+- The fallback AP is open by default. Set `Access Point Password` in advanced network settings to secure it with an independent WPA2 password (8..63 characters).
+- Saved passwords are not returned by normal settings endpoints. Blank password fields keep the existing value; `Clear password` removes it.
+- The configuration backup contains passwords. Store it securely.
 
 ## Security note
 

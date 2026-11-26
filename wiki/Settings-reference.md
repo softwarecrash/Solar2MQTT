@@ -27,7 +27,10 @@ This page explains the settings available in the Web UI.
 | Gateway | Gateway for static addressing. | Default: empty | Must be valid together with the other static fields. |
 | DNS Server | DNS server for static addressing. | Default: empty | Must be valid together with the other static fields. |
 | Username | Enables HTTP basic authentication for the Web UI. | Default: empty | If the username is empty, Web UI authentication is disabled. |
-| Password | Password for Web UI authentication. | Default: empty | In AP mode authentication is skipped so initial setup stays reachable. See [WebUI authentication](WebUI-authentication). |
+| Password | Password for Web UI authentication. | Default: empty | Authentication applies on Wi-Fi, Ethernet and in AP mode. See [WebUI authentication](WebUI-authentication). |
+| Access Point Password | Secures the fallback access point with WPA2. | Default: empty (open AP); 8..63 characters when set | Independent of the Wi-Fi and Web UI passwords. Applies during initial setup and automatic AP fallback. |
+
+Password fields never display saved secrets. Leave a field blank to keep its password, enter a new password to replace it, or select `Clear password` to remove it. Clearing the AP password restores an open access point. Configuration backups contain passwords and should be stored securely.
 
 ## MQTT settings
 

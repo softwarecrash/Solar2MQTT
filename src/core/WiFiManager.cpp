@@ -514,7 +514,12 @@ void WiFiManager::startApMode()
     WiFi.mode(WIFI_AP_STA);
     WiFi.persistent(false);
     WiFi.softAPConfig(apIp, apIp, IPAddress(255, 255, 255, 0));
-    WiFi.softAP(String(SOURCE_NAME) + "-AP");
+    const char *password = _settings.get.apPassword();
+    if (!WiFi.softAP((String(SOURCE_NAME) + "-AP").c_str(), *password ? password : nullptr))
+    {
+        LogSerial.println(F("[Network] AP start failed"));
+        return;
+    }
     dnsServer.start(53, "*", apIp);
     LogSerial.printf("[Network] AP started on %s\n", WiFi.softAPIP().toString().c_str());
 }

@@ -267,6 +267,18 @@ bool Settings::restore(const String &json, bool saveAfter)
         return false;
     }
 
+    const JsonVariantConst apPasswordValue = tmp["network"]["apPassword"];
+    if (!apPasswordValue.isNull() && !apPasswordValue.is<const char *>())
+    {
+        return false;
+    }
+    const String apPassword = apPasswordValue.isNull() ? String() : apPasswordValue.as<String>();
+    if (strlen(apPassword.c_str()) != apPassword.length() ||
+        (!apPassword.isEmpty() && (apPassword.length() < 8 || apPassword.length() > 63)))
+    {
+        return false;
+    }
+
     _doc.clear();
 
 #define RESTORE_BOOL(group, name, api, def, minv, maxv) \

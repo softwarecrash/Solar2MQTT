@@ -20,6 +20,35 @@ namespace
 {
 String s_restoreBody;
 
+void updatePassword(AsyncWebServerRequest *request, const char *name,
+                    void (SettingsSetter::*setter)(const String &))
+{
+    const String clearName = String(name) + "Clear";
+    if (request->hasParam(clearName, true) && request->getParam(clearName, true)->value() == "1")
+    {
+        (_settings.set.*setter)("");
+    }
+    else if (request->hasParam(name, true) && !request->getParam(name, true)->value().isEmpty())
+    {
+        (_settings.set.*setter)(request->getParam(name, true)->value());
+    }
+}
+
+bool validateApPassword(AsyncWebServerRequest *request)
+{
+    if (request->hasParam("apPassword", true))
+    {
+        const String &password = request->getParam("apPassword", true)->value();
+        const size_t length = password.length();
+        if (strlen(password.c_str()) != length || (length != 0 && (length < 8 || length > 63)))
+        {
+            request->send(400, "application/json", "{\"success\":false,\"message\":\"AP password must contain 8 to 63 characters.\"}");
+            return false;
+        }
+    }
+    return true;
+}
+
 void copyObjectSection(JsonDocument &target, const char *key, JsonObjectConst source)
 {
     JsonObject destination = target[key].to<JsonObject>();
@@ -169,11 +198,6 @@ void WebServerHandler::notifyStatusBar()
 
 bool WebServerHandler::isAuthorized(AsyncWebServerRequest *request)
 {
-    if (_wifiManager.isInApMode())
-    {
-        return true;
-    }
-
     if (!*_settings.get.webUIuser())
     {
         return true;
@@ -184,6 +208,15 @@ bool WebServerHandler::isAuthorized(AsyncWebServerRequest *request)
 
 void WebServerHandler::registerRoutes()
 {
+    // Cover WebSocket handshakes as well as HTTP routes with current credentials.
+    _server.addMiddleware([this](AsyncWebServerRequest *request, ArMiddlewareNext next)
+                         {
+        if (!isAuthorized(request))
+        {
+            request->requestAuthentication();
+            return;
+        }
+        next(); });
     auto serveAsset = [this](const char *path, const char *mime, const uint8_t *data, size_t len)
     {
         _server.on(path, HTTP_GET, [this, mime, data, len](AsyncWebServerRequest *request)
@@ -324,10 +357,10 @@ void WebServerHandler::registerRoutes()
         JsonObject network = doc["network"].to<JsonObject>();
         network["deviceName"] = _settings.get.deviceName();
         network["wifiSsid0"] = _settings.get.wifiSsid0();
-        network["wifiPassword0"] = _settings.get.wifiPassword0();
+        network["wifiPassword0Set"] = *_settings.get.wifiPassword0() != 0;
         network["wifiBssid0"] = _settings.get.wifiBssid0();
         network["wifiSsid1"] = _settings.get.wifiSsid1();
-        network["wifiPassword1"] = _settings.get.wifiPassword1();
+        network["wifiPassword1Set"] = *_settings.get.wifiPassword1() != 0;
         network["wifiBssid1"] = _settings.get.wifiBssid1();
         network["wifiBssidLock"] = _settings.get.wifiBssidLock();
         network["staticIP"] = _settings.get.staticIP();
@@ -335,14 +368,15 @@ void WebServerHandler::registerRoutes()
         network["staticSN"] = _settings.get.staticSN();
         network["staticDNS"] = _settings.get.staticDNS();
         network["webUIuser"] = _settings.get.webUIuser();
-        network["webUIPassword"] = _settings.get.webUIPassword();
+        network["webUIPasswordSet"] = *_settings.get.webUIPassword() != 0;
+        network["apPasswordSet"] = *_settings.get.apPassword() != 0;
         network["ethEnabled"] = _settings.get.ethEnabled();
         network["lanSupported"] = _wifiManager.hasLanSupport();
 
         JsonObject mqtt = doc["mqtt"].to<JsonObject>();
         mqtt["host"] = _settings.get.mqttHost();
         mqtt["user"] = _settings.get.mqttUser();
-        mqtt["password"] = _settings.get.mqttPassword();
+        mqtt["passwordSet"] = *_settings.get.mqttPassword() != 0;
         mqtt["port"] = _settings.get.mqttPort();
         mqtt["topic"] = _settings.get.mqttTopic();
         mqtt["refresh"] = _settings.get.mqttRefresh();
@@ -363,11 +397,13 @@ void WebServerHandler::registerRoutes()
 
         String json;
         serializeJson(doc, json);
-        request->send(200, "application/json", json); });
+        AsyncWebServerResponse *response = request->beginResponse(200, "application/json", json);
+        response->addHeader("Cache-Control", "no-store");
+        request->send(response); });
 
     _server.on("/netconf.json", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
-        if (!_wifiManager.isInApMode() && !isAuthorized(request))
+        if (!isAuthorized(request))
         {
             return request->requestAuthentication();
         }
@@ -375,11 +411,11 @@ void WebServerHandler::registerRoutes()
         JsonDocument doc;
         doc["deviceName"] = _settings.get.deviceName();
         doc["ssid0"] = _settings.get.wifiSsid0();
-        doc["pass0"] = _settings.get.wifiPassword0();
+        doc["pass0Set"] = *_settings.get.wifiPassword0() != 0;
         doc["bssid0"] = _settings.get.wifiBssid0();
         doc["bssidLock"] = _settings.get.wifiBssidLock();
         doc["ssid1"] = _settings.get.wifiSsid1();
-        doc["pass1"] = _settings.get.wifiPassword1();
+        doc["pass1Set"] = *_settings.get.wifiPassword1() != 0;
         doc["bssid1"] = _settings.get.wifiBssid1();
 
         IPAddress ip;
@@ -392,7 +428,8 @@ void WebServerHandler::registerRoutes()
         doc["dns"] = (dns.fromString(_settings.get.staticDNS()) && dns != IPAddress(0, 0, 0, 0)) ? _settings.get.staticDNS() : "";
 
         doc["webUser"] = _settings.get.webUIuser();
-        doc["webPass"] = _settings.get.webUIPassword();
+        doc["webPassSet"] = *_settings.get.webUIPassword() != 0;
+        doc["apPasswordSet"] = *_settings.get.apPassword() != 0;
         doc["lanSupported"] = _wifiManager.hasLanSupport();
         doc["ethEnabled"] = _settings.get.ethEnabled();
         doc["ethActive"] = _wifiManager.isEthActive();
@@ -405,7 +442,7 @@ void WebServerHandler::registerRoutes()
 
     _server.on("/netlist", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
-        if (!_wifiManager.isInApMode() && !isAuthorized(request))
+        if (!isAuthorized(request))
         {
             return request->requestAuthentication();
         }
@@ -435,6 +472,8 @@ void WebServerHandler::registerRoutes()
             return request->requestAuthentication();
         }
 
+        if (!validateApPassword(request)) return;
+        const String oldApPassword = _settings.get.apPassword();
         const String oldDeviceName = _settings.get.deviceName();
         const String oldWifiSsid0 = _settings.get.wifiSsid0();
         const String oldWifiPassword0 = _settings.get.wifiPassword0();
@@ -457,10 +496,8 @@ void WebServerHandler::registerRoutes()
 
             if (name == "deviceName") _settings.set.deviceName(value);
             else if (name == "wifiSsid0") _settings.set.wifiSsid0(value);
-            else if (name == "wifiPassword0") _settings.set.wifiPassword0(value);
             else if (name == "wifiBssid0") _settings.set.wifiBssid0(value);
             else if (name == "wifiSsid1") _settings.set.wifiSsid1(value);
-            else if (name == "wifiPassword1") _settings.set.wifiPassword1(value);
             else if (name == "wifiBssid1") _settings.set.wifiBssid1(value);
             else if (name == "wifiBssidLock") _settings.set.wifiBssidLock(value.toInt() != 0);
             else if (name == "staticIP") _settings.set.staticIP(value);
@@ -468,13 +505,17 @@ void WebServerHandler::registerRoutes()
             else if (name == "staticSN") _settings.set.staticSN(value);
             else if (name == "staticDNS") _settings.set.staticDNS(value);
             else if (name == "webUIuser") _settings.set.webUIuser(value);
-            else if (name == "webUIPassword") _settings.set.webUIPassword(value);
             else if (name == "ethEnabled") _settings.set.ethEnabled(value.toInt() != 0);
         }
 
+        updatePassword(request, "wifiPassword0", &SettingsSetter::wifiPassword0);
+        updatePassword(request, "wifiPassword1", &SettingsSetter::wifiPassword1);
+        updatePassword(request, "webUIPassword", &SettingsSetter::webUIPassword);
+        updatePassword(request, "apPassword", &SettingsSetter::apPassword);
         _settings.save();
 
         const bool networkTransportChanged =
+            oldApPassword != String(_settings.get.apPassword()) ||
             oldWifiSsid0 != String(_settings.get.wifiSsid0()) ||
             oldWifiPassword0 != String(_settings.get.wifiPassword0()) ||
             oldWifiBssid0 != String(_settings.get.wifiBssid0()) ||
@@ -528,12 +569,14 @@ void WebServerHandler::registerRoutes()
 
     _server.on("/submitConfig", HTTP_POST, [this](AsyncWebServerRequest *request)
                {
-        if (!_wifiManager.isInApMode() && !isAuthorized(request))
+        if (!isAuthorized(request))
         {
             return request->requestAuthentication();
         }
 
         const bool wasApMode = _wifiManager.isInApMode();
+        if (!validateApPassword(request)) return;
+        const String oldApPassword = _settings.get.apPassword();
         const String oldDeviceName = _settings.get.deviceName();
         const String oldWifiSsid0 = _settings.get.wifiSsid0();
         const String oldWifiPassword0 = _settings.get.wifiPassword0();
@@ -556,24 +599,26 @@ void WebServerHandler::registerRoutes()
 
             if (name == "devicename") _settings.set.deviceName(value);
             else if (name == "ssid0") _settings.set.wifiSsid0(value);
-            else if (name == "password0") _settings.set.wifiPassword0(value);
             else if (name == "bssid0") _settings.set.wifiBssid0(value);
             else if (name == "bssidLock") _settings.set.wifiBssidLock(value.toInt() != 0);
             else if (name == "ssid1") _settings.set.wifiSsid1(value);
-            else if (name == "password1") _settings.set.wifiPassword1(value);
             else if (name == "bssid1") _settings.set.wifiBssid1(value);
             else if (name == "ip") _settings.set.staticIP(value);
             else if (name == "subnet") _settings.set.staticSN(value);
             else if (name == "gateway") _settings.set.staticGW(value);
             else if (name == "dns") _settings.set.staticDNS(value);
             else if (name == "webUser") _settings.set.webUIuser(value);
-            else if (name == "webPass") _settings.set.webUIPassword(value);
             else if (name == "ethEnabled") _settings.set.ethEnabled(value.toInt() != 0);
         }
 
+        updatePassword(request, "password0", &SettingsSetter::wifiPassword0);
+        updatePassword(request, "password1", &SettingsSetter::wifiPassword1);
+        updatePassword(request, "webPass", &SettingsSetter::webUIPassword);
+        updatePassword(request, "apPassword", &SettingsSetter::apPassword);
         _settings.save();
 
         const bool networkTransportChanged =
+            oldApPassword != String(_settings.get.apPassword()) ||
             oldWifiSsid0 != String(_settings.get.wifiSsid0()) ||
             oldWifiPassword0 != String(_settings.get.wifiPassword0()) ||
             oldWifiBssid0 != String(_settings.get.wifiBssid0()) ||
@@ -641,7 +686,6 @@ void WebServerHandler::registerRoutes()
 
             if (name == "host") _settings.set.mqttHost(value);
             else if (name == "user") _settings.set.mqttUser(value);
-            else if (name == "password") _settings.set.mqttPassword(value);
             else if (name == "topic") _settings.set.mqttTopic(value);
             else if (name == "triggerTopic") _settings.set.mqttTriggerPath(value);
             else if (name == "port") _settings.set.mqttPort(static_cast<uint16_t>(value.toInt()));
@@ -651,6 +695,7 @@ void WebServerHandler::registerRoutes()
             else if (name == "ha") _settings.set.mqttHAEnabled(value.toInt() != 0);
         }
 
+        updatePassword(request, "password", &SettingsSetter::mqttPassword);
         if (_settings.get.mqttJson() && _settings.get.mqttHAEnabled())
         {
             _settings.set.mqttJson(false);
@@ -807,7 +852,9 @@ void WebServerHandler::registerRoutes()
             pretty = request->getParam("pretty")->value().toInt() != 0;
         }
 
-        request->send(200, "application/json", _settings.backup(pretty)); });
+        AsyncWebServerResponse *response = request->beginResponse(200, "application/json", _settings.backup(pretty));
+        response->addHeader("Cache-Control", "no-store");
+        request->send(response); });
 
     _server.on(
         "/api/settings/restore",

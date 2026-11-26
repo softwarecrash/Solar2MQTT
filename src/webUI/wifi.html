@@ -166,6 +166,7 @@
 
         <label for="password0">Password</label>
         <input type="password" id="password0" name="wifi_psk_primary" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" />
+        <label class="switch-row">Clear password <input type="checkbox" id="password0Clear"></label>
 
         <div class="detailSplitter">Fallback</div>
 
@@ -175,6 +176,7 @@
 
         <label for="password1">Password (optional)</label>
         <input type="password" id="password1" name="wifi_psk_fallback" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" />
+        <label class="switch-row">Clear password <input type="checkbox" id="password1Clear"></label>
 
         <div class="detailSplitter">Static IP (optional)</div>
 
@@ -197,6 +199,12 @@
 
         <label for="webPass">Password</label>
         <input type="password" id="webPass" autocomplete="new-password" />
+        <label class="switch-row">Clear password <input type="checkbox" id="webPassClear"></label>
+
+        <div class="detailSplitter">Access Point Security (optional)</div>
+        <label for="apPassword">Access Point Password</label>
+        <input type="password" id="apPassword" autocomplete="new-password" minlength="8" maxlength="63" />
+        <label class="switch-row">Clear password (open AP) <input type="checkbox" id="apPasswordClear"></label>
 
         <div class="button-stack actions">
           <button type="submit" class="btn">Save</button>
@@ -373,7 +381,7 @@
           const pw = passInput.value || "";
           passwordDraftByKey[key] = pw;
           document.getElementById("password0").value = pw;
-          if (net.enc && !pw.length) {
+          if (net.enc && !pw.length && !(ssid === savedPrimarySsid && document.getElementById("password0").dataset.passwordSet === "true" && !document.getElementById("password0Clear").checked)) {
             alertToast("warning", "Enter password before connecting.");
             passInput.focus();
             return;
@@ -568,6 +576,16 @@
       }
     }
 
+    let savedPrimarySsid = "";
+
+    function setPasswordState(id, isSet) {
+      const input = document.getElementById(id);
+      input.value = "";
+      input.dataset.passwordSet = String(isSet === true);
+      input.placeholder = isSet ? "Saved - leave blank to keep" : "Not set";
+      document.getElementById(id + "Clear").checked = false;
+    }
+
     async function loadConfig() {
       try {
         const res = await fetch("/netconf.json", { cache: "no-store" });
@@ -575,12 +593,13 @@
 
         document.getElementById("devicename").value = c.deviceName || "Solar2MQTT";
         document.getElementById("ssid0").value = c.ssid0 || "";
-        document.getElementById("password0").value = c.pass0 || "";
+        savedPrimarySsid = c.ssid0 || "";
+        setPasswordState("password0", c.pass0Set);
         document.getElementById("bssid0").value = c.bssid0 || "";
         document.getElementById("bssidLock").checked = (c.bssidLock === true);
 
         document.getElementById("ssid1").value = c.ssid1 || "";
-        document.getElementById("password1").value = c.pass1 || "";
+        setPasswordState("password1", c.pass1Set);
         document.getElementById("bssid1").value = c.bssid1 || "";
 
         document.getElementById("ip").value = c.ip || "";
@@ -589,7 +608,8 @@
         document.getElementById("dns").value = c.dns || "";
 
         document.getElementById("webUser").value = c.webUser || "";
-        document.getElementById("webPass").value = c.webPass || "";
+        setPasswordState("webPass", c.webPassSet);
+        setPasswordState("apPassword", c.apPasswordSet);
         const lanSupported = c.lanSupported === true;
         document.getElementById("ethEnabledRow").hidden = !lanSupported;
         document.getElementById("ethEnabledNote").hidden = !lanSupported;
@@ -643,7 +663,10 @@
         `&dns=${encodeURIComponent(document.getElementById("dns").value)}` +
         `&ethEnabled=${encodeURIComponent(document.getElementById("ethEnabled").checked ? "1" : "0")}` +
         `&webUser=${encodeURIComponent(document.getElementById("webUser").value)}` +
-        `&webPass=${encodeURIComponent(document.getElementById("webPass").value)}`
+        `&webPass=${encodeURIComponent(document.getElementById("webPass").value)}` +
+        `&apPassword=${encodeURIComponent(document.getElementById("apPassword").value)}` +
+        ["password0", "password1", "webPass", "apPassword"].map(id =>
+          `&${id}Clear=${document.getElementById(id + "Clear").checked ? "1" : "0"}`).join("")
       );
     }
 
@@ -652,6 +675,7 @@
       wifiSubmitInFlight = true;
 
       try {
+        if (!document.getElementById("wifiForm").reportValidity()) return;
         const ssid = (document.getElementById("ssid0").value || "").trim();
         if (mode === "connect" && !ssid.length) {
           alertToast("warning", "Select a network first.");
@@ -683,7 +707,7 @@
             watchForStatusPage(payload);
           }
         } else {
-          alertToast("error", "Save failed: " + res.status);
+          alertToast("error", payload.message || ("Save failed: " + res.status));
         }
       } catch {
         alertToast("info", "Connection changed or device is reconnecting.");

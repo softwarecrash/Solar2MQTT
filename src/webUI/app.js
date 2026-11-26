@@ -847,6 +847,12 @@ async function loadSettings() {
   const data = await fetchJson("/api/settings");
   fillForm("networkForm", data.network);
   fillForm("mqttForm", data.mqtt);
+  const mqttPassword = byId("mqttPassword");
+  if (mqttPassword) {
+    mqttPassword.value = "";
+    mqttPassword.placeholder = data.mqtt?.passwordSet ? "Saved - leave blank to keep" : "Not set";
+    byId("mqttForm").elements.namedItem("passwordClear").checked = false;
+  }
   fillForm("deviceForm", data.device);
   syncMqttModeSelection();
   syncRangeValue("statusLedBrightness", "statusLedBrightnessValue");
@@ -1147,6 +1153,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   bindSubmit("mqttForm", async (form) => {
     const result = await postForm("/api/settings/mqtt", form);
+    await loadSettings();
     showNotice(result?.message || "MQTT settings applied.");
   });
 
