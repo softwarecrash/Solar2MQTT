@@ -1,0 +1,97 @@
+name: Host regressions and firmware builds
+
+on:
+  pull_request:
+  push:
+    branches: [main, master, 'fix/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  host:
+    name: Host / ${{ matrix.os }} / ${{ matrix.suite }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            suite: all
+          - os: ubuntu-24.04
+            suite: all
+          - os: macos-latest
+            suite: portable
+    env:
+      ARDUINOJSON_INCLUDE: ${{ github.workspace }}/.test-deps/ArduinoJson/src
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v7
+        with:
+          repository: bblanchon/ArduinoJson
+          ref: v7.4.3
+          path: .test-deps/ArduinoJson
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Install Windows compiler
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          path-type: inherit
+          install: mingw-w64-x86_64-gcc
+      - name: Run Windows regressions
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          export CXX=g++
+          node tests/host/run.cjs all
+      - name: Install Linux ESP32-ABI test compiler
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends --yes g++-multilib
+      - name: Run Linux regressions with 32-bit unsigned long
+        if: runner.os == 'Linux'
+        env:
+          CXX: g++
+          HOST_CXXFLAGS_JSON: '["-m32"]'
+        run: node tests/host/run.cjs all
+      - name: Run portable macOS regressions
+        if: runner.os == 'macOS'
+        env:
+          CXX: clang++
+        run: node tests/host/run.cjs portable
+
+  firmware:
+    name: Firmware / ${{ matrix.board }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+          - wemos_d1_mini32
+          - esp32c3_supermini
+          - esp32s3_supermini
+          - waveshare_esp32_s3_eth
+          - m5stack_atom_lite
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Install build frontend
+        run: python -m pip install pioarduino==6.2.0.post1
+      - name: Build firmware
+        run: pio run -e ${{ matrix.board }}

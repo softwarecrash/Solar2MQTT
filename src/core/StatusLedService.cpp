@@ -4,6 +4,10 @@
 #include <math.h>
 
 #include "core/LogSerial.h"
+#if defined(STATUS_LED_ADDRESSABLE) && STATUS_LED_ADDRESSABLE
+#include <esp32-hal-rgb-led.h>
+#include <esp32-hal-rmt.h>
+#endif
 
 namespace
 {
@@ -194,12 +198,20 @@ void StatusLedService::attachPin()
         return;
     }
 
+#if defined(STATUS_LED_ADDRESSABLE) && STATUS_LED_ADDRESSABLE
+    if (!rmtInit(_activePin, RMT_TX_MODE, RMT_MEM_NUM_BLOCKS_1, 10000000))
+    {
+        LogSerial.println("[LED] Failed to initialize RGB status LED");
+        return;
+    }
+    _lastRgbBrightness = -1;
+#else
     if (!ledcAttach(static_cast<uint8_t>(_activePin), kPwmFreqHz, kPwmResolutionBits))
     {
         LogSerial.printf("[LED] Failed to attach status LED pin %ld\n", static_cast<long>(_activePin));
         return;
     }
-
+#endif
     _attached = true;
     writeBrightness(0);
 }
@@ -213,7 +225,12 @@ void StatusLedService::detachPin()
     }
 
     writeBrightness(0);
+#if defined(STATUS_LED_ADDRESSABLE) && STATUS_LED_ADDRESSABLE
+    rmtDeinit(_activePin);
+    _lastRgbBrightness = -1;
+#else
     ledcDetach(static_cast<uint8_t>(_activePin));
+#endif
     pinMode(static_cast<uint8_t>(_activePin), OUTPUT);
     digitalWrite(static_cast<uint8_t>(_activePin), LOW);
     _attached = false;
@@ -226,5 +243,15 @@ void StatusLedService::writeBrightness(uint8_t value)
         return;
     }
 
+#if defined(STATUS_LED_ADDRESSABLE) && STATUS_LED_ADDRESSABLE
+    if (_lastRgbBrightness != value)
+    {
+        // Green status pulses, with the same timing/brightness as PWM.
+        // The 20 ms task cadence also leaves ample LED latch time.
+        rgbLedWriteOrdered(static_cast<uint8_t>(_activePin), LED_COLOR_ORDER_GRB, 0, value, 0);
+        _lastRgbBrightness = value;
+    }
+#else
     ledcWrite(static_cast<uint8_t>(_activePin), value);
+#endif
 }

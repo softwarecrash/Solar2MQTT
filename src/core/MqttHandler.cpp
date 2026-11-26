@@ -526,6 +526,13 @@ void MqttHandler::reconfigure()
 void MqttHandler::loop()
 {
     const unsigned long now = millis();
+    if (!_settings.get.mqttHAEnabled())
+    {
+        _pendingHaDiscovery = false;
+        _forceHaDiscovery = false;
+        _pendingDelayedHaDiscovery = false;
+        stopHaDiscoverySweep();
+    }
     bool connected = false;
 
     if (_configured && _wifiManager.getConnectionState())
@@ -668,6 +675,10 @@ void MqttHandler::triggerFullStatePublish()
 
 void MqttHandler::triggerHaDiscovery()
 {
+    if (!_settings.get.mqttHAEnabled())
+    {
+        return;
+    }
     _pendingHaDiscovery = true;
     _forceHaDiscovery = true;
 }
@@ -709,7 +720,7 @@ void MqttHandler::handleMessage(char *topic, uint8_t *payload, unsigned int leng
 
     const String topicString(topic);
 
-    if (_haDiscoverySweepActive)
+    if (_haDiscoverySweepActive && _settings.get.mqttHAEnabled())
     {
         String component;
         String key;
@@ -812,134 +823,138 @@ bool MqttHandler::ensureConnected()
 
     setupSubscriptions();
     publishAlive();
-    startHaDiscoverySweep();
-
-    // Explicit migration cleanup for legacy PowMr diagnostic entities and
-    // generic sensor duplicates that were created before settings received
-    // dedicated select/number discovery entities.
+    if (_settings.get.mqttHAEnabled())
     {
-        const String deviceId = getHaDeviceId();
+        startHaDiscoverySweep();
 
-        const char *const obsoleteDebugKeys[] = {
-            "PowMr_Debug_4556",
-            "PowMr_Debug_4558",
-            "PowMr_Debug_4559",
-            "PowMr_Debug_4560",
-            "PowMr_Debug_4561",
-            "PowMr_Status_Flags_1",
-            "PowMr_Status_Flags_2",
-            "PowMr_Settings_Flags",
-        };
-        for (const char *key : obsoleteDebugKeys)
+        // Explicit migration cleanup for legacy PowMr diagnostic entities and
+        // generic sensor duplicates that were created before settings received
+        // dedicated select/number discovery entities.
         {
-            purgeHaDiscoveryKey(_mqtt, deviceId, key);
-        }
+            const String deviceId = getHaDeviceId();
 
-        const char *const oldSettingSensorKeys[] = {
-            DESCR_Charger_Source_Priority,
-            DESCR_Output_Source_Priority,
-            DESCR_Input_Voltage_Range,
-            "Battery_Type",
-            DESCR_AC_Out_Rating_Frequency,
-            DESCR_Current_Max_Charging_Current,
-            DESCR_AC_Out_Rating_Voltage,
-            DESCR_Current_Max_AC_Charging_Current,
-            DESCR_Battery_Recharge_Voltage,
-            DESCR_Battery_Redischarge_Voltage,
-            DESCR_Battery_Bulk_Voltage,
-            DESCR_Battery_Float_Voltage,
-            DESCR_Battery_Under_Voltage,
-            "Battery_Equalization_Voltage",
-            "Battery_Equalization_Time",
-            "Battery_Equalization_Timeout",
-            "Battery_Equalization_Interval",
-            DESCR_Buzzer_Enabled,
-            DESCR_Overload_Bypass_Enabled,
-            DESCR_Power_Saving_Enabled,
-            DESCR_LCD_Reset_To_Default_Enabled,
-            DESCR_Data_Log_Pop_Up,
-            DESCR_Overload_Restart_Enabled,
-            DESCR_Over_Temperature_Restart_Enabled,
-            DESCR_LCD_Backlight_Enabled,
-            DESCR_Primary_Source_Interrupt_Alarm_Enabled,
-            DESCR_Record_Fault_Code_Enabled,
-            DESCR_Solar_Feed_To_Grid_Enabled,
-        };
-        for (const char *key : oldSettingSensorKeys)
-        {
-            purgeHaDiscoveryComponent(_mqtt, deviceId, "sensor", key);
-            purgeHaDiscoveryComponent(_mqtt, deviceId, "binary_sensor", key);
-        }
-    }
-
-    // Run one more forced discovery after startup/static polling settles so
-    // retained DeviceData configs are guaranteed to receive the current entity names.
-    _pendingDelayedHaDiscovery = _settings.get.mqttHAEnabled();
-    _delayedHaDiscoveryAt = millis() + 10000UL;
-
-    // Remove stale Home Assistant entities created by an earlier, incorrect
-    // assumption that PowMr/Victor lithium menu 12/13 values were SOC.
-    // The retained discovery/state topics can otherwise survive firmware
-    // changes and display nonsense such as 510%/540%.
-    {
-        const char *const obsoletePowMrSocKeys[] = {
-            DESCR_Battery_Back_To_Utility_SOC,
-            DESCR_Battery_Back_To_Battery_SOC,
-        };
-        const char *const components[] = {"sensor", "number", "select"};
-        const String deviceId = getHaDeviceId();
-
-        for (const char *key : obsoletePowMrSocKeys)
-        {
-            for (const char *component : components)
-            {
-                const String discoveryTopic = buildDiscoveryTopic(deviceId, component, key);
-                _mqtt.publish(discoveryTopic.c_str(), "", true);
-            }
-
-            const String stateTopic = baseTopic() + "/DeviceData/" + key;
-            _mqtt.publish(stateTopic.c_str(), "", true);
-        }
-    }
-
-    // Purge retained Home Assistant Discovery for values that are present in
-    // runtime JSON but are not part of the supported HA catalog. Older builds
-    // auto-discovered every scalar field, so diagnostic/probe values could
-    // survive indefinitely as stale entities in Home Assistant.
-    {
-        JsonDocument snapshot;
-        _state.snapshotTo(snapshot);
-        const String deviceId = getHaDeviceId();
-
-        for (JsonPairConst entry : snapshot["DeviceData"].as<JsonObjectConst>())
-        {
-            const char *key = entry.key().c_str();
-            if (isPowMrWritableSettingKey(key))
-            {
-                continue;
-            }
-            if (findDescriptor(key,
-                               HA_STATIC_DESCRIPTORS,
-                               sizeof(HA_STATIC_DESCRIPTORS) / sizeof(HaEntityDescriptor)) == nullptr)
+            const char *const obsoleteDebugKeys[] = {
+                "PowMr_Debug_4556",
+                "PowMr_Debug_4558",
+                "PowMr_Debug_4559",
+                "PowMr_Debug_4560",
+                "PowMr_Debug_4561",
+                "PowMr_Status_Flags_1",
+                "PowMr_Status_Flags_2",
+                "PowMr_Settings_Flags",
+            };
+            for (const char *key : obsoleteDebugKeys)
             {
                 purgeHaDiscoveryKey(_mqtt, deviceId, key);
             }
+
+            const char *const oldSettingSensorKeys[] = {
+                DESCR_Charger_Source_Priority,
+                DESCR_Output_Source_Priority,
+                DESCR_Input_Voltage_Range,
+                "Battery_Type",
+                DESCR_AC_Out_Rating_Frequency,
+                DESCR_Current_Max_Charging_Current,
+                DESCR_AC_Out_Rating_Voltage,
+                DESCR_Current_Max_AC_Charging_Current,
+                DESCR_Battery_Recharge_Voltage,
+                DESCR_Battery_Redischarge_Voltage,
+                DESCR_Battery_Bulk_Voltage,
+                DESCR_Battery_Float_Voltage,
+                DESCR_Battery_Under_Voltage,
+                "Battery_Equalization_Voltage",
+                "Battery_Equalization_Time",
+                "Battery_Equalization_Timeout",
+                "Battery_Equalization_Interval",
+                DESCR_Buzzer_Enabled,
+                DESCR_Overload_Bypass_Enabled,
+                DESCR_Power_Saving_Enabled,
+                DESCR_LCD_Reset_To_Default_Enabled,
+                DESCR_Data_Log_Pop_Up,
+                DESCR_Overload_Restart_Enabled,
+                DESCR_Over_Temperature_Restart_Enabled,
+                DESCR_LCD_Backlight_Enabled,
+                DESCR_Primary_Source_Interrupt_Alarm_Enabled,
+                DESCR_Record_Fault_Code_Enabled,
+                DESCR_Solar_Feed_To_Grid_Enabled,
+            };
+            for (const char *key : oldSettingSensorKeys)
+            {
+                purgeHaDiscoveryComponent(_mqtt, deviceId, "sensor", key);
+                purgeHaDiscoveryComponent(_mqtt, deviceId, "binary_sensor", key);
+            }
         }
 
-        for (JsonPairConst entry : snapshot["LiveData"].as<JsonObjectConst>())
+        // Run one more forced discovery after startup/static polling settles so
+        // retained DeviceData configs are guaranteed to receive the current entity names.
+        _pendingDelayedHaDiscovery = _settings.get.mqttHAEnabled();
+        _delayedHaDiscoveryAt = millis() + 10000UL;
+
+        // Remove stale Home Assistant entities created by an earlier, incorrect
+        // assumption that PowMr/Victor lithium menu 12/13 values were SOC.
+        // The retained discovery/state topics can otherwise survive firmware
+        // changes and display nonsense such as 510%/540%.
         {
-            const char *key = entry.key().c_str();
-            if (strncmp(key, "DS18B20_", 8) == 0)
+            const char *const obsoletePowMrSocKeys[] = {
+                DESCR_Battery_Back_To_Utility_SOC,
+                DESCR_Battery_Back_To_Battery_SOC,
+            };
+            const char *const components[] = {"sensor", "number", "select"};
+            const String deviceId = getHaDeviceId();
+
+            for (const char *key : obsoletePowMrSocKeys)
             {
-                continue;
-            }
-            if (findDescriptor(key,
-                               HA_LIVE_DESCRIPTORS,
-                               sizeof(HA_LIVE_DESCRIPTORS) / sizeof(HaEntityDescriptor)) == nullptr)
-            {
-                purgeHaDiscoveryKey(_mqtt, deviceId, key);
+                for (const char *component : components)
+                {
+                    const String discoveryTopic = buildDiscoveryTopic(deviceId, component, key);
+                    _mqtt.publish(discoveryTopic.c_str(), "", true);
+                }
+
+                const String stateTopic = baseTopic() + "/DeviceData/" + key;
+                _mqtt.publish(stateTopic.c_str(), "", true);
             }
         }
+
+        // Purge retained Home Assistant Discovery for values that are present in
+        // runtime JSON but are not part of the supported HA catalog. Older builds
+        // auto-discovered every scalar field, so diagnostic/probe values could
+        // survive indefinitely as stale entities in Home Assistant.
+        {
+            JsonDocument snapshot;
+            _state.snapshotTo(snapshot);
+            const String deviceId = getHaDeviceId();
+
+            for (JsonPairConst entry : snapshot["DeviceData"].as<JsonObjectConst>())
+            {
+                const char *key = entry.key().c_str();
+                if (isPowMrWritableSettingKey(key))
+                {
+                    continue;
+                }
+                if (findDescriptor(key,
+                                   HA_STATIC_DESCRIPTORS,
+                                   sizeof(HA_STATIC_DESCRIPTORS) / sizeof(HaEntityDescriptor)) == nullptr)
+                {
+                    purgeHaDiscoveryKey(_mqtt, deviceId, key);
+                }
+            }
+
+            for (JsonPairConst entry : snapshot["LiveData"].as<JsonObjectConst>())
+            {
+                const char *key = entry.key().c_str();
+                if (strncmp(key, "DS18B20_", 8) == 0)
+                {
+                    continue;
+                }
+                if (findDescriptor(key,
+                                   HA_LIVE_DESCRIPTORS,
+                                   sizeof(HA_LIVE_DESCRIPTORS) / sizeof(HaEntityDescriptor)) == nullptr)
+                {
+                    purgeHaDiscoveryKey(_mqtt, deviceId, key);
+                }
+            }
+        }
+
     }
 
     if (_pendingLegacyDs18Cleanup)
@@ -1062,6 +1077,11 @@ void MqttHandler::publishRawState(JsonObjectConst rawObject)
 
 void MqttHandler::publishHaDiscovery(bool force)
 {
+    if (!_settings.get.mqttHAEnabled())
+    {
+        return;
+    }
+
     JsonDocument snapshot;
     _state.snapshotTo(snapshot);
 
@@ -1219,7 +1239,7 @@ void MqttHandler::publishHaSection(JsonDocument &snapshot,
 
         // Some PowMr/Victor HVM units return Tracker_Temperature=0 from the
         // PI30 Q1 supplement because that sensor is not implemented. Do not
-        // expose a misleading 0 °C entity in Home Assistant. On a forced
+        // expose a misleading 0 Â°C entity in Home Assistant. On a forced
         // discovery pass also clear any retained discovery config left by an
         // older firmware so Home Assistant removes the stale entity.
         if (strcmp(stateSection, "LiveData") == 0 &&

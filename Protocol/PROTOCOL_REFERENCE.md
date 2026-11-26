@@ -326,7 +326,7 @@ Derived fields:
 
 - `Battery_Load = Battery_Charge_Current - Battery_Discharge_Current`
 - `PV_Input_Power = PV_Input_Voltage * PV_Input_Current`
-- `PV2_Input_Power = PV2_Input_Voltage * PV2_Input_Current`
+- in the short QPIGS2 and PI41 L2 layouts, `PV2_Input_Power = PV2_Input_Voltage * PV2_Input_Current`
 - for `PI18`, `PV_Input_Voltage`, `PV_Charging_Power`, and `PV_Input_Current` are combined from `PV1_*` and `PV2_*`
 
 ### 8.6 QPIGS2: Additional Values
@@ -348,6 +348,45 @@ PI41 L2 layout:
 - `PV2_Input_Voltage`
 - `Battery_Voltage_L2`
 - `Device_Status_L2`
+
+Legacy twelve-field SCC2/SCC3 layout:
+
+The PI30 customer protocol dated 2015-09-24, section 2.10, documents twelve
+space-separated payload fields. Positions below are zero-based and exclude
+the start byte, CRC and carriage return. The complete reply is validated
+before any values are published.
+
+| Position | Protocol description | Current interpretation |
+| --- | --- | --- |
+| 0 | PV input current 2 (A) | Validated, not published directly; physical interpretation requires model-specific confirmation |
+| 1 | PV input voltage 2 (V) | `PV2_Input_Voltage` |
+| 2 | Battery voltage from SCC2 (V) | `Battery_SCC2_Volt` |
+| 3 | PV charging power 2 (W) | `PV2_Charging_Power` and the existing `PV2_Input_Power` field |
+| 4 | Device status, eight binary digits | Validated; no additional status entities introduced |
+| 5 | AC charging current (A) | Validated, not published by this branch |
+| 6 | AC charging power (W) | Validated, not published by this branch |
+| 7 | PV input current 3 (A) | Validated, not published by this branch |
+| 8 | PV input voltage 3 (V) | Validated, not published by this branch |
+| 9 | Battery voltage from SCC3 (V) | Validated, not published by this branch |
+| 10 | PV charging power 3 (W) | Validated, not published by this branch |
+| 11 | Total PV charging power (W) | Existing `PV_Total_Input_Power` field |
+
+`PV2_Input_Current` is derived from field 3 divided by field 1, using the
+existing zero-voltage guard and rounding. It is not independently measured
+and does not establish the meaning of the unused current in field 0. The
+protocol labels field 0 as PV input current; a battery-side interpretation
+must not be assumed for all legacy devices. The existing MQTT names are kept
+even where the protocol describes the power as charging power.
+
+This layout was captured on an MPP Solar PIP 4048MSD, 5000 VA / 4000 W, main
+firmware 75.20, with SCC firmware replies 1.02. Its display comparison on
+2026-11-05 confirmed PV1 at 44 W and PV voltages near 82 V. The LCD showed
+PV2/total at 28/72 W while serial/API/MQTT consistently reported 27/71 W;
+no compensating offset is applied. The presence of SCC3 placeholders or zero
+values does not prove that a third tracker is physically installed.
+
+The three-field and PI41 L2 calculations remain unchanged. This extension
+does not change Q1/QEX, MQTT names, discovery identities or UI calculations.
 
 ### 8.7 Q1: Additional Sensors And Charge State
 

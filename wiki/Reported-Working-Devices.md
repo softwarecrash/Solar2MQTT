@@ -17,23 +17,29 @@ This page is generated automatically from public device reports submitted throug
 | ANERN | SCI-EVO-6200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 2 |
 | ANERN | SCI-EVO4200 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 1 |
 | ANINEREL | ANL-4200T-24L-W | RS232 | MODBUS_SMG | MODBUS_SMG | SMG 99432608105291 | - | wemos_d1_mini32 | - | 1 |
+| AXIOMA ENERGY | ІSMPPT-BF-DOU-GW-4200 | RS232 | PI30_PIP_GK | PI30 | VMII-4200 | - | esp32c3_supermini | - | 1 |
 | DATOUBOSS | DT2430 | RS232 | PI30 | PI30 | VMII-3000 | - | wemos_d1_mini32 | - | 1 |
 | EASUN | EASUN SMS-6.5KP | RS232 | MODBUS_DEYE | MODBUS_DEYE | 02020475 | - | esp32c3_supermini | Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working?<br>Unfortunately, the detected protocol isn't working properly. It's showing incorrect readings. Can I manually change the protocol to check if it's working? email tomfli@wp.pl | 2 |
 | EASUN | IGRID SV IV 5.6 KW | RS232 | PI18 | 18 | - | - | wemos_d1_mini32 | Works fantastic, 88 entities, perfect real time data, flowless integration in HA through mttq. Huge thanks! | 1 |
 | EASUN | ISOLAR-SMH-III-4.2KW-WIFI | RS232 | MODBUS_POWMR | MODBUS_POWMR | PowMr HVM Modbus 4501 | - | wemos_d1_mini32 | Solar2MQTT-0.0.0-dev-2.0.18Q | 1 |
 | EASUN | ISOLAR-SMH-III-4.2KW-WIFI | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Solar2MQTT-2.0.4 | 1 |
+| EASUN | SMH-II 4.2KVA | RS232 | PI30 | PI30 | - | - | esp32s3_supermini | I use the Max3232 adapter plus a ESP32-S3 DevC-1-N16R8-S3 development board because it has an IPEX connector to connect an external Wifi antenna. | 1 |
 | EASUN | SMH-II-2.2 | RS232 | PI30 | PI30 | - | - | esp32s3_supermini | - | 1 |
 | EASUN | SMW8000 | RS232 | PI30_MAX | PI30 | MKS2-8000 | - | esp32c3_supermini | Pv2-input Power nieje vždy aktuálny ,zamrza | 2 |
 | ECGSOLAX | VICTOR MAX-10.2 KW-M | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Using ESP32. Pin assignment: UART Rx: GPIO19 UART Tx: GPIO23 You can get power from the RS232/Wifi port (RJ45) using a 5V stepdown: RJ45 Pin 8: Ground RJ45 Pin 4: VCC (Check voltage first before connecting.) | 1 |
 | ECOWORTHY | ECO5000W(SR) | RS485 | MODBUS_ANENJI_SRNE | MODBUS_ANENJI_SRNE | Anenji SRNE SR-2602280561-100180 | - | esp32_wroom_32 | I don't see any configuration parameters on you app for ESP32 | 1 |
 | EDECOA | EM-402A | RS232 | PI30 | PI30 | - | - | esp32c3_supermini | Hello from Odessa, Ukraine | 1 |
+| ESP8266MOD | ESP-12E | RS485 | NOD | NOD | - | - | wemos_d1_mini32 | - | 1 |
 | GOOTU | 8.2KW HYBRID INVERTER DUAL MPPT/DUAL OUTPUT AC | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32s3_supermini | - | 1 |
 | INVERTOR | INFINISOLAR V 4 TWIN 6KW HYBRID | RS232 | PI18 | PI18 | - | - | wemos_d1_mini32 | Super work ok | 1 |
 | JESUDOM CHINA | AXPERT VM IV 4,2KW | RS232 | PI30_PIP_GK | PI30 | VMIII-4000 | - | wemos_d1_mini32 | - | 1 |
+| MARSRIVA | MR-SPH 4200 / VMII-4200 | RS232 | PI30_PIP_GK | PI30 | VMII-4200 | - | wemos_d1_mini32 | ESP32-WROOM-32 + MAX3232 вихід MAX3232 RXD (дані з інвертора) → GPIO19 (UART RX) вхід MAX3232 TXD (дані до інвертора) → GPIO23 (UART TX) VCC → 3V3, GND → GND | 1 |
 | POWERMR | POW-HVM3.2H-24V-N | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | In general, everything works. | 1 |
 | POWMR | 10 | TTL | NOD | NOD | - | - | esp32c3_supermini | - | 1 |
 | POWMR | 6.2 | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | esp32c3_supermini | - | 1 |
 | POWMR | MPS-V PLUS 3.5KW | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | sp32_s3_wroom_cam | Using an ESP32-S3-N16R8 WROOM CAM with an RS232-to-TTL module. I selected this module because it has an integrated microSD card slot, which I will use for data logging purposes. | 1 |
+| POWMR | POW-HVM10.2M | RS232 | MODBUS_RTU | 15 | POW-HVM10.2M-48V | VER:00021.03 | ESP32_Modbus_2400bps | Confirmed working on PowMr 10.2kW model. Connection settings require Slave ID 5 and 2400 baud rate. Pins used: RJ45 Pin 1 (TX), Pin 2 (RX), Pin 8 (GND). | 1 |
+| POWMR | POW-HVM10.2M | RS232 | PI30 | PI30 | - | - | wemos_d1_mini32 | PowMr 10.2kW model responds to PI30 text commands but requires ignoring CRC or matching the specific long-frame variant. | 1 |
 | POWMR | POW-HVM10.2M | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Keeps on disconnecting from WIFI. Only recognizes 1 string of PV.<br>Гібридний інвертор PowMr 10.2 кВт (POW-HVM10.2M), підключення через MAX3232 (RS232), стабільна робота підтверджена. PowMr POW-HVM10.2M 10.2kW hybrid inverter, connected via MAX3232 (RS232), confirmed stable operation. | 2 |
 | POWMR | POW-HVM4.2K-24V-D | TTL | NOD | NOD | - | - | wemos_d1_mini32 | - | 1 |
 | POWMR | POW-HVM4.2K-24V-N | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Working with MAX3232 | 1 |
@@ -43,7 +49,9 @@ This page is generated automatically from public device reports submitted throug
 | POWMR | POW-HVM6.5K-E | RS232 | MODBUS_POWMR | MODBUS_POWMR | PowMr HVM Modbus 4501 | - | esp32s3_supermini | - | 1 |
 | POWMR | POWHVM62M48VN | RS232 | PI30 | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | - | 1 |
 | POWMR | POWMR HVM-6.2M-48V-N | RS232 | PI30_MAX | PI30 | VMII-NXPW5KW | - | wemos_d1_mini32 | Build variant is wenmo d1 but tge actual module is esp32 devkit V1 | 1 |
+| SAKO | SUNON V6,5KVA | RS232 | PI30_PIP_GK | PI30 | VMIII-6200 | - | esp32s3_supermini | - | 1 |
 | SILA | SILA PRO 5600MH | RS232 | PI18 | PI18 | - | - | waveshare_esp32_s3_eth | - | 1 |
+| STARK COUNTRY | STARK COUNTRY INV 3000 LT | RS232 | PI30 | PI30 | VP-3000 | - | wemos_d1_mini32 | https://stark-ups.ru/products/istochniki-bespereboynogo-pitaniya/stark-country-inv/3000-inv-lt/ Battery charge readings and other voltages are shown with low resolution after the decimal point. | 1 |
 | SUMRY | SP 7000 | RS232 | PI30 | PI30 | - | - | wemos_d1_mini32 | Battery mode must be not lib | 1 |
 | SUMRY | SP-3200 | RS232 | PI30 | 230_0_13_9_230_0_50_0_13_9_3200_3000_24_0_23_0_2 | - | - | esp32c3_supermini | - | 1 |
 | SUMRY | SP7000 | RS232 | PI30 | PI30 | - | - | esp32c3_supermini | - | 1 |

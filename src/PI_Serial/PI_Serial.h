@@ -4,6 +4,7 @@
 #include "PowMrPiSupplementScheduler.h"
 #include <atomic>
 #include <HardwareSerial.h>
+#include <freertos/semphr.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -243,6 +244,10 @@ private:
     byte qexCounter = 0;
     
     String customCommandBuffer;
+    SemaphoreHandle_t customCommandMutex = nullptr;
+    bool customQuerySlot = false;
+    bool lastCustomCommandWasQuery = false;
+    static bool isReadOnlyPiQuery(const String &command);
     JsonDocument cycleLiveBackup;
     JsonDocument cycleStaticBackup;
 
